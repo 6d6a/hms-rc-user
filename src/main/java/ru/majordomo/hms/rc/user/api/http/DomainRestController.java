@@ -13,7 +13,7 @@ import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
 @RestController
-@CrossOrigin
+@CrossOrigin("*")
 public class DomainRestController {
 
     @Autowired

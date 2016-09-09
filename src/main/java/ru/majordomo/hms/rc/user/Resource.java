@@ -10,6 +10,10 @@ public abstract class Resource {
 
     public abstract void switchResource();
 
+    public Boolean getSwitchedOn() {
+        return switchedOn;
+    }
+
     public Boolean isSwitchedOn() {
         return switchedOn;
     }

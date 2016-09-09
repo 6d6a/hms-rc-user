@@ -64,7 +64,7 @@ public class GovernorOfWebSite extends LordOfResources {
         String applicationServerId = cleaner.cleanString((String)serviceMessage.getParam("applicationServerId"));
         if (applicationServerId != "") {
             //TODO добавить проверку на наличие такого application server'а и проверку на тот факт, что это сервис закреплен за нужным сервером
-            webSite.setApplicationServer(applicationServerId);
+            webSite.setApplicationServerId(applicationServerId);
         } else {
             throw new ParameterValidateException(loggerPrefix + "applicationServerId не может быть пустым");
         }

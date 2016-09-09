@@ -1,22 +1,25 @@
 package ru.majordomo.hms.rc.user.resources;
 
-import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import ru.majordomo.hms.rc.user.Resource;
 import ru.majordomo.hms.rc.user.common.CharSet;
 
 @Document(collection = "webSites")
 public class WebSite extends Resource {
+
+    @Transient
+    private String unixAccountId;
     private Resource unixAccount;
-    private String applicationServer;
+    private String applicationServerId;
     private String documentRoot;
+    private List<String> domainIds = new ArrayList<>();
+    @Transient
     private List<Resource> domains = new ArrayList<>();
 
     private CharSet charSet;
@@ -159,12 +162,12 @@ public class WebSite extends Resource {
         this.unixAccount = unixAccount;
     }
 
-    public String getApplicationServer() {
-        return applicationServer;
+    public String getApplicationServerId() {
+        return applicationServerId;
     }
 
-    public void setApplicationServer(String applicationServer) {
-        this.applicationServer = applicationServer;
+    public void setApplicationServerId(String applicationServerId) {
+        this.applicationServerId = applicationServerId;
     }
 
     public String getDocumentRoot() {
@@ -193,7 +196,7 @@ public class WebSite extends Resource {
                 "id=" + this.getId() +
                 ", name=" + this.getName() +
                 ", unixAccount=" + unixAccount +
-                ", applicationServer='" + applicationServer + '\'' +
+                ", applicationServerId='" + applicationServerId + '\'' +
                 ", documentRoot='" + documentRoot + '\'' +
                 ", domains=" + domains +
                 ", charSet=" + charSet +
