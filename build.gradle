@@ -1,14 +1,15 @@
 buildscript {
-	ext {
-		springBootVersion = '1.3.6.RELEASE'
-	}
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-	        classpath("se.transmode.gradle:gradle-docker:1.2")
-	}
+    ext {
+        springBootVersion = '1.3.6.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("io.spring.gradle:dependency-management-plugin:0.6.0.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("se.transmode.gradle:gradle-docker:1.2")
+    }
 }
 
 apply plugin: 'java'
@@ -18,30 +19,30 @@ apply plugin: 'docker'
 group = 'hms'
 
 jar {
-	baseName = 'rc-user'
-	version = '0.0.1-SNAPSHOT'
+    baseName = 'rc-user'
+    version = '0.0.1-SNAPSHOT'
 }
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 
 dependencies {
-	compile('org.springframework.cloud:spring-cloud-starter-config')
-	compile('org.springframework.cloud:spring-cloud-starter-eureka')
-	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
-	compile('org.springframework.boot:spring-boot-starter-amqp')
+    compile('org.springframework.cloud:spring-cloud-starter-config')
+    compile('org.springframework.cloud:spring-cloud-starter-eureka')
+    compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+    compile('org.springframework.boot:spring-boot-starter-amqp')
 
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
 dependencyManagement {
-	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:Brixton.SR3"
-	}
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:Brixton.SR3"
+    }
 }
 
 task buildDocker(type: Docker, dependsOn: build) {
@@ -53,7 +54,7 @@ task buildDocker(type: Docker, dependsOn: build) {
         copy {
             from "${dockerDir}/Dockerfile"
             into buildDir
-            expand(jarBuildName:jar.getArchiveName(),projectName:project.name)
+            expand(jarBuildName: jar.getArchiveName(), projectName: project.name)
         }
         copy {
             from jar
