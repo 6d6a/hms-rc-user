@@ -10,3 +10,4 @@ build:
     - gradle buildDocker -x test
     - docker tag docker-registry.intr/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME} docker-registry.intr/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_BUILD_REF_NAME}
     - docker rmi docker-registry.intr/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:latest
+    - docker push docker-registry.intr/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_BUILD_REF_NAME}
