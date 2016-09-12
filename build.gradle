@@ -48,6 +48,7 @@ dependencyManagement {
 task buildDocker(type: Docker, dependsOn: build) {
     def dockerDir = "docker"
     push = false
+    project.group = "docker-registry.intr/"+project.group
     applicationName = jar.baseName
     dockerfile = file("${buildDir}/Dockerfile")
     doFirst {
