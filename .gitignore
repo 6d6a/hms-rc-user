@@ -1,7 +1,9 @@
 *.iml
-build
+/build
 .idea
 .gradle
-gradle
-gradlew
-gradlew.bat
+/gradle
+/gradlew
+/gradlew.bat
+/docker-compose
+/docker-compose.yml
