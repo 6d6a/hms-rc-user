@@ -9,29 +9,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
 
-import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
-import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
+import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.resources.Mailbox;
+import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
-import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
-@RestController(value = "/unix-account")
+@RestController(value = "/mailbox")
 @CrossOrigin("*")
-public class UnixAccountRESTController {
+public class MailboxRestController {
 
-    private GovernorOfUnixAccount governor;
+    private GovernorOfMailbox governor;
 
     @Autowired
-    public void setGovernor(GovernorOfUnixAccount governor) {
+    public void setGovernor(GovernorOfMailbox governor) {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/{unixAccountId}", "/{unixAccountId}/"}, method = RequestMethod.GET)
-    public UnixAccount readOne(@PathVariable String unixAccountId) {
-        return (UnixAccount) governor.build(unixAccountId);
+    @RequestMapping(value = {"/{mailboxId}", "/{mailboxId}/"}, method = RequestMethod.GET)
+    public Mailbox readOne(@PathVariable String mailboxId) {
+        return (Mailbox) governor.build(mailboxId);
     }
 
     @RequestMapping(value = {"/",""}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
     }
+
 }

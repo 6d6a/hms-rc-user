@@ -1,17 +1,17 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import ru.majordomo.hms.rc.user.Resource;
 
 @Document(collection = "mailboxes")
 public class Mailbox extends Resource {
-    private Resource domain;
-    private List<String> blackList = new ArrayList<>();
-    private List<String> whiteList = new ArrayList<>();
+    @Transient
+    private Domain domain;
+    private String domainId;
+    private List<String> blackList;
+    private List<String> whiteList;
     private Long quota;
     private Long size;
     private Boolean antiSpamEnabled = false;
@@ -21,12 +21,13 @@ public class Mailbox extends Resource {
         switchedOn = !switchedOn;
     }
 
-    public Resource getDomain() {
+    public Domain getDomain() {
         return domain;
     }
 
-    public void setDomain(Resource domain) {
+    public void setDomain(Domain domain) {
         this.domain = domain;
+        setDomainId(domain.getId());
     }
 
     public List<String> getBlackList() {
@@ -67,5 +68,13 @@ public class Mailbox extends Resource {
 
     public void setAntiSpamEnabled(Boolean antiSpamEnabled) {
         this.antiSpamEnabled = antiSpamEnabled;
+    }
+
+    public String getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(String domainId) {
+        this.domainId = domainId;
     }
 }

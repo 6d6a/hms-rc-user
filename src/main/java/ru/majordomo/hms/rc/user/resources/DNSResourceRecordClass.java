@@ -1,6 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
-public enum DNSResourceRecordClass {
+enum DNSResourceRecordClass {
     IN,
     HS,
     CH

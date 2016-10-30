@@ -1,42 +1,41 @@
 package ru.majordomo.hms.rc.user.resources;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import ru.majordomo.hms.rc.user.Resource;
-
 @Document(collection = "databases")
-public class Database extends Resource {
-    private Long size;
-    private ObjectId server;
-    private DBType dbType;
+public class Database extends Resource implements ServerStorable {
+    private Double size;
+    private String serverId;
+    private DBType type;
 
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
     }
 
-    public Long getSize() {
+    public Double getSize() {
         return size;
     }
 
-    public void setSize(Long size) {
+    public void setSize(Double size) {
         this.size = size;
     }
 
-    public ObjectId getServer() {
-        return server;
+    @Override
+    public String getServerId() {
+        return serverId;
     }
 
-    public void setServer(ObjectId server) {
-        this.server = server;
+    @Override
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 
-    public DBType getDbType() {
-        return dbType;
+    public DBType getType() {
+        return type;
     }
 
-    public void setDbType(DBType dbType) {
-        this.dbType = dbType;
+    public void setType(DBType type) {
+        this.type = type;
     }
 }

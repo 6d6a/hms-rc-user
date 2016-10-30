@@ -1,27 +1,26 @@
 package ru.majordomo.hms.rc.user.resources;
 
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.Resource;
 import ru.majordomo.hms.rc.user.common.CharSet;
 
 @Document(collection = "webSites")
-public class WebSite extends Resource {
+public class WebSite extends Resource implements ServerStorable {
+
 
     @Transient
+    private UnixAccount unixAccount;
     private String unixAccountId;
-    private Resource unixAccount;
-    private String applicationServerId;
+    private String serverId;
     private String documentRoot;
-    private List<String> domainIds = new ArrayList<>();
-    @Transient
-    private List<Resource> domains = new ArrayList<>();
 
+    @Transient
+    private List<Domain> domains = new ArrayList<>();
+    private List<String> domainIds = new ArrayList<>();
     private CharSet charSet;
     private Boolean ssiEnabled;
     private List<String> ssiFileExtensions = new ArrayList<>();
@@ -36,7 +35,6 @@ public class WebSite extends Resource {
     private List<String> indexFileList = new ArrayList<>();
     private Boolean accessLogEnabled;
     private Boolean errorLogEnabled;
-
     public CharSet getCharSet() {
         return charSet;
     }
@@ -154,20 +152,23 @@ public class WebSite extends Resource {
         switchedOn = !switchedOn;
     }
 
-    public Resource getUnixAccount() {
+    public UnixAccount getUnixAccount() {
         return unixAccount;
     }
 
-    public void setUnixAccount(Resource unixAccount) {
+    public void setUnixAccount(UnixAccount unixAccount) {
         this.unixAccount = unixAccount;
+        this.unixAccountId = unixAccount.getId();
     }
 
-    public String getApplicationServerId() {
-        return applicationServerId;
+    @Override
+    public String getServerId() {
+        return serverId;
     }
 
-    public void setApplicationServerId(String applicationServerId) {
-        this.applicationServerId = applicationServerId;
+    @Override
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 
     public String getDocumentRoot() {
@@ -178,12 +179,31 @@ public class WebSite extends Resource {
         this.documentRoot = documentRoot;
     }
 
-    public List<Resource> getDomains() {
+    public List<Domain> getDomains() {
         return domains;
     }
 
-    public void setDomains(List<Resource> domains) {
+    public void setDomains(List<Domain> domains) {
         this.domains = domains;
+        for (Domain domain: domains) {
+            domainIds.add(domain.getId());
+        }
+    }
+
+    public String getUnixAccountId() {
+        return unixAccountId;
+    }
+
+    public void setUnixAccountId(String unixAccountId) {
+        this.unixAccountId = unixAccountId;
+    }
+
+    public List<String> getDomainIds() {
+        return domainIds;
+    }
+
+    public void setDomainIds(List<String> domainIds) {
+        this.domainIds = domainIds;
     }
 
     public void addDomain(Domain domain) {
@@ -196,7 +216,7 @@ public class WebSite extends Resource {
                 "id=" + this.getId() +
                 ", name=" + this.getName() +
                 ", unixAccount=" + unixAccount +
-                ", applicationServerId='" + applicationServerId + '\'' +
+                ", serverId='" + serverId + '\'' +
                 ", documentRoot='" + documentRoot + '\'' +
                 ", domains=" + domains +
                 ", charSet=" + charSet +

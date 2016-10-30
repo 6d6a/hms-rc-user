@@ -9,23 +9,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
 
+import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
+import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
-@RestController
+@RestController(value = "/website")
 @CrossOrigin("*")
 public class WebSiteRESTController {
 
-    @Autowired
-    WebSiteRepository webSiteRepository;
+    private GovernorOfWebSite governor;
 
-    @RequestMapping(value = "/rc/website/{websiteId}", method = RequestMethod.GET)
-    public WebSite readOne(@PathVariable String websiteId) {
-        return webSiteRepository.findOne(websiteId);
+    @Autowired
+    public void setGovernor(GovernorOfWebSite governor) {
+        this.governor = governor;
     }
 
-    @RequestMapping(value = "/rc/website", method = RequestMethod.GET)
-    public Collection<WebSite> readAll() {
-        return webSiteRepository.findAll();
+    @RequestMapping(value = {"/{websiteId}", "/{websiteId}/"}, method = RequestMethod.GET)
+    public WebSite readOne(@PathVariable String websiteId) {
+        return (WebSite) governor.build(websiteId);
+    }
+
+    @RequestMapping(value = {"/", ""}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAll() {
+        return governor.buildAll();
     }
 }
