@@ -14,8 +14,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
-@RestController(value = "/person")
-@CrossOrigin("*")
+@RestController(value = "/database")
 public class DatabaseRestController {
 
     private GovernorOfDatabase governor;

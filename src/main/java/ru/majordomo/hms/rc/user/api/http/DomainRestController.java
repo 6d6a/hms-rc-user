@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collection;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
-import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
 @RestController(value = "/domain")
-@CrossOrigin("*")
 public class DomainRestController {
 
     private GovernorOfDomain governor;

@@ -7,3 +7,5 @@
 /gradlew.bat
 /docker-compose
 /docker-compose.yml
+.gradletasknamecache
+classes

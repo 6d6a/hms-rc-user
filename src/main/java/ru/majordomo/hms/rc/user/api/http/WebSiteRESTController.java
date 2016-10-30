@@ -15,7 +15,6 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
 @RestController(value = "/website")
-@CrossOrigin("*")
 public class WebSiteRESTController {
 
     private GovernorOfWebSite governor;

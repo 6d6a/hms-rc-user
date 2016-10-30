@@ -15,7 +15,6 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @RestController(value = "/unix-account")
-@CrossOrigin("*")
 public class UnixAccountRESTController {
 
     private GovernorOfUnixAccount governor;
