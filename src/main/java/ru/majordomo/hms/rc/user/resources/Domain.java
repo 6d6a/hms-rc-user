@@ -1,41 +1,59 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import ru.majordomo.hms.rc.user.Resource;
 
 @Document(collection = "domains")
 public class Domain extends Resource {
 
-    private Resource regSpec;
-    private List<Resource> dnsResourceRecords = new ArrayList<>();
+    @Transient
+    private Person person;
+    private String personId;
+    private RegSpec regSpec;
+    private List<DNSResourceRecord> dnsResourceRecords;
 
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
     }
 
-    public Resource getRegSpec() {
+    public RegSpec getRegSpec() {
         return regSpec;
     }
 
-    public void setRegSpec(Resource regSpec) {
+    public void setRegSpec(RegSpec regSpec) {
         this.regSpec = regSpec;
     }
 
-    public List<Resource> getDnsResourceRecords() {
+    public List<DNSResourceRecord> getDnsResourceRecords() {
         return dnsResourceRecords;
     }
 
-    public void addDnsResourceRecord(Resource resourceRecord) {
+    public void addDnsResourceRecord(DNSResourceRecord resourceRecord) {
         dnsResourceRecords.add(resourceRecord);
     }
 
     public void delDnsResourceRecord(Resource resourceRecord) {
         dnsResourceRecords.remove(resourceRecord);
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+        setPersonId(person.getId());
+    }
+
+    public String getPersonId() {
+        return personId;
+    }
+
+    public void setPersonId(String personId) {
+        this.personId = personId;
     }
 
     @Override
@@ -47,4 +65,5 @@ public class Domain extends Resource {
                 ", dnsResourceRecords=" + dnsResourceRecords +
                 '}';
     }
+
 }

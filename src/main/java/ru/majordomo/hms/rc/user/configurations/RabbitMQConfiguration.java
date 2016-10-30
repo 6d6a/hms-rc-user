@@ -19,14 +19,24 @@ import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 @Configuration
 public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 
-    @Value("${spring.rabbitmq.host}")
     private String rabbitHost;
+    private String rabbitUsername;
+    private String rabbitPassword;
+
+    @Value("${spring.rabbitmq.host}")
+    public void setRabbitHost(String rabbitHost) {
+        this.rabbitHost = rabbitHost;
+    }
 
     @Value("${spring.rabbitmq.username}")
-    private String rabbitUsername;
+    public void setRabbitUsername(String rabbitUsername) {
+        this.rabbitUsername = rabbitUsername;
+    }
 
     @Value("${spring.rabbitmq.password}")
-    private String rabbitPassword;
+    public void setRabbitPassword(String rabbitPassword) {
+        this.rabbitPassword = rabbitPassword;
+    }
 
     @Bean
     public ConnectionFactory connectionFactory() {

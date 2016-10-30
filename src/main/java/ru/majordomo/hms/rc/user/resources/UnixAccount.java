@@ -1,17 +1,14 @@
 package ru.majordomo.hms.rc.user.resources;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import ru.majordomo.hms.rc.user.Resource;
-
 @Document(collection = "unixAccounts")
-public class UnixAccount extends Resource {
+public class UnixAccount extends Resource implements ServerStorable{
     @Indexed
     private Integer uid;
     private String homeDir;
-    private ObjectId hostingServer;
+    private String serverId;
 
     @Override
     public void switchResource() {
@@ -34,12 +31,12 @@ public class UnixAccount extends Resource {
         this.homeDir = homeDir;
     }
 
-    public ObjectId getHostingServer() {
-        return hostingServer;
+    public String getServerId() {
+        return serverId;
     }
 
-    public void setHostingServer(ObjectId hostingServer) {
-        this.hostingServer = hostingServer;
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 
     @Override
@@ -49,7 +46,7 @@ public class UnixAccount extends Resource {
                 ", name=" + this.getName() +
                 ", uid=" + uid +
                 ", homeDir='" + homeDir + '\'' +
-                ", hostingServer=" + hostingServer +
+                ", serverId=" + serverId +
                 '}';
     }
 }

@@ -9,29 +9,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
 
-import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
-import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
-import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
-@RestController(value = "/unix-account")
+@RestController(value = "/person")
 @CrossOrigin("*")
-public class UnixAccountRESTController {
+public class PersonRestController {
 
-    private GovernorOfUnixAccount governor;
+    private GovernorOfPerson governor;
 
     @Autowired
-    public void setGovernor(GovernorOfUnixAccount governor) {
+    public void setGovernor(GovernorOfPerson governor) {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/{unixAccountId}", "/{unixAccountId}/"}, method = RequestMethod.GET)
-    public UnixAccount readOne(@PathVariable String unixAccountId) {
-        return (UnixAccount) governor.build(unixAccountId);
+    @RequestMapping(value = {"/{personId}", "/{personId}/"}, method = RequestMethod.GET)
+    public Person readOne(@PathVariable String personId) {
+        return (Person) governor.build(personId);
     }
 
     @RequestMapping(value = {"/",""}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
     }
+
 }

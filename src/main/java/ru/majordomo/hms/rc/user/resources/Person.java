@@ -2,17 +2,14 @@ package ru.majordomo.hms.rc.user.resources;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import ru.majordomo.hms.rc.user.Resource;
 
 @Document(collection = "persons")
 public class Person extends Resource {
-    private List<String> phoneNumbers = new ArrayList<>();
-    private List<String> emailAddresses = new ArrayList<>();
-    private Resource passport;
-    private Resource legalEntity;
+    private List<String> phoneNumbers;
+    private List<String> emailAddresses;
+    private Passport passport;
+    private LegalEntity legalEntity;
 
     @Override
     public void switchResource() {
@@ -35,19 +32,20 @@ public class Person extends Resource {
         this.emailAddresses = emailAddresses;
     }
 
-    public Resource getPassport() {
+    public Passport getPassport() {
         return passport;
     }
 
-    public void setPassport(Resource passport) {
+    public void setPassport(Passport passport) {
         this.passport = passport;
     }
 
-    public Resource getLegalEntity() {
+    public LegalEntity getLegalEntity() {
         return legalEntity;
     }
 
-    public void setLegalEntity(Resource legalEntity) {
+    public void setLegalEntity(LegalEntity legalEntity) {
         this.legalEntity = legalEntity;
     }
+
 }

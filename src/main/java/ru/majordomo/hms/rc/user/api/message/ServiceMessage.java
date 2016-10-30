@@ -56,6 +56,10 @@ public class ServiceMessage {
         params.put(name,value);
     }
 
+    public void delParam(Object name) {
+        params.remove(name);
+    }
+
     public String toJson() {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonData = "";

@@ -9,29 +9,29 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
+import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 
-public class WebSiteAMQPController extends BaseAMQPController {
+public class DomainAMQPController extends BaseAMQPController {
 
-    private GovernorOfWebSite governor;
+    private GovernorOfDomain governor;
 
     @Autowired
-    public void setGovernor(GovernorOfWebSite governor) {
+    public void setGovernor(GovernorOfDomain governor) {
         this.governor = governor;
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}",
             durable = "true", autoDelete = "true"),
-            exchange = @Exchange(value = "website.create", type = "topic"),
+            exchange = @Exchange(value = "domain.create", type = "topic"),
             key = "rc.user"))
     public void handleCreateEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("website", serviceMessage, governor);
+                handleCreateEventFromPM("domain", serviceMessage, governor);
                 break;
             case ("te"):
-                handleCreateEventFromTE("website", serviceMessage, governor);
+                handleCreateEventFromTE("domain", serviceMessage, governor);
                 break;
         }
     }
