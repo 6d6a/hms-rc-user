@@ -9,7 +9,7 @@ import java.util.List;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
 
-@FeignClient(name = "rc-staff")
+@FeignClient(value = "rc-staff")
 public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/hosting-server?state=active", consumes = "application/json;utf8")
     Server getActiveHostingServers();

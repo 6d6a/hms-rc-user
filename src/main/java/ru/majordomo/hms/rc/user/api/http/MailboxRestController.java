@@ -16,7 +16,6 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
 @RestController(value = "/mailbox")
-@CrossOrigin("*")
 public class MailboxRestController {
 
     private GovernorOfMailbox governor;
