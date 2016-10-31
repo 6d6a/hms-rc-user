@@ -14,7 +14,7 @@ import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
-@RestController(value = "/website")
+@RestController
 public class WebSiteRESTController {
 
     private GovernorOfWebSite governor;
@@ -24,12 +24,12 @@ public class WebSiteRESTController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/{websiteId}", "/{websiteId}/"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/website/{websiteId}", "/website/{websiteId}/"}, method = RequestMethod.GET)
     public WebSite readOne(@PathVariable String websiteId) {
         return (WebSite) governor.build(websiteId);
     }
 
-    @RequestMapping(value = {"/", ""}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/website/", "/website"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
     }

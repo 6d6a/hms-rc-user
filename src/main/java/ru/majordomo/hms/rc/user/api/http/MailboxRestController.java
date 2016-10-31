@@ -25,12 +25,12 @@ public class MailboxRestController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/{mailboxId}", "/{mailboxId}/"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/mailbox/{mailboxId}", "/mailbox/{mailboxId}/"}, method = RequestMethod.GET)
     public Mailbox readOne(@PathVariable String mailboxId) {
         return (Mailbox) governor.build(mailboxId);
     }
 
-    @RequestMapping(value = {"/",""}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/mailbox/","/mailbox"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
     }

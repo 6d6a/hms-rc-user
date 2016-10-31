@@ -70,7 +70,7 @@ public class GovernorOfMailbox extends LordOfResources {
         mailbox.setBlackList(blackList);
         mailbox.setWhiteList(whilteList);
         mailbox.setQuota(quota);
-        mailbox.setSize(size);
+//        mailbox.setSize(size);
 
         return mailbox;
     }
@@ -82,9 +82,9 @@ public class GovernorOfMailbox extends LordOfResources {
             throw new ParameterValidateException("Имя ящика не может быть пустым");
         }
 
-        if (mailbox.getSize() > mailbox.getQuota()) {
-            throw new ParameterValidateException("Размер ящика не может быть больше квоты");
-        }
+//        if (mailbox.getSize() > mailbox.getQuota()) {
+//            throw new ParameterValidateException("Размер ящика не может быть больше квоты");
+//        }
 
         if (mailbox.getDomain() == null) {
             throw new ParameterValidateException("Для ящика должен быть указан домен");

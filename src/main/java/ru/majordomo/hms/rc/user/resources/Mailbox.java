@@ -6,15 +6,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
 @Document(collection = "mailboxes")
-public class Mailbox extends Resource {
+public class Mailbox extends Resource implements ServerStorable, Quotable {
     @Transient
     private Domain domain;
     private String domainId;
     private List<String> blackList;
     private List<String> whiteList;
-    private Long quota;
-    private Long size;
     private Boolean antiSpamEnabled = false;
+    private String serverId;
+    private Long quota;
+    private Long quotaUsed;
+    private Boolean writable;
 
     @Override
     public void switchResource() {
@@ -46,22 +48,6 @@ public class Mailbox extends Resource {
         this.whiteList = whiteList;
     }
 
-    public Long getQuota() {
-        return quota;
-    }
-
-    public void setQuota(Long quota) {
-        this.quota = quota;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public void setSize(Long size) {
-        this.size = size;
-    }
-
     public Boolean getAntiSpamEnabled() {
         return antiSpamEnabled;
     }
@@ -76,5 +62,47 @@ public class Mailbox extends Resource {
 
     public void setDomainId(String domainId) {
         this.domainId = domainId;
+    }
+
+    @Override
+    public void setQuota(Long quota) {
+        this.quota = quota;
+    }
+
+    @Override
+    public Long getQuota() {
+        return quota;
+    }
+
+    @Override
+    public void setQuotaUsed(Long quotaUsed) {
+        this.quotaUsed = quotaUsed;
+    }
+
+    @Override
+    public Long getQuotaUsed() {
+        return quotaUsed;
+    }
+
+    @Override
+    public void setWritable(Boolean writable) {
+        this.writable = writable;
+    }
+
+    @Override
+    public Boolean getWritable() {
+        return writable;
+    }
+
+
+
+    @Override
+    public String getServerId() {
+        return serverId;
+    }
+
+    @Override
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 }

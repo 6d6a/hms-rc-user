@@ -12,7 +12,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
-@RestController(value = "/person")
+@RestController
 public class PersonRestController {
 
     private GovernorOfPerson governor;
@@ -22,12 +22,12 @@ public class PersonRestController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/{personId}", "/{personId}/"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/person/{personId}", "/person/{personId}/"}, method = RequestMethod.GET)
     public Person readOne(@PathVariable String personId) {
         return (Person) governor.build(personId);
     }
 
-    @RequestMapping(value = {"/",""}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/person/","/person"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
     }
