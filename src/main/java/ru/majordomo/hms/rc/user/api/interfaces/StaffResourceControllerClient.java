@@ -17,6 +17,9 @@ public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/db-server?state=active", consumes = "application/json;utf8")
     Server getActiveDatabaseServer();
 
+    @RequestMapping(method = RequestMethod.GET, value = "/mail-storage?state=active", consumes = "application/json;utf8")
+    Server getActiveMailboxServer();
+
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}", consumes = "application/json;utf8")
     Server getServerById(@PathVariable("serverId") String serverId);
 }

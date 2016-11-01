@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 
+import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
@@ -20,6 +22,12 @@ public class GovernorOfMailbox extends LordOfResources {
     private MailboxRepository repository;
     private GovernorOfDomain governorOfDomain;
     private Cleaner cleaner;
+    private StaffResourceControllerClient staffRcClient;
+
+    @Autowired
+    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
+        this.staffRcClient = staffRcClient;
+    }
 
     @Autowired
     public void setGovernorOfDomain(GovernorOfDomain governorOfDomain) {
@@ -63,14 +71,23 @@ public class GovernorOfMailbox extends LordOfResources {
         List<String> blackList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("blackList"));
         List<String> whilteList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("whiteList"));
         Long quota = (Long) serviceMessage.getParam("quota");
-        Long size = (Long) serviceMessage.getParam("size");
+        Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+        Boolean writable = (Boolean) serviceMessage.getParam("writable");
+        String serverId = cleaner.cleanString((String)serviceMessage.getParam("serverId"));
+        if (serverId == null) {
+            Server server = staffRcClient.getActiveMailboxServer();
+            serverId = server.getId();
+        }
         Boolean antiSpamEnabled = (Boolean) serviceMessage.getParam("antiSpamEnabled");
 
         mailbox.setDomain((Domain) governorOfDomain.build(domainId));
         mailbox.setBlackList(blackList);
         mailbox.setWhiteList(whilteList);
         mailbox.setQuota(quota);
-//        mailbox.setSize(size);
+        mailbox.setQuotaUsed(quotaUsed);
+        mailbox.setWritable(writable);
+        mailbox.setServerId(serverId);
+        mailbox.setAntiSpamEnabled(antiSpamEnabled);
 
         return mailbox;
     }

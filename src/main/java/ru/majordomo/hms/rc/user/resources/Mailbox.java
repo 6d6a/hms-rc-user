@@ -1,8 +1,11 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "mailboxes")
@@ -10,8 +13,8 @@ public class Mailbox extends Resource implements ServerStorable, Quotable {
     @Transient
     private Domain domain;
     private String domainId;
-    private List<String> blackList;
-    private List<String> whiteList;
+    private List<String> blackList = new ArrayList<>();
+    private List<String> whiteList = new ArrayList<>();
     private Boolean antiSpamEnabled = false;
     private String serverId;
     private Long quota;
@@ -40,12 +43,20 @@ public class Mailbox extends Resource implements ServerStorable, Quotable {
         this.blackList = blackList;
     }
 
+    public void addToBlackList(String emailAddress) {
+        this.blackList.add(emailAddress);
+    }
+
     public List<String> getWhiteList() {
         return whiteList;
     }
 
     public void setWhiteList(List<String> whiteList) {
         this.whiteList = whiteList;
+    }
+
+    public void addToWhiteList(String emailAddress) {
+        this.whiteList.add(emailAddress);
     }
 
     public Boolean getAntiSpamEnabled() {
@@ -56,6 +67,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable {
         this.antiSpamEnabled = antiSpamEnabled;
     }
 
+    @JsonIgnore
     public String getDomainId() {
         return domainId;
     }

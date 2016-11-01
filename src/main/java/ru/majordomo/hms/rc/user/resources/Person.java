@@ -4,6 +4,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Document(collection = "persons")
 public class Person extends Resource {
@@ -63,6 +64,22 @@ public class Person extends Resource {
 
     public void setLegalEntity(LegalEntity legalEntity) {
         this.legalEntity = legalEntity;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return Objects.equals(phoneNumbers, person.phoneNumbers) &&
+                Objects.equals(emailAddresses, person.emailAddresses) &&
+                Objects.equals(passport, person.passport) &&
+                Objects.equals(legalEntity, person.legalEntity);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(phoneNumbers, emailAddresses, passport, legalEntity);
     }
 
     @Override

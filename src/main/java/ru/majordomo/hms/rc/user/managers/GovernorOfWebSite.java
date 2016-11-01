@@ -129,7 +129,7 @@ public class GovernorOfWebSite extends LordOfResources {
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         WebSite webSite = repository.findOne(resourceId);
-        for (String domainId: webSite.getDomainIds()) {
+        for (String domainId : webSite.getDomainIds()) {
             Domain domain = (Domain) governorOfDomain.build(domainId);
             webSite.addDomain(domain);
         }
@@ -138,12 +138,24 @@ public class GovernorOfWebSite extends LordOfResources {
         UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
         webSite.setUnixAccount(unixAccount);
 
-        return unixAccount;
+        return webSite;
     }
 
     @Override
     public Collection<? extends Resource> buildAll() {
-        return null;
+        List<WebSite> webSites = new ArrayList<>();
+        webSites = repository.findAll();
+        for (WebSite webSite : webSites) {
+            for (String domainId : webSite.getDomainIds()) {
+                Domain domain = (Domain) governorOfDomain.build(domainId);
+                webSite.addDomain(domain);
+            }
+
+            String unixAccountId = webSite.getUnixAccountId();
+            UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
+            webSite.setUnixAccount(unixAccount);
+        }
+        return webSites;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -190,6 +192,7 @@ public class WebSite extends Resource implements ServerStorable {
         }
     }
 
+    @JsonIgnore
     public String getUnixAccountId() {
         return unixAccountId;
     }
@@ -198,6 +201,7 @@ public class WebSite extends Resource implements ServerStorable {
         this.unixAccountId = unixAccountId;
     }
 
+    @JsonIgnore
     public List<String> getDomainIds() {
         return domainIds;
     }
