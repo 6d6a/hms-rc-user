@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collection;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
-@RestController(value = "/domain")
+@RestController
 public class DomainRestController {
 
     private GovernorOfDomain governor;
@@ -22,12 +23,12 @@ public class DomainRestController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/{domainId}", "/{domainId}/"}, method = RequestMethod.GET)
-    public Person readOne(@PathVariable String domainId) {
-        return (Person) governor.build(domainId);
+    @RequestMapping(value = {"/domain/{domainId}", "/domain/{domainId}/"}, method = RequestMethod.GET)
+    public Domain readOne(@PathVariable String domainId) {
+        return (Domain) governor.build(domainId);
     }
 
-    @RequestMapping(value = {"/",""}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/domain/","/domain"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
     }

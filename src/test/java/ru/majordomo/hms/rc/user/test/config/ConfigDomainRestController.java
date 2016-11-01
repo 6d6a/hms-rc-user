@@ -10,16 +10,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import ru.majordomo.hms.rc.user.api.http.PersonRestController;
+import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.user.api.http.DatabaseRestController;
+import ru.majordomo.hms.rc.user.api.http.DomainRestController;
+import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrar;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
+import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.resources.Domain;
 
 @Configuration
 @EnableWebMvc
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
-public class ConfigPersonRestController extends AbstractMongoConfiguration {
+public class ConfigDomainRestController extends AbstractMongoConfiguration {
     @Bean
     public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
         return new JettyEmbeddedServletContainerFactory(0);
@@ -36,8 +44,13 @@ public class ConfigPersonRestController extends AbstractMongoConfiguration {
     }
 
     @Bean
-    public PersonRestController personRestController() {
-        return new PersonRestController();
+    public DomainRestController domainRestController() {
+        return new DomainRestController();
+    }
+
+    @Bean
+    public GovernorOfDomain governorOfDomain() {
+        return new GovernorOfDomain();
     }
 
     @Bean
@@ -49,4 +62,20 @@ public class ConfigPersonRestController extends AbstractMongoConfiguration {
     public Cleaner cleaner() {
         return new Cleaner();
     }
+
+    @Bean
+    public DomainRegistrar domainRegistrar() {
+        return new DomainRegistrar() {
+            @Override
+            public void register(Domain domain) {
+
+            }
+
+            @Override
+            public void renew(Domain domain) {
+
+            }
+        };
+    }
+
 }

@@ -11,6 +11,7 @@ import java.util.Collection;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
@@ -25,8 +26,8 @@ public class DatabaseRestController {
     }
 
     @RequestMapping(value = {"/database/{databaseId}", "/database/{databaseId}/"}, method = RequestMethod.GET)
-    public Person readOne(@PathVariable String databaseId) {
-        return (Person) governor.build(databaseId);
+    public Database readOne(@PathVariable String databaseId) {
+        return (Database) governor.build(databaseId);
     }
 
     @RequestMapping(value = {"/database/","/database"}, method = RequestMethod.GET)

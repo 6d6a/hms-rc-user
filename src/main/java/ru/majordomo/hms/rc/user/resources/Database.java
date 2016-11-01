@@ -4,7 +4,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "databases")
 public class Database extends Resource implements ServerStorable, Quotable{
-    private Double size;
     private String serverId;
     private DBType type;
     private Long quota;
@@ -14,14 +13,6 @@ public class Database extends Resource implements ServerStorable, Quotable{
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
-    }
-
-    public Double getSize() {
-        return size;
-    }
-
-    public void setSize(Double size) {
-        this.size = size;
     }
 
     @Override

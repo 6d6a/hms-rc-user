@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -10,6 +12,7 @@ public class Domain extends Resource {
 
     @Transient
     private Person person;
+
     private String personId;
     private RegSpec regSpec;
     private List<DNSResourceRecord> dnsResourceRecords;
@@ -31,11 +34,15 @@ public class Domain extends Resource {
         return dnsResourceRecords;
     }
 
+    public void setDnsResourceRecords(List<DNSResourceRecord> dnsResourceRecords) {
+        this.dnsResourceRecords = dnsResourceRecords;
+    }
+
     public void addDnsResourceRecord(DNSResourceRecord resourceRecord) {
         dnsResourceRecords.add(resourceRecord);
     }
 
-    public void delDnsResourceRecord(Resource resourceRecord) {
+    public void delDnsResourceRecord(DNSResourceRecord resourceRecord) {
         dnsResourceRecords.remove(resourceRecord);
     }
 
@@ -45,9 +52,10 @@ public class Domain extends Resource {
 
     public void setPerson(Person person) {
         this.person = person;
-        setPersonId(person.getId());
+        this.personId = person.getId();
     }
 
+    @JsonIgnore
     public String getPersonId() {
         return personId;
     }
@@ -59,11 +67,13 @@ public class Domain extends Resource {
     @Override
     public String toString() {
         return "Domain{" +
-                "id=" + this.getId() +
-                ", name=" + this.getName() +
+                "id=" + getId() +
+                ", name=" + getId() +
+                ", switchedOn=" + getSwitchedOn() +
+                ", person=" + person +
+                ", personId='" + personId +
                 ", regSpec=" + regSpec +
                 ", dnsResourceRecords=" + dnsResourceRecords +
                 '}';
     }
-
 }

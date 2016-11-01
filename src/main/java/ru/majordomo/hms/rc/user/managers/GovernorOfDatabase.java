@@ -68,11 +68,15 @@ public class GovernorOfDatabase extends LordOfResources {
             serverId = getActiveHostingServerId();
         }
 
-        Double size = (Double) serviceMessage.getParam("size");
+        Long quota = (Long) serviceMessage.getParam("quota");
+        Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+        Boolean writable = (Boolean) serviceMessage.getParam("writable");
         DBType type = (DBType) serviceMessage.getParam("type");
 
         database.setServerId(serverId);
-        database.setSize(size);
+        database.setQuota(quota);
+        database.setQuotaUsed(quotaUsed);
+        database.setWritable(writable);
         database.setType(type);
 
         return database;
@@ -98,8 +102,16 @@ public class GovernorOfDatabase extends LordOfResources {
             throw new ParameterValidateException("Выбранный database сервер не существует");
         }
 
-        if (database.getSize() < 0) {
-            throw new ParameterValidateException("Размер базы не может быть меньше нуля");
+        if (database.getQuota() < 0) {
+            throw new ParameterValidateException("Quota для базы не может быть меньше нуля");
+        }
+
+        if (database.getQuotaUsed() > database.getQuota()) {
+            throw new ParameterValidateException("QuotaUsed не может быть больше quota");
+        }
+
+        if (database.getWritable() == null) {
+            throw new ParameterValidateException("Флаг writable должен быть установлен");
         }
     }
 

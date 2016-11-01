@@ -15,7 +15,7 @@ import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
-@RestController(value = "/mailbox")
+@RestController
 public class MailboxRestController {
 
     private GovernorOfMailbox governor;

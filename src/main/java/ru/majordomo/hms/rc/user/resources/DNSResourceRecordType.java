@@ -1,6 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
-enum DNSResourceRecordType {
+public enum DNSResourceRecordType {
     A,
     AAAA,
     CNAME,

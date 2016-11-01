@@ -40,8 +40,8 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Autowired
-    public void setNethouseDomainsClient(DomainRegistrar registrator) {
-        this.registrar = registrator;
+    public void setRegistrar(DomainRegistrar registrar) {
+        this.registrar = registrar;
     }
 
     @Override
