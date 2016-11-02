@@ -1,16 +1,18 @@
 package ru.majordomo.hms.rc.user.test.common;
 
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
+
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.common.CharSet;
-import ru.majordomo.hms.rc.user.resources.DBType;
+import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
-import ru.majordomo.hms.rc.user.resources.DNSResourceRecordClass;
-import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
@@ -177,6 +179,7 @@ public class ResourceGenerator {
             unixAccount.setQuota(10485760L);
             unixAccount.setQuotaUsed(1048576L);
             unixAccount.setWritable(true);
+            unixAccount.setCrontab(generateBatchOfCronTasks());
 
             batchOfUnixAccounts.add(unixAccount);
         }
@@ -221,5 +224,22 @@ public class ResourceGenerator {
         }
 
         return batchOfWebsites;
+    }
+
+    public static List<CronTask> generateBatchOfCronTasks() {
+        List<CronTask> crontab = new ArrayList<>();
+        String atPattern = "*/${MINUTES} * * * *";
+        for (Integer i = 10; i < 15; i++) {
+            CronTask cronTask = new CronTask();
+            cronTask.setName("Напоминатор нумеро " + i);
+            cronTask.setSwitchedOn(true);
+            String execTime = atPattern.replaceAll("\\$\\{MINUTES\\}", i.toString());
+            cronTask.setExecTime(execTime);
+            cronTask.setCommand("/bin/remind_me_every_" + i + "_minutes");
+
+            crontab.add(cronTask);
+        }
+
+        return crontab;
     }
 }
