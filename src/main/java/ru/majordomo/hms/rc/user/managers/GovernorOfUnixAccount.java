@@ -11,6 +11,7 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
@@ -88,9 +89,12 @@ public class GovernorOfUnixAccount extends LordOfResources {
             serverId = getActiveHostingServerId();
         }
 
+        List<CronTask> cronTasks = (List<CronTask>) serviceMessage.getParam("cronTasks");
+
         unixAccount.setUid(uid);
         unixAccount.setHomeDir(homeDir);
         unixAccount.setServerId(serverId);
+        unixAccount.setCrontab(cronTasks);
 
         return unixAccount;
     }

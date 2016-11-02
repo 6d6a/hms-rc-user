@@ -85,6 +85,7 @@ public class UnixAccountRestControllerTest {
                                 fieldWithPath("homeDir").description("Домашняя директория пользователя"),
                                 fieldWithPath("uid").description("UID пользователя"),
                                 fieldWithPath("serverId").description("ID сервера, на котором расположен ящик"),
+                                fieldWithPath("crontab").description("Список заданий в для cron"),
                                 fieldWithPath("quota").description("Максимальный совокупный размер файлов пользователя"),
                                 fieldWithPath("quotaUsed").description("Фактический совокупный размер файлов пользователя"),
                                 fieldWithPath("writable").description("Флаг, указывающий на то, возможна ли запись новых файлов пользователем")

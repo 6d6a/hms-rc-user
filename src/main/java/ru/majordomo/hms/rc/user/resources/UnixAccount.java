@@ -3,6 +3,9 @@ package ru.majordomo.hms.rc.user.resources;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Document(collection = "unixAccounts")
 public class UnixAccount extends Resource implements ServerStorable, Quotable{
     @Indexed
@@ -12,6 +15,23 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable{
     private Long quota;
     private Long quotaUsed;
     private Boolean writable;
+    private List<CronTask> crontab = new ArrayList<>();
+
+    public List<CronTask> getCrontab() {
+        return crontab;
+    }
+
+    public void setCrontab(List<CronTask> crontab) {
+        this.crontab = crontab;
+    }
+
+    public void addCronTask(CronTask task) {
+        this.crontab.add(task);
+    }
+
+    public void delCronTask(CronTask task) {
+        this.crontab.remove(task);
+    }
 
     @Override
     public void switchResource() {
@@ -48,6 +68,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable{
                 "id=" + getId() +
                 ", name=" + getName() +
                 ", switchedOn=" + getSwitchedOn() +
+                ", crontab=" + crontab +
                 ", uid=" + uid +
                 ", homeDir='" + homeDir + '\'' +
                 ", serverId='" + serverId + '\'' +
