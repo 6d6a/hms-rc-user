@@ -14,12 +14,19 @@ import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.Resource;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
 public class GovernorOfFTPUser extends LordOfResources {
 
     private Cleaner cleaner;
     private FTPUserRepository repository;
+    private GovernorOfUnixAccount governorOfUnixAccount;
+
+    @Autowired
+    public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
+        this.governorOfUnixAccount = governorOfUnixAccount;
+    }
 
     @Autowired
     public void setCleaner(Cleaner cleaner) {
@@ -56,9 +63,11 @@ public class GovernorOfFTPUser extends LordOfResources {
         LordOfResources.setResourceParams(ftpUser, serviceMessage, cleaner);
         String plainPassword = cleaner.cleanString((String) serviceMessage.getParam("password"));
         String homeDir = cleaner.cleanString((String) serviceMessage.getParam("homedir"));
+        String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
 
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
         ftpUser.setHomeDir(homeDir);
+        ftpUser.setUnixAccount((UnixAccount) governorOfUnixAccount.build(unixAccountId));
 
         return ftpUser;
     }
@@ -76,6 +85,10 @@ public class GovernorOfFTPUser extends LordOfResources {
 
         if (ftpUser.getHomeDir() == null) {
             throw new ParameterValidateException("Домашняя директория FTP пользователя должна быть указана");
+        }
+
+        if (ftpUser.getUnixAccount() == null) {
+            throw new ParameterValidateException("Параметр unixAccount не может быть пустым");
         }
     }
 

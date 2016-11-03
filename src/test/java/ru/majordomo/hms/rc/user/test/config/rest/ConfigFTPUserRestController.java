@@ -24,6 +24,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 
@@ -57,8 +58,45 @@ public class ConfigFTPUserRestController extends AbstractMongoConfiguration {
     }
 
     @Bean
+    public GovernorOfUnixAccount governorOfUnixAccount() {
+        return new GovernorOfUnixAccount();
+    }
+    @Bean
     public Cleaner cleaner() {
         return new Cleaner();
+    }
+
+    @Bean
+    public StaffResourceControllerClient staffResourceControllerClient() {
+        return new StaffResourceControllerClient() {
+            @Override
+            public Server getActiveHostingServers() {
+                Server server = new Server();
+                server.setId(ObjectId.get().toString());
+                return server;
+            }
+
+            @Override
+            public Server getActiveDatabaseServer() {
+                Server server = new Server();
+                server.setId(ObjectId.get().toString());
+                return server;
+            }
+
+            @Override
+            public Server getActiveMailboxServer() {
+                Server server = new Server();
+                server.setId(ObjectId.get().toString());
+                return server;
+            }
+
+            @Override
+            public Server getServerById(@PathVariable("serverId") String serverId) {
+                Server server = new Server();
+                server.setId(serverId);
+                return server;
+            }
+        };
     }
 
 }

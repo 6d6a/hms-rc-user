@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.DBType;
+import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
@@ -21,6 +23,12 @@ public class GovernorOfDatabase extends LordOfResources {
     private DatabaseRepository repository;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
+    private GovernorOfDatabaseUser governorOfDatabaseUser;
+
+    @Autowired
+    public void setGovernorOfDatabaseUser(GovernorOfDatabaseUser governorOfDatabaseUser) {
+        this.governorOfDatabaseUser = governorOfDatabaseUser;
+    }
 
     @Autowired
     public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
@@ -72,6 +80,12 @@ public class GovernorOfDatabase extends LordOfResources {
         Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
         Boolean writable = (Boolean) serviceMessage.getParam("writable");
         DBType type = (DBType) serviceMessage.getParam("type");
+        List<String> databaseUserIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("databaseUserIds"));
+
+        for (String databaseUserId: databaseUserIds) {
+            DatabaseUser databaseUser = (DatabaseUser) governorOfDatabaseUser.build(databaseUserId);
+            database.addDatabaseUser(databaseUser);
+        }
 
         database.setServerId(serverId);
         database.setQuota(quota);
@@ -112,6 +126,17 @@ public class GovernorOfDatabase extends LordOfResources {
 
         if (database.getWritable() == null) {
             throw new ParameterValidateException("Флаг writable должен быть установлен");
+        }
+
+        DBType dbType = database.getType();
+        for (DatabaseUser databaseUser: database.getDatabaseUsers()) {
+            DBType userType = databaseUser.getType();
+            String databaseUserId =databaseUser.getId();
+            if (dbType != userType) {
+                throw new ParameterValidateException("Тип базы: " + dbType +
+                        ". Тип пользователя с ID:" + databaseUserId + " " + userType +
+                        " Типы должны совпадать");
+            }
         }
     }
 

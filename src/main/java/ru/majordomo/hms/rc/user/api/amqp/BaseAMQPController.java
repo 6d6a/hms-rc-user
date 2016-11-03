@@ -69,7 +69,8 @@ class BaseAMQPController {
                 "website",
                 "mailbox",
                 "unix-account",
-                "ftp-user");
+                "ftp-user",
+                "database-user");
 
         Boolean success;
         Resource resource = null;
