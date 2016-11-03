@@ -24,6 +24,7 @@ import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseRestController;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseUserRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -38,12 +39,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigDatabaseRestController.class, webEnvironment = RANDOM_PORT)
-public class DatabaseRestControllerTest {
+@SpringBootTest(classes = ConfigDatabaseUserRestController.class, webEnvironment = RANDOM_PORT)
+public class DatabaseUserRestControllerTest {
 
     private MockMvc mockMvc;
-    private String resourceName = "database";
-    private List<Database> batchOfDatabases = new ArrayList<>();
+    private String resourceName = "database-user";
+    private List<DatabaseUser> batchOfDatabaseUsers = new ArrayList<>();
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -52,30 +53,24 @@ public class DatabaseRestControllerTest {
     @Autowired
     private WebApplicationContext ctx;
     @Autowired
-    private DatabaseRepository repository;
-    @Autowired
-    private DatabaseUserRepository databaseUserRepository;
+    private DatabaseUserRepository repository;
 
     @Before
     public void setUp() throws Exception {
-        this.doc = document("database/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
+        this.doc = document(resourceName + "/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
-        batchOfDatabases = ResourceGenerator.generateBatchOfDatabases();
-        for (Database database : batchOfDatabases) {
-            databaseUserRepository.save((Iterable) database.getDatabaseUsers());
-            for (DatabaseUser databaseUser: database.getDatabaseUsers()) {
-                database.addDatabaseUserId(databaseUser.getId());
-            }
-            repository.save(database);
+        batchOfDatabaseUsers = ResourceGenerator.generateBatchOfDatabaseUsers();
+        for (DatabaseUser databaseUser: batchOfDatabaseUsers) {
+            repository.save(databaseUser);
         }
     }
 
     @Test
     public void readOne() throws Exception {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/"
-                + batchOfDatabases.get(0).getId()).accept(APPLICATION_JSON_UTF8);
+                + batchOfDatabaseUsers.get(0).getId()).accept(APPLICATION_JSON_UTF8);
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc)
@@ -84,12 +79,8 @@ public class DatabaseRestControllerTest {
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("name").description("Имя базы данных"),
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли база данных"),
-                                fieldWithPath("serverId").description("ID сервера, на котором расположена база"),
                                 fieldWithPath("type").description("Тип базы данных"),
-                                fieldWithPath("quota").description("Максимальный размер базы данных в килобайтах"),
-                                fieldWithPath("quotaUsed").description("Фактический размер базы в килобайтах"),
-                                fieldWithPath("writable").description("Флаг доступности записи."),
-                                fieldWithPath("databaseUsers").description("Список пользователей этой базы")
+                                fieldWithPath("passwordHash").description("Хэш пароля пользователя")
                         )
                 ));
     }

@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Database;
+import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
@@ -70,16 +71,27 @@ public class ResourceGenerator {
         return batchOfPersons;
     }
 
-    public static List<Database> generateBatchOfDatabases() {
+    public static List<Database> generateBatchOfDatabases() throws UnsupportedEncodingException {
         List<Database> batchOfDatabases = new ArrayList<>();
+        List<DatabaseUser> batchOfDatabaseUsers = generateBatchOfDatabaseUsers();
         for (int i = 2; i <= 4; i++) {
             Database database = new Database();
             database.setName("Тестовая база" + i);
             database.setSwitchedOn(true);
             if ((i % 2) == 0) {
                 database.setType(MYSQL);
+                for (DatabaseUser databaseUser : batchOfDatabaseUsers) {
+                    if (databaseUser.getType() == MYSQL) {
+                        database.addDatabaseUser(databaseUser);
+                    }
+                }
             } else {
                 database.setType(POSTGRES);
+                for (DatabaseUser databaseUser : batchOfDatabaseUsers) {
+                    if (databaseUser.getType() == POSTGRES) {
+                        database.addDatabaseUser(databaseUser);
+                    }
+                }
             }
             database.setQuota(100000L);
             database.setQuotaUsed(5000L);
@@ -98,7 +110,7 @@ public class ResourceGenerator {
         regSpec.setCreatedAsString("2016-10-01");
         regSpec.setFreeDateAsString("2017-11-01");
         regSpec.setPaidTillAsString("2016-10-01");
-        Arrays.asList("REGISTERED","DELEGATED","VERIFIED").forEach(regSpec::addState);
+        Arrays.asList("REGISTERED", "DELEGATED", "VERIFIED").forEach(regSpec::addState);
 
         Domain ruDomain = new Domain();
         ruDomain.setName("majordomo.ru");
@@ -243,7 +255,7 @@ public class ResourceGenerator {
         return crontab;
     }
 
-    public static List<FTPUser> generateBatchOfFTPUsers() throws UnsupportedEncodingException {
+    public static List<FTPUser> generateBatchOfFTPUsers() throws UnsupportedEncodingException, NoSuchAlgorithmException {
         List<FTPUser> ftpUsers = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             FTPUser ftpUser = new FTPUser();
@@ -251,10 +263,27 @@ public class ResourceGenerator {
             ftpUser.setPasswordHashByPlainPassword("123456" + i);
             ftpUser.setHomeDir("/home/u13403" + i + "/majordomoru/" + i);
             ftpUser.setSwitchedOn(true);
-            ftpUser.setServerId(ObjectId.get().toString());
+            ftpUser.setUnixAccount(generateBatchOfUnixAccounts().get(0));
             ftpUsers.add(ftpUser);
         }
 
         return ftpUsers;
+    }
+
+    public static List<DatabaseUser> generateBatchOfDatabaseUsers() throws UnsupportedEncodingException {
+        List<DatabaseUser> batchOfDatabaseUsers = new ArrayList<>();
+        for (int i = 0; i <= 2; i++) {
+            DatabaseUser databaseUser = new DatabaseUser();
+            databaseUser.setType(POSTGRES);
+            databaseUser.setPasswordHashByPlainPassword("123456" + i);
+            databaseUser.setName("u10000" + i);
+            databaseUser.setSwitchedOn(true);
+
+            batchOfDatabaseUsers.add(databaseUser);
+        }
+
+        batchOfDatabaseUsers.get(1).setType(MYSQL);
+        batchOfDatabaseUsers.get(1).setPasswordHashByPlainPassword("1234561");
+        return batchOfDatabaseUsers;
     }
 }

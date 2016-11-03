@@ -1,13 +1,24 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import org.springframework.data.annotation.Transient;
+
 import java.io.UnsupportedEncodingException;
 
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 
-public class FTPUser extends Resource implements Securable, ServerStorable {
+public class FTPUser extends Resource implements Securable {
     private String passwordHash;
     private String homeDir;
-    private String serverId;
+    @Transient
+    private UnixAccount unixAccount;
+
+    public UnixAccount getUnixAccount() {
+        return unixAccount;
+    }
+
+    public void setUnixAccount(UnixAccount unixAccount) {
+        this.unixAccount = unixAccount;
+    }
 
     @Override
     public void setPasswordHash(String passwordHash) {
@@ -37,13 +48,4 @@ public class FTPUser extends Resource implements Securable, ServerStorable {
         this.homeDir = homeDir;
     }
 
-    @Override
-    public String getServerId() {
-        return serverId;
-    }
-
-    @Override
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
-    }
 }

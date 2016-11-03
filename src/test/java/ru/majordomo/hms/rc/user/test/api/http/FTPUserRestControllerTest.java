@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
+import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigFTPUserRestController;
 
@@ -52,6 +54,8 @@ public class FTPUserRestControllerTest {
     private WebApplicationContext ctx;
     @Autowired
     private FTPUserRepository repository;
+    @Autowired
+    private UnixAccountRepository unixAccountRepository;
 
     @Before
     public void setUp() throws Exception {
@@ -60,7 +64,8 @@ public class FTPUserRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfFTPUsers = ResourceGenerator.generateBatchOfFTPUsers();
-        for (FTPUser ftpUser: batchOfFTPUsers) {
+        for (FTPUser ftpUser : batchOfFTPUsers) {
+            unixAccountRepository.save(ftpUser.getUnixAccount());
             repository.save(ftpUser);
         }
     }
@@ -79,7 +84,7 @@ public class FTPUserRestControllerTest {
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли домен"),
                                 fieldWithPath("homeDir").description("Домашняя директория FTP пользователя"),
                                 fieldWithPath("passwordHash").description("Хэш пользователя"),
-                                fieldWithPath("serverId").description("ID сервера, на котором расположен FTP аккаунт")
+                                fieldWithPath("unixAccount").description("Аккаунт пользователя на сервере")
                         )
                 ));
     }
