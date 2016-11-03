@@ -7,15 +7,9 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import static ru.majordomo.hms.rc.user.resources.DBType.*;
 
 public class ServiceMessageGenerator {
-    public static ServiceMessage generateCreateServiceMessage() {
+    public ServiceMessage generateWebsiteCreateMessage() {
         ServiceMessage serviceMessage = new ServiceMessage();
-        serviceMessage.setOperationIdentity(ObjectId.get().toString());
-        serviceMessage.setActionIdentity(ObjectId.get().toString());
-
-//        serviceMessage.addParam("name", );
-        serviceMessage.addParam("type", MYSQL);
-
-
+//        serviceMessage.addParam("");
         return serviceMessage;
     }
 }

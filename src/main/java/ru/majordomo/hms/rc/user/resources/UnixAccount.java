@@ -3,11 +3,14 @@ package ru.majordomo.hms.rc.user.resources;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.majordomo.hms.rc.user.common.PasswordManager;
+
 @Document(collection = "unixAccounts")
-public class UnixAccount extends Resource implements ServerStorable, Quotable{
+public class UnixAccount extends Resource implements ServerStorable, Quotable, Securable{
     @Indexed
     private Integer uid;
     private String homeDir;
@@ -15,6 +18,8 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable{
     private Long quota;
     private Long quotaUsed;
     private Boolean writable;
+    private String passwordHash;
+    private String secureKey;
     private List<CronTask> crontab = new ArrayList<>();
 
     public List<CronTask> getCrontab() {
@@ -106,5 +111,28 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable{
     @Override
     public Boolean getWritable() {
         return writable;
+    }
+
+    @Override
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    @Override
+    public void setPasswordHashByPlainPassword(String plainPassword) throws UnsupportedEncodingException {
+        passwordHash = PasswordManager.forUbuntu(plainPassword);
+    }
+
+    @Override
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public String getSecureKey() {
+        return secureKey;
+    }
+
+    public void setSecureKey(String secureKey) {
+        this.secureKey = secureKey;
     }
 }

@@ -25,8 +25,7 @@ import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
-import ru.majordomo.hms.rc.user.test.config.ConfigDomainRestController;
-import ru.majordomo.hms.rc.user.test.config.ConfigMailboxRestController;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigMailboxRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
