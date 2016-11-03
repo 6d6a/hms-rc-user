@@ -82,8 +82,13 @@ public class PersonRestControllerTest {
                                 fieldWithPath("passport.issuedOrg").description("Наименование организации, выдавшей паспорт"),
                                 fieldWithPath("passport.issuedDate").description("Дата выдачи паспорта"),
                                 fieldWithPath("passport.birthday").description("Дата рождения в формате yyyy-MM-dd"),
-                                fieldWithPath("passport.pages").description("Список ссылок на сканы страниц паспорта"),
-                                fieldWithPath("legalEntity").description("Реквизиты организации. Здесь null, т.к. объект является физ. лицом")
+                                fieldWithPath("passport.mainPage").description("Страница паспорта с фотографией"),
+                                fieldWithPath("passport.registerPage").description("Страница с регистрацией"),
+                                fieldWithPath("passport.address").description("Адрес регистрации"),
+                                fieldWithPath("legalEntity").description("Реквизиты организации. Здесь null, т.к. объект является физ. лицом"),
+                                fieldWithPath("country").description("Код страны, резидентом которой является персона"),
+                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                fieldWithPath("owner").description("Является ли эта персона владельцем аккаунта")
                         )
                 ));
     }
@@ -107,7 +112,11 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity.okpo").description("ОКПО организации"),
                                 fieldWithPath("legalEntity.kpp").description("КПП организации"),
                                 fieldWithPath("legalEntity.ogrn").description("ОГРН организации"),
-                                fieldWithPath("legalEntity.okvedCodes").description("Список кодов ОКВЭД организации")
+                                fieldWithPath("legalEntity.okvedCodes").description("Список кодов ОКВЭД организации"),
+                                fieldWithPath("legalEntity.address").description("Адрес регистрации"),
+                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                fieldWithPath("owner").description("Является ли эта персона владельцем аккаунта"),
+                                fieldWithPath("country").description("Код страны, резидентом которой является организация")
                         )
                 ));
     }
@@ -117,17 +126,6 @@ public class PersonRestControllerTest {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andDo(doc)
-                .andDo(doc.document(
-                        responseFields(
-                                fieldWithPath("[].id").description("Внутренний ID ресурса"),
-                                fieldWithPath("[].name").description("ФИО или название организации"),
-                                fieldWithPath("[].switchedOn").description("Флаг того, можно ли использовать персону"),
-                                fieldWithPath("[].phoneNumbers").description("Список контактных телефонных номеров"),
-                                fieldWithPath("[].emailAddresses").description("Список контактных email адресов"),
-                                fieldWithPath("[].passport").description("Паспортные данные персоны. Если null - значит это юр. лицо"),
-                                fieldWithPath("[].legalEntity").description("Информация об организации. Если null - значит это физ. лицо")
-                        )
-                ));
+                .andDo(doc);
     }
 }

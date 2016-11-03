@@ -12,6 +12,33 @@ public class Person extends Resource {
     private List<String> emailAddresses = new ArrayList<>();
     private Passport passport;
     private LegalEntity legalEntity;
+    private String country;
+    private String postalAddress;
+    private Boolean owner;
+
+    public Boolean getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Boolean owner) {
+        this.owner = owner;
+    }
+
+    public String getPostalAddress() {
+        return postalAddress;
+    }
+
+    public void setPostalAddress(String postalAddress) {
+        this.postalAddress = postalAddress;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
     @Override
     public void switchResource() {

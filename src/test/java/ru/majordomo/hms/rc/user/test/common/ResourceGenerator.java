@@ -40,14 +40,10 @@ public class ResourceGenerator {
         parovozov.addEmailAddress("parovozov@gmail.com");
         parovozov.addPhoneNumber("+79110000911");
         parovozov.addPhoneNumber("+79110000001");
+        parovozov.setOwner(true);
 
-        Passport parovozovPassport = new Passport();
-        parovozovPassport.setNumber("1234567890");
-        parovozovPassport.setBirthday("1970-01-01");
-        parovozovPassport.setIssuedDate("2005-05-20");
-        parovozovPassport.addPage("http://storage/" + ObjectId.get().toString());
-
-        parovozov.setPassport(parovozovPassport);
+        Passport passport = generatePassport();
+        parovozov.setPassport(passport);
 
         Person hosting = new Person();
         hosting.setName("ООО Хостинг");
@@ -55,13 +51,9 @@ public class ResourceGenerator {
         hosting.addEmailAddress("info@majordomo.ru");
         hosting.addPhoneNumber("+78123353545");
         hosting.addPhoneNumber("+74957272278");
+        hosting.setOwner(false);
 
-        LegalEntity hostingInfo = new LegalEntity();
-        hostingInfo.setInn("7814522538");
-        hostingInfo.setKpp("781401001");
-        hostingInfo.setOgrn("781401001");
-        hostingInfo.setOkpo("30727716");
-        Arrays.asList("64.2", "72.20", "72.40", "72.60", "74.40").forEach(hostingInfo::addOkved);
+        LegalEntity hostingInfo = generateLegalEntity();
 
         hosting.setLegalEntity(hostingInfo);
 
@@ -71,6 +63,30 @@ public class ResourceGenerator {
         return batchOfPersons;
     }
 
+    public static LegalEntity generateLegalEntity() {
+        LegalEntity legalEntity = new LegalEntity();
+        legalEntity.setInn("7814522538");
+        legalEntity.setOkpo("30727716");
+        legalEntity.setKpp("781401001");
+        legalEntity.setOgrn("781401001");
+        legalEntity.setOkvedCodes("64.2, 72.20, 72.40, 72.60, 74.40");
+        legalEntity.setAddress("Санкт-Петербург, Торфяная дор. 7Ф, оф. 1320");
+
+        return legalEntity;
+    }
+
+    public static Passport generatePassport() {
+        Passport passport = new Passport();
+        passport.setNumber("1234567890");
+        passport.setBirthday("1970-01-01");
+        passport.setIssuedOrg("ОУФМС по г. Ижевск");
+        passport.setIssuedDate("2005-05-20");
+        passport.setMainPage("http://storage/" + ObjectId.get().toString());
+        passport.setRegisterPage("http://storage/" + ObjectId.get().toString());
+        passport.setAddress("Санкт-Петербург, пр. Невский, д.24, кв. 2");
+
+        return passport;
+    }
     public static List<Database> generateBatchOfDatabases() throws UnsupportedEncodingException {
         List<Database> batchOfDatabases = new ArrayList<>();
         List<DatabaseUser> batchOfDatabaseUsers = generateBatchOfDatabaseUsers();

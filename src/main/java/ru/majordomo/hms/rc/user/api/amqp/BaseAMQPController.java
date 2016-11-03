@@ -79,8 +79,7 @@ class BaseAMQPController {
             resource = governor.create(serviceMessage);
             success = true;
         } catch (ParameterValidateException e) {
-            logger.error("Создание ресурса не удалось:");
-            e.printStackTrace();
+            logger.error("Создание ресурса не удалось:" + e.getMessage());
             success = false;
         }
 
@@ -118,8 +117,9 @@ class BaseAMQPController {
         ServiceMessage report = new ServiceMessage();
         report.setActionIdentity(event.getActionIdentity());
         report.setOperationIdentity(event.getOperationIdentity());
-        report.setObjRef("http://" + applicationName + "/" + resourceType + "/" + resource.getId());
-
+        if (resource != null) {
+            report.setObjRef("http://" + applicationName + "/" + resourceType + "/" + resource.getId());
+        }
         Boolean eventSuccess = (Boolean) event.getParam("success");
         if (eventSuccess == null) {
             report.addParam("success", true);
