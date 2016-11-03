@@ -19,7 +19,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     private Long quotaUsed;
     private Boolean writable;
     private String passwordHash;
-    private String secureKey;
+    private SSHKeyPair keyPair;
     private List<CronTask> crontab = new ArrayList<>();
 
     public List<CronTask> getCrontab() {
@@ -65,6 +65,14 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
 
     public void setServerId(String serverId) {
         this.serverId = serverId;
+    }
+
+    public SSHKeyPair getKeyPair() {
+        return keyPair;
+    }
+
+    public void setKeyPair(SSHKeyPair keyPair) {
+        this.keyPair = keyPair;
     }
 
     @Override
@@ -128,11 +136,4 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
         return passwordHash;
     }
 
-    public String getSecureKey() {
-        return secureKey;
-    }
-
-    public void setSecureKey(String secureKey) {
-        this.secureKey = secureKey;
-    }
 }
