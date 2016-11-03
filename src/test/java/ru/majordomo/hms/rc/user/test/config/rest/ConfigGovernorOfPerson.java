@@ -1,4 +1,4 @@
-package ru.majordomo.hms.rc.user.test.config;
+package ru.majordomo.hms.rc.user.test.config.rest;
 
 import com.github.fakemongo.Fongo;
 import com.mongodb.Mongo;

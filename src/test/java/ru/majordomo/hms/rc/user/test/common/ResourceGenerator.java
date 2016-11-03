@@ -1,17 +1,14 @@
 package ru.majordomo.hms.rc.user.test.common;
 
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinition;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.parser.CronParser;
-
 import org.bson.types.ObjectId;
 
 import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Database;
@@ -168,7 +165,7 @@ public class ResourceGenerator {
         return batchOfMailboxes;
     }
 
-    public static List<UnixAccount> generateBatchOfUnixAccounts() {
+    public static List<UnixAccount> generateBatchOfUnixAccounts() throws UnsupportedEncodingException, NoSuchAlgorithmException {
         List<UnixAccount> batchOfUnixAccounts = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             int nameNumPart = 134035 + i;
@@ -182,6 +179,7 @@ public class ResourceGenerator {
             unixAccount.setQuotaUsed(1048576L);
             unixAccount.setWritable(true);
             unixAccount.setCrontab(generateBatchOfCronTasks());
+            unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
 
             batchOfUnixAccounts.add(unixAccount);
         }
@@ -189,7 +187,7 @@ public class ResourceGenerator {
         return batchOfUnixAccounts;
     }
 
-    public static List<WebSite> generateBatchOfWebsites() {
+    public static List<WebSite> generateBatchOfWebsites() throws UnsupportedEncodingException, NoSuchAlgorithmException {
         List<WebSite> batchOfWebsites = new ArrayList<>();
         List<Domain> batchOfDomains = generateBatchOfDomains();
         List<UnixAccount> batchOfUnixAccounts = generateBatchOfUnixAccounts();

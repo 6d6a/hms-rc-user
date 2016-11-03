@@ -68,7 +68,7 @@ public class WebsiteRestControllerTest {
     private DomainRepository domainRepository;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception{
         this.doc = document("website/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))

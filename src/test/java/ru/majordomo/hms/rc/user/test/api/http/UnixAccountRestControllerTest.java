@@ -37,7 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ConfigUnixAccountRestController.class, webEnvironment = RANDOM_PORT)
 public class UnixAccountRestControllerTest {
@@ -56,7 +55,7 @@ public class UnixAccountRestControllerTest {
     private UnixAccountRepository repository;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         this.doc = document("unix-account/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))
@@ -83,7 +82,9 @@ public class UnixAccountRestControllerTest {
                                 fieldWithPath("crontab").description("Список заданий в для cron"),
                                 fieldWithPath("quota").description("Максимальный совокупный размер файлов пользователя"),
                                 fieldWithPath("quotaUsed").description("Фактический совокупный размер файлов пользователя"),
-                                fieldWithPath("writable").description("Флаг, указывающий на то, возможна ли запись новых файлов пользователем")
+                                fieldWithPath("writable").description("Флаг, указывающий на то, возможна ли запись новых файлов пользователем"),
+                                fieldWithPath("passwordHash").description("Криптованный хеш пароля"),
+                                fieldWithPath("keyPair").description("Пара ключей для доступа по SSH")
                         )
                 ));
     }
