@@ -1,7 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class LegalEntity {
@@ -9,7 +8,16 @@ public class LegalEntity {
     private String okpo;
     private String kpp;
     private String ogrn;
-    private List<String> okvedCodes = new ArrayList<>();
+    private String okvedCodes;
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public String getInn() {
         return inn;
@@ -43,16 +51,24 @@ public class LegalEntity {
         this.ogrn = ogrn;
     }
 
-    public List<String> getOkvedCodes() {
+    public String getOkvedCodes() {
         return okvedCodes;
     }
 
-    public void setOkvedCodes(List<String> okvedCodes) {
+    public void setOkvedCodes(String okvedCodes) {
         this.okvedCodes = okvedCodes;
     }
 
-    public void addOkved(String okved) {
-        this.okvedCodes.add(okved);
+    @Override
+    public String toString() {
+        return "LegalEntity{" +
+                "inn='" + inn + '\'' +
+                ", okpo='" + okpo + '\'' +
+                ", kpp='" + kpp + '\'' +
+                ", ogrn='" + ogrn + '\'' +
+                ", okvedCodes='" + okvedCodes + '\'' +
+                ", address='" + address + '\'' +
+                '}';
     }
 
     @Override
@@ -71,4 +87,6 @@ public class LegalEntity {
     public int hashCode() {
         return Objects.hash(inn, okpo, kpp, ogrn, okvedCodes);
     }
+
+
 }

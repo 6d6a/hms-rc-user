@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -56,8 +57,32 @@ public class GovernorOfPerson extends LordOfResources {
         LordOfResources.setResourceParams(person, serviceMessage, cleaner);
         List<String> phoneNumbers = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("phoneNumbers"));
         List<String> emailAddresses = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses"));
-        Passport passport = (Passport) serviceMessage.getParam("passport");
-        LegalEntity legalEntity = (LegalEntity) serviceMessage.getParam("legalEntity");
+        Object object = (Object) serviceMessage.getParam("passport");
+        Passport passport = null;
+        if (object != null) {
+            passport = new Passport();
+            Map<String, String> passportMap = (Map<String,String>) object;
+            passport.setNumber(passportMap.get("number"));
+            passport.setIssuedOrg(passportMap.get("issuedOrg"));
+            passport.setIssuedDate(passportMap.get("issuedDate"));
+            passport.setBirthday(passportMap.get("birthday"));
+            passport.setMainPage(passportMap.get("mainPage"));
+            passport.setRegisterPage(passportMap.get("registerPage"));
+            passport.setAddress(passportMap.get("address"));
+        }
+
+        object = (Object) serviceMessage.getParam("legalEntity");
+        LegalEntity legalEntity = null;
+        if (object != null) {
+            legalEntity = new LegalEntity();
+            Map<String, String> legalEntityMap = (Map<String,String>) object;
+            legalEntity.setInn(legalEntityMap.get("inn"));
+            legalEntity.setOkpo(legalEntityMap.get("okpo"));
+            legalEntity.setKpp(legalEntityMap.get("kpp"));
+            legalEntity.setOgrn(legalEntityMap.get("ogrn"));
+            legalEntity.setOkvedCodes(legalEntityMap.get("okved"));
+            legalEntity.setAddress(legalEntityMap.get("address"));
+        }
 
         person.setPhoneNumbers(phoneNumbers);
         person.setEmailAddresses(emailAddresses);

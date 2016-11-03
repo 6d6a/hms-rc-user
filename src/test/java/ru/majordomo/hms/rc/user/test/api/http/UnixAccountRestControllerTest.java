@@ -65,6 +65,14 @@ public class UnixAccountRestControllerTest {
     }
 
     @Test
+    public void readOneAndPrint() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/"
+                + batchOfUnixAccount.get(0).getId()).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andDo(print());
+    }
+    @Test
     public void readOne() throws Exception {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/"
                 + batchOfUnixAccount.get(0).getId()).accept(APPLICATION_JSON_UTF8);

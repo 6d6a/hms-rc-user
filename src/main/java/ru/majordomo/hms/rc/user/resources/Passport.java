@@ -14,7 +14,33 @@ public class Passport {
     private String issuedOrg;
     private LocalDate issuedDate;
     private LocalDate birthday;
-    private List<String> pages = new ArrayList<>();
+    private String mainPage;
+    private String registerPage;
+    private String address;
+
+    public String getMainPage() {
+        return mainPage;
+    }
+
+    public void setMainPage(String mainPage) {
+        this.mainPage = mainPage;
+    }
+
+    public String getRegisterPage() {
+        return registerPage;
+    }
+
+    public void setRegisterPage(String registerPage) {
+        this.registerPage = registerPage;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public String getNumber() {
         return number;
@@ -66,18 +92,6 @@ public class Passport {
         birthday = LocalDate.parse(date);
     }
 
-    public List<String> getPages() {
-        return pages;
-    }
-
-    public void setPages(List<String> pages) {
-        this.pages = pages;
-    }
-
-    public void addPage(String pageUrl) {
-        this.pages.add(pageUrl);
-    }
-
     @Override
     public String toString() {
         return "Passport{" +
@@ -85,7 +99,9 @@ public class Passport {
                 ", issuedOrg='" + issuedOrg + '\'' +
                 ", issuedDate=" + issuedDate +
                 ", birthday=" + birthday +
-                ", pages=" + pages +
+                ", mainPage='" + mainPage + '\'' +
+                ", registerPage='" + registerPage + '\'' +
+                ", address='" + address + '\'' +
                 '}';
     }
 
@@ -98,11 +114,13 @@ public class Passport {
                 Objects.equals(issuedOrg, passport.issuedOrg) &&
                 Objects.equals(issuedDate, passport.issuedDate) &&
                 Objects.equals(birthday, passport.birthday) &&
-                Objects.equals(pages, passport.pages);
+                Objects.equals(mainPage, passport.mainPage) &&
+                Objects.equals(registerPage, passport.registerPage) &&
+                Objects.equals(address, passport.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(number, issuedOrg, issuedDate, birthday, pages);
+        return Objects.hash(number, issuedOrg, issuedDate, birthday, mainPage, registerPage, address);
     }
 }

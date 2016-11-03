@@ -3,7 +3,10 @@ package ru.majordomo.hms.rc.user.test.resources;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 
+import java.util.List;
+
 import ru.majordomo.hms.rc.user.resources.Passport;
+import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -27,19 +30,16 @@ public class PassportTest extends Object {
 
     @Test
     public void equals() {
-        Passport standard = new Passport();
-        standard.setNumber("4001825395");
-        standard.setIssuedDate("2010-04-09");
-        standard.setBirthday("1990-03-08");
-        standard.setIssuedOrg("ОВД по г. Ижевск");
-        standard.addPage("http://storage/" + ObjectId.get().toString());
+        Passport standard = ResourceGenerator.generatePassport();
 
         Passport tested = new Passport();
         tested.setNumber(standard.getNumber());
         tested.setIssuedDate(standard.getIssuedDate());
         tested.setBirthday(standard.getBirthday());
         tested.setIssuedOrg(standard.getIssuedOrg());
-        tested.setPages(standard.getPages());
+        tested.setMainPage(standard.getMainPage());
+        tested.setRegisterPage(standard.getRegisterPage());
+        tested.setAddress(standard.getAddress());
 
         assertTrue(standard != tested);
         assertTrue(standard.equals(tested));
