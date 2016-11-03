@@ -18,11 +18,10 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.repositories.DomainRepository;
-import ru.majordomo.hms.rc.user.repositories.PersonRepository;
-import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
+import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigDomainRestController;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigFTPUserRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -38,12 +37,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigDomainRestController.class, webEnvironment = RANDOM_PORT)
-public class DomainRestControllerTest {
+@SpringBootTest(classes = ConfigFTPUserRestController.class, webEnvironment = RANDOM_PORT)
+public class FTPUserRestControllerTest {
 
     private MockMvc mockMvc;
-    private String resourceName = "domain";
-    private List<Domain> batchOfDomains = new ArrayList<>();
+    private String resourceName = "ftp-user";
+    private List<FTPUser> batchOfFTPUsers = new ArrayList<>();
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -52,28 +51,24 @@ public class DomainRestControllerTest {
     @Autowired
     private WebApplicationContext ctx;
     @Autowired
-    private DomainRepository repository;
-    @Autowired
-    private PersonRepository personRepository;
+    private FTPUserRepository repository;
 
     @Before
-    public void setUp() {
-        this.doc = document("domain/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
+    public void setUp() throws Exception {
+        this.doc = document(resourceName + "/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
-        batchOfDomains = ResourceGenerator.generateBatchOfDomains();
-        for (Domain domain: batchOfDomains) {
-            personRepository.save(domain.getPerson());
-            domain.setPersonId(domain.getPerson().getId());
-            repository.save(domain);
+        batchOfFTPUsers = ResourceGenerator.generateBatchOfFTPUsers();
+        for (FTPUser ftpUser: batchOfFTPUsers) {
+            repository.save(ftpUser);
         }
     }
 
     @Test
     public void readOne() throws Exception {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/"
-                + batchOfDomains.get(0).getId()).accept(APPLICATION_JSON_UTF8);
+                + batchOfFTPUsers.get(0).getId()).accept(APPLICATION_JSON_UTF8);
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc)
@@ -82,9 +77,9 @@ public class DomainRestControllerTest {
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("name").description("FQDN"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли домен"),
-                                fieldWithPath("person").description("Персона, на которую зарегистрирован домен"),
-                                fieldWithPath("regSpec").description("Регистрационная информация"),
-                                fieldWithPath("dnsResourceRecords").description("Список записей в зоне домена (DNS resource records)")
+                                fieldWithPath("homeDir").description("Домашняя директория FTP пользователя"),
+                                fieldWithPath("passwordHash").description("Хэш пользователя"),
+                                fieldWithPath("serverId").description("ID сервера, на котором расположен FTP аккаунт")
                         )
                 ));
     }

@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -13,7 +14,7 @@ public abstract class LordOfResources {
 
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
 
-    protected abstract Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException;
+    protected abstract Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
 
     public abstract void validate(Resource resource) throws ParameterValidateException;
 

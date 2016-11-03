@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
@@ -63,11 +64,12 @@ class BaseAMQPController {
     void handleCreateEventFromPM(String resourceType,
                                  ServiceMessage serviceMessage,
                                  LordOfResources governor) {
-        List<String> serverStorableResourceTypes = new ArrayList<>();
-        serverStorableResourceTypes.add("database");
-        serverStorableResourceTypes.add("website");
-        serverStorableResourceTypes.add("mailbox");
-        serverStorableResourceTypes.add("unixAccount");
+        List<String> serverStorableResourceTypes = Arrays.asList(
+                "database",
+                "website",
+                "mailbox",
+                "unix-account",
+                "ftp-user");
 
         Boolean success;
         Resource resource = null;

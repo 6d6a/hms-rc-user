@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
-import org.bson.types.ObjectId;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
-import ru.majordomo.hms.rc.user.resources.LegalEntity;
-import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
-import ru.majordomo.hms.rc.user.test.config.ConfigPersonRestController;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigPersonRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;

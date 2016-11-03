@@ -7,6 +7,7 @@ import com.cronutils.parser.CronParser;
 
 import org.bson.types.ObjectId;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +16,7 @@ import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Passport;
@@ -241,5 +243,20 @@ public class ResourceGenerator {
         }
 
         return crontab;
+    }
+
+    public static List<FTPUser> generateBatchOfFTPUsers() throws UnsupportedEncodingException {
+        List<FTPUser> ftpUsers = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            FTPUser ftpUser = new FTPUser();
+            ftpUser.setName("f13403" + i);
+            ftpUser.setPasswordHashByPlainPassword("123456" + i);
+            ftpUser.setHomeDir("/home/u13403" + i + "/majordomoru/" + i);
+            ftpUser.setSwitchedOn(true);
+            ftpUser.setServerId(ObjectId.get().toString());
+            ftpUsers.add(ftpUser);
+        }
+
+        return ftpUsers;
     }
 }
