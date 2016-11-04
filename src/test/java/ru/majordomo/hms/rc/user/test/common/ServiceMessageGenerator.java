@@ -26,10 +26,9 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
-        serviceMessage.addParam("name", person.getName());
-        serviceMessage.addParam("switchedOn", person.getSwitchedOn());
-        serviceMessage.addParam("phoneNumbers", person.getPhoneNumbers());
-        serviceMessage.addParam("emailAddresses", person.getEmailAddresses());
+        serviceMessage.addParam("name", "Климов Никита Анатольевич");
+        serviceMessage.addParam("phoneNumbers", Arrays.asList("+79052033565"));
+        serviceMessage.addParam("emailAddresses", Arrays.asList("nikita@klimov.us"));
         serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));
         serviceMessage.addParam("legalEntity", person.getLegalEntity());
         serviceMessage.addParam("country", person.getCountry());
@@ -41,13 +40,13 @@ public class ServiceMessageGenerator {
 
     private static HashMap<String, String> passportToHashMap(Passport passport) {
         HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("number", passport.getNumber());
-        hashMap.put("issuedOrg", passport.getIssuedOrg());
-        hashMap.put("issuedDate", passport.getIssuedDateAsString());
+//        hashMap.put("number", passport.getNumber());
+//        hashMap.put("issuedOrg", passport.getIssuedOrg());
+//        hashMap.put("issuedDate", passport.getIssuedDateAsString());
         hashMap.put("birthday", passport.getBirthdayAsString());
-        hashMap.put("mainPage", passport.getMainPage());
-        hashMap.put("registerPage", passport.getRegisterPage());
-        hashMap.put("address", passport.getAddress());
+//        hashMap.put("mainPage", passport.getMainPage());
+//        hashMap.put("registerPage", passport.getRegisterPage());
+//        hashMap.put("address", passport.getAddress());
 
         return hashMap;
     }
