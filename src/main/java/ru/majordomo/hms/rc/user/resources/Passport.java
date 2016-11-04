@@ -64,8 +64,9 @@ public class Passport {
 
     @JsonGetter("issuedDate")
     public String getIssuedDateAsString() {
-        if (issuedDate != null)
+        if (issuedDate != null) {
             return issuedDate.toString();
+        }
         return null;
     }
 
@@ -74,8 +75,9 @@ public class Passport {
     }
 
     public void setIssuedDate(String date) {
-        if (date != null)
+        if (date != null) {
             issuedDate = LocalDate.parse(date);
+        }
     }
 
     public LocalDate getBirthday() {
@@ -84,8 +86,9 @@ public class Passport {
 
     @JsonGetter("birthday")
     public String getBirthdayAsString() {
-        if (birthday != null)
+        if (birthday != null) {
             return birthday.toString();
+        }
         return null;
     }
 
@@ -94,8 +97,9 @@ public class Passport {
     }
 
     public void setBirthday(String date) {
-        if (birthday != null)
+        if (date != null) {
             birthday = LocalDate.parse(date);
+        }
     }
 
     @Override
