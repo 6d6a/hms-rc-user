@@ -33,10 +33,16 @@ public abstract class LordOfResources {
     public static void setResourceParams(Resource resource,
                                          ServiceMessage serviceMessage,
                                          Cleaner cleaner) throws ClassCastException {
+        String id = cleaner.cleanString((String) serviceMessage.getParam("id"));
+        String accountId = cleaner.cleanString((String) serviceMessage.getParam("accountId"));
         String name = cleaner.cleanString((String) serviceMessage.getParam("name"));
-        resource.setName(name);
         Boolean switchedOn = (Boolean) serviceMessage.getParam("switchedOn");
+
+        resource.setId(id);
+        resource.setAccountId(accountId);
+        resource.setName(name);
         resource.setSwitchedOn(switchedOn);
+
     }
 
 

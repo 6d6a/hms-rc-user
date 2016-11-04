@@ -27,6 +27,7 @@ public class ServiceMessageGenerator {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
         serviceMessage.addParam("name", "Климов Никита Анатольевич");
+        serviceMessage.addParam("accountId", ObjectId.get().toString());
         serviceMessage.addParam("phoneNumbers", Arrays.asList("+79052033565"));
         serviceMessage.addParam("emailAddresses", Arrays.asList("nikita@klimov.us"));
         serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));

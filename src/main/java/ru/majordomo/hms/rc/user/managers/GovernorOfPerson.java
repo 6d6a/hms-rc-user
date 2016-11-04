@@ -123,15 +123,26 @@ public class GovernorOfPerson extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         Person person = (Person) resource;
+        if (person.getAccountId() == null) {
+            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
+        }
+
         if (person.getName() == null) {
             throw new ParameterValidateException("Имя персоны не может быть пустым");
         }
+
         if (person.getName().equals("")) {
-            throw new ParameterValidateException("Имя персона не может быть пустым");
+            throw new ParameterValidateException("Имя персоны не может быть пустым");
         }
+
+        if (person.getSwitchedOn() == null) {
+            person.setSwitchedOn(true);
+        }
+
         if (person.getEmailAddresses() == null) {
             throw new ParameterValidateException("Должен быть указан хотя бы 1 email адрес");
         }
+
         if (person.getEmailAddresses().size() == 0) {
             throw new ParameterValidateException("Должен быть указан хотя бы 1 email адрес");
         }
@@ -155,9 +166,23 @@ public class GovernorOfPerson extends LordOfResources {
             }
         }
 
-        if (person.getPassport() == null && person.getLegalEntity() == null) {
-            throw new ParameterValidateException("Для Person может быть указан только passport или только legalEntity");
+        if (person.getOwner() == null) {
+            Collection<Person> persons = repository.findAllByAccountId(person.getAccountId());
+            Boolean accHasOwner = false;
+            for (Person storedPerson: persons) {
+                if (storedPerson.getOwner()) {
+                    accHasOwner = true;
+                }
+            }
+            if (!accHasOwner) {
+                person.setOwner(true);
+            }
         }
+
+        if (person.getCountry() == null || person.getCountry() == "") {
+            person.setCountry("RU");
+        }
+
         if (person.getPassport() != null && person.getLegalEntity() != null) {
             throw new ParameterValidateException("Passport и LegalEntity не могут быть указаны вместе");
         }

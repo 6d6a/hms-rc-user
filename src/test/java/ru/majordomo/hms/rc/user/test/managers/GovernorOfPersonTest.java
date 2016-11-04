@@ -24,7 +24,7 @@ public class GovernorOfPersonTest {
     @Test
     public void create() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
-        Person person = (Person) governor.create(serviceMessage);
-        System.out.println(person);
+        System.out.println(serviceMessage.toString());
+        governor.create(serviceMessage);
     }
 }
