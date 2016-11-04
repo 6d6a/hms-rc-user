@@ -53,8 +53,12 @@ public class GovernorOfPerson extends LordOfResources {
 
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+
         String actionId = serviceMessage.getActionIdentity();
         String operationId = serviceMessage.getOperationIdentity();
+        logger.debug("Action ID:" + actionId +
+            "Operation ID:" + operationId +
+            "Приступаю к построению ресурса, исходя из данных в ServiceMessage");
 
         Person person = new Person();
         LordOfResources.setResourceParams(person, serviceMessage, cleaner);

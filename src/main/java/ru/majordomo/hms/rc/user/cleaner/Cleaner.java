@@ -7,6 +7,9 @@ import java.util.List;
 @Component
 public class Cleaner {
     public String cleanString(String input) {
+        if (input == null) {
+            return "";
+        }
         return input.trim()
                 .replace("\\","")
                 .replace("<","")

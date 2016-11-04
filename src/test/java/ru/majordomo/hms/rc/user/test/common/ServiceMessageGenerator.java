@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 
 import static ru.majordomo.hms.rc.user.resources.DBType.*;
@@ -27,12 +28,28 @@ public class ServiceMessageGenerator {
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
         serviceMessage.addParam("name", person.getName());
         serviceMessage.addParam("switchedOn", person.getSwitchedOn());
-        serviceMessage.addParam("passport", person.getPassport());
-        serviceMessage.addParam("legalEntity", person.getLegalEntity());
         serviceMessage.addParam("phoneNumbers", person.getPhoneNumbers());
         serviceMessage.addParam("emailAddresses", person.getEmailAddresses());
+        serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));
+        serviceMessage.addParam("legalEntity", person.getLegalEntity());
+        serviceMessage.addParam("country", person.getCountry());
+        serviceMessage.addParam("postalAddress", person.getPostalAddress());
+        serviceMessage.addParam("owner", person.getOwner());
 
         return serviceMessage;
+    }
+
+    private static HashMap<String, String> passportToHashMap(Passport passport) {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("number", passport.getNumber());
+        hashMap.put("issuedOrg", passport.getIssuedOrg());
+        hashMap.put("issuedDate", passport.getIssuedDateAsString());
+        hashMap.put("birthday", passport.getBirthdayAsString());
+        hashMap.put("mainPage", passport.getMainPage());
+        hashMap.put("registerPage", passport.getRegisterPage());
+        hashMap.put("address", passport.getAddress());
+
+        return hashMap;
     }
 
     public static ServiceMessage generatePersonCreateBadServiceMessage() {
