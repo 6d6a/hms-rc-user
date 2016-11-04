@@ -38,8 +38,14 @@ public abstract class LordOfResources {
         String name = cleaner.cleanString((String) serviceMessage.getParam("name"));
         Boolean switchedOn = (Boolean) serviceMessage.getParam("switchedOn");
 
-        resource.setId(id);
-        resource.setAccountId(accountId);
+        if (id != null && !id.equals("")) {
+            resource.setId(id);
+        }
+
+        if (accountId != null || !accountId.equals("")) {
+            resource.setAccountId(accountId);
+        }
+
         resource.setName(name);
         resource.setSwitchedOn(switchedOn);
 
