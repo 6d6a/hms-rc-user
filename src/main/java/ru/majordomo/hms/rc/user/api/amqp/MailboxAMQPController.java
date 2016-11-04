@@ -25,7 +25,7 @@ public class MailboxAMQPController extends BaseAMQPController {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.create",
             durable = "true", autoDelete = "true"),
             exchange = @Exchange(value = "mailbox.create", type = "topic"),
             key = "rc.user"))

@@ -20,7 +20,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database-user.create",
             durable = "true", autoDelete = "true"),
             exchange = @Exchange(value = "database-user.create", type = "topic"),
             key = "rc.user"))

@@ -23,7 +23,7 @@ public class FTPUserAMQPController extends BaseAMQPController {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.create",
             durable = "true", autoDelete = "true"),
             exchange = @Exchange(value = "ftp-user.create", type = "topic"),
             key = "rc.user"))

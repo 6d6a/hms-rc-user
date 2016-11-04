@@ -24,7 +24,7 @@ public class DomainAMQPController extends BaseAMQPController {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.domain.create",
             durable = "true", autoDelete = "true"),
             exchange = @Exchange(value = "domain.create", type = "topic"),
             key = "rc.user"))

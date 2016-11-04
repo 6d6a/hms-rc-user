@@ -1,5 +1,8 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 
@@ -10,6 +13,7 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
 public abstract class LordOfResources {
+    protected Logger logger = LoggerFactory.getLogger(LordOfResources.class);
     public abstract Resource create(ServiceMessage serviceMessage) throws ParameterValidateException;
 
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
@@ -32,4 +36,6 @@ public abstract class LordOfResources {
         Boolean switchedOn = (Boolean) serviceMessage.getParam("switchedOn");
         resource.setSwitchedOn(switchedOn);
     }
+
+
 }

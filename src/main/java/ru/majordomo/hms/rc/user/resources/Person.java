@@ -112,13 +112,14 @@ public class Person extends Resource {
     @Override
     public String toString() {
         return "Person{" +
-                "id=" + this.getId() +
-                ", name=" + this.getName() +
-                ", switchedOn" + this.getSwitchedOn() +
+                super.toString() +
                 ", phoneNumbers=" + phoneNumbers +
                 ", emailAddresses=" + emailAddresses +
                 ", passport=" + passport +
                 ", legalEntity=" + legalEntity +
+                ", country='" + country + '\'' +
+                ", postalAddress='" + postalAddress + '\'' +
+                ", owner=" + owner +
                 '}';
     }
 }
