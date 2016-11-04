@@ -127,6 +127,10 @@ public class GovernorOfPerson extends LordOfResources {
             throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
 
+        if (person.getAccountId().equals("")) {
+            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
+        }
+
         if (person.getName() == null) {
             throw new ParameterValidateException("Имя персоны не может быть пустым");
         }
