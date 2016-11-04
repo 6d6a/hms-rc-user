@@ -1,5 +1,10 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.PhoneNumberManager;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
@@ -44,6 +50,11 @@ public class GovernorOfPerson extends LordOfResources {
         }
 
         return person;
+    }
+
+    @Override
+    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
+        return null;
     }
 
     @Override
@@ -112,6 +123,38 @@ public class GovernorOfPerson extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         Person person = (Person) resource;
+        if (person.getName() == null) {
+            throw new ParameterValidateException("Имя персоны не может быть пустым");
+        }
+        if (person.getName().equals("")) {
+            throw new ParameterValidateException("Имя персона не может быть пустым");
+        }
+        if (person.getEmailAddresses() == null) {
+            throw new ParameterValidateException("Должен быть указан хотя бы 1 email адрес");
+        }
+        if (person.getEmailAddresses().size() == 0) {
+            throw new ParameterValidateException("Должен быть указан хотя бы 1 email адрес");
+        }
+
+        EmailValidator validator = EmailValidator.getInstance(true, true); //allowLocal, allowTLD
+        for (String emailAddress: person.getEmailAddresses()) {
+            if (!validator.isValid(emailAddress)) {
+                throw new ParameterValidateException("Адрес " + emailAddress + " некорректен");
+            }
+        }
+
+        if (person.getPhoneNumbers() != null) {
+            for (String phoneNumber: person.getPhoneNumbers()) {
+                try {
+                    if(!PhoneNumberManager.phoneValid(phoneNumber)) {
+                        throw new ParameterValidateException("Номер: " + phoneNumber + " некорректен");
+                    }
+                } catch (NumberParseException e) {
+                    throw new ParameterValidateException("Номер: " + phoneNumber + " некорректен");
+                }
+            }
+        }
+
         if (person.getPassport() == null && person.getLegalEntity() == null) {
             throw new ParameterValidateException("Для Person может быть указан только passport или только legalEntity");
         }
