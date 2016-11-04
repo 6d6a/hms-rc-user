@@ -24,7 +24,7 @@ public class UnixAccountAMQPController extends BaseAMQPController {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.unix-account.create",
             durable = "true", autoDelete = "true"),
             exchange = @Exchange(value = "unix-account.create", type = "topic"),
             key = "rc.user"))

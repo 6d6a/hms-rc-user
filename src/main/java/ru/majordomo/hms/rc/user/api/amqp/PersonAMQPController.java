@@ -24,7 +24,7 @@ public class PersonAMQPController extends BaseAMQPController {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.person.create",
             durable = "true", autoDelete = "true"),
             exchange = @Exchange(value = "person.create", type = "topic"),
             key = "rc.user"))

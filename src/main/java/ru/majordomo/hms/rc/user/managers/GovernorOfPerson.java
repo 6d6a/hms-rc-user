@@ -53,15 +53,21 @@ public class GovernorOfPerson extends LordOfResources {
 
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+        String actionId = serviceMessage.getActionIdentity();
+        String operationId = serviceMessage.getOperationIdentity();
+
         Person person = new Person();
         LordOfResources.setResourceParams(person, serviceMessage, cleaner);
+        String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
+        String postalAddress = cleaner.cleanString((String) serviceMessage.getParam("postalAddress"));
+        Boolean owner = (Boolean) serviceMessage.getParam("owner");
         List<String> phoneNumbers = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("phoneNumbers"));
         List<String> emailAddresses = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses"));
         Object object = (Object) serviceMessage.getParam("passport");
         Passport passport = null;
         if (object != null) {
             passport = new Passport();
-            Map<String, String> passportMap = (Map<String,String>) object;
+            Map<String, String> passportMap = (Map<String, String>) object;
             passport.setNumber(passportMap.get("number"));
             passport.setIssuedOrg(passportMap.get("issuedOrg"));
             passport.setIssuedDate(passportMap.get("issuedDate"));
@@ -75,7 +81,7 @@ public class GovernorOfPerson extends LordOfResources {
         LegalEntity legalEntity = null;
         if (object != null) {
             legalEntity = new LegalEntity();
-            Map<String, String> legalEntityMap = (Map<String,String>) object;
+            Map<String, String> legalEntityMap = (Map<String, String>) object;
             legalEntity.setInn(legalEntityMap.get("inn"));
             legalEntity.setOkpo(legalEntityMap.get("okpo"));
             legalEntity.setKpp(legalEntityMap.get("kpp"));
@@ -88,6 +94,13 @@ public class GovernorOfPerson extends LordOfResources {
         person.setEmailAddresses(emailAddresses);
         person.setPassport(passport);
         person.setLegalEntity(legalEntity);
+        person.setCountry(country);
+        person.setPostalAddress(postalAddress);
+        person.setOwner(owner);
+
+        logger.debug("Action ID: " + actionId +
+                " Operation Id: " + operationId +
+                " ресурс Person построен из полученного сообщения:" + person.toString());
 
         return person;
     }
@@ -95,6 +108,9 @@ public class GovernorOfPerson extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         Person person = (Person) resource;
+        if (person.getPassport() == null && person.getLegalEntity() == null) {
+            throw new ParameterValidateException("Для Person может быть указан только passport или только legalEntity");
+        }
         if (person.getPassport() != null && person.getLegalEntity() != null) {
             throw new ParameterValidateException("Passport и LegalEntity не могут быть указаны вместе");
         }
