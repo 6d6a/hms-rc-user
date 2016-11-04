@@ -78,7 +78,7 @@ class BaseAMQPController {
         try {
             resource = governor.create(serviceMessage);
             success = true;
-        } catch (ParameterValidateException e) {
+        } catch (Exception e) {
             logger.error("Создание ресурса не удалось:" + e.getMessage());
             success = false;
         }
