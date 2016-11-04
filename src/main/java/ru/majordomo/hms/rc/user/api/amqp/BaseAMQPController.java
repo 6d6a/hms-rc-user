@@ -9,14 +9,12 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.LordOfResources;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
@@ -74,16 +72,18 @@ class BaseAMQPController {
 
         Boolean success;
         Resource resource = null;
+        String errorMessage = "";
 
         try {
             resource = governor.create(serviceMessage);
             success = true;
         } catch (Exception e) {
             logger.error("Создание ресурса не удалось:" + e.getMessage());
+            errorMessage = e.getMessage();
             success = false;
         }
 
-        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource);
+        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
         report.addParam("success", success);
 
         if (success && serverStorableResourceTypes.contains(resourceType)) {
@@ -101,8 +101,8 @@ class BaseAMQPController {
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
         Resource resource = getResourceByUrl(resourceUrl, governor);
-
-        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource);
+        String errorMessage = (String) serviceMessage.getParam("errorMessage");
+        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
         if (!successEvent) {
             governor.drop(resource.getId());
@@ -113,7 +113,7 @@ class BaseAMQPController {
 
     private ServiceMessage createReportMessage(ServiceMessage event,
                                                String resourceType,
-                                               Resource resource) {
+                                               Resource resource, String errorMessage) {
         ServiceMessage report = new ServiceMessage();
         report.setActionIdentity(event.getActionIdentity());
         report.setOperationIdentity(event.getOperationIdentity());
@@ -126,6 +126,8 @@ class BaseAMQPController {
         } else {
             report.addParam("success", eventSuccess);
         }
+
+        report.addParam("errorMessage", errorMessage);
 
         return report;
     }
