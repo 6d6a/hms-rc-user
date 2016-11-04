@@ -61,6 +61,11 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
+    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
+        return null;
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         repository.delete(resourceId);
     }
