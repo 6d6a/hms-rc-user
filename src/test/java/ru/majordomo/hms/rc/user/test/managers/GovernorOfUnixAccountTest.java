@@ -47,7 +47,7 @@ public class GovernorOfUnixAccountTest {
 
     @Test
     public void getFreeUidWhenAllUpperUidUsed() throws Exception {
-        for (int i = (governor.MAX_UID - 3); i > 0; i++) {
+        for (int i = (governor.MAX_UID - 3); i <= governor.MAX_UID; i++) {
             UnixAccount unixAccount = new UnixAccount();
             unixAccount.setUid(i);
             repository.save(unixAccount);
