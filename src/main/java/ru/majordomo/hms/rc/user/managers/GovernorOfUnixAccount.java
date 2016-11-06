@@ -30,7 +30,7 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 public class GovernorOfUnixAccount extends LordOfResources {
 
     public final int MIN_UID = 2000;
-    public final int MAX_UID = Integer.MAX_VALUE;
+    public final int MAX_UID = 65535;
 
     private UnixAccountRepository repository;
     private Cleaner cleaner;
