@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.math.exception.OutOfRangeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -189,48 +190,27 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     public String getFreeUnixAccountName() {
-        Page<UnixAccount> page = repository.findAll(new PageRequest(0, 20));
-        if (!page.hasContent()) {
-            return "u" + MIN_UID;
-        }
-
-        int accountCountInPage = page.getNumberOfElements();
+        List<UnixAccount> unixAccounts = repository.findAll();
+        int counter = 0;
         int freeNumName = 0;
+        int accountsCount = unixAccounts.size();
 
-        if (accountCountInPage == 1) {
-            String accName = page.getContent().get(0).getName();
-            int accNumName = getUnixAccountNameAsInteger(accName);
-            freeNumName = accNumName + 1;
-            return "u" + freeNumName;
-        }
 
-        pageLoop:
-        do {
-            int[] curPageAccIds = new int[accountCountInPage];
-            int i = 0;
-            List<UnixAccount> unixAccounts = page.getContent();
-            for (UnixAccount unixAccount: unixAccounts) {
+        if (accountsCount == 0) {
+            freeNumName = MIN_UID;
+        } else {
+
+            int[] names = new int[unixAccounts.size()];
+            for (UnixAccount unixAccount : unixAccounts) {
                 String name = unixAccount.getName();
                 if (nameIsNumerable(name)) {
-                    curPageAccIds[i] = getUnixAccountNameAsInteger(name);
-                    i++;
+                    names[counter] = getUnixAccountNameAsInteger(name);
+                    counter++;
                 }
             }
-            Arrays.sort(curPageAccIds);
-            for (int it = 0; (it < curPageAccIds.length - 1); it++) {
-                if (curPageAccIds[it] == 0) {
-                    continue;
-                }
-                int curNumName = curPageAccIds[it];
-                int nextNumName = curPageAccIds[it+1];
-                if ((nextNumName - curNumName) > 1) {
-                    freeNumName = curNumName + 1;
-                    break pageLoop;
-                }
-            }
-
-        } while (page.hasNext());
-        if (freeNumName == 0 || freeNumName < 0) {
+            freeNumName = getGapInOrder(names);
+        }
+        if (freeNumName == 0) {
             throw new IllegalStateException("Невозможно найти свободное имя");
         }
 
@@ -241,60 +221,65 @@ public class GovernorOfUnixAccount extends LordOfResources {
         return staffRcClient.getActiveHostingServers().getId();
     }
 
+    private int getGapInOrder(int[] order) {
+        int numInGap = 0;
+        int lastElementIndex = order.length - 1;
+        Arrays.sort(order);
+        if (order[0] > MIN_UID) {
+            numInGap = MIN_UID;
+        }
+        if (order[lastElementIndex] < MAX_UID) {
+            numInGap = MAX_UID;
+        }
+
+        for (int i = 0; i <= (lastElementIndex-1); i++) {
+            int curElement = order[i];
+            int nextElement = order[i + 1];
+            if ((nextElement - curElement) > 1) {
+                numInGap = curElement + 1;
+                break;
+            }
+        }
+
+        return numInGap;
+    }
+
     /**
-        Функция для получения свободного UID. Алгоритмы получения (в порядке использования):
-        1) получаем наибольший UID и добавляем к нему 1;
-        2) получаем наименьший UID и вычитаем из него 1;
-        3) получаем отсортированный список UID'ов пачками по 20 и сравниваем их разницу.
-        Алгоритм 3 на примере:
-        - список UID'ов 2000,2002,2005,2006,2007;
-        - берем первую пару, т.е. UID'ы 2000 и 2002;
-        - вычитаем из наибольшего наименьшее, т.е. 2002-2000;
-        - результат операции вычитания 2, он не равен 1, значит в последовательности найдена бреш;
-        - получаем число, которое пропущено, для этого берем минимальное и прибавляем к нему 1;
-        - 2000+1=2001 - свободный UID.
-        Если ни один из алгоритмов не сработал, скорее всего свободные UID'ы закончились, выбрасываем
-        IllegalStateException.
+     * Функция для получения свободного UID. Алгоритмы получения (в порядке использования):
+     * 1) получаем наибольший UID и добавляем к нему 1;
+     * 2) получаем наименьший UID и вычитаем из него 1;
+     * 3) получаем отсортированный список UID'ов пачками по 20 и сравниваем их разницу.
+     * Алгоритм 3 на примере:
+     * - список UID'ов 2000,2002,2005,2006,2007;
+     * - берем первую пару, т.е. UID'ы 2000 и 2002;
+     * - вычитаем из наибольшего наименьшее, т.е. 2002-2000;
+     * - результат операции вычитания 2, он не равен 1, значит в последовательности найдена бреш;
+     * - получаем число, которое пропущено, для этого берем минимальное и прибавляем к нему 1;
+     * - 2000+1=2001 - свободный UID.
+     * Если ни один из алгоритмов не сработал, скорее всего свободные UID'ы закончились, выбрасываем
+     * IllegalStateException.
      */
     public Integer getFreeUid() {
-        UnixAccount unixAccount;
-        Integer freeUid;
-        // алгоритм 1
-        unixAccount = repository.findFirstByOrderByUidDesc();
-        if (unixAccount == null) {
+        List<UnixAccount> unixAccounts = repository.findAll();
+        int freeUid = 0;
+        int accountsCount = unixAccounts.size();
+
+        if (accountsCount == 0) {
             freeUid = MIN_UID;
         } else {
-            freeUid = unixAccount.getUid() + 1;
-        }
-        // алгоритм 2
-        if (!isUidValid(freeUid)) {
-            unixAccount = repository.findFirstByOrderByUidAsc();
-            freeUid = unixAccount.getUid() - 1;
+
+            int[] uids = new int[accountsCount];
+            int counter = 0;
+            for (UnixAccount unixAccount : unixAccounts) {
+                uids[counter] = unixAccount.getUid();
+                counter++;
+            }
+
+            freeUid = getGapInOrder(uids);
         }
 
-        // алгоритм 3
-        if (!isUidValid(freeUid)) {
-            Page<UnixAccount> page = repository.findAllByOrderByUidAsc(new PageRequest(0, 20));
-            pageLoop:
-            do {
-                List<UnixAccount> unixAccountList = page.getContent();
-                for (int i = 0; i < (unixAccountList.size() - 1); i++) {
-                    Integer curUnixAccountUid = unixAccountList.get(i).getUid();
-                    Integer nextUnixAccountUid = unixAccountList.get((i + 1)).getUid();
-                    if ((nextUnixAccountUid - curUnixAccountUid) != 1 &&
-                            isUidValid(curUnixAccountUid + 1)) {
-                        freeUid = curUnixAccountUid + 1;
-                        break pageLoop;
-                    }
-                }
-                if (page.hasNext()) {
-                    page = repository.findAllByOrderByUidAsc(page.nextPageable());
-                }
-            } while (page.hasNext());
-        }
-
-        if (!isUidValid(freeUid)) {
-            throw new IllegalStateException("MIN_UID: " + MIN_UID + "\nMAX_UID: " + MAX_UID + "\nfreeUID: " + freeUid + " некорректен\nНе удалось найти корректный и свободный UID.");
+        if (freeUid == 0) {
+            throw new IllegalStateException("Невозможно найти свободный UID");
         }
 
         return freeUid;
@@ -304,7 +289,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
         if (!nameIsNumerable(unixAccountName)) {
             throw new ParameterValidateException("Имя " + unixAccountName + " не может быть приведено к числовому виду");
         }
-        return Integer.parseInt(unixAccountName.replace("u",""));
+        return Integer.parseInt(unixAccountName.replace("u", ""));
     }
 
     public Boolean nameIsNumerable(String name) {

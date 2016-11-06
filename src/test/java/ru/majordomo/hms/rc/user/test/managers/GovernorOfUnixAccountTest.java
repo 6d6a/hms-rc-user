@@ -53,17 +53,7 @@ public class GovernorOfUnixAccountTest {
             repository.save(unixAccount);
         }
 
-        assertThat(governor.getFreeUid(), is(governor.MAX_UID - 4));
-    }
-
-    @Test
-    public void getFreeUidThatBiggerByOneThanCurrentBiggest() throws Exception {
-        int curBiggestUid = 50000;
-        UnixAccount unixAccount = new UnixAccount();
-        unixAccount.setUid(curBiggestUid);
-        repository.save(unixAccount);
-
-        assertThat(governor.getFreeUid(), is(curBiggestUid + 1));
+        assertThat(governor.getFreeUid(), is(governor.MIN_UID));
     }
 
     @Test
@@ -91,7 +81,7 @@ public class GovernorOfUnixAccountTest {
 
     @Test
     public void getFreeNumNameWhenNoOneUsed() throws Exception {
-        assertThat(governor.getFreeUnixAccountName(), is("u2000"));
+        assertThat(governor.getFreeUnixAccountName(), is("u" + governor.MIN_UID));
     }
 
     @Test
@@ -99,7 +89,7 @@ public class GovernorOfUnixAccountTest {
         UnixAccount unixAccount = new UnixAccount();
         unixAccount.setName("u2000");
         repository.save(unixAccount);
-        assertThat(governor.getFreeUnixAccountName(), is("u2001"));
+        assertThat(governor.getFreeUnixAccountName(), is("u" + governor.MAX_UID));
     }
 
     @Test
