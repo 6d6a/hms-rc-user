@@ -52,8 +52,11 @@ public abstract class Resource {
 
     @Override
     public String toString() {
-        return  "id='" + id + '\'' +
+        return "Resource{" +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", switchedOn=" + switchedOn;
+                ", accountId='" + accountId + '\'' +
+                ", switchedOn=" + switchedOn +
+                '}';
     }
 }

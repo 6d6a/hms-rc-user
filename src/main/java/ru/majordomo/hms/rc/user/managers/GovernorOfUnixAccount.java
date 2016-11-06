@@ -151,14 +151,16 @@ public class GovernorOfUnixAccount extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         UnixAccount unixAccount = (UnixAccount) resource;
-        if (unixAccount.getName() == null) {
+        if (unixAccount.getName() == null || unixAccount.getName().equals("")) {
             throw new ParameterValidateException("Имя unixAccount'а не может быть пустым");
         }
-        if (unixAccount.getUid() == null) {
+        if (unixAccount.getUid() == null || !isUidValid(unixAccount.getUid())) {
             throw new ParameterValidateException("UID unixAccount'а не может быть пустым");
         }
-
-        if (unixAccount.getHomeDir() == null) {
+        if (unixAccount.getAccountId() == null || unixAccount.getAccountId().equals("")) {
+            throw new ParameterValidateException("accountId не может быть пустым");
+        }
+        if (unixAccount.getHomeDir() == null || unixAccount.getHomeDir().equals("")) {
             throw new ParameterValidateException("homedir не может быть пустым");
         }
 

@@ -74,6 +74,7 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("quota", (long) 1e7);
+        serviceMessage.addParam("accountId", ObjectId.get().toString());
 
         return serviceMessage;
     }
