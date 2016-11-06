@@ -135,7 +135,7 @@ class BaseAMQPController {
     private String getTaskExecutorRoutingKey(Resource resource) {
         ServerStorable serverStorable = (ServerStorable) resource;
         String serverName = staffRcClient.getServerById(serverStorable.getServerId()).getName();
-        String serverShortName = serverName.split(".")[0];
+        String serverShortName = serverName.split("\\.")[0];
 
         return "te" + "." + serverShortName;
     }
