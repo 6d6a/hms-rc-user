@@ -232,7 +232,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
             numInGap = MAX_UID;
         }
 
-        for (int i = 0; i <= lastElementIndex; i++) {
+        for (int i = 0; i <= (lastElementIndex-1); i++) {
             int curElement = order[i];
             int nextElement = order[i + 1];
             if ((nextElement - curElement) > 1) {
@@ -272,6 +272,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
             int counter = 0;
             for (UnixAccount unixAccount : unixAccounts) {
                 uids[counter] = unixAccount.getUid();
+                counter++;
             }
 
             freeUid = getGapInOrder(uids);
