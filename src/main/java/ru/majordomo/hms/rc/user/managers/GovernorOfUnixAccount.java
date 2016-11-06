@@ -5,24 +5,31 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.PasswordManager;
+import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
 public class GovernorOfUnixAccount extends LordOfResources {
 
-    private final int MIN_UID = 2000;
-    private final int MAX_UID = 40000000;
+    public final int MIN_UID = 2000;
+    public final int MAX_UID = Integer.MAX_VALUE;
 
     private UnixAccountRepository repository;
     private Cleaner cleaner;
@@ -75,31 +82,68 @@ public class GovernorOfUnixAccount extends LordOfResources {
         UnixAccount unixAccount = new UnixAccount();
         LordOfResources.setResourceParams(unixAccount, serviceMessage, cleaner);
 
+        if (unixAccount.getSwitchedOn() == null) {
+            unixAccount.setSwitchedOn(true);
+        }
+
         Integer uid = (Integer) serviceMessage.getParam("uid");
-        if (uid == null) {
+        if (uid == null || uid == 0) {
             uid = getFreeUid();
         }
 
-        if (unixAccount.getName() == null) {
-            unixAccount.setName("u" + uid);
+        if (unixAccount.getName() == null || unixAccount.getName().equals("")) {
+            unixAccount.setName(getFreeUnixAccountName());
         }
 
         String homeDir = cleaner.cleanString((String) serviceMessage.getParam("homeDir"));
-        if (homeDir == null) {
+        if (homeDir == null || homeDir.equals("")) {
             homeDir = "/home/" + unixAccount.getName();
         }
 
         String serverId = cleaner.cleanString((String) serviceMessage.getParam("serverId"));
-        if (serverId == null) {
+        if (serverId == null || serverId.equals("")) {
             serverId = getActiveHostingServerId();
         }
 
+        Long quota = (Long) serviceMessage.getParam("quota");
+        if (quota == null || quota == 0) {
+            throw new ParameterValidateException("Квота не может быть нуль");
+        }
+
+        Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+        if (quotaUsed == null) {
+            quotaUsed = 0L;
+        }
+
+        String passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));
+        String password = cleaner.cleanString((String) serviceMessage.getParam("password"));
+        if (password != null || !password.equals("")) {
+            try {
+                passwordHash = PasswordManager.forUbuntu(password);
+            } catch (UnsupportedEncodingException e) {
+                throw new ParameterValidateException("Невозможно обработать пароль:" + password);
+            }
+        }
+
         List<CronTask> cronTasks = (List<CronTask>) serviceMessage.getParam("cronTasks");
+        Boolean writable = (Boolean) serviceMessage.getParam("writable");
+        if (writable == null) {
+            writable = true;
+        }
 
         unixAccount.setUid(uid);
         unixAccount.setHomeDir(homeDir);
         unixAccount.setServerId(serverId);
         unixAccount.setCrontab(cronTasks);
+        unixAccount.setQuota(quota);
+        unixAccount.setQuotaUsed(quotaUsed);
+        unixAccount.setPasswordHash(passwordHash);
+        unixAccount.setWritable(true);
+        try {
+            unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            throw new ParameterValidateException("Невозможно сгенерировать пару ключей:" + e.getMessage());
+        }
 
         return unixAccount;
     }
@@ -142,11 +186,50 @@ public class GovernorOfUnixAccount extends LordOfResources {
         repository.save(unixAccount);
     }
 
+    public String getFreeUnixAccountName() {
+        Page<UnixAccount> page = repository.findAll(new PageRequest(0, 20));
+        int freeNumName = 0;
+        if (!page.hasContent()) {
+            return "u" + MIN_UID;
+        }
+        pageLoop:
+        do {
+            int[] curPageAccIds = new int[20];
+            int i = 0;
+            List<UnixAccount> unixAccounts = page.getContent();
+            for (UnixAccount unixAccount: unixAccounts) {
+                String name = unixAccount.getName();
+                if (nameIsNumerable(name)) {
+                    curPageAccIds[i] = getUnixAccountNameAsInteger(name);
+                    i++;
+                }
+            }
+            Arrays.sort(curPageAccIds);
+            for (int it = 0; (it < curPageAccIds.length - 1); it++) {
+                if (curPageAccIds[it] == 0) {
+                    continue;
+                }
+                int curNumName = curPageAccIds[it];
+                int nextNumName = curPageAccIds[it+1];
+                if ((nextNumName - curNumName) > 1) {
+                    freeNumName = curNumName + 1;
+                    break pageLoop;
+                }
+            }
+
+        } while (page.hasNext());
+        if (freeNumName == 0 || freeNumName < 0) {
+            throw new IllegalStateException("Невозможно найти свободное имя");
+        }
+
+        return "u" + freeNumName;
+    }
+
     private String getActiveHostingServerId() {
         return staffRcClient.getActiveHostingServers().getId();
     }
 
-    /*
+    /**
         Функция для получения свободного UID. Алгоритмы получения (в порядке использования):
         1) получаем наибольший UID и добавляем к нему 1;
         2) получаем наименьший UID и вычитаем из него 1;
@@ -161,13 +244,16 @@ public class GovernorOfUnixAccount extends LordOfResources {
         Если ни один из алгоритмов не сработал, скорее всего свободные UID'ы закончились, выбрасываем
         IllegalStateException.
      */
-    private Integer getFreeUid() {
+    public Integer getFreeUid() {
         UnixAccount unixAccount;
-
+        Integer freeUid;
         // алгоритм 1
         unixAccount = repository.findFirstByOrderByUidDesc();
-        Integer freeUid = unixAccount.getUid() + 1;
-
+        if (unixAccount == null) {
+            freeUid = MIN_UID;
+        } else {
+            freeUid = unixAccount.getUid() + 1;
+        }
         // алгоритм 2
         if (!isUidValid(freeUid)) {
             unixAccount = repository.findFirstByOrderByUidAsc();
@@ -202,7 +288,19 @@ public class GovernorOfUnixAccount extends LordOfResources {
         return freeUid;
     }
 
-    private Boolean isUidValid(Integer uid) {
+    public Integer getUnixAccountNameAsInteger(String unixAccountName) {
+        if (!nameIsNumerable(unixAccountName)) {
+            throw new ParameterValidateException("Имя " + unixAccountName + " не может быть приведено к числовому виду");
+        }
+        return Integer.parseInt(unixAccountName.replace("u",""));
+    }
+
+    public Boolean nameIsNumerable(String name) {
+        String pattern = "^u\\d+$";
+        return name.matches(pattern);
+    }
+
+    public Boolean isUidValid(Integer uid) {
         return (uid <= MAX_UID && uid >= MIN_UID);
     }
 

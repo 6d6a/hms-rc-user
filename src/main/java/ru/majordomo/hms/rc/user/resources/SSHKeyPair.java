@@ -19,4 +19,12 @@ public class SSHKeyPair {
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
     }
+
+    @Override
+    public String toString() {
+        return "SSHKeyPair{" +
+                "privateKey='" + privateKey + '\'' +
+                ", publicKey='" + publicKey + '\'' +
+                '}';
+    }
 }
