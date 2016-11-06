@@ -1,8 +1,3 @@
-stages:
-  - cache
-  - build
-  - link_fail_test
-
 cache:
   key: "$CI_BUILD_NAME/$CI_BUILD_REF_NAME"
   paths:
@@ -13,13 +8,7 @@ build:
   script:
     - cd "$CI_PROJECT_DIR"
     - gradle buildDocker -PprojectBranch="${CI_BUILD_REF_NAME}"
-
-link:
-  when: on_failure
-  stage: link_fail_test
-  script:
-    - echo ${CI_PROJECT_NAME}
-    - echo ${CI_BUILD_REF}
-    - mkdir -p "/var/gitlab-reports/${CI_PROJECT_NAME}/${CI_BUILD_REF}"
-    - cp "${CI_PROJECT_DIR}/build/reports/tests/index.html" "/home/gitlab-runner/test-reports/${CI_PROJECT_NAME}/${CI_BUILD_REF}/index.html"
-    - echo "Link to report http://test-reports.intr/${CI_PROJECT_NAME}/${CI_BUILD_REF}/index.html"
+  after_script:
+    - mkdir -p "/home/gitlab-runner/test-reports/${CI_PROJECT_NAME}/${CI_BUILD_REF}"
+    - cp -r "${CI_PROJECT_DIR}/build/reports/tests" "/home/gitlab-runner/test-reports/${CI_PROJECT_NAME}/${CI_BUILD_REF}"
+    - echo "Link to report http://test-reports.intr/${CI_PROJECT_NAME}/${CI_BUILD_REF}/tests/index.html"
