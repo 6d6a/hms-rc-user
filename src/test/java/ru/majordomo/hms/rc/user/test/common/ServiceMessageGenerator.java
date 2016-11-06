@@ -69,4 +69,12 @@ public class ServiceMessageGenerator {
 
         return serviceMessage;
     }
+
+    public static ServiceMessage generateUnixAccountCreateServiceMessage() {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("quota", (long) 1e7);
+
+        return serviceMessage;
+    }
 }

@@ -78,7 +78,7 @@ public class GovernorOfDomain extends LordOfResources {
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         LordOfResources.setResourceParams(domain, serviceMessage, cleaner);
-        String domainPersonId = (String) serviceMessage.getParam("personId");
+        String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
         domain.setPerson((Person) governorOfPerson.build(domainPersonId));
         return domain;
     }

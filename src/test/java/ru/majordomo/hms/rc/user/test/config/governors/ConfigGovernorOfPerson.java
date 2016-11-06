@@ -19,6 +19,7 @@ public class ConfigGovernorOfPerson extends AbstractMongoConfiguration {
     public Cleaner cleaner() {
         return new Cleaner();
     }
+
     @Bean
     public GovernorOfPerson governorOfPerson() {
         return new GovernorOfPerson();

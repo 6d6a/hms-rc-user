@@ -78,16 +78,16 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     @Override
     public String toString() {
         return "UnixAccount{" +
-                "id=" + getId() +
-                ", name=" + getName() +
-                ", switchedOn=" + getSwitchedOn() +
-                ", crontab=" + crontab +
+                super.toString() +
                 ", uid=" + uid +
                 ", homeDir='" + homeDir + '\'' +
                 ", serverId='" + serverId + '\'' +
                 ", quota=" + quota +
                 ", quotaUsed=" + quotaUsed +
                 ", writable=" + writable +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", keyPair=" + keyPair +
+                ", crontab=" + crontab +
                 '}';
     }
 

@@ -50,4 +50,13 @@ public class CronTask extends Resource {
     public void switchResource() {
         switchedOn = !switchedOn;
     }
+
+    @Override
+    public String toString() {
+        return "CronTask{" +
+                "execTime='" + execTime + '\'' +
+                ", execTimeDescription='" + execTimeDescription + '\'' +
+                ", command='" + command + '\'' +
+                '}';
+    }
 }
