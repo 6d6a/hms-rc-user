@@ -93,6 +93,15 @@ public class GovernorOfUnixAccountTest {
     public void getFreeNumNameWhenNoOneUsed() throws Exception {
         assertThat(governor.getFreeUnixAccountName(), is("u2000"));
     }
+
+    @Test
+    public void getFreeNumNameWhenOnlyOneAccAndItsNameU2000() throws Exception {
+        UnixAccount unixAccount = new UnixAccount();
+        unixAccount.setName("u2000");
+        repository.save(unixAccount);
+        assertThat(governor.getFreeUnixAccountName(), is("u2001"));
+    }
+
     @Test
     public void freeNumName() throws Exception {
         UnixAccount unixAccount = new UnixAccount();
