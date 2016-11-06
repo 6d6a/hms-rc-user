@@ -68,7 +68,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-amqp')
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.boot:spring-boot-starter-jetty")
-    compile("ru.majordomo.hms.rc.staff:resources:1.0.4")
+    compile("ru.majordomo.hms.rc.staff:resources:1.0.5")
     compile("com.cronutils:cron-utils:5.0.1")
     compile("commons-validator:commons-validator:1.5.1")
     compile("com.googlecode.libphonenumber:libphonenumber:7.7.3")
