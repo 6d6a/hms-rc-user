@@ -190,13 +190,23 @@ public class GovernorOfUnixAccount extends LordOfResources {
 
     public String getFreeUnixAccountName() {
         Page<UnixAccount> page = repository.findAll(new PageRequest(0, 20));
-        int freeNumName = 0;
         if (!page.hasContent()) {
             return "u" + MIN_UID;
         }
+
+        int accountCountInPage = page.getNumberOfElements();
+        int freeNumName = 0;
+
+        if (accountCountInPage == 1) {
+            String accName = page.getContent().get(0).getName();
+            int accNumName = getUnixAccountNameAsInteger(accName);
+            freeNumName = accNumName + 1;
+            return "u" + freeNumName;
+        }
+
         pageLoop:
         do {
-            int[] curPageAccIds = new int[20];
+            int[] curPageAccIds = new int[accountCountInPage];
             int i = 0;
             List<UnixAccount> unixAccounts = page.getContent();
             for (UnixAccount unixAccount: unixAccounts) {
