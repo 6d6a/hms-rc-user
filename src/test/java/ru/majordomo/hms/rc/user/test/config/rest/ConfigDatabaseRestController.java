@@ -65,30 +65,24 @@ public class ConfigDatabaseRestController extends AbstractMongoConfiguration {
     public StaffResourceControllerClient staffResourceControllerClient() {
         return new StaffResourceControllerClient() {
             @Override
-            public List<Server> getActiveHostingServers() {
+            public Server getActiveHostingServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
-                List<Server> servers = new ArrayList<>();
-                servers.add(server);
-                return servers;
+                return server;
             }
 
             @Override
-            public List<Server> getActiveDatabaseServers() {
+            public Server getActiveDatabaseServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
-                List<Server> servers = new ArrayList<>();
-                servers.add(server);
-                return servers;
+                return server;
             }
 
             @Override
-            public List<Server> getActiveMailboxServers() {
+            public Server getActiveMailboxServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
-                List<Server> servers = new ArrayList<>();
-                servers.add(server);
-                return servers;
+                return server;
             }
 
             @Override
