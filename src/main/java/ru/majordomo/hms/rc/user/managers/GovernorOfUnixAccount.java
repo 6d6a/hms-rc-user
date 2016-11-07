@@ -118,7 +118,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
 
         String passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));
         String password = cleaner.cleanString((String) serviceMessage.getParam("password"));
-        if (password != null || !password.equals("")) {
+        if (!(password == null || password.equals(""))) {
             try {
                 passwordHash = PasswordManager.forUbuntu(password);
             } catch (UnsupportedEncodingException e) {
