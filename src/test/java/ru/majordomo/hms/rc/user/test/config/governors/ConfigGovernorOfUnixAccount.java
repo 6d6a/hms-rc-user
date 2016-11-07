@@ -15,6 +15,9 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Configuration
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
 public class ConfigGovernorOfUnixAccount extends AbstractMongoConfiguration {
@@ -42,24 +45,30 @@ public class ConfigGovernorOfUnixAccount extends AbstractMongoConfiguration {
     public StaffResourceControllerClient staffResourceControllerClient() {
         return new StaffResourceControllerClient() {
             @Override
-            public Server getActiveHostingServers() {
+            public List<Server> getActiveHostingServers() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
-                return server;
+                List<Server> servers = new ArrayList<>();
+                servers.add(server);
+                return servers;
             }
 
             @Override
-            public Server getActiveDatabaseServer() {
+            public List<Server> getActiveDatabaseServers() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
-                return server;
+                List<Server> servers = new ArrayList<>();
+                servers.add(server);
+                return servers;
             }
 
             @Override
-            public Server getActiveMailboxServer() {
+            public List<Server> getActiveMailboxServers() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
-                return server;
+                List<Server> servers = new ArrayList<>();
+                servers.add(server);
+                return servers;
             }
 
             @Override

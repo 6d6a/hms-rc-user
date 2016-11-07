@@ -218,7 +218,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     private String getActiveHostingServerId() {
-        return staffRcClient.getActiveHostingServers().getId();
+        return staffRcClient.getActiveHostingServers().get(0).getId();
     }
 
     private int getGapInOrder(int[] order) {

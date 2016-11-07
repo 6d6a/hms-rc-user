@@ -80,8 +80,7 @@ public class GovernorOfMailbox extends LordOfResources {
         Boolean writable = (Boolean) serviceMessage.getParam("writable");
         String serverId = cleaner.cleanString((String)serviceMessage.getParam("serverId"));
         if (serverId == null) {
-            Server server = staffRcClient.getActiveMailboxServer();
-            serverId = server.getId();
+            serverId = staffRcClient.getActiveMailboxServers().get(0).getId();
         }
         Boolean antiSpamEnabled = (Boolean) serviceMessage.getParam("antiSpamEnabled");
 
