@@ -28,9 +28,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Configuration
 @EnableWebMvc
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
@@ -75,7 +72,7 @@ public class ConfigFTPUserRestController extends AbstractMongoConfiguration {
             @Override
             public Server getActiveHostingServer() {
                 Server server = new Server();
-                server.setId(ObjectId.get().toString());;
+                server.setId(ObjectId.get().toString());
                 return server;
             }
 
@@ -89,7 +86,7 @@ public class ConfigFTPUserRestController extends AbstractMongoConfiguration {
             @Override
             public Server getActiveMailboxServer() {
                 Server server = new Server();
-                server.setId(ObjectId.get().toString());;
+                server.setId(ObjectId.get().toString());
                 return server;
             }
 

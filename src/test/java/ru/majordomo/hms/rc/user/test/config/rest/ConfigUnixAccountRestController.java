@@ -21,9 +21,6 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Configuration
 @EnableWebMvc
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
@@ -64,7 +61,7 @@ public class ConfigUnixAccountRestController extends AbstractMongoConfiguration 
             @Override
             public Server getActiveHostingServer() {
                 Server server = new Server();
-                server.setId(ObjectId.get().toString());;
+                server.setId(ObjectId.get().toString());
                 return server;
             }
 
