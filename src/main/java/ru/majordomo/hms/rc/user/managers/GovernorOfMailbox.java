@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 
-import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -80,7 +79,7 @@ public class GovernorOfMailbox extends LordOfResources {
         Boolean writable = (Boolean) serviceMessage.getParam("writable");
         String serverId = cleaner.cleanString((String)serviceMessage.getParam("serverId"));
         if (serverId == null) {
-            serverId = staffRcClient.getActiveMailboxServers().get(0).getId();
+            serverId = staffRcClient.getActiveMailboxServer().getId();
         }
         Boolean antiSpamEnabled = (Boolean) serviceMessage.getParam("antiSpamEnabled");
 

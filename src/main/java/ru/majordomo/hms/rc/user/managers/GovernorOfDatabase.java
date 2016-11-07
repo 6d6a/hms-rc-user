@@ -166,7 +166,7 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     private String getActiveHostingServerId() {
-        return staffRcClient.getActiveDatabaseServers().get(0).getId();
+        return staffRcClient.getActiveDatabaseServer().getId();
     }
 
     private boolean serverExists(String serverId) {
