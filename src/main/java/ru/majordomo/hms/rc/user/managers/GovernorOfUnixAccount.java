@@ -1,14 +1,10 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.apache.commons.math.exception.OutOfRangeException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +19,6 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
-import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
@@ -218,7 +213,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     private String getActiveHostingServerId() {
-        return staffRcClient.getActiveHostingServers().getId();
+        return staffRcClient.getActiveHostingServer().getId();
     }
 
     private int getGapInOrder(int[] order) {

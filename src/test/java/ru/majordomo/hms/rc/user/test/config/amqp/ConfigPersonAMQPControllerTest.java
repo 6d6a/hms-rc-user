@@ -53,7 +53,7 @@ public class ConfigPersonAMQPControllerTest extends AbstractMongoConfiguration {
     public StaffResourceControllerClient staffResourceControllerClient() {
         return new StaffResourceControllerClient() {
             @Override
-            public Server getActiveHostingServers() {
+            public Server getActiveHostingServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
                 return server;

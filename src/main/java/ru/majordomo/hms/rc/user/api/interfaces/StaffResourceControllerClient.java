@@ -11,13 +11,13 @@ import ru.majordomo.hms.rc.staff.resources.Server;
 
 @FeignClient("rc-staff")
 public interface StaffResourceControllerClient {
-    @RequestMapping(method = RequestMethod.GET, value = "/hosting-server?state=active", consumes = "application/json;utf8")
-    Server getActiveHostingServers();
+    @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=shared-hosting&state=active", consumes = "application/json;utf8")
+    Server getActiveHostingServer();
 
-    @RequestMapping(method = RequestMethod.GET, value = "/db-server?state=active", consumes = "application/json;utf8")
+    @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=database-server&state=active", consumes = "application/json;utf8")
     Server getActiveDatabaseServer();
 
-    @RequestMapping(method = RequestMethod.GET, value = "/mail-storage?state=active", consumes = "application/json;utf8")
+    @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=mail-storage&state=active", consumes = "application/json;utf8")
     Server getActiveMailboxServer();
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}", consumes = "application/json;utf8")
