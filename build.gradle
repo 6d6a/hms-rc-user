@@ -20,7 +20,6 @@ buildscript {
         classpath "com.avast.gradle:docker-compose-gradle-plugin:0.3.9"
         classpath("ru.majordomo:copycompose:1.+")
         classpath("ru.majordomo.hms.rc.user:resources:1+")
-
     }
 }
 plugins {
@@ -37,27 +36,52 @@ apply plugin: 'org.ajoberstar.grgit'
 apply plugin: 'ru.majordomo.copycompose'
 apply plugin: 'maven-publish'
 
-publishing {
-        publications {
-                mavenJava(MavenPublication) {
-                        groupId 'ru.majordomo.hms.rc.user'
-                        artifactId 'resources'
-                        version '1.0.4'
-                        artifact resourceJar
-                }
-        }
-        repositories {
-                maven {
-                        url uri(mavenUrl)
-                        credentials {
-                                username = mavenUser
-                                password = mavenPass
-                        }
-                }
-        }
+group = 'hms'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+def versionPropsFile = file('version.properties')
+def versionBuild
+
+if (versionPropsFile.canRead()) {
+    def Properties versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
+    versionBuild = versionProps['VERSION_BUILD'].toInteger()
+} else {
+    throw new GradleException("Could not read version.properties!")
 }
 
-group = 'hms'
+ext.autoIncrementBuildNumber = {
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionPropsFile))
+        versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
+        versionProps['VERSION_BUILD'] = versionBuild.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
+    } else {
+        throw new GradleException("Could not read version.properties!")
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'ru.majordomo.hms.rc.user'
+            artifactId 'resources'
+            version '1.0.4.' + versionBuild
+            artifact resourceJar
+        }
+    }
+    repositories {
+        maven {
+            url uri(mavenUrl)
+            credentials {
+                username = mavenUser
+                password = mavenPass
+            }
+        }
+    }
+}
 
 jar {
     baseName = 'rc-user'
@@ -73,13 +97,6 @@ task resourceJar(type: Jar, dependsOn: compileJava) {
     from sourceSets.main.output.classesDir
     include 'ru/majordomo/hms/rc/user/resources/*'
 }
-
-build {
-    dependsOn resourceJar
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -177,12 +194,13 @@ task delCompose(type: Delete) {
     delete 'docker-compose'
 }
 
-cookCompose.dependsOn("cloneCompose")
-composePull.dependsOn("cookCompose")
-composeUp.dependsOn("composePull")
-composeUp.finalizedBy delCompose
-
 composeDown {
     doLast { delete 'docker-compose.yml' }
 }
 
+build.dependsOn("resourceJar")
+cookCompose.dependsOn("cloneCompose")
+composePull.dependsOn("cookCompose")
+composeUp.dependsOn("composePull")
+composeUp.finalizedBy delCompose
+publish.doFirst autoIncrementBuildNumber
