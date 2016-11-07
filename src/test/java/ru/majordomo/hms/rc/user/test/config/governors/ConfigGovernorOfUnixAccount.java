@@ -15,9 +15,6 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Configuration
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
 public class ConfigGovernorOfUnixAccount extends AbstractMongoConfiguration {

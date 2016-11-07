@@ -20,9 +20,6 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Configuration
 @EnableWebMvc
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
