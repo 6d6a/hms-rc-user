@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -163,11 +164,22 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildByAccount(String accountId) throws ResourceNotFoundException {
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+
         List<Database> buildedDatabases = new ArrayList<>();
 
-        for (Database database : repository.findByAccountId(accountId)) {
-            buildedDatabases.add((Database) build(database.getId()));
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedDatabases.add((Database) build(database.getId()));
+            }
         }
 
         return buildedDatabases;

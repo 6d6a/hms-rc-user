@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -109,7 +110,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildByAccount(String accountId) throws NotImplementedException {
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws NotImplementedException {
         throw new NotImplementedException();
     }
 

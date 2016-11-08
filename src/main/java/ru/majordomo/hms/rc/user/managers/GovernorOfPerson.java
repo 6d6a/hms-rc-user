@@ -1,8 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -204,7 +202,7 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildByAccount(String accountId) throws NotImplementedException {
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws NotImplementedException {
         throw new NotImplementedException();
     }
 
