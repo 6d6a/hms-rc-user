@@ -35,4 +35,9 @@ public class DatabaseRestController {
         return governor.buildAll();
     }
 
+    @RequestMapping(value = {"/{accountId}/database"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+        return governor.buildByAccount(accountId);
+    }
+
 }

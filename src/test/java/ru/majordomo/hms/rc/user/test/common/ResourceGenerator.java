@@ -92,6 +92,7 @@ public class ResourceGenerator {
         List<DatabaseUser> batchOfDatabaseUsers = generateBatchOfDatabaseUsers();
         for (int i = 2; i <= 4; i++) {
             Database database = new Database();
+            database.setAccountId(ObjectId.get().toString());
             database.setName("Тестовая база" + i);
             database.setSwitchedOn(true);
             if ((i % 2) == 0) {
@@ -290,6 +291,7 @@ public class ResourceGenerator {
         List<DatabaseUser> batchOfDatabaseUsers = new ArrayList<>();
         for (int i = 0; i <= 2; i++) {
             DatabaseUser databaseUser = new DatabaseUser();
+            databaseUser.setId(ObjectId.get().toString());
             databaseUser.setType(POSTGRES);
             databaseUser.setPasswordHashByPlainPassword("123456" + i);
             databaseUser.setName("u10000" + i);

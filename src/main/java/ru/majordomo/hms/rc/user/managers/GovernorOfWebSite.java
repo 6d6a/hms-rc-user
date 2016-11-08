@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,6 +145,11 @@ public class GovernorOfWebSite extends LordOfResources {
         webSite.setUnixAccount(unixAccount);
 
         return webSite;
+    }
+
+    @Override
+    public Collection<? extends Resource> buildByAccount(String accountId) throws NotImplementedException {
+        throw new NotImplementedException();
     }
 
     @Override

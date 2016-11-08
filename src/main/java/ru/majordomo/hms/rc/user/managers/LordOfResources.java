@@ -26,6 +26,8 @@ public abstract class LordOfResources {
 
     public abstract Resource build(String resourceId) throws ResourceNotFoundException;
 
+    public abstract Collection<? extends Resource> buildByAccount(String accountId) throws ResourceNotFoundException;
+
     public abstract Collection<? extends Resource> buildAll();
 
     public abstract void store(Resource resource);

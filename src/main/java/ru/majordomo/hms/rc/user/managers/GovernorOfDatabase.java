@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.managers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -151,12 +152,36 @@ public class GovernorOfDatabase extends LordOfResources {
         if (database == null) {
             throw new ResourceNotFoundException("Database с ID:" + resourceId + " не найдена");
         }
+
+        List<DatabaseUser> databaseUsers = new ArrayList<>();
+        for ( String databaseUserId : database.getDatabaseUserIds()) {
+            databaseUsers.add((DatabaseUser) governorOfDatabaseUser.build(databaseUserId));
+        }
+        database.setDatabaseUsers(databaseUsers);
+
         return database;
     }
 
     @Override
+    public Collection<? extends Resource> buildByAccount(String accountId) throws ResourceNotFoundException {
+        List<Database> buildedDatabases = new ArrayList<>();
+
+        for (Database database : repository.findByAccountId(accountId)) {
+            buildedDatabases.add((Database) build(database.getId()));
+        }
+
+        return buildedDatabases;
+    }
+
+    @Override
     public Collection<? extends Resource> buildAll() {
-        return repository.findAll();
+        List<Database> buildedDatabases = new ArrayList<>();
+
+        for (Database database : repository.findAll()) {
+            buildedDatabases.add((Database) build(database.getId()));
+        }
+
+        return buildedDatabases;
     }
 
     @Override

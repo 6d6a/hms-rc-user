@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -105,6 +106,11 @@ public class GovernorOfFTPUser extends LordOfResources {
         }
 
         return ftpUser;
+    }
+
+    @Override
+    public Collection<? extends Resource> buildByAccount(String accountId) throws NotImplementedException {
+        throw new NotImplementedException();
     }
 
     @Override

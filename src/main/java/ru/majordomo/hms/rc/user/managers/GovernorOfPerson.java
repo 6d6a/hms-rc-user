@@ -4,6 +4,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -200,6 +201,11 @@ public class GovernorOfPerson extends LordOfResources {
         }
 
         return person;
+    }
+
+    @Override
+    public Collection<? extends Resource> buildByAccount(String accountId) throws NotImplementedException {
+        throw new NotImplementedException();
     }
 
     @Override
