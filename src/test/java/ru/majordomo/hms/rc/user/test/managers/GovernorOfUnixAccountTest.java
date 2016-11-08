@@ -41,6 +41,26 @@ public class GovernorOfUnixAccountTest {
     }
 
     @Test
+    public void createWithQuotaAsInt() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateQuotaIntServiceMessage();
+        UnixAccount unixAccount = (UnixAccount) governor.create(serviceMessage);
+        assertThat(unixAccount.getQuota(), is(10485760L));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void createWithoutQuota() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateServiceMessage();
+        serviceMessage.delParam("quota");
+        governor.create(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void createWithQuotaAsString() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateQuotaStringServiceMessage();
+        governor.create(serviceMessage);
+    }
+
+    @Test
     public void getFreeUidWhenNoOneUsed() throws Exception {
         assertThat(governor.getFreeUid(), is(governor.MIN_UID));
     }
