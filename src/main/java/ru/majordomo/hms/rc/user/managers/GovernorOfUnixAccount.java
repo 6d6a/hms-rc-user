@@ -101,14 +101,20 @@ public class GovernorOfUnixAccount extends LordOfResources {
             serverId = getActiveHostingServerId();
         }
 
-        Long quota = (Long) serviceMessage.getParam("quota");
-        if (quota == null || quota == 0) {
+        if (serviceMessage.getParam("quota") == null) {
             throw new ParameterValidateException("Квота не может быть нуль");
         }
 
-        Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
-        if (quotaUsed == null) {
+        Long quota = ((Number) serviceMessage.getParam("quota")).longValue();
+        if (quota == 0) {
+            throw new ParameterValidateException("Квота не может быть нуль");
+        }
+
+        Long quotaUsed;
+        if (serviceMessage.getParam("quotaUsed") == null) {
             quotaUsed = 0L;
+        } else {
+            quotaUsed = ((Number) serviceMessage.getParam("quotaUsed")).longValue();
         }
 
         String passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));

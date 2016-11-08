@@ -79,4 +79,24 @@ public class ServiceMessageGenerator {
 
         return serviceMessage;
     }
+
+    public static ServiceMessage generateUnixAccountCreateQuotaIntServiceMessage() {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("serverId", ObjectId.get().toString());
+        serviceMessage.addParam("quota", (int) 10485760);
+        serviceMessage.addParam("accountId", ObjectId.get().toString());
+
+        return serviceMessage;
+    }
+
+    public static ServiceMessage generateUnixAccountCreateQuotaStringServiceMessage() {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("serverId", ObjectId.get().toString());
+        serviceMessage.addParam("quota", (String) "");
+        serviceMessage.addParam("accountId", ObjectId.get().toString());
+
+        return serviceMessage;
+    }
 }
