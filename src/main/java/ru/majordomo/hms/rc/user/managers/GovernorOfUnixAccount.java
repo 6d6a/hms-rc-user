@@ -110,9 +110,11 @@ public class GovernorOfUnixAccount extends LordOfResources {
             throw new ParameterValidateException("Квота не может быть нуль");
         }
 
-        Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
-        if (quotaUsed == null) {
+        Long quotaUsed;
+        if (serviceMessage.getParam("quotaUsed") == null) {
             quotaUsed = 0L;
+        } else {
+            quotaUsed = ((Number) serviceMessage.getParam("quotaUsed")).longValue();
         }
 
         String passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));
