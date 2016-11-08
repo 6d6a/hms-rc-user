@@ -44,7 +44,7 @@ public abstract class LordOfResources {
             resource.setId(id);
         }
 
-        if (accountId != null || !accountId.equals("")) {
+        if (!(accountId == null || accountId.equals(""))) {
             resource.setAccountId(accountId);
         }
 
