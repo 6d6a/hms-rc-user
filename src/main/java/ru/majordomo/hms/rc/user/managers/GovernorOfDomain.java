@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,7 +95,7 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    protected Resource prepareAllEntities(Resource resource) throws ParameterValidateException {
+    protected Resource construct(Resource resource) throws ParameterValidateException {
         Domain domain = (Domain) resource;
         Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
         domain.setPerson(domainPerson);
@@ -109,7 +108,7 @@ public class GovernorOfDomain extends LordOfResources {
         if (domain == null) {
             throw new ResourceNotFoundException("Domain с ID:" + resourceId + " не найден");
         }
-        return prepareAllEntities(domain);
+        return construct(domain);
     }
 
     @Override
@@ -126,7 +125,7 @@ public class GovernorOfDomain extends LordOfResources {
 
         if (byAccountId) {
             for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedDomains.add((Domain) prepareAllEntities(domain));
+                buildedDomains.add((Domain) construct(domain));
             }
         }
 
@@ -137,7 +136,7 @@ public class GovernorOfDomain extends LordOfResources {
     public Collection<? extends Resource> buildAll() {
         List<Domain> buildedDomains = new ArrayList<>();
         for (Domain domain: repository.findAll()) {
-            buildedDomains.add((Domain) prepareAllEntities(domain));
+            buildedDomains.add((Domain) construct(domain));
         }
         return buildedDomains;
     }

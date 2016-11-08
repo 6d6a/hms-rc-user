@@ -25,7 +25,7 @@ public abstract class LordOfResources {
 
     public abstract void validate(Resource resource) throws ParameterValidateException;
 
-    protected abstract Resource prepareAllEntities(Resource resource) throws ParameterValidateException;
+    protected abstract Resource construct(Resource resource) throws ParameterValidateException;
 
     public abstract Resource build(String resourceId) throws ResourceNotFoundException;
 

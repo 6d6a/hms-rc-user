@@ -167,7 +167,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    protected Resource prepareAllEntities(Resource resource) throws NotImplementedException {
+    protected Resource construct(Resource resource) throws NotImplementedException {
         throw new NotImplementedException();
     }
 

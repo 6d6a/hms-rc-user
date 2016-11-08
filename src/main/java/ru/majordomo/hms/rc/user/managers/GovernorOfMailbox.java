@@ -1,7 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -115,7 +114,7 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    protected Resource prepareAllEntities(Resource resource) throws ParameterValidateException {
+    protected Resource construct(Resource resource) throws ParameterValidateException {
         Mailbox mailbox = (Mailbox) resource;
         Domain domain = (Domain) governorOfDomain.build(mailbox.getDomainId());
         mailbox.setDomain(domain);
@@ -128,7 +127,7 @@ public class GovernorOfMailbox extends LordOfResources {
         if (mailbox == null) {
             throw new ResourceNotFoundException("Mailbox с ID:" + mailbox.getId() + " не найден");
         }
-        return prepareAllEntities(mailbox);
+        return construct(mailbox);
     }
 
     @Override
@@ -145,7 +144,7 @@ public class GovernorOfMailbox extends LordOfResources {
 
         if (byAccountId) {
             for (Mailbox mailbox : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedMailboxes.add((Mailbox) prepareAllEntities(mailbox));
+                buildedMailboxes.add((Mailbox) construct(mailbox));
             }
         }
 
@@ -156,7 +155,7 @@ public class GovernorOfMailbox extends LordOfResources {
     public Collection<? extends Resource> buildAll() {
         List<Mailbox> mailboxes = new ArrayList<>();
         for (Mailbox mailbox: repository.findAll()) {
-            mailboxes.add((Mailbox) prepareAllEntities(mailbox));
+            mailboxes.add((Mailbox) construct(mailbox));
         }
         return mailboxes;
     }

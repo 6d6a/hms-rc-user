@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.bouncycastle.asn1.dvcs.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -149,7 +148,7 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    protected Resource prepareAllEntities(Resource resource) {
+    protected Resource construct(Resource resource) {
         Database database = (Database) resource;
         List<DatabaseUser> databaseUsers = new ArrayList<>();
         for ( String databaseUserId : database.getDatabaseUserIds()) {
@@ -165,7 +164,7 @@ public class GovernorOfDatabase extends LordOfResources {
         if (database == null) {
             throw new ResourceNotFoundException("Database с ID:" + resourceId + " не найдена");
         }
-        return prepareAllEntities(database);
+        return construct(database);
     }
 
     @Override
@@ -183,7 +182,7 @@ public class GovernorOfDatabase extends LordOfResources {
 
         if (byAccountId) {
             for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedDatabases.add((Database) prepareAllEntities(database));
+                buildedDatabases.add((Database) construct(database));
             }
         }
 
@@ -195,7 +194,7 @@ public class GovernorOfDatabase extends LordOfResources {
         List<Database> buildedDatabases = new ArrayList<>();
 
         for (Database database : repository.findAll()) {
-            buildedDatabases.add((Database) prepareAllEntities(database));
+            buildedDatabases.add((Database) construct(database));
         }
 
         return buildedDatabases;

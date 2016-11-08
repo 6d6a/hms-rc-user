@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -130,7 +129,7 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    protected Resource prepareAllEntities(Resource resource) throws ParameterValidateException {
+    protected Resource construct(Resource resource) throws ParameterValidateException {
         WebSite webSite = (WebSite) resource;
         for (String domainId : webSite.getDomainIds()) {
             Domain domain = (Domain) governorOfDomain.build(domainId);
@@ -147,7 +146,7 @@ public class GovernorOfWebSite extends LordOfResources {
     public Resource build(String resourceId) throws ResourceNotFoundException {
         WebSite webSite = repository.findOne(resourceId);
 
-        return prepareAllEntities(webSite);
+        return construct(webSite);
     }
 
     @Override
@@ -164,7 +163,7 @@ public class GovernorOfWebSite extends LordOfResources {
 
         if (byAccountId) {
             for (WebSite webSite : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedWebSites.add((WebSite) prepareAllEntities(webSite));
+                buildedWebSites.add((WebSite) construct(webSite));
             }
         }
 
@@ -176,7 +175,7 @@ public class GovernorOfWebSite extends LordOfResources {
         List<WebSite> buildedWebSites = new ArrayList<>();
 
         for (WebSite webSite : repository.findAll()) {
-            buildedWebSites.add((WebSite) prepareAllEntities(webSite));
+            buildedWebSites.add((WebSite) construct(webSite));
         }
 
         return buildedWebSites;

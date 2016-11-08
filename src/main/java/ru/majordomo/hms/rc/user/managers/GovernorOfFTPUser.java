@@ -100,7 +100,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    protected Resource prepareAllEntities(Resource resource) throws ResourceNotFoundException {
+    protected Resource construct(Resource resource) throws ResourceNotFoundException {
         FTPUser ftpUser = (FTPUser) resource;
         UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(ftpUser.getUnixAccountId());
         ftpUser.setUnixAccount(unixAccount);
@@ -114,7 +114,7 @@ public class GovernorOfFTPUser extends LordOfResources {
             throw new ResourceNotFoundException("Пользователь с ID:" + resourceId + " не найден");
         }
 
-        return prepareAllEntities(ftpUser);
+        return construct(ftpUser);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class GovernorOfFTPUser extends LordOfResources {
 
         if (byAccountId) {
             for (FTPUser ftpUser : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedFTPUsers.add((FTPUser) prepareAllEntities(ftpUser));
+                buildedFTPUsers.add((FTPUser) construct(ftpUser));
             }
         }
 
@@ -142,7 +142,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     public Collection<? extends Resource> buildAll() {
         List<FTPUser> buildedFTPUsers = new ArrayList<>();
         for (FTPUser ftpUser: repository.findAll()) {
-            buildedFTPUsers.add((FTPUser) prepareAllEntities(ftpUser));
+            buildedFTPUsers.add((FTPUser) construct(ftpUser));
         }
         return buildedFTPUsers;
     }
