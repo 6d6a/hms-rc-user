@@ -147,20 +147,22 @@ public class GovernorOfDatabase extends LordOfResources {
         }
     }
 
+    private Database prepareAllEntities(Database database) {
+        List<DatabaseUser> databaseUsers = new ArrayList<>();
+        for ( String databaseUserId : database.getDatabaseUserIds()) {
+            databaseUsers.add((DatabaseUser) governorOfDatabaseUser.build(databaseUserId));
+        }
+        database.setDatabaseUsers(databaseUsers);
+        return database;
+    }
+
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         Database database = repository.findOne(resourceId);
         if (database == null) {
             throw new ResourceNotFoundException("Database с ID:" + resourceId + " не найдена");
         }
-
-        List<DatabaseUser> databaseUsers = new ArrayList<>();
-        for ( String databaseUserId : database.getDatabaseUserIds()) {
-            databaseUsers.add((DatabaseUser) governorOfDatabaseUser.build(databaseUserId));
-        }
-        database.setDatabaseUsers(databaseUsers);
-
-        return database;
+        return prepareAllEntities(database);
     }
 
     @Override
@@ -178,7 +180,7 @@ public class GovernorOfDatabase extends LordOfResources {
 
         if (byAccountId) {
             for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedDatabases.add((Database) build(database.getId()));
+                buildedDatabases.add(prepareAllEntities(database));
             }
         }
 
@@ -190,7 +192,7 @@ public class GovernorOfDatabase extends LordOfResources {
         List<Database> buildedDatabases = new ArrayList<>();
 
         for (Database database : repository.findAll()) {
-            buildedDatabases.add((Database) build(database.getId()));
+            buildedDatabases.add(prepareAllEntities(database));
         }
 
         return buildedDatabases;
