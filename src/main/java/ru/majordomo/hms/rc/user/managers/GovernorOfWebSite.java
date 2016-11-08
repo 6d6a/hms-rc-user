@@ -1,13 +1,12 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -15,8 +14,6 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.CharSet;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.repositories.DomainRepository;
-import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
@@ -132,13 +129,12 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
-        WebSite webSite = repository.findOne(resourceId);
+    protected Resource construct(Resource resource) throws ParameterValidateException {
+        WebSite webSite = (WebSite) resource;
         for (String domainId : webSite.getDomainIds()) {
             Domain domain = (Domain) governorOfDomain.build(domainId);
             webSite.addDomain(domain);
         }
-
         String unixAccountId = webSite.getUnixAccountId();
         UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
         webSite.setUnixAccount(unixAccount);
@@ -147,25 +143,48 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
-        List<WebSite> webSites = new ArrayList<>();
-        webSites = repository.findAll();
-        for (WebSite webSite : webSites) {
-            for (String domainId : webSite.getDomainIds()) {
-                Domain domain = (Domain) governorOfDomain.build(domainId);
-                webSite.addDomain(domain);
-            }
+    public Resource build(String resourceId) throws ResourceNotFoundException {
+        WebSite webSite = repository.findOne(resourceId);
 
-            String unixAccountId = webSite.getUnixAccountId();
-            UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
-            webSite.setUnixAccount(unixAccount);
+        return construct(webSite);
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<WebSite> buildedWebSites = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
         }
-        return webSites;
+
+        if (byAccountId) {
+            for (WebSite webSite : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedWebSites.add((WebSite) construct(webSite));
+            }
+        }
+
+        return buildedWebSites;
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll() {
+        List<WebSite> buildedWebSites = new ArrayList<>();
+
+        for (WebSite webSite : repository.findAll()) {
+            buildedWebSites.add((WebSite) construct(webSite));
+        }
+
+        return buildedWebSites;
     }
 
     @Override
     public void store(Resource resource) {
-
+        WebSite webSite = (WebSite) resource;
+        repository.save(webSite);
     }
 
 }

@@ -3,7 +3,10 @@ package ru.majordomo.hms.rc.user.managers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrar;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -92,25 +95,50 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
+    protected Resource construct(Resource resource) throws ParameterValidateException {
+        Domain domain = (Domain) resource;
+        Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
+        domain.setPerson(domainPerson);
+        return domain;
+    }
+
+    @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         Domain domain = repository.findOne(resourceId);
         if (domain == null) {
             throw new ResourceNotFoundException("Domain с ID:" + resourceId + " не найден");
         }
-        Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
-        domain.setPerson(domainPerson);
+        return construct(domain);
+    }
 
-        return domain;
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<Domain> buildedDomains = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
+        }
+
+        return buildedDomains;
     }
 
     @Override
     public Collection<? extends Resource> buildAll() {
-        Collection<Domain> domains = repository.findAll();
-        for (Domain domain: domains) {
-            Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
-            domain.setPerson(domainPerson);
+        List<Domain> buildedDomains = new ArrayList<>();
+        for (Domain domain: repository.findAll()) {
+            buildedDomains.add((Domain) construct(domain));
         }
-        return domains;
+        return buildedDomains;
     }
 
     @Override

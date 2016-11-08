@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -98,20 +100,51 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
+    protected Resource construct(Resource resource) throws ResourceNotFoundException {
+        FTPUser ftpUser = (FTPUser) resource;
+        UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(ftpUser.getUnixAccountId());
+        ftpUser.setUnixAccount(unixAccount);
+        return ftpUser;
+    }
+
+    @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         FTPUser ftpUser = repository.findOne(resourceId);
         if (ftpUser == null) {
             throw new ResourceNotFoundException("Пользователь с ID:" + resourceId + " не найден");
         }
 
-        return ftpUser;
+        return construct(ftpUser);
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ParameterValidateException {
+        List<FTPUser> buildedFTPUsers = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            for (FTPUser ftpUser : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedFTPUsers.add((FTPUser) construct(ftpUser));
+            }
+        }
+
+        return buildedFTPUsers;
     }
 
     @Override
     public Collection<? extends Resource> buildAll() {
-        List<FTPUser> ftpUsers = repository.findAll();
-
-        return ftpUsers;
+        List<FTPUser> buildedFTPUsers = new ArrayList<>();
+        for (FTPUser ftpUser: repository.findAll()) {
+            buildedFTPUsers.add((FTPUser) construct(ftpUser));
+        }
+        return buildedFTPUsers;
     }
 
     @Override

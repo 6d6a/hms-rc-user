@@ -38,6 +38,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -112,5 +113,24 @@ public class MailboxRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc);
+    }
+
+    @Test
+    public void readAllByAccountId() throws Exception {
+        String accountId = batchOfMailboxes.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfMailboxes.get(0).getName()))
+                .andExpect(jsonPath("$[0].switchedOn").value(batchOfMailboxes.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("$[0].domain").isMap())
+                .andExpect(jsonPath("$[0].domain.id").value(batchOfMailboxes.get(0).getDomain().getId()))
+                .andExpect(jsonPath("$[0].blackList").value(batchOfMailboxes.get(0).getBlackList()))
+                .andExpect(jsonPath("$[0].whiteList").value(batchOfMailboxes.get(0).getWhiteList()))
+                .andExpect(jsonPath("$[0].antiSpamEnabled").value(batchOfMailboxes.get(0).getAntiSpamEnabled()))
+                .andExpect(jsonPath("$[0].serverId").value(batchOfMailboxes.get(0).getServerId()))
+                .andExpect(jsonPath("$[0].quota").value(batchOfMailboxes.get(0).getQuota()))
+                .andExpect(jsonPath("$[0].quotaUsed").value(batchOfMailboxes.get(0).getQuotaUsed()))
+                .andExpect(jsonPath("$[0].writable").value(batchOfMailboxes.get(0).getWritable()));
     }
 }

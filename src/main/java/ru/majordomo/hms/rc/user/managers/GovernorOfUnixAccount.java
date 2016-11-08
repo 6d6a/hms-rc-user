@@ -1,13 +1,12 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -174,9 +173,32 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
+    protected Resource construct(Resource resource) throws NotImplementedException {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
-        UnixAccount unixAccount = repository.findOne(resourceId);
-        return unixAccount;
+        return repository.findOne(resourceId);
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<UnixAccount> buildedUnixAccounts = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            buildedUnixAccounts = repository.findByAccountId(keyValue.get("accountId"));
+        }
+
+        return buildedUnixAccounts;
     }
 
     @Override

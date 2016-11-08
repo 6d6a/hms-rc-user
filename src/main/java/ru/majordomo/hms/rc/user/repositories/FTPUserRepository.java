@@ -4,5 +4,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 
+import java.util.List;
+
 public interface FTPUserRepository extends MongoRepository<FTPUser, String> {
+    List<FTPUser> findByAccountId(String accountId);
 }

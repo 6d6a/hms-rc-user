@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
@@ -33,6 +35,13 @@ public class MailboxRestController {
     @RequestMapping(value = {"/mailbox/","/mailbox"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
+    }
+
+    @RequestMapping(value = {"/{accountId}/mailbox", "/{accountId}/mailbox/"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("accountId", accountId);
+        return governor.buildAll(keyValue);
     }
 
 }

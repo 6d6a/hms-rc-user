@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -24,7 +25,11 @@ public abstract class LordOfResources {
 
     public abstract void validate(Resource resource) throws ParameterValidateException;
 
+    protected abstract Resource construct(Resource resource) throws ParameterValidateException;
+
     public abstract Resource build(String resourceId) throws ResourceNotFoundException;
+
+    public abstract Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException;
 
     public abstract Collection<? extends Resource> buildAll();
 
@@ -42,7 +47,7 @@ public abstract class LordOfResources {
             resource.setId(id);
         }
 
-        if (accountId != null || !accountId.equals("")) {
+        if (!(accountId == null || accountId.equals(""))) {
             resource.setAccountId(accountId);
         }
 

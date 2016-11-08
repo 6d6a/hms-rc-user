@@ -35,7 +35,9 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -91,5 +93,17 @@ public class DatabaseUserRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc);
+    }
+
+    @Test
+    public void readAllByAccountId() throws Exception {
+        String accountId = batchOfDatabaseUsers.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfDatabaseUsers.get(0).getName()))
+                .andExpect(jsonPath("$[0].switchedOn").value(batchOfDatabaseUsers.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("$[0].passwordHash").value(batchOfDatabaseUsers.get(0).getPasswordHash()))
+                .andExpect(jsonPath("$[0].type").value(batchOfDatabaseUsers.get(0).getType().toString()));
     }
 }

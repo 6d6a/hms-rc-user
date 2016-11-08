@@ -41,6 +41,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -131,6 +132,38 @@ public class WebsiteRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc);
+    }
+
+    @Test
+    public void readAllByAccountId() throws Exception {
+        String accountId = batchOfWebsites.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk()).andDo(print())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfWebsites.get(0).getName()))
+                .andExpect(jsonPath("$[0].switchedOn").value(batchOfWebsites.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("$[0].unixAccount").isMap())
+                .andExpect(jsonPath("$[0].unixAccount.id").value(batchOfWebsites.get(0).getUnixAccount().getId()))
+                .andExpect(jsonPath("$[0].serverId").value(batchOfWebsites.get(0).getServerId()))
+                .andExpect(jsonPath("$[0].documentRoot").value(batchOfWebsites.get(0).getDocumentRoot()))
+                .andExpect(jsonPath("$[0].domains").isArray())
+                .andExpect(jsonPath("$[0].domains.[0].id").value(batchOfWebsites.get(0).getDomains().get(0).getId()))
+                .andExpect(jsonPath("$[0].charSet").value(batchOfWebsites.get(0).getCharSet().toString()))
+                .andExpect(jsonPath("$[0].ssiEnabled").value(batchOfWebsites.get(0).getSsiEnabled()))
+                .andExpect(jsonPath("$[0].ssiFileExtensions").isArray())
+                .andExpect(jsonPath("$[0].cgiEnabled").value(batchOfWebsites.get(0).getCgiEnabled()))
+                .andExpect(jsonPath("$[0].cgiFileExtensions").isArray())
+                .andExpect(jsonPath("$[0].scriptAlias").value(batchOfWebsites.get(0).getScriptAlias()))
+                .andExpect(jsonPath("$[0].ddosProtection").value(batchOfWebsites.get(0).getDdosProtection()))
+                .andExpect(jsonPath("$[0].autoSubDomain").value(batchOfWebsites.get(0).getAutoSubDomain()))
+                .andExpect(jsonPath("$[0].accessByOldHttpVersion").value(batchOfWebsites.get(0).getAccessByOldHttpVersion()))
+                .andExpect(jsonPath("$[0].staticFileExtensions").isArray())
+                .andExpect(jsonPath("$[0].autoSubDomain").value(batchOfWebsites.get(0).getAutoSubDomain()))
+                .andExpect(jsonPath("$[0].customUserConf").value(batchOfWebsites.get(0).getCustomUserConf()))
+                .andExpect(jsonPath("$[0].indexFileList").isArray())
+                .andExpect(jsonPath("$[0].accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
+                .andExpect(jsonPath("$[0].errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
+        ;
     }
 
 }

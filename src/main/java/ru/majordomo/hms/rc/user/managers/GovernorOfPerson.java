@@ -1,13 +1,13 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -171,7 +171,7 @@ public class GovernorOfPerson extends LordOfResources {
         }
 
         if (person.getOwner() == null) {
-            Collection<Person> persons = repository.findAllByAccountId(person.getAccountId());
+            List<Person> persons = repository.findByAccountId(person.getAccountId());
             Boolean accHasOwner = false;
             for (Person storedPerson: persons) {
                 if (storedPerson.getOwner()) {
@@ -183,13 +183,18 @@ public class GovernorOfPerson extends LordOfResources {
             }
         }
 
-        if (person.getCountry() == null || person.getCountry() == "") {
+        if (person.getCountry() == null || person.getCountry().equals("")) {
             person.setCountry("RU");
         }
 
         if (person.getPassport() != null && person.getLegalEntity() != null) {
             throw new ParameterValidateException("Passport и LegalEntity не могут быть указаны вместе");
         }
+    }
+
+    @Override
+    protected Resource construct(Resource resource) throws NotImplementedException {
+        throw new NotImplementedException();
     }
 
     @Override
@@ -200,6 +205,25 @@ public class GovernorOfPerson extends LordOfResources {
         }
 
         return person;
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<Person> buildedPersons = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            buildedPersons = repository.findByAccountId(keyValue.get("accountId"));
+        }
+
+        return buildedPersons;
     }
 
     @Override

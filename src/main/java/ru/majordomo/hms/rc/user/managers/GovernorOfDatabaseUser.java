@@ -1,10 +1,14 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -83,8 +87,33 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
+    protected Resource construct(Resource resource) throws NotImplementedException {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         return repository.findOne(resourceId);
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+
+        List<DatabaseUser> buildedDatabasesUsers = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            buildedDatabasesUsers = repository.findByAccountId(keyValue.get("accountId"));
+        }
+
+        return buildedDatabasesUsers;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Transient;
 
 import java.io.UnsupportedEncodingException;
@@ -11,6 +12,16 @@ public class FTPUser extends Resource implements Securable {
     private String homeDir;
     @Transient
     private UnixAccount unixAccount;
+    private String unixAccountId;
+
+    @JsonIgnore
+    public String getUnixAccountId() {
+        return unixAccountId;
+    }
+
+    public void setUnixAccountId(String unixAccountId) {
+        this.unixAccountId = unixAccountId;
+    }
 
     public UnixAccount getUnixAccount() {
         return unixAccount;

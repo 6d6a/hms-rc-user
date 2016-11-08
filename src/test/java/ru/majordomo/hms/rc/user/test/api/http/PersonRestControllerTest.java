@@ -31,6 +31,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 
@@ -127,5 +128,29 @@ public class PersonRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc);
+    }
+
+    @Test
+    public void readAllByAccountId() throws Exception {
+        String accountId = batchOfPersons.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfPersons.get(0).getName()))
+                .andExpect(jsonPath("$[0].switchedOn").value(batchOfPersons.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("$[0].phoneNumbers").value(batchOfPersons.get(0).getPhoneNumbers()))
+                .andExpect(jsonPath("$[0].emailAddresses").value(batchOfPersons.get(0).getEmailAddresses()))
+                .andExpect(jsonPath("$[0].passport").isMap())
+                .andExpect(jsonPath("$[0].passport.number").value(batchOfPersons.get(0).getPassport().getNumber()))
+                .andExpect(jsonPath("$[0].passport.issuedOrg").value(batchOfPersons.get(0).getPassport().getIssuedOrg()))
+                .andExpect(jsonPath("$[0].passport.issuedDate").value(batchOfPersons.get(0).getPassport().getIssuedDate().toString()))
+                .andExpect(jsonPath("$[0].passport.birthday").value(batchOfPersons.get(0).getPassport().getBirthday().toString()))
+                .andExpect(jsonPath("$[0].passport.mainPage").value(batchOfPersons.get(0).getPassport().getMainPage()))
+                .andExpect(jsonPath("$[0].passport.registerPage").value(batchOfPersons.get(0).getPassport().getRegisterPage()))
+                .andExpect(jsonPath("$[0].passport.address").value(batchOfPersons.get(0).getPassport().getAddress()))
+                .andExpect(jsonPath("$[0].legalEntity").value(batchOfPersons.get(0).getLegalEntity()))
+                .andExpect(jsonPath("$[0].postalAddress").value(batchOfPersons.get(0).getPostalAddress()))
+                .andExpect(jsonPath("$[0].owner").value(batchOfPersons.get(0).getOwner()))
+                .andExpect(jsonPath("$[0].country").value(batchOfPersons.get(0).getCountry()));
     }
 }

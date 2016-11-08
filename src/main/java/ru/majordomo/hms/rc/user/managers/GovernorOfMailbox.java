@@ -3,8 +3,10 @@ package ru.majordomo.hms.rc.user.managers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -112,24 +114,48 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
+    protected Resource construct(Resource resource) throws ParameterValidateException {
+        Mailbox mailbox = (Mailbox) resource;
+        Domain domain = (Domain) governorOfDomain.build(mailbox.getDomainId());
+        mailbox.setDomain(domain);
+        return mailbox;
+    }
+
+    @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         Mailbox mailbox = repository.findOne(resourceId);
         if (mailbox == null) {
             throw new ResourceNotFoundException("Mailbox с ID:" + mailbox.getId() + " не найден");
         }
+        return construct(mailbox);
+    }
 
-        Domain mailboxDomain = (Domain) governorOfDomain.build(mailbox.getDomainId());
-        mailbox.setDomain(mailboxDomain);
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<Mailbox> buildedMailboxes = new ArrayList<>();
 
-        return mailbox;
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            for (Mailbox mailbox : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedMailboxes.add((Mailbox) construct(mailbox));
+            }
+        }
+
+        return buildedMailboxes;
     }
 
     @Override
     public Collection<? extends Resource> buildAll() {
-        Collection<Mailbox> mailboxes = repository.findAll();
-        for (Mailbox mailbox: mailboxes) {
-            Domain domain = (Domain) governorOfDomain.build(mailbox.getDomainId());
-            mailbox.setDomain(domain);
+        List<Mailbox> mailboxes = new ArrayList<>();
+        for (Mailbox mailbox: repository.findAll()) {
+            mailboxes.add((Mailbox) construct(mailbox));
         }
         return mailboxes;
     }

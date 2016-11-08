@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
@@ -32,5 +34,12 @@ public class WebSiteRESTController {
     @RequestMapping(value = {"/website/", "/website"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
+    }
+
+    @RequestMapping(value = {"/{accountId}/website", "/{accountId}/website/"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("accountId", accountId);
+        return governor.buildAll(keyValue);
     }
 }

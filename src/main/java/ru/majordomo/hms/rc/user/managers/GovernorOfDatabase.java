@@ -3,8 +3,10 @@ package ru.majordomo.hms.rc.user.managers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -146,17 +148,56 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
+    protected Resource construct(Resource resource) {
+        Database database = (Database) resource;
+        List<DatabaseUser> databaseUsers = new ArrayList<>();
+        for ( String databaseUserId : database.getDatabaseUserIds()) {
+            databaseUsers.add((DatabaseUser) governorOfDatabaseUser.build(databaseUserId));
+        }
+        database.setDatabaseUsers(databaseUsers);
+        return database;
+    }
+
+    @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         Database database = repository.findOne(resourceId);
         if (database == null) {
             throw new ResourceNotFoundException("Database с ID:" + resourceId + " не найдена");
         }
-        return database;
+        return construct(database);
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+
+        List<Database> buildedDatabases = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedDatabases.add((Database) construct(database));
+            }
+        }
+
+        return buildedDatabases;
     }
 
     @Override
     public Collection<? extends Resource> buildAll() {
-        return repository.findAll();
+        List<Database> buildedDatabases = new ArrayList<>();
+
+        for (Database database : repository.findAll()) {
+            buildedDatabases.add((Database) construct(database));
+        }
+
+        return buildedDatabases;
     }
 
     @Override

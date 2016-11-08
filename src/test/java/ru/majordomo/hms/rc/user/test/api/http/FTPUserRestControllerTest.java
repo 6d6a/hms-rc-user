@@ -36,6 +36,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -65,6 +66,7 @@ public class FTPUserRestControllerTest {
                 .build();
         batchOfFTPUsers = ResourceGenerator.generateBatchOfFTPUsers();
         for (FTPUser ftpUser : batchOfFTPUsers) {
+            ftpUser.setUnixAccountId(ftpUser.getUnixAccount().getId());
             unixAccountRepository.save(ftpUser.getUnixAccount());
             repository.save(ftpUser);
         }
@@ -95,5 +97,19 @@ public class FTPUserRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc);
+    }
+
+    @Test
+    public void readAllByAccountId() throws Exception {
+        String accountId = batchOfFTPUsers.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfFTPUsers.get(0).getName()))
+                .andExpect(jsonPath("$[0].switchedOn").value(batchOfFTPUsers.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("$[0].passwordHash").value(batchOfFTPUsers.get(0).getPasswordHash()))
+                .andExpect(jsonPath("$[0].homeDir").value(batchOfFTPUsers.get(0).getHomeDir()))
+                .andExpect(jsonPath("$[0].unixAccount").isMap())
+                .andExpect(jsonPath("$[0].unixAccount.id").value(batchOfFTPUsers.get(0).getUnixAccount().getId()));
     }
 }
