@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
@@ -35,6 +37,13 @@ public class DatabaseUserRestController {
     @RequestMapping(value = {"/database-user/","/database-user"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
+    }
+
+    @RequestMapping(value = {"/{accountId}/database-user", "/{accountId}/database-user/"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("accountId", accountId);
+        return governor.buildAll(keyValue);
     }
 
 }

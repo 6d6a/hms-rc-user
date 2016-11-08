@@ -35,6 +35,7 @@ public class ResourceGenerator {
         List<Person> batchOfPersons = new ArrayList<>();
 
         Person parovozov = new Person();
+        parovozov.setAccountId(ObjectId.get().toString());
         parovozov.setName("Паровозов Аркадий Локомотивович");
         parovozov.addEmailAddress("arkady@parovozov.ru");
         parovozov.addEmailAddress("parovozov@gmail.com");
@@ -47,6 +48,7 @@ public class ResourceGenerator {
 
         Person hosting = new Person();
         hosting.setName("ООО Хостинг");
+        hosting.setAccountId(ObjectId.get().toString());
         hosting.addEmailAddress("support@majordomo.ru");
         hosting.addEmailAddress("info@majordomo.ru");
         hosting.addPhoneNumber("+78123353545");
@@ -130,6 +132,7 @@ public class ResourceGenerator {
         Arrays.asList("REGISTERED", "DELEGATED", "VERIFIED").forEach(regSpec::addState);
 
         Domain ruDomain = new Domain();
+        ruDomain.setAccountId(ObjectId.get().toString());
         ruDomain.setName("majordomo.ru");
         ruDomain.setSwitchedOn(true);
         ruDomain.setDnsResourceRecords(generateBatchOfDNSRecords("majordomo.ru"));
@@ -137,6 +140,7 @@ public class ResourceGenerator {
         ruDomain.setPerson(batchOfPersons.get(0));
 
         Domain rfDomain = new Domain();
+        rfDomain.setAccountId(ObjectId.get().toString());
         rfDomain.setName("мажордомо.рф");
         rfDomain.setSwitchedOn(true);
         rfDomain.setPerson(batchOfPersons.get(1));
@@ -177,6 +181,7 @@ public class ResourceGenerator {
 
         for (int i = 0; i < 2; i++) {
             Mailbox mailbox = new Mailbox();
+            mailbox.setAccountId(ObjectId.get().toString());
             mailbox.setName("box" + i + "@majordomo.ru");
             mailbox.setSwitchedOn(true);
             Arrays.asList("bad@address.ru", "spam@gmail.com").forEach(mailbox::addToBlackList);
@@ -199,6 +204,8 @@ public class ResourceGenerator {
         for (int i = 0; i < 2; i++) {
             int nameNumPart = 134035 + i;
             UnixAccount unixAccount = new UnixAccount();
+            unixAccount.setAccountId(ObjectId.get().toString());
+            unixAccount.setId(ObjectId.get().toString());
             unixAccount.setName("u" + nameNumPart);
             unixAccount.setSwitchedOn(true);
             unixAccount.setHomeDir("/home/u" + nameNumPart);
@@ -231,6 +238,7 @@ public class ResourceGenerator {
                 webSite.setDocumentRoot("yandex.ru/www");
             }
 
+            webSite.setAccountId(ObjectId.get().toString());
             webSite.setSwitchedOn(true);
             webSite.setUnixAccount(batchOfUnixAccounts.get(i));
             webSite.addDomain(batchOfDomains.get(i));
@@ -276,6 +284,7 @@ public class ResourceGenerator {
         List<FTPUser> ftpUsers = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             FTPUser ftpUser = new FTPUser();
+            ftpUser.setAccountId(ObjectId.get().toString());
             ftpUser.setName("f13403" + i);
             ftpUser.setPasswordHashByPlainPassword("123456" + i);
             ftpUser.setHomeDir("/home/u13403" + i + "/majordomoru/" + i);
@@ -291,6 +300,7 @@ public class ResourceGenerator {
         List<DatabaseUser> batchOfDatabaseUsers = new ArrayList<>();
         for (int i = 0; i <= 2; i++) {
             DatabaseUser databaseUser = new DatabaseUser();
+            databaseUser.setAccountId(ObjectId.get().toString());
             databaseUser.setId(ObjectId.get().toString());
             databaseUser.setType(POSTGRES);
             databaseUser.setPasswordHashByPlainPassword("123456" + i);

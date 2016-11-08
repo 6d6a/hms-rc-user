@@ -35,6 +35,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -103,6 +104,27 @@ public class UnixAccountRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(doc);
+    }
+
+    @Test
+    public void readAllByAccountId() throws Exception {
+        String accountId = batchOfUnixAccount.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfUnixAccount.get(0).getName()))
+                .andExpect(jsonPath("$[0].switchedOn").value(batchOfUnixAccount.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("$[0].homeDir").value(batchOfUnixAccount.get(0).getHomeDir()))
+                .andExpect(jsonPath("$[0].uid").value(batchOfUnixAccount.get(0).getUid()))
+                .andExpect(jsonPath("$[0].serverId").value(batchOfUnixAccount.get(0).getServerId()))
+                .andExpect(jsonPath("$[0].crontab").isArray())
+                .andExpect(jsonPath("$[0].quota").value(batchOfUnixAccount.get(0).getQuota()))
+                .andExpect(jsonPath("$[0].quotaUsed").value(batchOfUnixAccount.get(0).getQuotaUsed()))
+                .andExpect(jsonPath("$[0].writable").value(batchOfUnixAccount.get(0).getWritable()))
+                .andExpect(jsonPath("$[0].passwordHash").value(batchOfUnixAccount.get(0).getPasswordHash()))
+                .andExpect(jsonPath("$[0].keyPair").isMap())
+                .andExpect(jsonPath("$[0].keyPair.privateKey").value(batchOfUnixAccount.get(0).getKeyPair().getPrivateKey()))
+                .andExpect(jsonPath("$[0].keyPair.publicKey").value(batchOfUnixAccount.get(0).getKeyPair().getPublicKey()));
     }
 
 }

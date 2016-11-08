@@ -130,13 +130,12 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
-        WebSite webSite = repository.findOne(resourceId);
+    protected Resource prepareAllEntities(Resource resource) throws ParameterValidateException {
+        WebSite webSite = (WebSite) resource;
         for (String domainId : webSite.getDomainIds()) {
             Domain domain = (Domain) governorOfDomain.build(domainId);
             webSite.addDomain(domain);
         }
-
         String unixAccountId = webSite.getUnixAccountId();
         UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
         webSite.setUnixAccount(unixAccount);
@@ -145,30 +144,48 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws NotImplementedException {
-        throw new NotImplementedException();
+    public Resource build(String resourceId) throws ResourceNotFoundException {
+        WebSite webSite = repository.findOne(resourceId);
+
+        return prepareAllEntities(webSite);
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<WebSite> buildedWebSites = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            for (WebSite webSite : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedWebSites.add((WebSite) prepareAllEntities(webSite));
+            }
+        }
+
+        return buildedWebSites;
     }
 
     @Override
     public Collection<? extends Resource> buildAll() {
-        List<WebSite> webSites = new ArrayList<>();
-        webSites = repository.findAll();
-        for (WebSite webSite : webSites) {
-            for (String domainId : webSite.getDomainIds()) {
-                Domain domain = (Domain) governorOfDomain.build(domainId);
-                webSite.addDomain(domain);
-            }
+        List<WebSite> buildedWebSites = new ArrayList<>();
 
-            String unixAccountId = webSite.getUnixAccountId();
-            UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
-            webSite.setUnixAccount(unixAccount);
+        for (WebSite webSite : repository.findAll()) {
+            buildedWebSites.add((WebSite) prepareAllEntities(webSite));
         }
-        return webSites;
+
+        return buildedWebSites;
     }
 
     @Override
     public void store(Resource resource) {
-
+        WebSite webSite = (WebSite) resource;
+        repository.save(webSite);
     }
 
 }

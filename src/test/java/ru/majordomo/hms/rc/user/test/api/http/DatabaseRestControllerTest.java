@@ -110,7 +110,6 @@ public class DatabaseRestControllerTest {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andDo(doc)
                 .andExpect(jsonPath("$[0].name").value(batchOfDatabases.get(0).getName()))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfDatabases.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("$[0].serverId").value(batchOfDatabases.get(0).getServerId()))

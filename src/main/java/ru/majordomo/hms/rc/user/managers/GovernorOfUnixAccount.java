@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -170,14 +167,32 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
-        UnixAccount unixAccount = repository.findOne(resourceId);
-        return unixAccount;
+    protected Resource prepareAllEntities(Resource resource) throws NotImplementedException {
+        throw new NotImplementedException();
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws NotImplementedException {
-        throw new NotImplementedException();
+    public Resource build(String resourceId) throws ResourceNotFoundException {
+        return repository.findOne(resourceId);
+    }
+
+    @Override
+    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<UnixAccount> buildedUnixAccounts = new ArrayList<>();
+
+        boolean byAccountId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId) {
+            buildedUnixAccounts = repository.findByAccountId(keyValue.get("accountId"));
+        }
+
+        return buildedUnixAccounts;
     }
 
     @Override
