@@ -47,7 +47,7 @@ public class GovernorOfUnixAccountTest {
         assertThat(unixAccount.getQuota(), is(10485760L));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = ParameterValidateException.class)
     public void createWithoutQuota() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateServiceMessage();
         serviceMessage.delParam("quota");

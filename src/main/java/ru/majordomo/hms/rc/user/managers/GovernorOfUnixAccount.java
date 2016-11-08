@@ -101,6 +101,10 @@ public class GovernorOfUnixAccount extends LordOfResources {
             serverId = getActiveHostingServerId();
         }
 
+        if (serviceMessage.getParam("quota") == null) {
+            throw new ParameterValidateException("Квота не может быть нуль");
+        }
+
         Long quota = ((Number) serviceMessage.getParam("quota")).longValue();
         if (quota == 0) {
             throw new ParameterValidateException("Квота не может быть нуль");
