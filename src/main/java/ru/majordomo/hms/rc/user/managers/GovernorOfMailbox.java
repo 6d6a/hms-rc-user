@@ -76,6 +76,9 @@ public class GovernorOfMailbox extends LordOfResources {
         String domainId = cleaner.cleanString((String) serviceMessage.getParam("domainId"));
         List<String> blackList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("blackList"));
         List<String> whilteList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("whiteList"));
+        if (serviceMessage.getParam("quota") == null) {
+            throw new ParameterValidateException("Квота не может быть нуль");
+        }
         Long quota = ((Number) serviceMessage.getParam("quota")).longValue();
         Long quotaUsed;
         if (serviceMessage.getParam("quotaUsed") == null) {
