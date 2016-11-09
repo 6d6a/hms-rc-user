@@ -76,8 +76,13 @@ public class GovernorOfMailbox extends LordOfResources {
         String domainId = cleaner.cleanString((String) serviceMessage.getParam("domainId"));
         List<String> blackList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("blackList"));
         List<String> whilteList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("whiteList"));
-        Long quota = (Long) serviceMessage.getParam("quota");
-        Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+        Long quota = ((Number) serviceMessage.getParam("quota")).longValue();
+        Long quotaUsed;
+        if (serviceMessage.getParam("quotaUsed") == null) {
+            quotaUsed = 0L;
+        } else {
+            quotaUsed = ((Number) serviceMessage.getParam("quotaUsed")).longValue();
+        }
         Boolean writable = (Boolean) serviceMessage.getParam("writable");
         String serverId = cleaner.cleanString((String)serviceMessage.getParam("serverId"));
         if (serverId == null) {
@@ -110,6 +115,10 @@ public class GovernorOfMailbox extends LordOfResources {
 
         if (mailbox.getDomain() == null) {
             throw new ParameterValidateException("Для ящика должен быть указан домен");
+        }
+
+        if (mailbox.getQuota() == 0) {
+            throw new ParameterValidateException("Квота не может быть нуль");
         }
     }
 
