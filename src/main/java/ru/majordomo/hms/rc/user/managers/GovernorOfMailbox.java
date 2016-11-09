@@ -119,10 +119,6 @@ public class GovernorOfMailbox extends LordOfResources {
         if (mailbox.getDomain() == null) {
             throw new ParameterValidateException("Для ящика должен быть указан домен");
         }
-
-        if (mailbox.getQuota() == 0) {
-            throw new ParameterValidateException("Квота не может быть нуль");
-        }
     }
 
     @Override
