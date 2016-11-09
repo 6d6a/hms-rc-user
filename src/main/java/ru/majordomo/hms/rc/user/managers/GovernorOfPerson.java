@@ -208,6 +208,29 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
+    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+        Person person = new Person();
+
+        boolean byAccountId = false;
+        boolean byId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("personId")) {
+                byId = true;
+            }
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId && byId) {
+            person = repository.findByIdAndAccountId(keyValue.get("personId"), keyValue.get("accountId"));
+        }
+
+        return person;
+    }
+
+    @Override
     public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Person> buildedPersons = new ArrayList<>();
 

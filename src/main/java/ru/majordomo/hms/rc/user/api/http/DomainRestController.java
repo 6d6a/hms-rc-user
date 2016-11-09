@@ -30,6 +30,14 @@ public class DomainRestController {
         return (Domain) governor.build(domainId);
     }
 
+    @RequestMapping(value = {"{accountId}/domain/{domainId}", "{accountId}/domain/{domainId}/"}, method = RequestMethod.GET)
+    public Domain readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("domainId") String domainId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("domainId", domainId);
+        keyValue.put("accountId", accountId);
+        return (Domain) governor.build(keyValue);
+    }
+
     @RequestMapping(value = {"/domain/","/domain"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();

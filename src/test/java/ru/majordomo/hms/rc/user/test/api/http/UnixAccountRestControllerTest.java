@@ -127,4 +127,26 @@ public class UnixAccountRestControllerTest {
                 .andExpect(jsonPath("$[0].keyPair.publicKey").value(batchOfUnixAccount.get(0).getKeyPair().getPublicKey()));
     }
 
+    @Test
+    public void readByIdAndByAccountId() throws Exception {
+        String accountId = batchOfUnixAccount.get(0).getAccountId();
+        String unixAccountId = batchOfUnixAccount.get(0).getId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + unixAccountId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfUnixAccount.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfUnixAccount.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("homeDir").value(batchOfUnixAccount.get(0).getHomeDir()))
+                .andExpect(jsonPath("uid").value(batchOfUnixAccount.get(0).getUid()))
+                .andExpect(jsonPath("serverId").value(batchOfUnixAccount.get(0).getServerId()))
+                .andExpect(jsonPath("crontab").isArray())
+                .andExpect(jsonPath("quota").value(batchOfUnixAccount.get(0).getQuota()))
+                .andExpect(jsonPath("quotaUsed").value(batchOfUnixAccount.get(0).getQuotaUsed()))
+                .andExpect(jsonPath("writable").value(batchOfUnixAccount.get(0).getWritable()))
+                .andExpect(jsonPath("passwordHash").value(batchOfUnixAccount.get(0).getPasswordHash()))
+                .andExpect(jsonPath("keyPair").isMap())
+                .andExpect(jsonPath("keyPair.privateKey").value(batchOfUnixAccount.get(0).getKeyPair().getPrivateKey()))
+                .andExpect(jsonPath("keyPair.publicKey").value(batchOfUnixAccount.get(0).getKeyPair().getPublicKey()));
+    }
+
 }

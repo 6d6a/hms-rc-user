@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface MailboxRepository extends MongoRepository<Mailbox,String> {
     List<Mailbox> findByAccountId(String accountId);
+    Mailbox findByIdAndAccountId(String mailboxId, String accountId);
 }

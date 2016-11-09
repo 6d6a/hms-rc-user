@@ -112,4 +112,19 @@ public class FTPUserRestControllerTest {
                 .andExpect(jsonPath("$[0].unixAccount").isMap())
                 .andExpect(jsonPath("$[0].unixAccount.id").value(batchOfFTPUsers.get(0).getUnixAccount().getId()));
     }
+
+    @Test
+    public void readByIdAndByAccountId() throws Exception {
+        String accountId = batchOfFTPUsers.get(0).getAccountId();
+        String ftpUserId = batchOfFTPUsers.get(0).getId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + ftpUserId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfFTPUsers.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfFTPUsers.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("passwordHash").value(batchOfFTPUsers.get(0).getPasswordHash()))
+                .andExpect(jsonPath("homeDir").value(batchOfFTPUsers.get(0).getHomeDir()))
+                .andExpect(jsonPath("unixAccount").isMap())
+                .andExpect(jsonPath("unixAccount.id").value(batchOfFTPUsers.get(0).getUnixAccount().getId()));
+    }
 }

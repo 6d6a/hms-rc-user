@@ -111,4 +111,19 @@ public class DomainRestControllerTest {
                 .andExpect(jsonPath("$[0].regSpec").isMap())
                 .andExpect(jsonPath("$[0].dnsResourceRecords").isArray());
     }
+
+    @Test
+    public void readByIdAndByAccountId() throws Exception {
+        String accountId = batchOfDomains.get(0).getAccountId();
+        String domainId = batchOfDomains.get(0).getId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + domainId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfDomains.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfDomains.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("person").isMap())
+                .andExpect(jsonPath("person.id").value(batchOfDomains.get(0).getPerson().getId()))
+                .andExpect(jsonPath("regSpec").isMap())
+                .andExpect(jsonPath("dnsResourceRecords").isArray());
+    }
 }

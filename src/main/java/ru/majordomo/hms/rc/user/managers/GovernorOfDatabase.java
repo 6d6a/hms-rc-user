@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.bouncycastle.asn1.dvcs.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -165,6 +166,30 @@ public class GovernorOfDatabase extends LordOfResources {
             throw new ResourceNotFoundException("Database с ID:" + resourceId + " не найдена");
         }
         return construct(database);
+    }
+
+    @Override
+    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+
+        Database database = new Database();
+
+        boolean byAccountId = false;
+        boolean byId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("databaseId")) {
+                byId = true;
+            }
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId && byId) {
+            database = (Database) construct(repository.findByIdAndAccountId(keyValue.get("databaseId"), keyValue.get("accountId")));
+        }
+
+        return database;
     }
 
     @Override

@@ -183,6 +183,29 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
+    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+        UnixAccount unixAccount = new UnixAccount();
+
+        boolean byAccountId = false;
+        boolean byId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("unixAccountId")) {
+                byId = true;
+            }
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId && byId) {
+            unixAccount = repository.findByIdAndAccountId(keyValue.get("unixAccountId"), keyValue.get("accountId"));
+        }
+
+        return unixAccount;
+    }
+
+    @Override
     public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<UnixAccount> buildedUnixAccounts = new ArrayList<>();
 

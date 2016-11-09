@@ -150,6 +150,29 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
+    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+        WebSite website = new WebSite();
+
+        boolean byAccountId = false;
+        boolean byId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("websiteId")) {
+                byId = true;
+            }
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        if (byAccountId && byId) {
+            website = (WebSite) construct(repository.findByIdAndAccountId(keyValue.get("websiteId"), keyValue.get("accountId")));
+        }
+
+        return website;
+    }
+
+    @Override
     public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<WebSite> buildedWebSites = new ArrayList<>();
 

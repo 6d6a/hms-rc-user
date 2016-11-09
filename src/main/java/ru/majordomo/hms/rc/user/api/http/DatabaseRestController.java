@@ -29,6 +29,14 @@ public class DatabaseRestController {
         return (Database) governor.build(databaseId);
     }
 
+    @RequestMapping(value = {"{accountId}/database/{databaseId}", "{accountId}/database/{databaseId}/"}, method = RequestMethod.GET)
+    public Database readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("databaseId") String databaseId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("databaseId", databaseId);
+        keyValue.put("accountId", accountId);
+        return (Database) governor.build(keyValue);
+    }
+
     @RequestMapping(value = {"/database/","/database"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();

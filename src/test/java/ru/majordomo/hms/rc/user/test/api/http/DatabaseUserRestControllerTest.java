@@ -106,4 +106,17 @@ public class DatabaseUserRestControllerTest {
                 .andExpect(jsonPath("$[0].passwordHash").value(batchOfDatabaseUsers.get(0).getPasswordHash()))
                 .andExpect(jsonPath("$[0].type").value(batchOfDatabaseUsers.get(0).getType().toString()));
     }
+
+    @Test
+    public void readByIdByAndAccountId() throws Exception {
+        String accountId = batchOfDatabaseUsers.get(0).getAccountId();
+        String databaseUserId = batchOfDatabaseUsers.get(0).getId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + databaseUserId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfDatabaseUsers.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfDatabaseUsers.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("passwordHash").value(batchOfDatabaseUsers.get(0).getPasswordHash()))
+                .andExpect(jsonPath("type").value(batchOfDatabaseUsers.get(0).getType().toString()));
+    }
 }

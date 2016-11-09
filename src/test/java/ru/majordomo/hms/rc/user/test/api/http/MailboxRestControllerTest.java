@@ -133,4 +133,24 @@ public class MailboxRestControllerTest {
                 .andExpect(jsonPath("$[0].quotaUsed").value(batchOfMailboxes.get(0).getQuotaUsed()))
                 .andExpect(jsonPath("$[0].writable").value(batchOfMailboxes.get(0).getWritable()));
     }
+
+    @Test
+    public void readByIdAndByAccountId() throws Exception {
+        String accountId = batchOfMailboxes.get(0).getAccountId();
+        String mailboxId = batchOfMailboxes.get(0).getId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + mailboxId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfMailboxes.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfMailboxes.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("domain").isMap())
+                .andExpect(jsonPath("domain.id").value(batchOfMailboxes.get(0).getDomain().getId()))
+                .andExpect(jsonPath("blackList").value(batchOfMailboxes.get(0).getBlackList()))
+                .andExpect(jsonPath("whiteList").value(batchOfMailboxes.get(0).getWhiteList()))
+                .andExpect(jsonPath("antiSpamEnabled").value(batchOfMailboxes.get(0).getAntiSpamEnabled()))
+                .andExpect(jsonPath("serverId").value(batchOfMailboxes.get(0).getServerId()))
+                .andExpect(jsonPath("quota").value(batchOfMailboxes.get(0).getQuota()))
+                .andExpect(jsonPath("quotaUsed").value(batchOfMailboxes.get(0).getQuotaUsed()))
+                .andExpect(jsonPath("writable").value(batchOfMailboxes.get(0).getWritable()));
+    }
 }

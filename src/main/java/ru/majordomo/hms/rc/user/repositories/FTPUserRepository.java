@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface FTPUserRepository extends MongoRepository<FTPUser, String> {
     List<FTPUser> findByAccountId(String accountId);
+    FTPUser findByIdAndAccountId(String ftpUserId, String accountId);
 }

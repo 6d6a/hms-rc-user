@@ -120,4 +120,22 @@ public class DatabaseRestControllerTest {
                 .andExpect(jsonPath("$[0].databaseUsers").isArray())
                 .andExpect(jsonPath("$[0].databaseUsers.[0].id").value(batchOfDatabases.get(0).getDatabaseUsers().get(0).getId()));
     }
+
+    @Test
+    public void readByIdAndByAccountId() throws Exception {
+        String accountId = batchOfDatabases.get(0).getAccountId();
+        String databaseId = batchOfDatabases.get(0).getId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + databaseId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfDatabases.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfDatabases.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("serverId").value(batchOfDatabases.get(0).getServerId()))
+                .andExpect(jsonPath("type").value(batchOfDatabases.get(0).getType().toString()))
+                .andExpect(jsonPath("quota").value(batchOfDatabases.get(0).getQuota()))
+                .andExpect(jsonPath("quotaUsed").value(batchOfDatabases.get(0).getQuotaUsed()))
+                .andExpect(jsonPath("writable").value(batchOfDatabases.get(0).getWritable()))
+                .andExpect(jsonPath("databaseUsers").isArray())
+                .andExpect(jsonPath("databaseUsers.[0].id").value(batchOfDatabases.get(0).getDatabaseUsers().get(0).getId()));
+    }
 }

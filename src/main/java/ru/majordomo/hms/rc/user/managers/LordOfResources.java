@@ -29,6 +29,8 @@ public abstract class LordOfResources {
 
     public abstract Resource build(String resourceId) throws ResourceNotFoundException;
 
+    public abstract Resource build(Map<String, String> keyValue) throws ResourceNotFoundException;
+
     public abstract Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException;
 
     public abstract Collection<? extends Resource> buildAll();

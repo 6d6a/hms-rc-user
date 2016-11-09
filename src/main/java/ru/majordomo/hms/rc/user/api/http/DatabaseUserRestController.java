@@ -34,6 +34,14 @@ public class DatabaseUserRestController {
         return (DatabaseUser) governor.build(databaseUserId);
     }
 
+    @RequestMapping(value = {"{accountId}/database-user/{databaseUserId}", "{accountId}/database-user/{databaseUserId}/"}, method = RequestMethod.GET)
+    public DatabaseUser readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("databaseUserId") String databaseUserId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("databaseUserId", databaseUserId);
+        keyValue.put("accountId", accountId);
+        return (DatabaseUser) governor.build(keyValue);
+    }
+
     @RequestMapping(value = {"/database-user/","/database-user"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();

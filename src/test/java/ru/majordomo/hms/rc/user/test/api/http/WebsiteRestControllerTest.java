@@ -138,7 +138,7 @@ public class WebsiteRestControllerTest {
     public void readAllByAccountId() throws Exception {
         String accountId = batchOfWebsites.get(0).getAccountId();
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/").accept(APPLICATION_JSON_UTF8);
-        mockMvc.perform(request).andExpect(status().isOk()).andDo(print())
+        mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfWebsites.get(0).getName()))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfWebsites.get(0).getSwitchedOn()))
@@ -163,6 +163,39 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("$[0].indexFileList").isArray())
                 .andExpect(jsonPath("$[0].accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
                 .andExpect(jsonPath("$[0].errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
+        ;
+    }
+
+    @Test
+    public void readByIdAndByAccountId() throws Exception {
+        String accountId = batchOfWebsites.get(0).getAccountId();
+        String websiteId = batchOfWebsites.get(0).getId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + websiteId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfWebsites.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfWebsites.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("unixAccount").isMap())
+                .andExpect(jsonPath("unixAccount.id").value(batchOfWebsites.get(0).getUnixAccount().getId()))
+                .andExpect(jsonPath("serverId").value(batchOfWebsites.get(0).getServerId()))
+                .andExpect(jsonPath("documentRoot").value(batchOfWebsites.get(0).getDocumentRoot()))
+                .andExpect(jsonPath("domains").isArray())
+                .andExpect(jsonPath("domains.[0].id").value(batchOfWebsites.get(0).getDomains().get(0).getId()))
+                .andExpect(jsonPath("charSet").value(batchOfWebsites.get(0).getCharSet().toString()))
+                .andExpect(jsonPath("ssiEnabled").value(batchOfWebsites.get(0).getSsiEnabled()))
+                .andExpect(jsonPath("ssiFileExtensions").isArray())
+                .andExpect(jsonPath("cgiEnabled").value(batchOfWebsites.get(0).getCgiEnabled()))
+                .andExpect(jsonPath("cgiFileExtensions").isArray())
+                .andExpect(jsonPath("scriptAlias").value(batchOfWebsites.get(0).getScriptAlias()))
+                .andExpect(jsonPath("ddosProtection").value(batchOfWebsites.get(0).getDdosProtection()))
+                .andExpect(jsonPath("autoSubDomain").value(batchOfWebsites.get(0).getAutoSubDomain()))
+                .andExpect(jsonPath("accessByOldHttpVersion").value(batchOfWebsites.get(0).getAccessByOldHttpVersion()))
+                .andExpect(jsonPath("staticFileExtensions").isArray())
+                .andExpect(jsonPath("autoSubDomain").value(batchOfWebsites.get(0).getAutoSubDomain()))
+                .andExpect(jsonPath("customUserConf").value(batchOfWebsites.get(0).getCustomUserConf()))
+                .andExpect(jsonPath("indexFileList").isArray())
+                .andExpect(jsonPath("accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
+                .andExpect(jsonPath("errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
         ;
     }
 

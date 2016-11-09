@@ -31,6 +31,14 @@ public class WebSiteRESTController {
         return (WebSite) governor.build(websiteId);
     }
 
+    @RequestMapping(value = {"{accountId}/website/{websiteId}", "{accountId}/website/{websiteId}/"}, method = RequestMethod.GET)
+    public WebSite readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("websiteId") String websiteId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("websiteId", websiteId);
+        keyValue.put("accountId", accountId);
+        return (WebSite) governor.build(keyValue);
+    }
+
     @RequestMapping(value = {"/website/", "/website"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
