@@ -26,8 +26,8 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("name", "Климов Никита Анатольевич");
-        serviceMessage.addParam("accountId", ObjectId.get().toString());
         serviceMessage.addParam("phoneNumbers", Arrays.asList("+79052033565"));
         serviceMessage.addParam("emailAddresses", Arrays.asList("nikita@klimov.us"));
         serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));
@@ -73,9 +73,9 @@ public class ServiceMessageGenerator {
     public static ServiceMessage generateUnixAccountCreateServiceMessage() {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("serverId", ObjectId.get().toString());
         serviceMessage.addParam("quota", (long) 1e7);
-        serviceMessage.addParam("accountId", ObjectId.get().toString());
 
         return serviceMessage;
     }
@@ -83,9 +83,9 @@ public class ServiceMessageGenerator {
     public static ServiceMessage generateUnixAccountCreateQuotaIntServiceMessage() {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("serverId", ObjectId.get().toString());
         serviceMessage.addParam("quota", (int) 10485760);
-        serviceMessage.addParam("accountId", ObjectId.get().toString());
 
         return serviceMessage;
     }
@@ -93,9 +93,9 @@ public class ServiceMessageGenerator {
     public static ServiceMessage generateUnixAccountCreateQuotaStringServiceMessage() {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("serverId", ObjectId.get().toString());
         serviceMessage.addParam("quota", (String) "");
-        serviceMessage.addParam("accountId", ObjectId.get().toString());
 
         return serviceMessage;
     }

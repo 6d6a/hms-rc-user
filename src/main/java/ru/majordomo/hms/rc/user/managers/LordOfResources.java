@@ -41,7 +41,7 @@ public abstract class LordOfResources {
                                          ServiceMessage serviceMessage,
                                          Cleaner cleaner) throws ClassCastException {
         String id = cleaner.cleanString((String) serviceMessage.getParam("id"));
-        String accountId = cleaner.cleanString((String) serviceMessage.getParam("accountId"));
+        String accountId = cleaner.cleanString(serviceMessage.getAccountId());
         String name = cleaner.cleanString((String) serviceMessage.getParam("name"));
         Boolean switchedOn = (Boolean) serviceMessage.getParam("switchedOn");
 
