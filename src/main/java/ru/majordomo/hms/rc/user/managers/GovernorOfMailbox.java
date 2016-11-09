@@ -73,13 +73,24 @@ public class GovernorOfMailbox extends LordOfResources {
         Mailbox mailbox = new Mailbox();
         LordOfResources.setResourceParams(mailbox, serviceMessage, cleaner);
 
-        String domainId = cleaner.cleanString((String) serviceMessage.getParam("domainId"));
-        List<String> blackList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("blackList"));
-        List<String> whilteList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("whiteList"));
-        if (serviceMessage.getParam("quota") == null) {
-            throw new ParameterValidateException("Квота не может быть нуль");
+        if (serviceMessage.getParam("domainId") == null) {
+            throw new ParameterValidateException("Не указан domainId");
         }
-        Long quota = ((Number) serviceMessage.getParam("quota")).longValue();
+        String domainId = cleaner.cleanString((String) serviceMessage.getParam("domainId"));
+        List<String> blackList = new ArrayList<>();
+        if (serviceMessage.getParam("blackList") != null) {
+            blackList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("blackList"));
+        }
+        List<String> whilteList = new ArrayList<>();
+        if (serviceMessage.getParam("whiteList") != null) {
+            whilteList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("whiteList"));
+        }
+        Long quota;
+        if (serviceMessage.getParam("quota") == null) {
+            quota = 0L;
+        } else {
+            quota = ((Number) serviceMessage.getParam("quota")).longValue();
+        }
         Long quotaUsed;
         if (serviceMessage.getParam("quotaUsed") == null) {
             quotaUsed = 0L;
@@ -118,6 +129,14 @@ public class GovernorOfMailbox extends LordOfResources {
 
         if (mailbox.getDomain() == null) {
             throw new ParameterValidateException("Для ящика должен быть указан домен");
+        }
+
+        if (mailbox.getQuota() < 0L) {
+            throw new ParameterValidateException("Квота не может иметь отрицательное значение");
+        }
+
+        if (mailbox.getQuotaUsed() < 0L) {
+            throw new ParameterValidateException("Использованная квота не может иметь отрицательное значение");
         }
     }
 

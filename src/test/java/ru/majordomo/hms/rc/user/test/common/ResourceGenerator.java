@@ -35,6 +35,7 @@ public class ResourceGenerator {
         List<Person> batchOfPersons = new ArrayList<>();
 
         Person parovozov = new Person();
+        parovozov.setId(ObjectId.get().toString());
         parovozov.setAccountId(ObjectId.get().toString());
         parovozov.setName("Паровозов Аркадий Локомотивович");
         parovozov.addEmailAddress("arkady@parovozov.ru");
@@ -49,6 +50,7 @@ public class ResourceGenerator {
         Person hosting = new Person();
         hosting.setName("ООО Хостинг");
         hosting.setAccountId(ObjectId.get().toString());
+        hosting.setId(ObjectId.get().toString());
         hosting.addEmailAddress("support@majordomo.ru");
         hosting.addEmailAddress("info@majordomo.ru");
         hosting.addPhoneNumber("+78123353545");

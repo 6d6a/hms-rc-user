@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 
@@ -96,6 +97,15 @@ public class ServiceMessageGenerator {
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("serverId", ObjectId.get().toString());
         serviceMessage.addParam("quota", (String) "");
+
+        return serviceMessage;
+    }
+
+    public static ServiceMessage generateMailboxCreateServiceMessage(String domainId) {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.addParam("domainId", domainId);
 
         return serviceMessage;
     }
