@@ -89,7 +89,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity").description("Реквизиты организации. Здесь null, т.к. объект является физ. лицом"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является персона"),
                                 fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
-                                fieldWithPath("owner").description("Является ли эта персона владельцем аккаунта")
+                                fieldWithPath("owner").description("Является ли эта персона владельцем аккаунта"),
+                                fieldWithPath("nicHandle").description("nicHandle")
                         )
                 ));
     }
@@ -117,7 +118,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity.address").description("Адрес регистрации"),
                                 fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("owner").description("Является ли эта персона владельцем аккаунта"),
-                                fieldWithPath("country").description("Код страны, резидентом которой является организация")
+                                fieldWithPath("country").description("Код страны, резидентом которой является организация"),
+                                fieldWithPath("nicHandle").description("nicHandle")
                         )
                 ));
     }
@@ -151,7 +153,8 @@ public class PersonRestControllerTest {
                 .andExpect(jsonPath("$[0].legalEntity").value(batchOfPersons.get(0).getLegalEntity()))
                 .andExpect(jsonPath("$[0].postalAddress").value(batchOfPersons.get(0).getPostalAddress()))
                 .andExpect(jsonPath("$[0].owner").value(batchOfPersons.get(0).getOwner()))
-                .andExpect(jsonPath("$[0].country").value(batchOfPersons.get(0).getCountry()));
+                .andExpect(jsonPath("$[0].country").value(batchOfPersons.get(0).getCountry()))
+                .andExpect(jsonPath("$[0].nicHandle").value(batchOfPersons.get(0).getNicHandle()));
     }
 
     @Test
@@ -176,6 +179,7 @@ public class PersonRestControllerTest {
                 .andExpect(jsonPath("legalEntity").value(batchOfPersons.get(0).getLegalEntity()))
                 .andExpect(jsonPath("postalAddress").value(batchOfPersons.get(0).getPostalAddress()))
                 .andExpect(jsonPath("owner").value(batchOfPersons.get(0).getOwner()))
-                .andExpect(jsonPath("country").value(batchOfPersons.get(0).getCountry()));
+                .andExpect(jsonPath("country").value(batchOfPersons.get(0).getCountry()))
+                .andExpect(jsonPath("nicHandle").value(batchOfPersons.get(0).getNicHandle()));
     }
 }

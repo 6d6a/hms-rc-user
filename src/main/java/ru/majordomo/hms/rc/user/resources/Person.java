@@ -16,6 +16,16 @@ public class Person extends Resource {
     private String postalAddress;
     private Boolean owner;
 
+    public String getNicHandle() {
+        return nicHandle;
+    }
+
+    public void setNicHandle(String nicHandle) {
+        this.nicHandle = nicHandle;
+    }
+
+    private String nicHandle;
+
     public Boolean getOwner() {
         return owner;
     }

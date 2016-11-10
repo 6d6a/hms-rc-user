@@ -76,8 +76,14 @@ public class GovernorOfPerson extends LordOfResources {
         String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
         String postalAddress = cleaner.cleanString((String) serviceMessage.getParam("postalAddress"));
         Boolean owner = (Boolean) serviceMessage.getParam("owner");
-        List<String> phoneNumbers = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("phoneNumbers"));
-        List<String> emailAddresses = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses"));
+        List<String> phoneNumbers = new ArrayList<>();
+        if (serviceMessage.getParam("phoneNumbers") != null) {
+            phoneNumbers = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("phoneNumbers"));
+        }
+        List<String> emailAddresses = new ArrayList<>();
+        if (serviceMessage.getParam("emailAddresses") != null) {
+            emailAddresses = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses"));
+        }
         Object object = (Object) serviceMessage.getParam("passport");
         Passport passport = null;
         if (object != null) {
@@ -104,6 +110,7 @@ public class GovernorOfPerson extends LordOfResources {
             legalEntity.setOkvedCodes(legalEntityMap.get("okved"));
             legalEntity.setAddress(legalEntityMap.get("address"));
         }
+        String nicHandle = cleaner.cleanString((String) serviceMessage.getParam("nicHandle"));
 
         person.setPhoneNumbers(phoneNumbers);
         person.setEmailAddresses(emailAddresses);
@@ -112,6 +119,7 @@ public class GovernorOfPerson extends LordOfResources {
         person.setCountry(country);
         person.setPostalAddress(postalAddress);
         person.setOwner(owner);
+        person.setNicHandle(nicHandle);
 
         logger.debug("Action ID: " + actionId +
                 " Operation Id: " + operationId +
