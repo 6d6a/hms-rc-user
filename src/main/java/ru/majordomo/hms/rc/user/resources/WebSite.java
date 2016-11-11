@@ -17,8 +17,8 @@ public class WebSite extends Resource implements Serviceable {
     @Transient
     private UnixAccount unixAccount;
     private String unixAccountId;
-    private String documentRoot;
     private String serviceId;
+    private String documentRoot;
 
     @Transient
     private List<Domain> domains = new ArrayList<>();
