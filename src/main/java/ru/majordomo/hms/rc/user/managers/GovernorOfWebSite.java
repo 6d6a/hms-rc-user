@@ -31,11 +31,102 @@ public class GovernorOfWebSite extends LordOfResources {
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
     private String defaultServiceName;
+    private String defaultWebsiteDocumetRootPattern;
+    private String defaultWebsiteCharset;
+    private Boolean defaultWebsiteSsiEnabled;
+    private String[] defaultWebsiteSsiFileExtensions;
+    private Boolean defaultWebsiteCgiEnabled;
+    private String[] defaultWebsiteCgiFileExtensions;
+    private String defaultWebsiteScriptAliace;
+    private Boolean defaultWebsiteDdosProtection;
+    private Boolean defaultWebsiteAutoSubDomain;
+    private Boolean defaultWebsiteAccessByOldHttpVersion;
+    private String[] defaultWebsiteStaticFileExtensions;
+    private String[] defaultWebsiteIndexFileList;
+    private String defaultWebsiteCustomUserConf;
+    private Boolean defaultAccessLogEnabled;
+    private Boolean defaultErrorLogEnabled;
 
-    @Value("${default.service.name}")
+    @Value("${default.website.service.name}")
     public void setDefaultServiceName(String defaultServiceName) {
         this.defaultServiceName = defaultServiceName;
     }
+
+    @Value("${default.website.documet.root.pattern}")
+    public void setDefaultWebsiteDocumetRootPattern(String defaultWebsiteDocumetRootPattern) {
+        this.defaultWebsiteDocumetRootPattern = defaultWebsiteDocumetRootPattern;
+    }
+
+    @Value("${default.website.charset}")
+    public void setDefaultWebsiteCharset(String defaultWebsiteCharset) {
+        this.defaultWebsiteCharset = defaultWebsiteCharset;
+    }
+
+    @Value("${default.website.ssi.enabled}")
+    public void setDefaultWebsiteSsiEnabled(Boolean defaultWebsiteSsiEnabled) {
+        this.defaultWebsiteSsiEnabled = defaultWebsiteSsiEnabled;
+    }
+
+    @Value("${default.website.ssi.file.extensions}")
+    public void setDefaultWebsiteSsiFileExtensions(String[] defaultWebsiteSsiFileExtensions) {
+        this.defaultWebsiteSsiFileExtensions = defaultWebsiteSsiFileExtensions;
+    }
+
+    @Value("${default.website.cgi.enabled}")
+    public void setDefaultWebsiteCgiEnabled(Boolean defaultWebsiteCgiEnabled) {
+        this.defaultWebsiteCgiEnabled = defaultWebsiteCgiEnabled;
+    }
+
+    @Value("${default.website.cgi.file.extensions}")
+    public void setDefaultWebsiteCgiFileExtensions(String[] defaultWebsiteCgiFileExtensions) {
+        this.defaultWebsiteCgiFileExtensions = defaultWebsiteCgiFileExtensions;
+    }
+
+    @Value("${default.website.script.aliace}")
+    public void setDefaultWebsiteScriptAliace(String defaultWebsiteScriptAliace) {
+        this.defaultWebsiteScriptAliace = defaultWebsiteScriptAliace;
+    }
+
+    @Value("${default.website.ddos.protection}")
+    public void setDefaultWebsiteDdosProtection(Boolean defaultWebsiteDdosProtection) {
+        this.defaultWebsiteDdosProtection = defaultWebsiteDdosProtection;
+    }
+
+    @Value("${default.website.auto.sub.domain}")
+    public void setDefaultWebsiteAutoSubDomain(Boolean defaultWebsiteAutoSubDomain) {
+        this.defaultWebsiteAutoSubDomain = defaultWebsiteAutoSubDomain;
+    }
+
+    @Value("${default.website.access.by.old.http.version}")
+    public void setDefaultWebsiteAccessByOldHttpVersion(Boolean defaultWebsiteAccessByOldHttpVersion) {
+        this.defaultWebsiteAccessByOldHttpVersion = defaultWebsiteAccessByOldHttpVersion;
+    }
+
+    @Value("${default.website.static.file.extensions}")
+    public void setDefaultWebsiteStaticFileExtensions(String[] defaultWebsiteStaticFileExtensions) {
+        this.defaultWebsiteStaticFileExtensions = defaultWebsiteStaticFileExtensions;
+    }
+
+    @Value("${default.website.index.file.list}")
+    public void setDefaultWebsiteIndexFileList(String[] defaultWebsiteIndexFileList) {
+        this.defaultWebsiteIndexFileList = defaultWebsiteIndexFileList;
+    }
+
+    @Value("${default.website.custom.user.conf}")
+    public void setDefaultWebsiteCustomUserConf(String defaultWebsiteCustomUserConf) {
+        this.defaultWebsiteCustomUserConf = defaultWebsiteCustomUserConf;
+    }
+
+    @Value("${default.website.access.log.enabled}")
+    public void setDefaultAccessLogEnabled(Boolean defaultAccessLogEnabled) {
+        this.defaultAccessLogEnabled = defaultAccessLogEnabled;
+    }
+
+    @Value("${default.website.error.log.enabled}")
+    public void setDefaultErrorLogEnabled(Boolean defaultErrorLogEnabled) {
+        this.defaultErrorLogEnabled = defaultErrorLogEnabled;
+    }
+
 
     @Autowired
     public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
@@ -180,7 +271,7 @@ public class GovernorOfWebSite extends LordOfResources {
         }
 
         if (webSite.getDocumentRoot() == null || webSite.getDocumentRoot().equals("")) {
-            webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + "/www");
+            webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + defaultWebsiteDocumetRootPattern);
         }
 
 
@@ -194,6 +285,9 @@ public class GovernorOfWebSite extends LordOfResources {
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("accountId", webSite.getAccountId());
             List<UnixAccount> unixAccounts = (List<UnixAccount>) governorOfUnixAccount.buildAll(keyValue);
+            if (unixAccounts == null || unixAccounts.isEmpty()) {
+                throw new ParameterValidateException("Для создания WebSite необходим UnixAccount");
+            }
             webSite.setUnixAccount(unixAccounts.get(0));
             webSite.setServerId(unixAccounts.get(0).getServerId());
         }
@@ -224,60 +318,60 @@ public class GovernorOfWebSite extends LordOfResources {
 
 
         if (webSite.getCharSet() == null) {
-            webSite.setCharSet(UTF8);
+            CharSet charSet = CharSet.valueOf(defaultWebsiteCharset);
+            webSite.setCharSet(charSet);
         }
 
         if (webSite.getSsiEnabled() == null) {
-            webSite.setSsiEnabled(true);
+            webSite.setSsiEnabled(defaultWebsiteSsiEnabled);
         }
 
         if (webSite.getSsiFileExtensions() == null || webSite.getSsiFileExtensions().isEmpty()) {
-            webSite.setSsiFileExtensions(Arrays.asList("shtml", "shtm"));
+            webSite.setSsiFileExtensions(Arrays.asList(defaultWebsiteSsiFileExtensions));
         }
 
         if (webSite.getCgiEnabled() == null) {
-            webSite.setSsiEnabled(false);
+            webSite.setCgiEnabled(defaultWebsiteCgiEnabled);
         }
 
         if (webSite.getCgiFileExtensions() == null || webSite.getCgiFileExtensions().isEmpty()) {
-            webSite.setCgiFileExtensions(Arrays.asList("cgi", "pl"));
+            webSite.setCgiFileExtensions(Arrays.asList(defaultWebsiteCgiFileExtensions));
         }
 
         if (webSite.getScriptAlias() == null || webSite.getScriptAlias().equals("")) {
-            webSite.setScriptAlias("cgi-bin");
+            webSite.setScriptAlias(defaultWebsiteScriptAliace);
         }
 
         if (webSite.getDdosProtection() == null) {
-            webSite.setDdosProtection(false);
+            webSite.setDdosProtection(defaultWebsiteDdosProtection);
         }
 
         if (webSite.getAutoSubDomain() == null) {
-            webSite.setAutoSubDomain(false);
+            webSite.setAutoSubDomain(defaultWebsiteAutoSubDomain);
         }
 
         if (webSite.getAccessByOldHttpVersion() == null) {
-            webSite.setAccessByOldHttpVersion(false);
+            webSite.setAccessByOldHttpVersion(defaultWebsiteAccessByOldHttpVersion);
         }
 
-        if (webSite.getSsiFileExtensions() == null || webSite.getSsiFileExtensions().isEmpty()) {
-            webSite.setStaticFileExtensions(Arrays.asList("avi", "bz2", "css", "gif", "gz", "jpg", "jpeg",
-                    "js", "mp3", "mpeg", "ogg", "png", "rar", "svg", "swf", "zip", "html", "htm"));
+        if (webSite.getStaticFileExtensions() == null || webSite.getStaticFileExtensions().isEmpty()) {
+            webSite.setStaticFileExtensions(Arrays.asList(defaultWebsiteStaticFileExtensions));
         }
 
         if (webSite.getCustomUserConf() == null) {
-            webSite.setCustomUserConf("");
+            webSite.setCustomUserConf(defaultWebsiteCustomUserConf);
         }
 
         if (webSite.getIndexFileList() == null || webSite.getIndexFileList().isEmpty()) {
-            webSite.setIndexFileList(Arrays.asList("index.php", "index.html", "index.htm"));
+            webSite.setIndexFileList(Arrays.asList(defaultWebsiteIndexFileList));
         }
 
         if (webSite.getAccessLogEnabled() == null) {
-            webSite.setAccessLogEnabled(true);
+            webSite.setAccessLogEnabled(defaultAccessLogEnabled);
         }
 
         if (webSite.getErrorLogEnabled() == null) {
-            webSite.setErrorLogEnabled(true);
+            webSite.setErrorLogEnabled(defaultErrorLogEnabled);
         }
 
     }
