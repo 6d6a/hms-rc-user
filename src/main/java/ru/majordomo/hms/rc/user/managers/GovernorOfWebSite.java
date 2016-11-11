@@ -83,7 +83,7 @@ public class GovernorOfWebSite extends LordOfResources {
             webSite.addDomain(domain);
         }
 
-        String applicationServerId = cleaner.cleanString((String) serviceMessage.getParam("applicationServerId"));
+        String applicationServiceId = cleaner.cleanString((String) serviceMessage.getParam("applicationService"));
         String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
 
         String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
@@ -104,7 +104,7 @@ public class GovernorOfWebSite extends LordOfResources {
         Boolean accessLogEnabled = (Boolean) serviceMessage.getParam("accessLogEnabled");
         Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
 
-        webSite.setServerId(applicationServerId);
+        webSite.setServiceId(applicationServiceId);
         webSite.setDocumentRoot(documentRoot);
         webSite.setUnixAccount(unixAccount);
         webSite.setCharSet(charSet);
