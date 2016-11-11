@@ -260,6 +260,7 @@ public class ResourceGenerator {
             webSite.setIndexFileList(Arrays.asList("index.php", "index.html"));
             webSite.setAccessLogEnabled(true);
             webSite.setErrorLogEnabled(false);
+            webSite.setServerId(ObjectId.get().toString());
 
             batchOfWebsites.add(webSite);
         }

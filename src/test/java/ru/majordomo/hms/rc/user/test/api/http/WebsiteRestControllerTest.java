@@ -121,7 +121,8 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("customUserConf").description("Кастомные настройки сайта"),
                                 fieldWithPath("indexFileList").description("Список индексных файлов"),
                                 fieldWithPath("accessLogEnabled").description("Записывать ли логи доступа"),
-                                fieldWithPath("errorLogEnabled").description("Записывать ли error логи")
+                                fieldWithPath("errorLogEnabled").description("Записывать ли error логи"),
+                                fieldWithPath("serviceId").description("serviceId для данного вебсайта")
                         )
                 ));
     }
@@ -163,6 +164,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("$[0].indexFileList").isArray())
                 .andExpect(jsonPath("$[0].accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
                 .andExpect(jsonPath("$[0].errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
+                .andExpect(jsonPath("$[0].serviceId").value(batchOfWebsites.get(0).getServiceId()))
         ;
     }
 
@@ -196,6 +198,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("indexFileList").isArray())
                 .andExpect(jsonPath("accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
                 .andExpect(jsonPath("errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
+                .andExpect(jsonPath("serviceId").value(batchOfWebsites.get(0).getServiceId()))
         ;
     }
 
