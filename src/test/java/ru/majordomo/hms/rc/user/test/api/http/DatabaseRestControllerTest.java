@@ -23,6 +23,7 @@ import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigDatabaseRestController.class, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigDatabaseRestController.class}, webEnvironment = RANDOM_PORT)
 public class DatabaseRestControllerTest {
 
     private MockMvc mockMvc;

@@ -15,9 +15,11 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.LordOfResources;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
+import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 @Component
 @EnableRabbit
@@ -62,13 +64,6 @@ class BaseAMQPController {
     void handleCreateEventFromPM(String resourceType,
                                  ServiceMessage serviceMessage,
                                  LordOfResources governor) {
-        List<String> serverStorableResourceTypes = Arrays.asList(
-                "database",
-                "website",
-                "mailbox",
-                "unix-account",
-                "ftp-user",
-                "database-user");
 
         Boolean success;
         Resource resource = null;
@@ -86,7 +81,7 @@ class BaseAMQPController {
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
         report.addParam("success", success);
 
-        if (success && serverStorableResourceTypes.contains(resourceType)) {
+        if (success && (resource instanceof ServerStorable)) {
             String teRoutingKey = getTaskExecutorRoutingKey(resource);
             sender.send(resourceType + ".create", teRoutingKey, report);
         } else {
@@ -132,12 +127,21 @@ class BaseAMQPController {
         return report;
     }
 
-    private String getTaskExecutorRoutingKey(Resource resource) {
-        ServerStorable serverStorable = (ServerStorable) resource;
-        String serverName = staffRcClient.getServerById(serverStorable.getServerId()).getName();
-        String serverShortName = serverName.split("\\.")[0];
+    private String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
+        try {
+            String serverName = null;
+            if (resource instanceof ServerStorable) {
+                ServerStorable serverStorable = (ServerStorable) resource;
+                serverName = staffRcClient.getServerById(serverStorable.getServerId()).getName();
+            } else if (resource instanceof Serviceable) {
+                Serviceable serviceable = (Serviceable) resource;
+                serverName = staffRcClient.getServerByServiceId(serviceable.getServiceId()).getName();
+            }
 
-        return "te" + "." + serverShortName;
+            return "te" + "." + serverName.split("\\.")[0];
+        } catch (Exception e) {
+            throw new ParameterValidateException("Exception: " + e.getMessage());
+        }
     }
 
 }
