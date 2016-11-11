@@ -19,6 +19,7 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.LordOfResources;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
+import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 @Component
 @EnableRabbit
@@ -128,11 +129,16 @@ class BaseAMQPController {
 
     private String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
         try {
-            ServerStorable serverStorable = (ServerStorable) resource;
-            String serverName = staffRcClient.getServerById(serverStorable.getServerId()).getName();
-            String serverShortName = serverName.split("\\.")[0];
+            String serverName = null;
+            if (resource instanceof ServerStorable) {
+                ServerStorable serverStorable = (ServerStorable) resource;
+                serverName = staffRcClient.getServerById(serverStorable.getServerId()).getName();
+            } else if (resource instanceof Serviceable) {
+                Serviceable serviceable = (Serviceable) resource;
+                serverName = staffRcClient.getServerByServiceId(serviceable.getServiceId()).getName();
+            }
 
-            return "te" + "." + serverShortName;
+            return "te" + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
             throw new ParameterValidateException("Exception: " + e.getMessage());
         }
