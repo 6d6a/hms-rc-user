@@ -66,38 +66,4 @@ public class ConfigGovernorOfMailbox extends AbstractMongoConfiguration {
     public Mongo mongo() throws Exception {
         return new Fongo(getDatabaseName()).getMongo();
     }
-
-    @Bean
-    public StaffResourceControllerClient staffResourceControllerClient() {
-        return new StaffResourceControllerClient() {
-            @Override
-            public Server getActiveHostingServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getActiveDatabaseServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getActiveMailboxServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getServerById(@PathVariable("serverId") String serverId) {
-                Server server = new Server();
-                server.setId(serverId);
-                return server;
-            }
-
-        };
-    }
 }

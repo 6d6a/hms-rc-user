@@ -17,6 +17,7 @@ import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfMailbox;
 
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.List;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigGovernorOfMailbox.class, webEnvironment = NONE)
+@SpringBootTest(classes = {ConfigGovernorOfMailbox.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE)
 public class GovernorOfMailboxTest {
     @Autowired
     private GovernorOfMailbox governor;
