@@ -81,7 +81,7 @@ class BaseAMQPController {
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
         report.addParam("success", success);
 
-        if (success && (resource instanceof ServerStorable)) {
+        if (success && (resource instanceof ServerStorable || resource instanceof Serviceable)) {
             String teRoutingKey = getTaskExecutorRoutingKey(resource);
             sender.send(resourceType + ".create", teRoutingKey, report);
         } else {
