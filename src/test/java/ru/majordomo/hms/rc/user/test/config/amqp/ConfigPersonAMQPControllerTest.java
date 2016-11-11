@@ -13,10 +13,15 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.web.bind.annotation.PathVariable;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.staff.resources.ServiceType;
 import ru.majordomo.hms.rc.user.api.amqp.PersonAMQPController;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
@@ -78,6 +83,21 @@ public class ConfigPersonAMQPControllerTest extends AbstractMongoConfiguration {
                 Server server = new Server();
                 server.setId(serverId);
                 return server;
+            }
+
+            @Override
+            public List<Service> getWebsiteServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId) {
+                List<Service> services = new ArrayList<>();
+
+                Service service = new Service();
+
+                ServiceType serviceType = new ServiceType();
+                serviceType.setName("WEBSITE_APACHE2_PHP56_DEFAULT");
+                service.setServiceType(serviceType);
+
+                services.add(service);
+
+                return services;
             }
         };
     }

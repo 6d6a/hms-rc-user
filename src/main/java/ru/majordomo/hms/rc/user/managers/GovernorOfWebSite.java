@@ -1,13 +1,14 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -19,6 +20,8 @@ import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
+import static ru.majordomo.hms.rc.user.common.CharSet.UTF8;
+
 @Component
 public class GovernorOfWebSite extends LordOfResources {
 
@@ -26,6 +29,18 @@ public class GovernorOfWebSite extends LordOfResources {
     private GovernorOfDomain governorOfDomain;
     private GovernorOfUnixAccount governorOfUnixAccount;
     private Cleaner cleaner;
+    private StaffResourceControllerClient staffRcClient;
+    private String defaultServiceName;
+
+    @Value("${default.service.name}")
+    public void setDefaultServiceName(String defaultServiceName) {
+        this.defaultServiceName = defaultServiceName;
+    }
+
+    @Autowired
+    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
+        this.staffRcClient = staffRcClient;
+    }
 
     @Autowired
     public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
@@ -77,7 +92,10 @@ public class GovernorOfWebSite extends LordOfResources {
 
         LordOfResources.setResourceParams(webSite, serviceMessage, cleaner);
 
-        List<String> domainIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("domainIds"));
+        List<String> domainIds = new ArrayList<>();
+        if (serviceMessage.getParam("domainIds") != null) {
+            domainIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("domainIds"));
+        }
         for (String domainId : domainIds) {
             Domain domain = (Domain) governorOfDomain.build(domainId);
             webSite.addDomain(domain);
@@ -89,24 +107,42 @@ public class GovernorOfWebSite extends LordOfResources {
         String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
         UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
 
-        String charsetAsString = cleaner.cleanString((String) serviceMessage.getParam("charSet"));
-        CharSet charSet = Enum.valueOf(CharSet.class, charsetAsString);
+        CharSet charSet = null;
+        String charsetAsString;
+        if (serviceMessage.getParam("charSet") != null) {
+            charsetAsString = cleaner.cleanString((String) serviceMessage.getParam("charSet"));
+            charSet = Enum.valueOf(CharSet.class, charsetAsString);
+        }
 
         Boolean ssiEnabled = (Boolean) serviceMessage.getParam("ssiEnabled");
-        List<String> ssiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("ssiFileExtensions"));
+        List<String> ssiFileExtensions = new ArrayList<>();
+        if (serviceMessage.getParam("ssiFileExtensions") != null) {
+            ssiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("ssiFileExtensions"));
+        }
         Boolean cgiEnabled = (Boolean) serviceMessage.getParam("cgiEnabled");
-        List<String> cgiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("cgiFileExtensions"));
+        List<String> cgiFileExtensions = new ArrayList<>();
+        if (serviceMessage.getParam("cgiFileExtensions") != null) {
+            cgiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("cgiFileExtensions"));
+        }
         String scriptAlias = cleaner.cleanString((String) serviceMessage.getParam("scriptAlias"));
         Boolean autoSubDomain = (Boolean) serviceMessage.getParam("autoSubDomain");
         Boolean accessByOldHttpVersion = (Boolean) serviceMessage.getParam("accessByOldHttpVersion");
-        List<String> staticFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("staticFileExtensions"));
-        List<String> indexFileList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("indexFileList"));
+        List<String> staticFileExtensions = new ArrayList<>();
+        if (serviceMessage.getParam("staticFileExtensions") != null) {
+            staticFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("staticFileExtensions"));
+        }
+        List<String> indexFileList = new ArrayList<>();
+        if (serviceMessage.getParam("indexFileList") != null) {
+            indexFileList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("indexFileList"));
+        }
         Boolean accessLogEnabled = (Boolean) serviceMessage.getParam("accessLogEnabled");
         Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
 
-        webSite.setServerId(applicationServerId);
+        webSite.setServiceId(applicationServerId);
         webSite.setDocumentRoot(documentRoot);
-        webSite.setUnixAccount(unixAccount);
+        if (unixAccount != null) {
+            webSite.setUnixAccount(unixAccount);
+        }
         webSite.setCharSet(charSet);
         webSite.setSsiEnabled(ssiEnabled);
         webSite.setSsiFileExtensions(ssiFileExtensions);
@@ -125,6 +161,124 @@ public class GovernorOfWebSite extends LordOfResources {
 
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
+        WebSite webSite = (WebSite) resource;
+
+        if (webSite.getAccountId() == null || webSite.getAccountId().equals("")) {
+            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
+        }
+
+        if (webSite.getDomains().isEmpty()) {
+            throw new ParameterValidateException("Должен присутствовать хотя бы один домен");
+        }
+
+        if (webSite.getName() == null || webSite.getName().equals("")) {
+            webSite.setName(webSite.getDomains().get(0).getName());
+        }
+
+        if (webSite.getSwitchedOn() == null) {
+            webSite.setSwitchedOn(true);
+        }
+
+        if (webSite.getDocumentRoot() == null || webSite.getDocumentRoot().equals("")) {
+            webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + "/www");
+        }
+
+
+        if (webSite.getUnixAccount() != null) {
+            if (webSite.getUnixAccount().getServerId().equals(webSite.getServerId())) {
+                throw new ParameterValidateException("ServerId в UnixAccount и webSite не совпадают");
+            }
+        }
+
+        if (webSite.getUnixAccount() == null) {
+            Map<String, String> keyValue = new HashMap<>();
+            keyValue.put("accountId", webSite.getAccountId());
+            List<UnixAccount> unixAccounts = (List<UnixAccount>) governorOfUnixAccount.buildAll(keyValue);
+            webSite.setUnixAccount(unixAccounts.get(0));
+            webSite.setServerId(unixAccounts.get(0).getServerId());
+        }
+
+        List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerIdAndServiceType(webSite.getServerId());
+        if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
+            for (Service service : websiteServices) {
+                if (service.getServiceType().getName().equals(this.defaultServiceName)) {
+                    webSite.setServiceId(service.getId());
+                    break;
+                }
+            }
+            if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
+                throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName + " для сервера: " + webSite.getServerId());
+            }
+        } else {
+            Boolean isServiceForServerExist = false;
+            for (Service service : websiteServices) {
+                if (service.getId().equals(webSite.getServiceId())) {
+                    isServiceForServerExist = true;
+                    break;
+                }
+            }
+            if (!isServiceForServerExist) {
+                throw new ParameterValidateException("Указанный ServiceId: " + webSite.getServiceId() + " не найден для сервера: " + webSite.getServerId());
+            }
+        }
+
+
+        if (webSite.getCharSet() == null) {
+            webSite.setCharSet(UTF8);
+        }
+
+        if (webSite.getSsiEnabled() == null) {
+            webSite.setSsiEnabled(true);
+        }
+
+        if (webSite.getSsiFileExtensions() == null || webSite.getSsiFileExtensions().isEmpty()) {
+            webSite.setSsiFileExtensions(Arrays.asList("shtml", "shtm"));
+        }
+
+        if (webSite.getCgiEnabled() == null) {
+            webSite.setSsiEnabled(false);
+        }
+
+        if (webSite.getCgiFileExtensions() == null || webSite.getCgiFileExtensions().isEmpty()) {
+            webSite.setCgiFileExtensions(Arrays.asList("cgi", "pl"));
+        }
+
+        if (webSite.getScriptAlias() == null || webSite.getScriptAlias().equals("")) {
+            webSite.setScriptAlias("cgi-bin");
+        }
+
+        if (webSite.getDdosProtection() == null) {
+            webSite.setDdosProtection(false);
+        }
+
+        if (webSite.getAutoSubDomain() == null) {
+            webSite.setAutoSubDomain(false);
+        }
+
+        if (webSite.getAccessByOldHttpVersion() == null) {
+            webSite.setAccessByOldHttpVersion(false);
+        }
+
+        if (webSite.getSsiFileExtensions() == null || webSite.getSsiFileExtensions().isEmpty()) {
+            webSite.setStaticFileExtensions(Arrays.asList("avi", "bz2", "css", "gif", "gz", "jpg", "jpeg",
+                    "js", "mp3", "mpeg", "ogg", "png", "rar", "svg", "swf", "zip", "html", "htm"));
+        }
+
+        if (webSite.getCustomUserConf() == null) {
+            webSite.setCustomUserConf("");
+        }
+
+        if (webSite.getIndexFileList() == null || webSite.getIndexFileList().isEmpty()) {
+            webSite.setIndexFileList(Arrays.asList("index.php", "index.html", "index.htm"));
+        }
+
+        if (webSite.getAccessLogEnabled() == null) {
+            webSite.setAccessLogEnabled(true);
+        }
+
+        if (webSite.getErrorLogEnabled() == null) {
+            webSite.setErrorLogEnabled(true);
+        }
 
     }
 

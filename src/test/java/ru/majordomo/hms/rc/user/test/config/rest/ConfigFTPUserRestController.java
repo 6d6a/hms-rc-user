@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.staff.resources.ServiceType;
 import ru.majordomo.hms.rc.user.api.http.DatabaseRestController;
 import ru.majordomo.hms.rc.user.api.http.DomainRestController;
 import ru.majordomo.hms.rc.user.api.http.FTPUserRestController;
@@ -27,6 +29,9 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableWebMvc
@@ -95,6 +100,22 @@ public class ConfigFTPUserRestController extends AbstractMongoConfiguration {
                 Server server = new Server();
                 server.setId(serverId);
                 return server;
+            }
+
+            @Override
+            public List<Service> getWebsiteServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId) {
+                List<Service> services = new ArrayList<>();
+
+                Service service = new Service();
+                service.setId(ObjectId.get().toString());
+
+                ServiceType serviceType = new ServiceType();
+                serviceType.setName("WEBSITE_APACHE2_PHP56_DEFAULT");
+                service.setServiceType(serviceType);
+
+                services.add(service);
+
+                return services;
             }
         };
     }

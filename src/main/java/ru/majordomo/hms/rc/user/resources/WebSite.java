@@ -19,6 +19,7 @@ public class WebSite extends Resource implements ServerStorable {
     private String unixAccountId;
     private String serverId;
     private String documentRoot;
+    private String serviceId;
 
     @Transient
     private List<Domain> domains = new ArrayList<>();
@@ -39,6 +40,14 @@ public class WebSite extends Resource implements ServerStorable {
     private Boolean errorLogEnabled;
     public CharSet getCharSet() {
         return charSet;
+    }
+
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
     public void setCharSet(CharSet charSet) {

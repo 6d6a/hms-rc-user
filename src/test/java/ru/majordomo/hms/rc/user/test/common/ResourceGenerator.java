@@ -35,6 +35,7 @@ public class ResourceGenerator {
         List<Person> batchOfPersons = new ArrayList<>();
 
         Person parovozov = new Person();
+        parovozov.setId(ObjectId.get().toString());
         parovozov.setAccountId(ObjectId.get().toString());
         parovozov.setName("Паровозов Аркадий Локомотивович");
         parovozov.addEmailAddress("arkady@parovozov.ru");
@@ -47,6 +48,7 @@ public class ResourceGenerator {
         parovozov.setPassport(passport);
 
         Person hosting = new Person();
+        hosting.setId(ObjectId.get().toString());
         hosting.setName("ООО Хостинг");
         hosting.setAccountId(ObjectId.get().toString());
         hosting.addEmailAddress("support@majordomo.ru");
@@ -132,6 +134,7 @@ public class ResourceGenerator {
         Arrays.asList("REGISTERED", "DELEGATED", "VERIFIED").forEach(regSpec::addState);
 
         Domain ruDomain = new Domain();
+        ruDomain.setId(ObjectId.get().toString());
         ruDomain.setAccountId(ObjectId.get().toString());
         ruDomain.setName("majordomo.ru");
         ruDomain.setSwitchedOn(true);
@@ -140,6 +143,7 @@ public class ResourceGenerator {
         ruDomain.setPerson(batchOfPersons.get(0));
 
         Domain rfDomain = new Domain();
+        rfDomain.setId(ObjectId.get().toString());
         rfDomain.setAccountId(ObjectId.get().toString());
         rfDomain.setName("мажордомо.рф");
         rfDomain.setSwitchedOn(true);
