@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ru.majordomo.hms.rc.user.common.CharSet;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
@@ -46,12 +48,77 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigWebsiteRestController.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigWebsiteRestController.class}, webEnvironment = RANDOM_PORT, properties = {
+        "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",
+        "default.website.documet.root.pattern:/www",
+        "default.website.charset:UTF8",
+        "default.website.ssi.enabled:true",
+        "default.website.ssi.file.extensions:shtml,shtm",
+        "default.website.cgi.enabled:false",
+        "default.website.cgi.file.extensions:cgi,pl",
+        "default.website.script.aliace:cgi-bin",
+        "default.website.ddos.protection:true",
+        "default.website.auto.sub.domain:false",
+        "default.website.access.by.old.http.version:false",
+        "default.website.static.file.extensions:avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
+        "default.website.index.file.list:index.php,index.html,index.htm",
+        "default.website.custom.user.conf:",
+        "default.website.access.log.enabled:true",
+        "default.website.error.log.enabled:true"
+})
 public class WebsiteRestControllerTest {
 
     private MockMvc mockMvc;
     private String resourceName = "website";
     private List<WebSite> batchOfWebsites = new ArrayList<>();
+
+    @Value("${default.website.service.name}")
+    private String defaultServiceName;
+
+    @Value("${default.website.documet.root.pattern}")
+    private String defaultWebsiteDocumetRootPattern;
+
+    @Value("${default.website.charset}")
+    private CharSet defaultWebsiteCharset;
+
+    @Value("${default.website.ssi.enabled}")
+    private Boolean defaultWebsiteSsiEnabled;
+
+    @Value("${default.website.ssi.file.extensions}")
+    private List<String> defaultWebsiteSsiFileExtensions;
+
+    @Value("${default.website.cgi.enabled}")
+    private Boolean defaultWebsiteCgiEnabled;
+
+    @Value("${default.website.cgi.file.extensions}")
+    private List<String> defaultWebsiteCgiFileExtensions;
+
+    @Value("${default.website.script.aliace}")
+    private String defaultWebsiteScriptAliace;
+
+    @Value("${default.website.ddos.protection}")
+    private Boolean defaultWebsiteDdosProtection;
+
+    @Value("${default.website.auto.sub.domain}")
+    private Boolean defaultWebsiteAutoSubDomain;
+
+    @Value("${default.website.access.by.old.http.version}")
+    private Boolean defaultWebsiteAccessByOldHttpVersion;
+
+    @Value("${default.website.static.file.extensions}")
+    private List<String> defaultWebsiteStaticFileExtensions;
+
+    @Value("${default.website.index.file.list}")
+    private List<String> defaultWebsiteIndexFileList;
+
+    @Value("${default.website.custom.user.conf}")
+    private String defaultWebsiteCustomUserConf;
+
+    @Value("${default.website.access.log.enabled}")
+    private Boolean defaultAccessLogEnabled;
+
+    @Value("${default.website.error.log.enabled}")
+    private Boolean defaultErrorLogEnabled;
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -122,7 +189,8 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("customUserConf").description("Кастомные настройки сайта"),
                                 fieldWithPath("indexFileList").description("Список индексных файлов"),
                                 fieldWithPath("accessLogEnabled").description("Записывать ли логи доступа"),
-                                fieldWithPath("errorLogEnabled").description("Записывать ли error логи")
+                                fieldWithPath("errorLogEnabled").description("Записывать ли error логи"),
+                                fieldWithPath("serviceId").description("serviceId для данного вебсайта")
                         )
                 ));
     }
@@ -164,6 +232,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("$[0].indexFileList").isArray())
                 .andExpect(jsonPath("$[0].accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
                 .andExpect(jsonPath("$[0].errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
+                .andExpect(jsonPath("$[0].serviceId").value(batchOfWebsites.get(0).getServiceId()))
         ;
     }
 
@@ -197,6 +266,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("indexFileList").isArray())
                 .andExpect(jsonPath("accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
                 .andExpect(jsonPath("errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
+                .andExpect(jsonPath("serviceId").value(batchOfWebsites.get(0).getServiceId()))
         ;
     }
 

@@ -2,12 +2,10 @@ package ru.majordomo.hms.rc.user.test.common;
 
 import org.bson.types.ObjectId;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 
@@ -96,6 +94,15 @@ public class ServiceMessageGenerator {
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("serverId", ObjectId.get().toString());
         serviceMessage.addParam("quota", (String) "");
+
+        return serviceMessage;
+    }
+
+    public static ServiceMessage generateWebsiteCreateServiceMessage(List<String> domainIds, String accountId) {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(accountId);
+        serviceMessage.addParam("domainIds", domainIds);
 
         return serviceMessage;
     }
