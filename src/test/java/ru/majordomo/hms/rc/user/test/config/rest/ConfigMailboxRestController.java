@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
-import ru.majordomo.hms.rc.staff.resources.Service;
-import ru.majordomo.hms.rc.staff.resources.ServiceType;
 import ru.majordomo.hms.rc.user.api.http.DatabaseRestController;
 import ru.majordomo.hms.rc.user.api.http.MailboxRestController;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrar;
@@ -26,9 +24,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Domain;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Configuration
 @EnableWebMvc

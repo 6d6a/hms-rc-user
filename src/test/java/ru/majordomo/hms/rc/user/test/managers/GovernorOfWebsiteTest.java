@@ -22,6 +22,7 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ import java.util.List;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigGovernorOfWebsite.class, webEnvironment = NONE, properties = {
+@SpringBootTest(classes = {ConfigGovernorOfWebsite.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
         "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",
         "default.website.documet.root.pattern:/www",
         "default.website.charset:UTF8",
