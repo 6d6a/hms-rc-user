@@ -15,6 +15,7 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.LordOfResources;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
@@ -132,12 +133,16 @@ class BaseAMQPController {
         return report;
     }
 
-    private String getTaskExecutorRoutingKey(Resource resource) {
-        ServerStorable serverStorable = (ServerStorable) resource;
-        String serverName = staffRcClient.getServerById(serverStorable.getServerId()).getName();
-        String serverShortName = serverName.split("\\.")[0];
+    private String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
+        try {
+            ServerStorable serverStorable = (ServerStorable) resource;
+            String serverName = staffRcClient.getServerById(serverStorable.getServerId()).getName();
+            String serverShortName = serverName.split("\\.")[0];
 
-        return "te" + "." + serverShortName;
+            return "te" + "." + serverShortName;
+        } catch (Exception e) {
+            throw new ParameterValidateException("Exception: " + e.getMessage());
+        }
     }
 
 }

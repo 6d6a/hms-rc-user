@@ -211,7 +211,12 @@ public class WebSite extends Resource implements ServerStorable {
     }
 
     public void addDomain(Domain domain) {
-        this.domains.add(domain);
+        if (domain != null && !this.domains.contains(domain)) {
+            if (domain.getId() != null && !this.domainIds.contains(domain.getId())) {
+                this.domainIds.add(domain.getId());
+            }
+            this.domains.add(domain);
+        }
     }
 
     @Override
