@@ -14,6 +14,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfUnixAccount;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -21,7 +22,7 @@ import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigGovernorOfUnixAccount.class, webEnvironment = NONE)
+@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigGovernorOfUnixAccount.class}, webEnvironment = NONE)
 public class GovernorOfUnixAccountTest {
     @Autowired
     private GovernorOfUnixAccount governor;

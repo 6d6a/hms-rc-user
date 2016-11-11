@@ -8,6 +8,7 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 @Configuration
 @EnableWebMvc
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
+@DependsOn
 public class ConfigUnixAccountRestController extends AbstractMongoConfiguration {
     @Bean
     public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
@@ -55,36 +57,4 @@ public class ConfigUnixAccountRestController extends AbstractMongoConfiguration 
         return new Cleaner();
     }
 
-    @Bean
-    public StaffResourceControllerClient staffResourceControllerClient() {
-        return new StaffResourceControllerClient() {
-            @Override
-            public Server getActiveHostingServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getActiveDatabaseServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getActiveMailboxServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getServerById(@PathVariable("serverId") String serverId) {
-                Server server = new Server();
-                server.setId(serverId);
-                return server;
-            }
-        };
-    }
 }
