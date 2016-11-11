@@ -11,13 +11,12 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.common.CharSet;
 
 @Document(collection = "webSites")
-public class WebSite extends Resource implements ServerStorable {
+public class WebSite extends Resource implements Serviceable {
 
 
     @Transient
     private UnixAccount unixAccount;
     private String unixAccountId;
-    private String serverId;
     private String documentRoot;
     private String serviceId;
 
@@ -40,14 +39,6 @@ public class WebSite extends Resource implements ServerStorable {
     private Boolean errorLogEnabled;
     public CharSet getCharSet() {
         return charSet;
-    }
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
     }
 
     public void setCharSet(CharSet charSet) {
@@ -173,13 +164,13 @@ public class WebSite extends Resource implements ServerStorable {
     }
 
     @Override
-    public String getServerId() {
-        return serverId;
+    public String getServiceId() {
+        return serviceId;
     }
 
     @Override
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
     public String getDocumentRoot() {
@@ -220,7 +211,12 @@ public class WebSite extends Resource implements ServerStorable {
     }
 
     public void addDomain(Domain domain) {
-        this.domains.add(domain);
+        if (domain != null && !this.domains.contains(domain)) {
+            if (domain.getId() != null && !this.domainIds.contains(domain.getId())) {
+                this.domainIds.add(domain.getId());
+            }
+            this.domains.add(domain);
+        }
     }
 
     @Override
@@ -229,7 +225,7 @@ public class WebSite extends Resource implements ServerStorable {
                 "id=" + this.getId() +
                 ", name=" + this.getName() +
                 ", unixAccount=" + unixAccount +
-                ", serverId='" + serverId + '\'' +
+                ", serverId='" + serviceId + '\'' +
                 ", documentRoot='" + documentRoot + '\'' +
                 ", domains=" + domains +
                 ", charSet=" + charSet +

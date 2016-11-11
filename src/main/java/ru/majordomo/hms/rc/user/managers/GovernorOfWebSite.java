@@ -192,7 +192,7 @@ public class GovernorOfWebSite extends LordOfResources {
             webSite.addDomain(domain);
         }
 
-        String applicationServerId = cleaner.cleanString((String) serviceMessage.getParam("applicationServerId"));
+        String applicationServiceId = cleaner.cleanString((String) serviceMessage.getParam("applicationService"));
         String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
 
         String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
@@ -229,7 +229,7 @@ public class GovernorOfWebSite extends LordOfResources {
         Boolean accessLogEnabled = (Boolean) serviceMessage.getParam("accessLogEnabled");
         Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
 
-        webSite.setServiceId(applicationServerId);
+        webSite.setServiceId(applicationServiceId);
         webSite.setDocumentRoot(documentRoot);
         if (unixAccount != null) {
             webSite.setUnixAccount(unixAccount);
@@ -275,12 +275,6 @@ public class GovernorOfWebSite extends LordOfResources {
         }
 
 
-        if (webSite.getUnixAccount() != null) {
-            if (webSite.getUnixAccount().getServerId().equals(webSite.getServerId())) {
-                throw new ParameterValidateException("ServerId в UnixAccount и webSite не совпадают");
-            }
-        }
-
         if (webSite.getUnixAccount() == null) {
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("accountId", webSite.getAccountId());
@@ -289,10 +283,9 @@ public class GovernorOfWebSite extends LordOfResources {
                 throw new ParameterValidateException("Для создания WebSite необходим UnixAccount");
             }
             webSite.setUnixAccount(unixAccounts.get(0));
-            webSite.setServerId(unixAccounts.get(0).getServerId());
         }
 
-        List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerIdAndServiceType(webSite.getServerId());
+        List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerIdAndServiceType(webSite.getUnixAccount().getServerId());
         if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
             for (Service service : websiteServices) {
                 if (service.getServiceType().getName().equals(this.defaultServiceName)) {
@@ -301,7 +294,7 @@ public class GovernorOfWebSite extends LordOfResources {
                 }
             }
             if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
-                throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName + " для сервера: " + webSite.getServerId());
+                throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName + " для сервера: " + webSite.getUnixAccount().getServerId());
             }
         } else {
             Boolean isServiceForServerExist = false;
@@ -312,7 +305,7 @@ public class GovernorOfWebSite extends LordOfResources {
                 }
             }
             if (!isServiceForServerExist) {
-                throw new ParameterValidateException("Указанный ServiceId: " + webSite.getServiceId() + " не найден для сервера: " + webSite.getServerId());
+                throw new ParameterValidateException("Указанный ServiceId: " + webSite.getServiceId() + " не найден для сервера: " + webSite.getUnixAccount().getServerId());
             }
         }
 

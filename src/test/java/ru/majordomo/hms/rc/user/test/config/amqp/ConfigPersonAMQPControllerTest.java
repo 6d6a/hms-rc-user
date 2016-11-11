@@ -8,6 +8,7 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,53 +53,5 @@ public class ConfigPersonAMQPControllerTest extends AbstractMongoConfiguration {
     @Bean
     public Cleaner cleaner() {
         return new Cleaner();
-    }
-
-    @Bean
-    public StaffResourceControllerClient staffResourceControllerClient() {
-        return new StaffResourceControllerClient() {
-            @Override
-            public Server getActiveHostingServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getActiveDatabaseServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getActiveMailboxServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                return server;
-            }
-
-            @Override
-            public Server getServerById(@PathVariable("serverId") String serverId) {
-                Server server = new Server();
-                server.setId(serverId);
-                return server;
-            }
-
-            @Override
-            public List<Service> getWebsiteServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId) {
-                List<Service> services = new ArrayList<>();
-
-                Service service = new Service();
-
-                ServiceType serviceType = new ServiceType();
-                serviceType.setName("WEBSITE_APACHE2_PHP56_DEFAULT");
-                service.setServiceType(serviceType);
-
-                services.add(service);
-
-                return services;
-            }
-        };
     }
 }

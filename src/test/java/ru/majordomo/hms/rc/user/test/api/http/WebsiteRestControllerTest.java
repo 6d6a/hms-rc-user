@@ -30,6 +30,7 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigWebsiteRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -47,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigWebsiteRestController.class, webEnvironment = RANDOM_PORT, properties = {
+@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigWebsiteRestController.class}, webEnvironment = RANDOM_PORT, properties = {
         "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",
         "default.website.documet.root.pattern:/www",
         "default.website.charset:UTF8",
@@ -172,7 +173,7 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("name").description("Комментарий к сайту"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли сайт"),
                                 fieldWithPath("unixAccount").description("Аккаунт на сервере, под чьим UID'ом будет работать вебсервер"),
-                                fieldWithPath("serverId").description("ID сервера, на котором расположен сайт"),
+                                fieldWithPath("serviceId").description("ID сервиса, на котором расположен сайт"),
                                 fieldWithPath("documentRoot").description("Домашняя директория сайта. Указывается часть полного пути, не содрежащая путь к домашней директории"),
                                 fieldWithPath("domains").description("Домены, привязанные к сайту"),
                                 fieldWithPath("charSet").description("Кодировка сайта"),
@@ -212,7 +213,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfWebsites.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("$[0].unixAccount").isMap())
                 .andExpect(jsonPath("$[0].unixAccount.id").value(batchOfWebsites.get(0).getUnixAccount().getId()))
-                .andExpect(jsonPath("$[0].serverId").value(batchOfWebsites.get(0).getServerId()))
+                .andExpect(jsonPath("$[0].serviceId").value(batchOfWebsites.get(0).getServiceId()))
                 .andExpect(jsonPath("$[0].documentRoot").value(batchOfWebsites.get(0).getDocumentRoot()))
                 .andExpect(jsonPath("$[0].domains").isArray())
                 .andExpect(jsonPath("$[0].domains.[0].id").value(batchOfWebsites.get(0).getDomains().get(0).getId()))
@@ -246,7 +247,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("switchedOn").value(batchOfWebsites.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("unixAccount").isMap())
                 .andExpect(jsonPath("unixAccount.id").value(batchOfWebsites.get(0).getUnixAccount().getId()))
-                .andExpect(jsonPath("serverId").value(batchOfWebsites.get(0).getServerId()))
+                .andExpect(jsonPath("serviceId").value(batchOfWebsites.get(0).getServiceId()))
                 .andExpect(jsonPath("documentRoot").value(batchOfWebsites.get(0).getDocumentRoot()))
                 .andExpect(jsonPath("domains").isArray())
                 .andExpect(jsonPath("domains.[0].id").value(batchOfWebsites.get(0).getDomains().get(0).getId()))

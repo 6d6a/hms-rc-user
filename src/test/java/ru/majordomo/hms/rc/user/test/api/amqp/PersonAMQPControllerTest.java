@@ -27,11 +27,12 @@ import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.BrokerManager;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigPersonAMQPControllerTest;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigWebSiteAMQPControllerTest;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigPersonAMQPControllerTest.class, AMQPBrokerConfig.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigPersonAMQPControllerTest.class, AMQPBrokerConfig.class}, webEnvironment = RANDOM_PORT)
 public class PersonAMQPControllerTest {
 
     private static BrokerManager brokerManager = new BrokerManager();
