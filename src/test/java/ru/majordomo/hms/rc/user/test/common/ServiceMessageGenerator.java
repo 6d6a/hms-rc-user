@@ -106,4 +106,13 @@ public class ServiceMessageGenerator {
 
         return serviceMessage;
     }
+
+    public static ServiceMessage generateMailboxCreateServiceMessage(String domainId) {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.addParam("domainId", domainId);
+
+        return serviceMessage;
+    }
 }

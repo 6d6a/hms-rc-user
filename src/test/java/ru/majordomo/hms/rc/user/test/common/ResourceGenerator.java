@@ -51,6 +51,7 @@ public class ResourceGenerator {
         hosting.setId(ObjectId.get().toString());
         hosting.setName("ООО Хостинг");
         hosting.setAccountId(ObjectId.get().toString());
+        hosting.setId(ObjectId.get().toString());
         hosting.addEmailAddress("support@majordomo.ru");
         hosting.addEmailAddress("info@majordomo.ru");
         hosting.addPhoneNumber("+78123353545");
