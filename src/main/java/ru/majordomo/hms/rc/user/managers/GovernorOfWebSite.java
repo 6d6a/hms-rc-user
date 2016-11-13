@@ -392,7 +392,7 @@ public class GovernorOfWebSite extends LordOfResources {
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        WebSite website = new WebSite();
+        WebSite website = null;
 
         boolean byAccountId = false;
         boolean byId = false;
@@ -407,11 +407,11 @@ public class GovernorOfWebSite extends LordOfResources {
         }
 
         if (byAccountId && byId) {
-            Resource resource = construct(repository.findByIdAndAccountId(keyValue.get("websiteId"), keyValue.get("accountId")));
-            if (resource == null) {
-                throw new ParameterValidateException();
+            website = repository.findByIdAndAccountId(keyValue.get("websiteId"), keyValue.get("accountId"));
+            if (website == null) {
+                throw new ResourceNotFoundException("Сайт с ID:" + keyValue.get("websiteId") + " и account ID:" + keyValue.get("accountId") + " не найден");
             } else {
-                website = (WebSite) resource;
+                construct(website);
             }
         }
 
