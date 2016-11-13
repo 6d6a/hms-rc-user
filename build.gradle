@@ -107,6 +107,8 @@ repositories {
 
 configurations {
     compile.exclude module: "spring-boot-starter-tomcat"
+    compile.exclude module: "hystrix-core"
+    compile.exclude module: "feign-hystrix"
 }
 
 dependencies {
