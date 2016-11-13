@@ -409,7 +409,7 @@ public class GovernorOfWebSite extends LordOfResources {
         if (byAccountId && byId) {
             Resource resource = construct(repository.findByIdAndAccountId(keyValue.get("websiteId"), keyValue.get("accountId")));
             if (resource == null) {
-                website = null;
+                throw new ParameterValidateException();
             } else {
                 website = (WebSite) resource;
             }
