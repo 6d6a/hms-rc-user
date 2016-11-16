@@ -10,4 +10,5 @@ import java.util.List;
 public interface WebSiteRepository extends MongoRepository<WebSite,String> {
     List<WebSite> findByAccountId(String accountId);
     WebSite findByIdAndAccountId(String websiteId, String accountId);
+    Long countByAccountId(String accountId);
 }

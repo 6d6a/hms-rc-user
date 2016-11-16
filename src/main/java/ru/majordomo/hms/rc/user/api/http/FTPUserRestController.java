@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
@@ -52,6 +53,11 @@ public class FTPUserRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
+    }
+
+    @RequestMapping(value = {"/{accountId}/ftp-user/count", "/{accountId}/ftp-user/count/"}, method = RequestMethod.GET)
+    public Count countByAccountId(@PathVariable String accountId) {
+        return governor.countByAccountId(accountId);
     }
 
 }

@@ -128,4 +128,13 @@ public class FTPUserRestControllerTest {
                 .andExpect(jsonPath("unixAccount").isMap())
                 .andExpect(jsonPath("unixAccount.id").value(batchOfFTPUsers.get(0).getUnixAccount().getId()));
     }
+
+    @Test
+    public void countByAccountId() throws Exception {
+        String accountId = batchOfFTPUsers.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/count").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("count").value(1));
+    }
 }

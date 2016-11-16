@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
@@ -174,5 +175,11 @@ public class GovernorOfFTPUser extends LordOfResources {
     public void store(Resource resource) {
         FTPUser ftpUser = (FTPUser) resource;
         repository.save(ftpUser);
+    }
+
+    public Count countByAccountId(String accountId) {
+        Count count = new Count();
+        count.setCount(repository.countByAccountId(accountId));
+        return count;
     }
 }

@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -49,5 +50,10 @@ public class WebSiteRESTController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
+    }
+
+    @RequestMapping(value = {"/{accountId}/website/count", "/{accountId}/website/count/"}, method = RequestMethod.GET)
+    public Count countByAccountId(@PathVariable String accountId) {
+        return governor.countByAccountId(accountId);
     }
 }

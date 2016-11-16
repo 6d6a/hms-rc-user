@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
-import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -138,13 +137,13 @@ public class WebsiteRestControllerTest {
     private DomainRepository domainRepository;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws Exception{
         this.doc = document("website/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfWebsites = ResourceGenerator.generateBatchOfWebsites();
-        for (WebSite webSite : batchOfWebsites) {
+        for (WebSite webSite: batchOfWebsites) {
             UnixAccount unixAccount = webSite.getUnixAccount();
 
             Domain domain = webSite.getDomains().get(0);
@@ -272,27 +271,11 @@ public class WebsiteRestControllerTest {
     }
 
     @Test
-    public void readByUnknownIdAndByAccountId() throws Exception {
+    public void countByAccountId() throws Exception {
         String accountId = batchOfWebsites.get(0).getAccountId();
-        String websiteId = ObjectId.get().toString();
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + websiteId).accept(APPLICATION_JSON_UTF8);
-        mockMvc.perform(request).andExpect(status().isNotFound());
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/count").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("count").value(1));
     }
-
-    @Test
-    public void readByIdAndByUnknownAccountId() throws Exception {
-        String accountId = ObjectId.get().toString();
-        String websiteId = batchOfWebsites.get(0).getId();
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + websiteId).accept(APPLICATION_JSON_UTF8);
-        mockMvc.perform(request).andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void readByUnknownIdAndByUnknownAccountId() throws Exception {
-        String accountId = ObjectId.get().toString();
-        String websiteId = ObjectId.get().toString();
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + websiteId).accept(APPLICATION_JSON_UTF8);
-        mockMvc.perform(request).andExpect(status().isNotFound());
-    }
-
 }
