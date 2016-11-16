@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.test.common;
 
+import com.jcraft.jsch.JSchException;
+
 import org.bson.types.ObjectId;
 
 import java.io.UnsupportedEncodingException;
@@ -204,7 +206,7 @@ public class ResourceGenerator {
         return batchOfMailboxes;
     }
 
-    public static List<UnixAccount> generateBatchOfUnixAccounts() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static List<UnixAccount> generateBatchOfUnixAccounts() throws JSchException {
         List<UnixAccount> batchOfUnixAccounts = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             int nameNumPart = 134035 + i;
@@ -228,7 +230,7 @@ public class ResourceGenerator {
         return batchOfUnixAccounts;
     }
 
-    public static List<WebSite> generateBatchOfWebsites() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static List<WebSite> generateBatchOfWebsites() throws JSchException {
         List<WebSite> batchOfWebsites = new ArrayList<>();
         List<Domain> batchOfDomains = generateBatchOfDomains();
         List<UnixAccount> batchOfUnixAccounts = generateBatchOfUnixAccounts();
@@ -286,7 +288,7 @@ public class ResourceGenerator {
         return crontab;
     }
 
-    public static List<FTPUser> generateBatchOfFTPUsers() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static List<FTPUser> generateBatchOfFTPUsers() throws UnsupportedEncodingException, JSchException {
         List<FTPUser> ftpUsers = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             FTPUser ftpUser = new FTPUser();

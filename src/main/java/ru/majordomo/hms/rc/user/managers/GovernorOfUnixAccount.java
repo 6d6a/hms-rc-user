@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.jcraft.jsch.JSchException;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -142,7 +144,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
         unixAccount.setWritable(true);
         try {
             unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+        } catch (JSchException e) {
             throw new ParameterValidateException("Невозможно сгенерировать пару ключей:" + e.getMessage());
         }
 
