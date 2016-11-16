@@ -139,4 +139,15 @@ public class DatabaseRestControllerTest {
                 .andExpect(jsonPath("databaseUsers").isArray())
                 .andExpect(jsonPath("databaseUsers.[0].id").value(batchOfDatabases.get(0).getDatabaseUsers().get(0).getId()));
     }
+
+    @Test
+    public void countByAccountId() throws Exception {
+        String accountId = batchOfDatabases.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/count").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("count").value(1))
+                .andDo(doc)
+                .andDo(doc.document(responseFields(fieldWithPath("count").description("Количество ресурсов WebSite для указанного accountId"))));
+    }
 }

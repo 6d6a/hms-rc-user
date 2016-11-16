@@ -8,6 +8,7 @@ import java.util.*;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -454,6 +455,12 @@ public class GovernorOfWebSite extends LordOfResources {
     public void store(Resource resource) {
         WebSite webSite = (WebSite) resource;
         repository.save(webSite);
+    }
+
+    public Count countByAccountId(String accountId) {
+        Count count = new Count();
+        count.setCount(repository.countByAccountId(accountId));
+        return count;
     }
 
 }

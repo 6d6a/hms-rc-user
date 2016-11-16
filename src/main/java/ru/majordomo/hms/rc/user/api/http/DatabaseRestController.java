@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -47,6 +48,11 @@ public class DatabaseRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
+    }
+
+    @RequestMapping(value = {"/{accountId}/database/count", "/{accountId}/database/count/"}, method = RequestMethod.GET)
+    public Count countByAccountId(@PathVariable String accountId) {
+        return governor.countByAccountId(accountId);
     }
 
 }

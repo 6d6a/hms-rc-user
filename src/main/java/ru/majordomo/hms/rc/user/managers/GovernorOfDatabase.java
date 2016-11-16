@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -229,6 +230,12 @@ public class GovernorOfDatabase extends LordOfResources {
     public void store(Resource resource) {
         Database database = (Database) resource;
         repository.save(database);
+    }
+
+    public Count countByAccountId(String accountId) {
+        Count count = new Count();
+        count.setCount(repository.countByAccountId(accountId));
+        return count;
     }
 
     private String getActiveHostingServerId() {
