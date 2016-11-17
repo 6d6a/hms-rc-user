@@ -42,7 +42,6 @@ public class GovernorOfDatabaseUserTest {
     @Before
     public void setUp() throws Exception {
         databaseUsers = ResourceGenerator.generateBatchOfDatabaseUsers();
-        System.out.println(databaseUsers.toString());
         repository.save(databaseUsers);
     }
 
@@ -70,7 +69,7 @@ public class GovernorOfDatabaseUserTest {
 
     @Test
     public void dropByAccountId() throws Exception {
-        governor.dropByAccountId(databaseUsers.get(1).getId(), databaseUsers.get(1).getAccountId());
+        governor.dropByIdAndAccountId(databaseUsers.get(1).getId(), databaseUsers.get(1).getAccountId());
         if (repository.count() != 2) {
             throw new Exception("Количество оставшихся аккаунтов не равно ожидаемому");
         }
@@ -79,7 +78,7 @@ public class GovernorOfDatabaseUserTest {
     @Test(expected = ResourceNotFoundException.class)
     public void dropByNotOwnedAccountId() throws Exception {
         try {
-            governor.dropByAccountId(databaseUsers.get(1).getId(), databaseUsers.get(0).getAccountId());
+            governor.dropByIdAndAccountId(databaseUsers.get(1).getId(), databaseUsers.get(0).getAccountId());
         } catch (ResourceNotFoundException e) {
             throw new ResourceNotFoundException(e.getMessage());
         }

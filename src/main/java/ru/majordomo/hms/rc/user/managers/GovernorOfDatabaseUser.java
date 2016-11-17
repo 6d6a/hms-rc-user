@@ -61,7 +61,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         }
     }
 
-    public void dropByAccountId(String resourceId, String accountId) throws ResourceNotFoundException {
+    public void dropByIdAndAccountId(String resourceId, String accountId) throws ResourceNotFoundException {
         if (repository.findByIdAndAccountId(resourceId, accountId) != null) {
             repository.delete(resourceId);
         } else {
@@ -142,10 +142,10 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
         if (byAccountId && byId) {
             databaseUser = repository.findByIdAndAccountId(keyValue.get("databaseUserId"), keyValue.get("accountId"));
+        }
 
-            if (databaseUser == null) {
-                throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("websiteId") + " и account ID:" + keyValue.get("accountId") + " не найден");
-            }
+        if (databaseUser == null) {
+            throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("websiteId") + " и account ID:" + keyValue.get("accountId") + " не найден");
         }
 
         return databaseUser;
