@@ -115,4 +115,23 @@ public class ServiceMessageGenerator {
 
         return serviceMessage;
     }
+
+    public static ServiceMessage generateDatabaseUserCreateServiceMessage() {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.addParam("password", "12345678");
+        serviceMessage.addParam("type", "MYSQL");
+
+        return serviceMessage;
+    }
+
+    public static ServiceMessage generateDatabaseUserCreateWithoutAccountIdServiceMessage() {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("password", "12345678");
+        serviceMessage.addParam("type", "MYSQL");
+
+        return serviceMessage;
+    }
 }

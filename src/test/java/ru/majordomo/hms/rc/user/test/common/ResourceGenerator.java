@@ -318,6 +318,7 @@ public class ResourceGenerator {
 
         batchOfDatabaseUsers.get(1).setType(MYSQL);
         batchOfDatabaseUsers.get(1).setPasswordHashByPlainPassword("1234561");
+        batchOfDatabaseUsers.get(2).setAccountId(batchOfDatabaseUsers.get(1).getAccountId());
         return batchOfDatabaseUsers;
     }
 }

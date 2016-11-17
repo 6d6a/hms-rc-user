@@ -54,7 +54,19 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
+        if (repository.findOne(resourceId) != null) {
+            repository.delete(resourceId);
+        } else {
+            throw new ResourceNotFoundException("Ресурс не найден");
+        }
+    }
 
+    public void dropByAccountId(String resourceId, String accountId) throws ResourceNotFoundException {
+        if (repository.findByIdAndAccountId(resourceId, accountId) != null) {
+            repository.delete(resourceId);
+        } else {
+            throw new ResourceNotFoundException("Ресурс не найден");
+        }
     }
 
     @Override
@@ -62,10 +74,16 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         DatabaseUser databaseUser = new DatabaseUser();
         LordOfResources.setResourceParams(databaseUser, serviceMessage, cleaner);
         String password = cleaner.cleanString((String) serviceMessage.getParam("password"));
-        DBType userType = (DBType) serviceMessage.getParam("type");
 
-        databaseUser.setPasswordHashByPlainPassword(password);
+        DBType userType = null;
+        String userTypeAsString;
+        if (serviceMessage.getParam("type") != null) {
+            userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
+            userType = Enum.valueOf(DBType.class, userTypeAsString);
+        }
+
         databaseUser.setType(userType);
+        databaseUser.setPasswordHashByPlainPassword(password);
 
         return databaseUser;
     }
@@ -73,6 +91,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         DatabaseUser databaseUser = (DatabaseUser) resource;
+
+        if (databaseUser.getAccountId() == null || databaseUser.getAccountId().equals("")) {
+            throw new ParameterValidateException("AccountID не может быть пустым");
+        }
+
         if (databaseUser.getName() == null) {
             throw new ParameterValidateException("Имя не может быть пустым");
         }
@@ -93,7 +116,12 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
-        return repository.findOne(resourceId);
+        Resource resource = repository.findOne(resourceId);
+        if (resource != null) {
+            return resource;
+        } else {
+            throw new ResourceNotFoundException("Пользователь баз данных с ID: " + resourceId + " не найден");
+        }
     }
 
     @Override
@@ -114,6 +142,10 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
         if (byAccountId && byId) {
             databaseUser = repository.findByIdAndAccountId(keyValue.get("databaseUserId"), keyValue.get("accountId"));
+
+            if (databaseUser == null) {
+                throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("websiteId") + " и account ID:" + keyValue.get("accountId") + " не найден");
+            }
         }
 
         return databaseUser;

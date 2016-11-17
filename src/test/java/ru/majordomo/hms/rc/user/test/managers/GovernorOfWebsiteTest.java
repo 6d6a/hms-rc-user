@@ -58,7 +58,7 @@ public class GovernorOfWebsiteTest {
     @Autowired
     private PersonRepository personRepository;
     @Autowired
-    private UnixAccountRepository unixAccountRepository;;
+    private UnixAccountRepository unixAccountRepository;
 
     @Value("${default.website.service.name}")
     private String defaultServiceName;
