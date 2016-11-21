@@ -80,28 +80,20 @@ public class DatabaseUserAMQPControllerTest {
 
     private void setUpTE(String actionString) throws Exception {
         Exchange exchange = new TopicExchange("database-user." + actionString);
-        Queue queue = new Queue("te", false);
-        String routingKey = "te";
+
+        Queue queue = new Queue("te.web100500", false);
+        String routingKey = "te.web100500";
 
         rabbitAdmin.declareQueue(queue);
-        rabbitAdmin.declareExchange(exchange);
         rabbitAdmin.declareBinding(new Binding(queue.getName(), Binding.DestinationType.QUEUE,
                 exchange.getName(), routingKey,
-                Collections.<String, Object>emptyMap()));
-
-        Queue queue2 = new Queue("te.web100500", false);
-        String routingKey2 = "te.web100500";
-
-        rabbitAdmin.declareQueue(queue2);
-        rabbitAdmin.declareBinding(new Binding(queue2.getName(), Binding.DestinationType.QUEUE,
-                exchange.getName(), routingKey2,
                 Collections.<String, Object>emptyMap()));
 
     }
 
     private void setUpPM(String actionString) throws Exception {
         Exchange exchange = new TopicExchange("database-user." + actionString);
-        Queue queue = new Queue("pm", false);
+        Queue queue = new Queue("pm-" + actionString, false);
         String routingKey = "pm";
 
         rabbitAdmin.declareQueue(queue);
@@ -125,7 +117,7 @@ public class DatabaseUserAMQPControllerTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateReportFromTEServiceMessage();
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
         sender.send("database-user.create", "rc.user", serviceMessage, "te");
-        Message message = rabbitTemplate.receive("pm", 1000);
+        Message message = rabbitTemplate.receive("pm-create", 1000);
         Assert.notNull(message);
         Assert.notNull(message.getBody());
     }
@@ -133,7 +125,7 @@ public class DatabaseUserAMQPControllerTest {
     @Test
     public void sendAndReceiveUpdatePM() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserUpdateServiceMessage();
-        serviceMessage.addParam("id", databaseUserList.get(0).getId());
+        serviceMessage.addParam("resourceId", databaseUserList.get(0).getId());
         serviceMessage.setAccountId(databaseUserList.get(0).getAccountId());
         sender.send("database-user.update", "rc.user", serviceMessage, "pm");
         Message message = rabbitTemplate.receive("te.web100500", 1000);
@@ -146,7 +138,7 @@ public class DatabaseUserAMQPControllerTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateReportFromTEServiceMessage();
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
         sender.send("database-user.update", "rc.user", serviceMessage, "te");
-        Message message = rabbitTemplate.receive("pm", 1000);
+        Message message = rabbitTemplate.receive("pm-update", 1000);
         Assert.notNull(message);
         Assert.notNull(message.getBody());
     }
@@ -154,6 +146,8 @@ public class DatabaseUserAMQPControllerTest {
     @Test
     public void sendAndReceiveDeletePM() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserDeleteServiceMessage();
+        serviceMessage.addParam("resourceId", databaseUserList.get(0).getId());
+        serviceMessage.setAccountId(databaseUserList.get(0).getAccountId());
         sender.send("database-user.delete", "rc.user", serviceMessage, "pm");
         Message message = rabbitTemplate.receive("te.web100500", 1000);
         Assert.notNull(message);
@@ -165,7 +159,7 @@ public class DatabaseUserAMQPControllerTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateReportFromTEServiceMessage();
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
         sender.send("database-user.delete", "rc.user", serviceMessage, "te");
-        Message message = rabbitTemplate.receive("pm", 1000);
+        Message message = rabbitTemplate.receive("pm-delete", 1000);
         Assert.notNull(message);
         Assert.notNull(message.getBody());
     }

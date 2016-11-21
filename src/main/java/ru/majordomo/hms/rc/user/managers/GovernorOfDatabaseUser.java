@@ -46,7 +46,12 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
-        String resourceId = (String) serviceMessage.getParam("id");
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        }
+
         String accountId = serviceMessage.getAccountId();
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("databaseUserId", resourceId);
@@ -83,10 +88,14 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
         DatabaseUser databaseUser = new DatabaseUser();
         LordOfResources.setResourceParams(databaseUser, serviceMessage, cleaner);
-        String password = cleaner.cleanString((String) serviceMessage.getParam("password"));
-
+        String password = null;
         DBType userType = null;
         String userTypeAsString;
+
+        if (serviceMessage.getParam("password") != null) {
+            password = cleaner.cleanString((String) serviceMessage.getParam("password"));
+        }
+
         if (serviceMessage.getParam("type") != null) {
             userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
             userType = Enum.valueOf(DBType.class, userTypeAsString);
@@ -136,7 +145,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        DatabaseUser databaseUser = new DatabaseUser();
+        DatabaseUser databaseUser = null;
 
         boolean byAccountId = false;
         boolean byId = false;

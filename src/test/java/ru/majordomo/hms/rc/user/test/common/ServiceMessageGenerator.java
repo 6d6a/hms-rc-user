@@ -148,7 +148,6 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
-        serviceMessage.addParam("databaseUserId", ObjectId.get().toString());
 
         return serviceMessage;
     }

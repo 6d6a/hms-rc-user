@@ -146,25 +146,29 @@ class BaseAMQPController {
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
         report.addParam("success", successEvent);
 
-        sender.send(resourceType + ".create", "pm", report);
+        sender.send(resourceType + ".update", "pm", report);
     }
 
     void handleDeleteEventFromPM(String resourceType, ServiceMessage serviceMessage) {
 
         String errorMessage = "";
+        String databaseUserId = null;
+        Resource resource = null;
 
         String accountId = serviceMessage.getAccountId();
-        String resourceId = serviceMessage.getParam("databaseUserId").toString();
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            databaseUserId = serviceMessage.getParam("resourceId").toString();
+        }
 
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
-        keyValue.put("resourceId", resourceId);
-        Resource resource = null;
+        keyValue.put("databaseUserId", databaseUserId);
 
         try {
             resource = governor.build(keyValue);
         } catch (ResourceNotFoundException e) {
-            errorMessage = "Пользователь баз данных с ID: " + accountId + " не найден";
+            errorMessage = "Пользователь баз данных с ID: " + databaseUserId + " и accountId: " + accountId + " не найден";
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
             report.addParam("success", false);
             sender.send(resourceType + ".delete", "pm", report);
@@ -195,7 +199,7 @@ class BaseAMQPController {
             governor.drop(resource.getId());
         }
 
-        sender.send(resourceType + ".create", "pm", report);
+        sender.send(resourceType + ".delete", "pm", report);
 
     }
 

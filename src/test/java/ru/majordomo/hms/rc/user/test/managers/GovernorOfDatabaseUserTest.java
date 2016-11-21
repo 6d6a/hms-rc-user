@@ -82,7 +82,7 @@ public class GovernorOfDatabaseUserTest {
     @Test
     public void update() throws Exception {
         ServiceMessage serviceMessage = new ServiceMessage();
-        serviceMessage.addParam("id", databaseUsers.get(0).getId());
+        serviceMessage.addParam("resourceId", databaseUsers.get(0).getId());
         serviceMessage.setAccountId(databaseUsers.get(0).getAccountId());
         String oldPasswordHash = databaseUsers.get(0).getPasswordHash();
         serviceMessage.addParam("password", "87654321");
