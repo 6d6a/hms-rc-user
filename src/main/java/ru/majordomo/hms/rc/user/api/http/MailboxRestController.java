@@ -35,7 +35,7 @@ public class MailboxRestController {
     @RequestMapping(value = {"{accountId}/mailbox/{mailboxId}", "{accountId}/mailbox/{mailboxId}/"}, method = RequestMethod.GET)
     public Mailbox readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("mailboxId") String mailboxId) {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("mailboxId", mailboxId);
+        keyValue.put("resourceId", mailboxId);
         keyValue.put("accountId", accountId);
         return (Mailbox) governor.build(keyValue);
     }

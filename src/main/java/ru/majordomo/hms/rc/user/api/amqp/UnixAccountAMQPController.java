@@ -32,10 +32,10 @@ public class UnixAccountAMQPController extends BaseAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("unix-account", serviceMessage, governor);
+                handleCreateEventFromPM("unix-account", serviceMessage);
                 break;
             case ("te"):
-                handleCreateEventFromTE("unix-account", serviceMessage, governor);
+                handleCreateEventFromTE("unix-account", serviceMessage);
                 break;
         }
     }

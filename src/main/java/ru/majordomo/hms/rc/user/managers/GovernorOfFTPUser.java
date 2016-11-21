@@ -122,20 +122,8 @@ public class GovernorOfFTPUser extends LordOfResources {
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
         FTPUser ftpUser = new FTPUser();
 
-        boolean byAccountId = false;
-        boolean byId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("ftpUserId")) {
-                byId = true;
-            }
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId && byId) {
-            ftpUser = (FTPUser) construct(repository.findByIdAndAccountId(keyValue.get("ftpUserId"), keyValue.get("accountId")));
+        if (hasResourceIdAndAccountId(keyValue)) {
+            ftpUser = (FTPUser) construct(repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId")));
         }
 
         return ftpUser;

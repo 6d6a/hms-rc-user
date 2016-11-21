@@ -17,8 +17,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 @Service
 public class DatabaseAMQPController extends BaseAMQPController {
 
-    private GovernorOfDatabase governor;
-
     @Autowired
     public void setGovernor(GovernorOfDatabase governor) {
         this.governor = governor;
@@ -32,10 +30,10 @@ public class DatabaseAMQPController extends BaseAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("database", serviceMessage, governor);
+                handleCreateEventFromPM("database", serviceMessage);
                 break;
             case ("te"):
-                handleCreateEventFromTE("database", serviceMessage, governor);
+                handleCreateEventFromTE("database", serviceMessage);
                 break;
         }
     }

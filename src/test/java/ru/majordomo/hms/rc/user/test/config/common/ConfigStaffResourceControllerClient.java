@@ -11,6 +11,7 @@ import ru.majordomo.hms.rc.staff.resources.ServiceType;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -43,13 +44,15 @@ public class ConfigStaffResourceControllerClient {
             public Server getServerById(@PathVariable("serverId") String serverId) {
                 Server server = new Server();
                 server.setId(serverId);
+                server.setName("web100500");
                 return server;
             }
 
             @Override
             public Server getServerByServiceId(@PathVariable("serviceId") String serviceId) {
                 Server server = new Server();
-                server.setId(ObjectId.get().toString());
+                server.setServiceIds(Arrays.asList(ObjectId.get().toString()));
+                server.setName("web100500");
                 return server;
             }
 

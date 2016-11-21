@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -44,28 +41,68 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         } catch (UnsupportedEncodingException e) {
             throw new ParameterValidateException("В пароле используются некорретные символы");
         }
-        return null;
+        return databaseUser;
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        DatabaseUser databaseUser = (DatabaseUser) build(keyValue);
+
+        for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+            switch (entry.getKey().toString()) {
+                case "password":
+                    databaseUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        validate(databaseUser);
+        store(databaseUser);
+
+        return databaseUser;
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-
+        if (repository.findOne(resourceId) != null) {
+            repository.delete(resourceId);
+        } else {
+            throw new ResourceNotFoundException("Ресурс не найден");
+        }
     }
 
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
         DatabaseUser databaseUser = new DatabaseUser();
         LordOfResources.setResourceParams(databaseUser, serviceMessage, cleaner);
-        String password = cleaner.cleanString((String) serviceMessage.getParam("password"));
-        DBType userType = (DBType) serviceMessage.getParam("type");
+        String password = null;
+        DBType userType = null;
+        String userTypeAsString;
 
-        databaseUser.setPasswordHashByPlainPassword(password);
+        if (serviceMessage.getParam("password") != null) {
+            password = cleaner.cleanString((String) serviceMessage.getParam("password"));
+        }
+
+        if (serviceMessage.getParam("type") != null) {
+            userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
+            userType = Enum.valueOf(DBType.class, userTypeAsString);
+        }
+
         databaseUser.setType(userType);
+        databaseUser.setPasswordHashByPlainPassword(password);
 
         return databaseUser;
     }
@@ -73,6 +110,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         DatabaseUser databaseUser = (DatabaseUser) resource;
+
+        if (databaseUser.getAccountId() == null || databaseUser.getAccountId().equals("")) {
+            throw new ParameterValidateException("AccountID не может быть пустым");
+        }
+
         if (databaseUser.getName() == null) {
             throw new ParameterValidateException("Имя не может быть пустым");
         }
@@ -93,27 +135,24 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
-        return repository.findOne(resourceId);
+        Resource resource = repository.findOne(resourceId);
+        if (resource != null) {
+            return resource;
+        } else {
+            throw new ResourceNotFoundException("Пользователь баз данных с ID: " + resourceId + " не найден");
+        }
     }
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        DatabaseUser databaseUser = new DatabaseUser();
+        DatabaseUser databaseUser = null;
 
-        boolean byAccountId = false;
-        boolean byId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("databaseUserId")) {
-                byId = true;
-            }
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
+        if (hasResourceIdAndAccountId(keyValue)) {
+            databaseUser = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
-        if (byAccountId && byId) {
-            databaseUser = repository.findByIdAndAccountId(keyValue.get("databaseUserId"), keyValue.get("accountId"));
+        if (databaseUser == null) {
+            throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("resourceId") + " и account ID:" + keyValue.get("accountId") + " не найден");
         }
 
         return databaseUser;

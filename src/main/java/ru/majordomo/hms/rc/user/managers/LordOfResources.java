@@ -17,7 +17,7 @@ public abstract class LordOfResources {
     protected Logger logger = LoggerFactory.getLogger(LordOfResources.class);
     public abstract Resource create(ServiceMessage serviceMessage) throws ParameterValidateException;
 
-    public abstract Resource update(ServiceMessage serviceMessage) throws ParameterValidateException;
+    public abstract Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException;
 
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
 
@@ -36,6 +36,23 @@ public abstract class LordOfResources {
     public abstract Collection<? extends Resource> buildAll();
 
     public abstract void store(Resource resource);
+
+    protected Boolean hasResourceIdAndAccountId(Map<String, String> keyValue) {
+
+        boolean byAccountId = false;
+        boolean byId = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("resourceId")) {
+                byId = true;
+            }
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        return (byAccountId && byId);
+    }
 
     public static void setResourceParams(Resource resource,
                                          ServiceMessage serviceMessage,

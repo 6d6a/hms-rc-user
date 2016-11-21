@@ -17,8 +17,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 @Service
 public class DomainAMQPController extends BaseAMQPController {
 
-    private GovernorOfDomain governor;
-
     @Autowired
     public void setGovernor(GovernorOfDomain governor) {
         this.governor = governor;
@@ -32,10 +30,10 @@ public class DomainAMQPController extends BaseAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("domain", serviceMessage, governor);
+                handleCreateEventFromPM("domain", serviceMessage);
                 break;
             case ("te"):
-                handleCreateEventFromTE("domain", serviceMessage, governor);
+                handleCreateEventFromTE("domain", serviceMessage);
                 break;
         }
     }

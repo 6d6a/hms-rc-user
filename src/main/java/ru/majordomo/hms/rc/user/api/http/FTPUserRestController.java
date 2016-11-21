@@ -38,7 +38,7 @@ public class FTPUserRestController {
     @RequestMapping(value = {"{accountId}/ftp-user/{ftpUserId}", "{accountId}/ftp-user/{ftpUserId}/"}, method = RequestMethod.GET)
     public FTPUser readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("ftpUserId") String ftpUserId) {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("ftpUserId", ftpUserId);
+        keyValue.put("resourceId", ftpUserId);
         keyValue.put("accountId", accountId);
         return (FTPUser) governor.build(keyValue);
     }
