@@ -36,7 +36,7 @@ public class UnixAccountRESTController {
     @RequestMapping(value = {"{accountId}/unix-account/{unixAccountId}", "{accountId}/unix-account/{unixAccountId}/"}, method = RequestMethod.GET)
     public UnixAccount readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("unixAccountId") String unixAccountId) {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("unixAccountId", unixAccountId);
+        keyValue.put("resourceId", unixAccountId);
         keyValue.put("accountId", accountId);
         return (UnixAccount) governor.build(keyValue);
     }

@@ -116,7 +116,7 @@ public class GovernorOfDomain extends LordOfResources {
         Domain domain = new Domain();
 
         if (hasResourceIdAndAccountId(keyValue)) {
-            domain = (Domain) construct(repository.findByIdAndAccountId(keyValue.get("resource"), keyValue.get("accountId")));
+            domain = (Domain) construct(repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId")));
         }
 
         return domain;

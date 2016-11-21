@@ -32,7 +32,7 @@ public class PersonRestController {
     @RequestMapping(value = {"{accountId}/person/{personId}", "{accountId}/person/{personId}/"}, method = RequestMethod.GET)
     public Person readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("personId") String personId) {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("personId", personId);
+        keyValue.put("resourceId", personId);
         keyValue.put("accountId", accountId);
         return (Person) governor.build(keyValue);
     }

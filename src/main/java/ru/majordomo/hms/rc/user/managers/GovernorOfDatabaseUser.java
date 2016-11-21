@@ -54,7 +54,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
         String accountId = serviceMessage.getAccountId();
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("databaseUserId", resourceId);
+        keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
         DatabaseUser databaseUser = (DatabaseUser) build(keyValue);
@@ -152,7 +152,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         }
 
         if (databaseUser == null) {
-            throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("websiteId") + " и account ID:" + keyValue.get("accountId") + " не найден");
+            throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("resourceId") + " и account ID:" + keyValue.get("accountId") + " не найден");
         }
 
         return databaseUser;

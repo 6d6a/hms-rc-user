@@ -32,7 +32,7 @@ public class DatabaseRestController {
     @RequestMapping(value = {"{accountId}/database/{databaseId}", "{accountId}/database/{databaseId}/"}, method = RequestMethod.GET)
     public Database readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("databaseId") String databaseId) {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("databaseId", databaseId);
+        keyValue.put("resourceId", databaseId);
         keyValue.put("accountId", accountId);
         return (Database) governor.build(keyValue);
     }
