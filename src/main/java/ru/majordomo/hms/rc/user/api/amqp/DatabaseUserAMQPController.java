@@ -11,12 +11,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
-import ru.majordomo.hms.rc.user.resources.DatabaseUser;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @EnableRabbit
 @Service

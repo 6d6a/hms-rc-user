@@ -18,12 +18,9 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
-import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseRestController;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseUserRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;

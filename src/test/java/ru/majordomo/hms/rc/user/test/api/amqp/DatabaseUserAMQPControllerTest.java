@@ -11,7 +11,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;

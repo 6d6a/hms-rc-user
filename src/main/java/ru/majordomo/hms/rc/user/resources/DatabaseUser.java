@@ -1,10 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
-import org.springframework.data.annotation.Transient;
-
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;

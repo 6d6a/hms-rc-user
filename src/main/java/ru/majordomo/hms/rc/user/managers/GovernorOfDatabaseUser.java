@@ -1,12 +1,10 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;

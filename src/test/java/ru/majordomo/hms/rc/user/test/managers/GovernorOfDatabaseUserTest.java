@@ -15,7 +15,6 @@ import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;

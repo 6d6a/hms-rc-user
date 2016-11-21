@@ -9,9 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
@@ -29,7 +27,7 @@ import ru.majordomo.hms.rc.user.resources.Serviceable;
 class BaseAMQPController {
 
     private String applicationName;
-    protected Sender sender;
+    private Sender sender;
     private StaffResourceControllerClient staffRcClient;
     private static final Logger logger = LoggerFactory.getLogger(BaseAMQPController.class);
 
@@ -50,7 +48,7 @@ class BaseAMQPController {
         this.staffRcClient = staffRcClient;
     }
 
-    protected Resource getResourceByUrl(String url, LordOfResources governor) {
+    private Resource getResourceByUrl(String url, LordOfResources governor) {
         Resource resource = null;
         try {
             URL processingUrl = new URL(url);
@@ -146,6 +144,7 @@ class BaseAMQPController {
         Resource resource = getResourceByUrl(resourceUrl, governor);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+        report.addParam("success", successEvent);
 
         sender.send(resourceType + ".create", "pm", report);
     }
@@ -200,7 +199,7 @@ class BaseAMQPController {
 
     }
 
-    protected ServiceMessage createReportMessage(ServiceMessage event,
+    private ServiceMessage createReportMessage(ServiceMessage event,
                                                String resourceType,
                                                Resource resource, String errorMessage) {
         ServiceMessage report = new ServiceMessage();
@@ -221,7 +220,7 @@ class BaseAMQPController {
         return report;
     }
 
-    protected String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
+    private String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
         try {
             String serverName = null;
             if (resource instanceof ServerStorable) {
