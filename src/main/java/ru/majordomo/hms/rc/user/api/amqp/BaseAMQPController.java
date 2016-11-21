@@ -120,7 +120,7 @@ class BaseAMQPController {
             resource = governor.update(serviceMessage);
             success = true;
         } catch (Exception e) {
-            logger.error("Обновление ресурса не удалось:" + e.getMessage());
+            logger.error("Обновление ресурса " + resourceType + " не удалось:" + e.getMessage());
             errorMessage = e.getMessage();
             success = false;
         }
@@ -152,23 +152,23 @@ class BaseAMQPController {
     void handleDeleteEventFromPM(String resourceType, ServiceMessage serviceMessage) {
 
         String errorMessage = "";
-        String databaseUserId = null;
+        String resourceId = null;
         Resource resource = null;
 
         String accountId = serviceMessage.getAccountId();
 
         if (serviceMessage.getParam("resourceId") != null) {
-            databaseUserId = serviceMessage.getParam("resourceId").toString();
+            resourceId = serviceMessage.getParam("resourceId").toString();
         }
 
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
-        keyValue.put("databaseUserId", databaseUserId);
+        keyValue.put("resourceId", resourceId);
 
         try {
             resource = governor.build(keyValue);
         } catch (ResourceNotFoundException e) {
-            errorMessage = "Пользователь баз данных с ID: " + databaseUserId + " и accountId: " + accountId + " не найден";
+            errorMessage = "Ресурс " + resourceType + " с ID: " + resourceId + " и accountId: " + accountId + " не найден";
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
             report.addParam("success", false);
             sender.send(resourceType + ".delete", "pm", report);

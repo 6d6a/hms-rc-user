@@ -173,20 +173,8 @@ public class GovernorOfDatabase extends LordOfResources {
 
         Database database = new Database();
 
-        boolean byAccountId = false;
-        boolean byId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("databaseId")) {
-                byId = true;
-            }
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId && byId) {
-            database = (Database) construct(repository.findByIdAndAccountId(keyValue.get("databaseId"), keyValue.get("accountId")));
+        if (hasResourceIdAndAccountId(keyValue)) {
+            database = (Database) construct(repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId")));
         }
 
         return database;

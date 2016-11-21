@@ -394,22 +394,10 @@ public class GovernorOfWebSite extends LordOfResources {
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
         WebSite website = null;
 
-        boolean byAccountId = false;
-        boolean byId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("websiteId")) {
-                byId = true;
-            }
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId && byId) {
-            website = repository.findByIdAndAccountId(keyValue.get("websiteId"), keyValue.get("accountId"));
+        if (hasResourceIdAndAccountId(keyValue)) {
+            website = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
             if (website == null) {
-                throw new ResourceNotFoundException("Сайт с ID:" + keyValue.get("websiteId") + " и account ID:" + keyValue.get("accountId") + " не найден");
+                throw new ResourceNotFoundException("Сайт с ID:" + keyValue.get("resourceId") + " и account ID:" + keyValue.get("accountId") + " не найден");
             } else {
                 construct(website);
             }

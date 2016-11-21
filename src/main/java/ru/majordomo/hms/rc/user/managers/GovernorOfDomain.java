@@ -115,20 +115,8 @@ public class GovernorOfDomain extends LordOfResources {
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
         Domain domain = new Domain();
 
-        boolean byAccountId = false;
-        boolean byId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("domainId")) {
-                byId = true;
-            }
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId && byId) {
-            domain = (Domain) construct(repository.findByIdAndAccountId(keyValue.get("domainId"), keyValue.get("accountId")));
+        if (hasResourceIdAndAccountId(keyValue)) {
+            domain = (Domain) construct(repository.findByIdAndAccountId(keyValue.get("resource"), keyValue.get("accountId")));
         }
 
         return domain;

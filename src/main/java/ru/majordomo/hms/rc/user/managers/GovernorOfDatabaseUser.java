@@ -147,20 +147,8 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
         DatabaseUser databaseUser = null;
 
-        boolean byAccountId = false;
-        boolean byId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("databaseUserId")) {
-                byId = true;
-            }
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId && byId) {
-            databaseUser = repository.findByIdAndAccountId(keyValue.get("databaseUserId"), keyValue.get("accountId"));
+        if (hasResourceIdAndAccountId(keyValue)) {
+            databaseUser = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
         if (databaseUser == null) {
