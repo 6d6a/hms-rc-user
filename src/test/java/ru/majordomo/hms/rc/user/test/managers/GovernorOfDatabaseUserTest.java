@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.Assert;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -68,38 +69,26 @@ public class GovernorOfDatabaseUserTest {
     }
 
     @Test
-    public void dropByAccountId() throws Exception {
-        governor.dropByIdAndAccountId(databaseUsers.get(1).getId(), databaseUsers.get(1).getAccountId());
-        if (repository.count() != 2) {
-            throw new Exception("Количество оставшихся аккаунтов не равно ожидаемому");
-        }
-    }
-
-    @Test(expected = ResourceNotFoundException.class)
-    public void dropByNotOwnedAccountId() throws Exception {
-        try {
-            governor.dropByIdAndAccountId(databaseUsers.get(1).getId(), databaseUsers.get(0).getAccountId());
-        } catch (ResourceNotFoundException e) {
-            throw new ResourceNotFoundException(e.getMessage());
-        }
-    }
-
-    @Test
     public void buildAll() throws Exception {
-        Collection<? extends Resource> result = governor.buildAll();
-        if (result.size() != 3) {
-            throw new Exception("Количество аккаунтов не равно ожидаемому");
-        }
+        Assert.isTrue(governor.buildAll().size() == 3);
     }
 
     @Test
     public void buildAllByAccountId() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", databaseUsers.get(1).getAccountId());
-        Collection<? extends Resource> result = governor.buildAll(keyValue);
-        if (result.size() != 2) {
-            throw new Exception("Количество аккаунтов не равно ожидаемому");
-        }
+        Assert.isTrue(governor.buildAll(keyValue).size() == 2);
+    }
+
+    @Test
+    public void update() throws Exception {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.addParam("id", databaseUsers.get(0).getId());
+        serviceMessage.setAccountId(databaseUsers.get(0).getAccountId());
+        String oldPasswordHash = databaseUsers.get(0).getPasswordHash();
+        serviceMessage.addParam("password", "87654321");
+        DatabaseUser databaseUser = (DatabaseUser) governor.update(serviceMessage);
+        Assert.isTrue(!repository.findOne(databaseUser.getId()).getPasswordHash().equals(oldPasswordHash));
     }
 
     @After

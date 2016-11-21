@@ -10,12 +10,15 @@ import org.springframework.stereotype.Component;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.LordOfResources;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
@@ -26,9 +29,11 @@ import ru.majordomo.hms.rc.user.resources.Serviceable;
 class BaseAMQPController {
 
     private String applicationName;
-    private Sender sender;
+    protected Sender sender;
     private StaffResourceControllerClient staffRcClient;
     private static final Logger logger = LoggerFactory.getLogger(BaseAMQPController.class);
+
+    protected LordOfResources governor;
 
     @Value("${spring.application.name}")
     public void setApplicationName(String applicationName) {
@@ -45,7 +50,7 @@ class BaseAMQPController {
         this.staffRcClient = staffRcClient;
     }
 
-    private Resource getResourceByUrl(String url, LordOfResources governor) {
+    protected Resource getResourceByUrl(String url, LordOfResources governor) {
         Resource resource = null;
         try {
             URL processingUrl = new URL(url);
@@ -56,14 +61,15 @@ class BaseAMQPController {
         } catch (MalformedURLException e) {
             logger.warn("Ошибка при обработке URL:" + url);
             e.printStackTrace();
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Resource not found");
         }
 
         return resource;
     }
 
     void handleCreateEventFromPM(String resourceType,
-                                 ServiceMessage serviceMessage,
-                                 LordOfResources governor) {
+                                 ServiceMessage serviceMessage) {
 
         Boolean success;
         Resource resource = null;
@@ -90,8 +96,7 @@ class BaseAMQPController {
     }
 
     void handleCreateEventFromTE(String resourceType,
-                                 ServiceMessage serviceMessage,
-                                 LordOfResources governor) {
+                                 ServiceMessage serviceMessage) {
 
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
@@ -106,7 +111,96 @@ class BaseAMQPController {
         sender.send(resourceType + ".create", "pm", report);
     }
 
-    private ServiceMessage createReportMessage(ServiceMessage event,
+    void handleUpdateEventFromPM(String resourceType,
+                                 ServiceMessage serviceMessage) {
+
+        Boolean success;
+        Resource resource = null;
+        String errorMessage = "";
+
+        try {
+            resource = governor.update(serviceMessage);
+            success = true;
+        } catch (Exception e) {
+            logger.error("Обновление ресурса не удалось:" + e.getMessage());
+            errorMessage = e.getMessage();
+            success = false;
+        }
+
+        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+        report.addParam("success", success);
+
+        if (success && (resource instanceof ServerStorable || resource instanceof Serviceable)) {
+            String teRoutingKey = getTaskExecutorRoutingKey(resource);
+            sender.send(resourceType + ".update", teRoutingKey, report);
+        } else {
+            sender.send(resourceType + ".update", "pm", report);
+        }
+    }
+
+    void handleUpdateEventFromTE(String resourceType,
+                                 ServiceMessage serviceMessage) {
+
+        Boolean successEvent = (Boolean) serviceMessage.getParam("success");
+        String resourceUrl = serviceMessage.getObjRef();
+        Resource resource = getResourceByUrl(resourceUrl, governor);
+        String errorMessage = (String) serviceMessage.getParam("errorMessage");
+        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+
+        sender.send(resourceType + ".create", "pm", report);
+    }
+
+    void handleDeleteEventFromPM(String resourceType, ServiceMessage serviceMessage) {
+
+        String errorMessage = "";
+
+        String accountId = serviceMessage.getAccountId();
+        String resourceId = serviceMessage.getParam("databaseUserId").toString();
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("accountId", accountId);
+        keyValue.put("resourceId", resourceId);
+        Resource resource = null;
+
+        try {
+            resource = governor.build(keyValue);
+        } catch (ResourceNotFoundException e) {
+            errorMessage = "Пользователь баз данных с ID: " + accountId + " не найден";
+            ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
+            report.addParam("success", false);
+            sender.send(resourceType + ".delete", "pm", report);
+        }
+
+        if (resource != null) {
+            ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+            report.addParam("success", true);
+            if (resource instanceof ServerStorable || resource instanceof Serviceable) {
+                String teRoutingKey = getTaskExecutorRoutingKey(resource);
+                sender.send(resourceType + ".delete", teRoutingKey, report);
+            } else {
+                sender.send(resourceType + ".delete", "pm", report);
+            }
+        }
+    }
+
+    void handleDeleteEventFromTE(String resourceType,
+                                             ServiceMessage serviceMessage) {
+
+        Boolean successEvent = (Boolean) serviceMessage.getParam("success");
+        String resourceUrl = serviceMessage.getObjRef();
+        Resource resource = getResourceByUrl(resourceUrl, governor);
+        String errorMessage = (String) serviceMessage.getParam("errorMessage");
+        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+
+        if (successEvent) {
+            governor.drop(resource.getId());
+        }
+
+        sender.send(resourceType + ".create", "pm", report);
+
+    }
+
+    protected ServiceMessage createReportMessage(ServiceMessage event,
                                                String resourceType,
                                                Resource resource, String errorMessage) {
         ServiceMessage report = new ServiceMessage();
@@ -127,7 +221,7 @@ class BaseAMQPController {
         return report;
     }
 
-    private String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
+    protected String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
         try {
             String serverName = null;
             if (resource instanceof ServerStorable) {

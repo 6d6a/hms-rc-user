@@ -17,8 +17,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 @Service
 public class WebSiteAMQPController extends BaseAMQPController {
 
-    private GovernorOfWebSite governor;
-
     @Autowired
     public void setGovernor(GovernorOfWebSite governor) {
         this.governor = governor;
@@ -32,10 +30,10 @@ public class WebSiteAMQPController extends BaseAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("website", serviceMessage, governor);
+                handleCreateEventFromPM("website", serviceMessage);
                 break;
             case ("te"):
-                handleCreateEventFromTE("website", serviceMessage, governor);
+                handleCreateEventFromTE("website", serviceMessage);
                 break;
         }
     }

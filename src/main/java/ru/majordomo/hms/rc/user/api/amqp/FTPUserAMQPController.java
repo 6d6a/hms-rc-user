@@ -16,7 +16,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
 @EnableRabbit
 @Service
 public class FTPUserAMQPController extends BaseAMQPController {
-    private GovernorOfFTPUser governor;
 
     @Autowired
     public void setGovernor(GovernorOfFTPUser governor) {
@@ -31,10 +30,10 @@ public class FTPUserAMQPController extends BaseAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("ftp-user", serviceMessage, governor);
+                handleCreateEventFromPM("ftp-user", serviceMessage);
                 break;
             case ("te"):
-                handleCreateEventFromTE("ftp-user", serviceMessage, governor);
+                handleCreateEventFromTE("ftp-user", serviceMessage);
                 break;
         }
     }

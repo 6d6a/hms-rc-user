@@ -82,7 +82,8 @@ public class DatabaseUserRestControllerTest {
                                 fieldWithPath("name").description("Имя базы данных"),
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли база данных"),
                                 fieldWithPath("type").description("Тип базы данных"),
-                                fieldWithPath("passwordHash").description("Хэш пароля пользователя")
+                                fieldWithPath("passwordHash").description("Хэш пароля пользователя"),
+                                fieldWithPath("serviceId").description("ID сервиса в RC-STAFF")
                         )
                 ));
     }

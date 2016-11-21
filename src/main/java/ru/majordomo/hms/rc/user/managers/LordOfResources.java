@@ -17,7 +17,7 @@ public abstract class LordOfResources {
     protected Logger logger = LoggerFactory.getLogger(LordOfResources.class);
     public abstract Resource create(ServiceMessage serviceMessage) throws ParameterValidateException;
 
-    public abstract Resource update(ServiceMessage serviceMessage) throws ParameterValidateException;
+    public abstract Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException;
 
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
 

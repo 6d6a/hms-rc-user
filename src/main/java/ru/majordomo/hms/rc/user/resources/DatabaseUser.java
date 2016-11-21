@@ -9,9 +9,10 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
-public class DatabaseUser extends Resource implements Securable {
+public class DatabaseUser extends Resource implements Serviceable, Securable {
     private String passwordHash;
     private DBType type;
+    private String serviceId;
 
     public DBType getType() {
         return type;
@@ -29,6 +30,16 @@ public class DatabaseUser extends Resource implements Securable {
     @Override
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    @Override
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    @Override
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
     @Override

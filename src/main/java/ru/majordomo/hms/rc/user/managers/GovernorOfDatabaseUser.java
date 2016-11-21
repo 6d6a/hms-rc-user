@@ -1,14 +1,13 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -44,25 +43,38 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         } catch (UnsupportedEncodingException e) {
             throw new ParameterValidateException("В пароле используются некорретные символы");
         }
-        return null;
+        return databaseUser;
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
+        String resourceId = (String) serviceMessage.getParam("id");
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("databaseUserId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        DatabaseUser databaseUser = (DatabaseUser) build(keyValue);
+
+        for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+            switch (entry.getKey().toString()) {
+                case "password":
+                    databaseUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        validate(databaseUser);
+        store(databaseUser);
+
+        return databaseUser;
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) != null) {
-            repository.delete(resourceId);
-        } else {
-            throw new ResourceNotFoundException("Ресурс не найден");
-        }
-    }
-
-    public void dropByIdAndAccountId(String resourceId, String accountId) throws ResourceNotFoundException {
-        if (repository.findByIdAndAccountId(resourceId, accountId) != null) {
             repository.delete(resourceId);
         } else {
             throw new ResourceNotFoundException("Ресурс не найден");

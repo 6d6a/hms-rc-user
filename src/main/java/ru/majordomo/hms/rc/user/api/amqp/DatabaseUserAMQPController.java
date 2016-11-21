@@ -11,13 +11,16 @@ import org.springframework.messaging.handler.annotation.Payload;
 
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
+import ru.majordomo.hms.rc.user.resources.DatabaseUser;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @EnableRabbit
 @Service
 public class DatabaseUserAMQPController extends BaseAMQPController {
-
-    private GovernorOfDatabaseUser governor;
 
     @Autowired
     public void setGovernor(GovernorOfDatabaseUser governor) {
@@ -32,10 +35,42 @@ public class DatabaseUserAMQPController extends BaseAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("database-user", serviceMessage, governor);
+                handleCreateEventFromPM("database-user", serviceMessage);
                 break;
             case ("te"):
-                handleCreateEventFromTE("database-user", serviceMessage, governor);
+                handleCreateEventFromTE("database-user", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database-user.delete",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "database-user.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleDeleteEventFromPM("database-user", serviceMessage);
+                break;
+            case ("te"):
+                handleDeleteEventFromTE("database-user", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database-user.update",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "database-user.update", type = "topic"),
+            key = "rc.user"))
+    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleUpdateEventFromPM("database-user", serviceMessage);
+                break;
+            case ("te"):
+                handleUpdateEventFromTE("database-user", serviceMessage);
                 break;
         }
     }
