@@ -48,7 +48,7 @@ class BaseAMQPController {
         this.staffRcClient = staffRcClient;
     }
 
-    private Resource getResourceByUrl(String url, LordOfResources governor) {
+    private Resource getResourceByUrl(String url) {
         Resource resource = null;
         try {
             URL processingUrl = new URL(url);
@@ -98,7 +98,7 @@ class BaseAMQPController {
 
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
-        Resource resource = getResourceByUrl(resourceUrl, governor);
+        Resource resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
@@ -141,7 +141,7 @@ class BaseAMQPController {
 
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
-        Resource resource = getResourceByUrl(resourceUrl, governor);
+        Resource resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
         report.addParam("success", successEvent);
@@ -191,7 +191,7 @@ class BaseAMQPController {
 
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
-        Resource resource = getResourceByUrl(resourceUrl, governor);
+        Resource resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
