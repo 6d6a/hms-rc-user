@@ -11,6 +11,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
@@ -163,6 +165,31 @@ public class PersonRestControllerTest {
         String accountId = batchOfPersons.get(0).getAccountId();
         String personId = batchOfPersons.get(0).getId();
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/" + personId).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(batchOfPersons.get(0).getName()))
+                .andExpect(jsonPath("switchedOn").value(batchOfPersons.get(0).getSwitchedOn()))
+                .andExpect(jsonPath("phoneNumbers").value(batchOfPersons.get(0).getPhoneNumbers()))
+                .andExpect(jsonPath("emailAddresses").value(batchOfPersons.get(0).getEmailAddresses()))
+                .andExpect(jsonPath("passport").isMap())
+                .andExpect(jsonPath("passport.number").value(batchOfPersons.get(0).getPassport().getNumber()))
+                .andExpect(jsonPath("passport.issuedOrg").value(batchOfPersons.get(0).getPassport().getIssuedOrg()))
+                .andExpect(jsonPath("passport.issuedDate").value(batchOfPersons.get(0).getPassport().getIssuedDate().toString()))
+                .andExpect(jsonPath("passport.birthday").value(batchOfPersons.get(0).getPassport().getBirthday().toString()))
+                .andExpect(jsonPath("passport.mainPage").value(batchOfPersons.get(0).getPassport().getMainPage()))
+                .andExpect(jsonPath("passport.registerPage").value(batchOfPersons.get(0).getPassport().getRegisterPage()))
+                .andExpect(jsonPath("passport.address").value(batchOfPersons.get(0).getPassport().getAddress()))
+                .andExpect(jsonPath("legalEntity").value(batchOfPersons.get(0).getLegalEntity()))
+                .andExpect(jsonPath("postalAddress").value(batchOfPersons.get(0).getPostalAddress()))
+                .andExpect(jsonPath("owner").value(batchOfPersons.get(0).getOwner()))
+                .andExpect(jsonPath("country").value(batchOfPersons.get(0).getCountry()))
+                .andExpect(jsonPath("nicHandle").value(batchOfPersons.get(0).getNicHandle()));
+    }
+
+    @Test
+    public void readByAccountIdAndByOwner() throws Exception {
+        String accountId = batchOfPersons.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/owner").accept(APPLICATION_JSON_UTF8);
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("name").value(batchOfPersons.get(0).getName()))

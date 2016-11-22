@@ -10,4 +10,5 @@ import ru.majordomo.hms.rc.user.resources.Person;
 public interface PersonRepository extends MongoRepository<Person,String> {
     List<Person> findByAccountId(String accountId);
     Person findByIdAndAccountId(String personId, String accountId);
+    Person findByAccountIdAndOwner(String accountId, Boolean owner);
 }
