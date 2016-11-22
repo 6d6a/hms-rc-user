@@ -223,6 +223,26 @@ public class GovernorOfPerson extends LordOfResources {
             person = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
+        boolean byAccountId = false;
+        boolean byOwner = false;
+        boolean OwnerState = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+            if (entry.getKey().equals("owner")) {
+                byOwner = true;
+                if (entry.getValue().equals("true")) {
+                    OwnerState = true;
+                }
+            }
+        }
+
+        if (byAccountId && byOwner) {
+            person = repository.findByAccountIdAndOwner(keyValue.get("accountId"), OwnerState);
+        }
+
         return person;
     }
 
