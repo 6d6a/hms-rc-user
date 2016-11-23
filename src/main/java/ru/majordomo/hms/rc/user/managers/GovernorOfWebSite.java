@@ -47,6 +47,10 @@ public class GovernorOfWebSite extends LordOfResources {
     private String defaultWebsiteCustomUserConf;
     private Boolean defaultAccessLogEnabled;
     private Boolean defaultErrorLogEnabled;
+    private Boolean defaultFollowSymLinks;
+    private Boolean defaultMultiViews;
+    private Integer defaultMbstringFuncOverload;
+    private Boolean defaultAllowUrlFopen;
 
     @Value("${default.website.service.name}")
     public void setDefaultServiceName(String defaultServiceName) {
@@ -128,6 +132,25 @@ public class GovernorOfWebSite extends LordOfResources {
         this.defaultErrorLogEnabled = defaultErrorLogEnabled;
     }
 
+    @Value("${default.website.mbstring.func.overload}")
+    public void setDefaultMbstringFuncOverload(Integer defaultMbstringFuncOverload) {
+        this.defaultMbstringFuncOverload = defaultMbstringFuncOverload;
+    }
+
+    @Value("${default.website.allow.url.fopen}")
+    public void setDefaultAllowUrlFopen(Boolean defaultAllowUrlFopen) {
+        this.defaultAllowUrlFopen = defaultAllowUrlFopen;
+    }
+
+    @Value("${default.website.follow.sym.links}")
+    public void setDefaultFollowSymLinks(Boolean defaultFollowSymLinks) {
+        this.defaultFollowSymLinks = defaultFollowSymLinks;
+    }
+
+    @Value("${default.website.multi.views}")
+    public void setDefaultMultiViews(Boolean defaultMultiViews) {
+        this.defaultMultiViews = defaultMultiViews;
+    }
 
     @Autowired
     public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
@@ -170,12 +193,116 @@ public class GovernorOfWebSite extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        WebSite website = (WebSite) build(keyValue);
+
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "name":
+                        website.setName(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "domainIds":
+                        website.setDomainIds(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        for (String domainId : website.getDomainIds()) {
+                            Domain domain = (Domain) governorOfDomain.build(domainId);
+                            website.addDomain(domain);
+                        }
+                        break;
+                    case "applicationServiceId":
+                        website.setServiceId(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "documentRoot":
+                        website.setDocumentRoot(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "charSet":
+                        String charsetAsString = cleaner.cleanString((String) serviceMessage.getParam("charSet"));
+                        website.setCharSet(Enum.valueOf(CharSet.class, charsetAsString));
+                        break;
+                    case "ssiEnabled":
+                        website.setSsiEnabled((Boolean) entry.getValue());
+                        break;
+                    case "ssiFileExtensions":
+                        List<String> ssiFileExtensions = new ArrayList<>();
+                        if (website.getSsiEnabled()) {
+                            ssiFileExtensions = cleaner.cleanListWithStrings((List<String>) entry.getValue());
+                        }
+                        website.setSsiFileExtensions(ssiFileExtensions);
+                        break;
+                    case "cgiEnabled":
+                        website.setCgiEnabled((Boolean) entry.getValue());
+                        break;
+                    case "cgiFileExtensions":
+                        List<String> cgiFileExtensions = new ArrayList<>();
+                        if (website.getSsiEnabled()) {
+                            cgiFileExtensions = cleaner.cleanListWithStrings((List<String>) entry.getValue());
+                        }
+                        website.setCgiFileExtensions(cgiFileExtensions);
+                        break;
+                    case "scriptAlias":
+                        website.setScriptAlias(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "autoSubDomain":
+                        website.setAutoSubDomain((Boolean) entry.getValue());
+                        break;
+                    case "accessByOldHttpVersion":
+                        website.setAccessByOldHttpVersion((Boolean) entry.getValue());
+                        break;
+                    case "staticFileExtensions":
+                        website.setStaticFileExtensions(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        break;
+                    case "indexFileList":
+                        website.setIndexFileList(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        break;
+                    case "accessLogEnabled":
+                        website.setAccessLogEnabled((Boolean) entry.getValue());
+                        break;
+                    case "errorLogEnabled":
+                        website.setErrorLogEnabled((Boolean) entry.getValue());
+                        break;
+                    case "allowUrlFopen":
+                        website.setAllowUrlFopen((Boolean) entry.getValue());
+                        break;
+                    case "mbstringFuncOverload":
+                        website.setMbstringFuncOverload((Integer) entry.getValue());
+                        break;
+                    case "followSymLinks":
+                        website.setFollowSymLinks((Boolean) entry.getValue());
+                        break;
+                    case "multiViews":
+                        website.setMultiViews((Boolean) entry.getValue());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        validate(website);
+        store(website);
+
+        return website;
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        repository.delete(resourceId);
+        if (repository.findOne(resourceId) != null) {
+            repository.delete(resourceId);
+        } else {
+            throw new ResourceNotFoundException("Ресурс не найден");
+        }
     }
 
     @Override
@@ -184,69 +311,78 @@ public class GovernorOfWebSite extends LordOfResources {
 
         LordOfResources.setResourceParams(webSite, serviceMessage, cleaner);
 
-        List<String> domainIds = new ArrayList<>();
-        if (serviceMessage.getParam("domainIds") != null) {
-            domainIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("domainIds"));
-        }
-        for (String domainId : domainIds) {
-            Domain domain = (Domain) governorOfDomain.build(domainId);
-            webSite.addDomain(domain);
-        }
+        try {
+            List<String> domainIds = new ArrayList<>();
+            if (serviceMessage.getParam("domainIds") != null) {
+                domainIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("domainIds"));
+            }
+            for (String domainId : domainIds) {
+                Domain domain = (Domain) governorOfDomain.build(domainId);
+                webSite.addDomain(domain);
+            }
 
-        String applicationServiceId = cleaner.cleanString((String) serviceMessage.getParam("applicationService"));
-        String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
+            String applicationServiceId = cleaner.cleanString((String) serviceMessage.getParam("applicationServiceId"));
+            String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
 
-        String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
-        UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
+            String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
+            UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
 
-        CharSet charSet = null;
-        String charsetAsString;
-        if (serviceMessage.getParam("charSet") != null) {
-            charsetAsString = cleaner.cleanString((String) serviceMessage.getParam("charSet"));
-            charSet = Enum.valueOf(CharSet.class, charsetAsString);
-        }
+            CharSet charSet = null;
+            String charsetAsString;
+            if (serviceMessage.getParam("charSet") != null) {
+                charsetAsString = cleaner.cleanString((String) serviceMessage.getParam("charSet"));
+                charSet = Enum.valueOf(CharSet.class, charsetAsString);
+            }
 
-        Boolean ssiEnabled = (Boolean) serviceMessage.getParam("ssiEnabled");
-        List<String> ssiFileExtensions = new ArrayList<>();
-        if (serviceMessage.getParam("ssiFileExtensions") != null) {
-            ssiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("ssiFileExtensions"));
-        }
-        Boolean cgiEnabled = (Boolean) serviceMessage.getParam("cgiEnabled");
-        List<String> cgiFileExtensions = new ArrayList<>();
-        if (serviceMessage.getParam("cgiFileExtensions") != null) {
-            cgiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("cgiFileExtensions"));
-        }
-        String scriptAlias = cleaner.cleanString((String) serviceMessage.getParam("scriptAlias"));
-        Boolean autoSubDomain = (Boolean) serviceMessage.getParam("autoSubDomain");
-        Boolean accessByOldHttpVersion = (Boolean) serviceMessage.getParam("accessByOldHttpVersion");
-        List<String> staticFileExtensions = new ArrayList<>();
-        if (serviceMessage.getParam("staticFileExtensions") != null) {
-            staticFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("staticFileExtensions"));
-        }
-        List<String> indexFileList = new ArrayList<>();
-        if (serviceMessage.getParam("indexFileList") != null) {
-            indexFileList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("indexFileList"));
-        }
-        Boolean accessLogEnabled = (Boolean) serviceMessage.getParam("accessLogEnabled");
-        Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
+            Boolean ssiEnabled = (Boolean) serviceMessage.getParam("ssiEnabled");
+            List<String> ssiFileExtensions = new ArrayList<>();
+            if (serviceMessage.getParam("ssiFileExtensions") != null) {
+                ssiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("ssiFileExtensions"));
+            }
+            Boolean cgiEnabled = (Boolean) serviceMessage.getParam("cgiEnabled");
+            List<String> cgiFileExtensions = new ArrayList<>();
+            if (serviceMessage.getParam("cgiFileExtensions") != null) {
+                cgiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("cgiFileExtensions"));
+            }
+            String scriptAlias = cleaner.cleanString((String) serviceMessage.getParam("scriptAlias"));
+            Boolean autoSubDomain = (Boolean) serviceMessage.getParam("autoSubDomain");
+            Boolean accessByOldHttpVersion = (Boolean) serviceMessage.getParam("accessByOldHttpVersion");
+            List<String> staticFileExtensions = new ArrayList<>();
+            if (serviceMessage.getParam("staticFileExtensions") != null) {
+                staticFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("staticFileExtensions"));
+            }
+            List<String> indexFileList = new ArrayList<>();
+            if (serviceMessage.getParam("indexFileList") != null) {
+                indexFileList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("indexFileList"));
+            }
+            Boolean accessLogEnabled = (Boolean) serviceMessage.getParam("accessLogEnabled");
+            Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
+            Boolean allowUrlFopen = (Boolean) serviceMessage.getParam("allowUrlFopen");
+            Integer mbstringFuncOverload = (Integer) serviceMessage.getParam("mbstringFuncOverload");
 
-        webSite.setServiceId(applicationServiceId);
-        webSite.setDocumentRoot(documentRoot);
-        if (unixAccount != null) {
-            webSite.setUnixAccount(unixAccount);
+
+            webSite.setServiceId(applicationServiceId);
+            webSite.setDocumentRoot(documentRoot);
+            if (unixAccount != null) {
+                webSite.setUnixAccount(unixAccount);
+            }
+            webSite.setCharSet(charSet);
+            webSite.setSsiEnabled(ssiEnabled);
+            webSite.setSsiFileExtensions(ssiFileExtensions);
+            webSite.setCgiEnabled(cgiEnabled);
+            webSite.setCgiFileExtensions(cgiFileExtensions);
+            webSite.setScriptAlias(scriptAlias);
+            webSite.setAutoSubDomain(autoSubDomain);
+            webSite.setAccessByOldHttpVersion(accessByOldHttpVersion);
+            webSite.setStaticFileExtensions(staticFileExtensions);
+            webSite.setIndexFileList(indexFileList);
+            webSite.setAccessLogEnabled(accessLogEnabled);
+            webSite.setErrorLogEnabled(errorLogEnabled);
+            webSite.setAllowUrlFopen(allowUrlFopen);
+            webSite.setMbstringFuncOverload(mbstringFuncOverload);
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
         }
-        webSite.setCharSet(charSet);
-        webSite.setSsiEnabled(ssiEnabled);
-        webSite.setSsiFileExtensions(ssiFileExtensions);
-        webSite.setCgiEnabled(cgiEnabled);
-        webSite.setCgiFileExtensions(cgiFileExtensions);
-        webSite.setScriptAlias(scriptAlias);
-        webSite.setAutoSubDomain(autoSubDomain);
-        webSite.setAccessByOldHttpVersion(accessByOldHttpVersion);
-        webSite.setStaticFileExtensions(staticFileExtensions);
-        webSite.setIndexFileList(indexFileList);
-        webSite.setAccessLogEnabled(accessLogEnabled);
-        webSite.setErrorLogEnabled(errorLogEnabled);
 
         return webSite;
     }
@@ -368,6 +504,22 @@ public class GovernorOfWebSite extends LordOfResources {
             webSite.setErrorLogEnabled(defaultErrorLogEnabled);
         }
 
+        if (webSite.getMbstringFuncOverload() == null || webSite.getMbstringFuncOverload() < 0 || webSite.getMbstringFuncOverload() > 7) {
+            webSite.setMbstringFuncOverload(defaultMbstringFuncOverload);
+        }
+
+        if (webSite.getAllowUrlFopen() == null) {
+            webSite.setAllowUrlFopen(defaultAllowUrlFopen);
+        }
+
+        if (webSite.getFollowSymLinks() == null) {
+            webSite.setFollowSymLinks(defaultFollowSymLinks);
+        }
+
+        if (webSite.getMultiViews() == null) {
+            webSite.setMultiViews(defaultMultiViews);
+        }
+
     }
 
     @Override
@@ -387,7 +539,9 @@ public class GovernorOfWebSite extends LordOfResources {
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         WebSite webSite = repository.findOne(resourceId);
-
+        if (webSite == null) {
+            throw new ResourceNotFoundException("Сайт с ID " + resourceId + "не найден");
+        }
         return construct(webSite);
     }
 

@@ -64,7 +64,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "default.website.index.file.list:index.php,index.html,index.htm",
         "default.website.custom.user.conf:",
         "default.website.access.log.enabled:true",
-        "default.website.error.log.enabled:true"
+        "default.website.error.log.enabled:true",
+        "default.website.allow.url.fopen:false",
+        "default.website.mbstring.func.overload:0",
+        "default.website.follow.sym.links:true",
+        "default.website.multi.views:false"
 })
 public class WebsiteRestControllerTest {
 
@@ -119,6 +123,18 @@ public class WebsiteRestControllerTest {
 
     @Value("${default.website.error.log.enabled}")
     private Boolean defaultErrorLogEnabled;
+
+    @Value("${default.website.allow.url.fopen}")
+    private Boolean defaultAllowUrlFopen;
+
+    @Value("${default.website.mbstring.func.overload}")
+    private Boolean defaultMbstringFuncOverload;
+
+    @Value("${default.website.follow.sym.links}")
+    private Boolean defaultFollowSymLinks;
+
+    @Value("${default.website.multi.views}")
+    private Boolean defaultMultiViews;
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -190,6 +206,10 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("indexFileList").description("Список индексных файлов"),
                                 fieldWithPath("accessLogEnabled").description("Записывать ли логи доступа"),
                                 fieldWithPath("errorLogEnabled").description("Записывать ли error логи"),
+                                fieldWithPath("followSymLinks").description("Опция FollowSymLinks для Apache2"),
+                                fieldWithPath("multiViews").description("Опция multiViews для Apache2"),
+                                fieldWithPath("allowUrlFopen").description("Опция allow_url_fopen для PHP"),
+                                fieldWithPath("mbstringFuncOverload").description("Опция mbstring.func_overload для PHP"),
                                 fieldWithPath("serviceId").description("serviceId для данного вебсайта")
                         )
                 ));

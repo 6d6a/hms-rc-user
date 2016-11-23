@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
+import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,27 +9,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.Assert;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.staff.resources.ServiceType;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.CharSet;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
+import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
+import static ru.majordomo.hms.rc.user.common.CharSet.UTF8;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {ConfigGovernorOfWebsite.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
@@ -47,7 +55,11 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         "default.website.index.file.list:index.php,index.html,index.htm",
         "default.website.custom.user.conf:",
         "default.website.access.log.enabled:true",
-        "default.website.error.log.enabled:true"
+        "default.website.error.log.enabled:true",
+        "default.website.allow.url.fopen:false",
+        "default.website.mbstring.func.overload:0",
+        "default.website.follow.sym.links:true",
+        "default.website.multi.views:false"
     }
 )
 public class GovernorOfWebsiteTest {
@@ -59,6 +71,10 @@ public class GovernorOfWebsiteTest {
     private PersonRepository personRepository;
     @Autowired
     private UnixAccountRepository unixAccountRepository;
+    @Autowired
+    private WebSiteRepository webSiteRepository;
+    @Autowired
+    StaffResourceControllerClient staffResourceControllerClient;
 
     @Value("${default.website.service.name}")
     private String defaultServiceName;
@@ -108,8 +124,22 @@ public class GovernorOfWebsiteTest {
     @Value("${default.website.error.log.enabled}")
     private Boolean defaultErrorLogEnabled;
 
+    @Value("${default.website.allow.url.fopen}")
+    private Boolean defaultAllowUrlFopen;
+
+    @Value("${default.website.mbstring.func.overload}")
+    private Boolean defaultMbstringFuncOverload;
+
+    @Value("${default.website.follow.sym.links}")
+    private Boolean defaultFollowSymLinks;
+
+    @Value("${default.website.multi.views}")
+    private Boolean defaultMultiViews;
+
     private List<String> domainIds = new ArrayList<>();
     private String accountId;
+    private List<WebSite> batchOfWebsites;
+    private String serviceId;
 
     @Before
     public void setUp() throws Exception {
@@ -126,12 +156,20 @@ public class GovernorOfWebsiteTest {
             unixAccountRepository.save(unixAccount);
         }
         accountId = unixAccounts.get(0).getAccountId();
+
+        batchOfWebsites = new ArrayList<>();
+
+        serviceId = staffResourceControllerClient.getActiveHostingServer().getServiceIds().get(0);
+
+        batchOfWebsites = ResourceGenerator.generateBatchOfCertainWebsites(accountId, serviceId, unixAccounts.get(0).getId(), domainIds);
+
+        webSiteRepository.save(batchOfWebsites);
     }
 
     @Test
     public void create() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, accountId);
-        System.out.println(serviceMessage.toString());
+
         governor.create(serviceMessage);
     }
 
@@ -139,7 +177,7 @@ public class GovernorOfWebsiteTest {
     public void createWithoutDomains() {
         List<String> emptydomainIds = new ArrayList<>();
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(emptydomainIds, accountId);
-        System.out.println(serviceMessage.toString());
+
         governor.create(serviceMessage);
     }
 
@@ -147,8 +185,90 @@ public class GovernorOfWebsiteTest {
     public void createWithoutAccountId() {
         String emptyString = "";
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, emptyString);
-        System.out.println(serviceMessage.toString());
+
         governor.create(serviceMessage);
+    }
+
+    @Test
+    public void update1() {
+        List<String> domainIdsLocal = batchOfWebsites.get(0).getDomainIds();
+        String accountIdLocal = batchOfWebsites.get(0).getAccountId();
+        List<String> cgiExtensions = new ArrayList<>();
+        cgiExtensions.add("py");
+        cgiExtensions.add("log");
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
+        serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
+        serviceMessage.addParam("applicationServiceId", serviceId);
+
+        governor.update(serviceMessage);
+
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled());
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions));
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMbstringFuncOverload() == 4);
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAllowUrlFopen());
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMultiViews());
+        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getFollowSymLinks());
+        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAccessLogEnabled());
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAutoSubDomain());
+    }
+
+    @Test(expected = ResourceNotFoundException.class)
+    public void updateNonExistentDomainIds() {
+        List<String> domainIdsLocal = Arrays.asList(ObjectId.get().toString());
+        String accountIdLocal = batchOfWebsites.get(0).getAccountId();
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
+        serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
+        serviceMessage.addParam("applicationServiceId", serviceId);
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void updateNonExistentServiceId() {
+        List<String> domainIdsLocal = batchOfWebsites.get(0).getDomainIds();
+        String accountIdLocal = batchOfWebsites.get(0).getAccountId();
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
+        serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
+        serviceMessage.addParam("applicationServiceId", ObjectId.get().toString());
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void updateBadParameter() {
+        List<String> domainIdsLocal = batchOfWebsites.get(0).getDomainIds();
+        String accountIdLocal = batchOfWebsites.get(0).getAccountId();
+        List<String> cgiExtensions = new ArrayList<>();
+        cgiExtensions.add("py");
+        cgiExtensions.add("lol");
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
+        serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
+        serviceMessage.addParam("applicationServiceId", serviceId);
+        serviceMessage.addParam("errorLogEnabled", "Валера");
+
+        governor.update(serviceMessage);
+
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled());
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions));
+    }
+
+    @Test
+    public void drop() throws Exception {
+        String resourceId = batchOfWebsites.get(0).getId();
+
+        governor.drop(resourceId);
+
+        Assert.isTrue(webSiteRepository.count() == 1);
+        Assert.isNull(webSiteRepository.findOne(resourceId));
+    }
+
+    @Test(expected = ResourceNotFoundException.class)
+    public void dropNonExistent() throws Exception {
+        governor.drop(ObjectId.get().toString());
     }
 
     @After
@@ -156,5 +276,6 @@ public class GovernorOfWebsiteTest {
         domainRepository.deleteAll();
         personRepository.deleteAll();
         unixAccountRepository.deleteAll();
+        webSiteRepository.deleteAll();
     }
 }

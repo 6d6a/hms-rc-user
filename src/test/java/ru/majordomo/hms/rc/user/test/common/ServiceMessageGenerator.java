@@ -107,6 +107,34 @@ public class ServiceMessageGenerator {
         return serviceMessage;
     }
 
+    public static ServiceMessage generateWebsiteUpdateServiceMessage(List<String> domainIds, String accountId) {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(accountId);
+        serviceMessage.addParam("domainIds", domainIds);
+        serviceMessage.addParam("cgiEnabled", true);
+        List<String> cgiExtensions = new ArrayList<>();
+        cgiExtensions.add("py");
+        cgiExtensions.add("log");
+        serviceMessage.addParam("cgiFileExtensions", cgiExtensions);
+        serviceMessage.addParam("allowUrlFopen", true);
+        serviceMessage.addParam("mbstringFuncOverload", 4);
+        serviceMessage.addParam("followSymLinks", false);
+        serviceMessage.addParam("multiViews", true);
+        serviceMessage.addParam("accessLogEnabled", false);
+        serviceMessage.addParam("autoSubDomains", true);
+
+        return serviceMessage;
+    }
+
+    public static ServiceMessage generateWebsiteDeleteServiceMessage(String resourceId) {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("resourceId", resourceId);
+
+        return serviceMessage;
+    }
+
     public static ServiceMessage generateMailboxCreateServiceMessage(String domainId) {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
