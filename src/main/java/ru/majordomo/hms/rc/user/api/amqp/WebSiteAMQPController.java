@@ -37,4 +37,36 @@ public class WebSiteAMQPController extends BaseAMQPController {
                 break;
         }
     }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.website.update",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "website.update", type = "topic"),
+            key = "rc.user"))
+    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleUpdateEventFromPM("website", serviceMessage);
+                break;
+            case ("te"):
+                handleUpdateEventFromTE("website", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.website.delete",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "website.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleDeleteEventFromPM("website", serviceMessage);
+                break;
+            case ("te"):
+                handleDeleteEventFromTE("website", serviceMessage);
+                break;
+        }
+    }
 }

@@ -271,6 +271,45 @@ public class ResourceGenerator {
         return batchOfWebsites;
     }
 
+    public static List<WebSite> generateBatchOfCertainWebsites(String accountId, String serviceId, String unixAccountId, List<String> domainIds) {
+        List<WebSite> batchOfWebsites = new ArrayList<>();
+
+        for (int i = 0; i < 2; i++) {
+            WebSite webSite = new WebSite();
+            if (i == 0) {
+                webSite.setName("Сайт" + i);
+                webSite.setDocumentRoot("majordomo.ru/www");
+            } else {
+                webSite.setName("Блог");
+                webSite.setDocumentRoot("yandex.ru/www");
+            }
+
+            webSite.setAccountId(accountId);
+            webSite.setSwitchedOn(true);
+            webSite.setUnixAccountId(unixAccountId);
+            webSite.setDomainIds(domainIds);
+            webSite.setCharSet(UTF8);
+            webSite.setSsiEnabled(true);
+            webSite.setSsiFileExtensions(Arrays.asList("shtml", "shtm"));
+            webSite.setCgiEnabled(false);
+            webSite.setScriptAlias("cgi-bin");
+            webSite.setDdosProtection(false);
+            webSite.setAutoSubDomain(true);
+            webSite.setAccessByOldHttpVersion(false);
+            webSite.setStaticFileExtensions(Arrays.asList("css", "htm", "png"));
+            webSite.setCustomUserConf("php_flag error_repoting on");
+            webSite.setIndexFileList(Arrays.asList("index.php", "index.html"));
+            webSite.setAccessLogEnabled(true);
+            webSite.setErrorLogEnabled(false);
+            webSite.setServiceId(serviceId);
+            webSite.setId(ObjectId.get().toString());
+
+            batchOfWebsites.add(webSite);
+        }
+
+        return batchOfWebsites;
+    }
+
     public static List<CronTask> generateBatchOfCronTasks() {
         List<CronTask> crontab = new ArrayList<>();
         String atPattern = "*/${MINUTES} * * * *";

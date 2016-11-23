@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.api.amqp;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -39,6 +40,11 @@ public class WebSiteAMQPControllerTest {
     @BeforeClass
     public static void startBroker() throws Exception {
         brokerManager.start();
+    }
+
+    @AfterClass
+    public static void stopBroker() throws Exception {
+        brokerManager.stop();
     }
 
     @Before

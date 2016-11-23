@@ -16,6 +16,9 @@ import java.util.List;
 
 @Configuration
 public class ConfigStaffResourceControllerClient {
+
+    private final String mockedServiceId = "583300c5a94c541d14d58c84";
+
     @Bean
     public StaffResourceControllerClient staffResourceControllerClient() {
         return new StaffResourceControllerClient() {
@@ -23,6 +26,8 @@ public class ConfigStaffResourceControllerClient {
             public Server getActiveHostingServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
+                server.setName("web100500");
+                server.setServiceIds(Arrays.asList(mockedServiceId));
                 return server;
             }
 
@@ -44,6 +49,7 @@ public class ConfigStaffResourceControllerClient {
             public Server getServerById(@PathVariable("serverId") String serverId) {
                 Server server = new Server();
                 server.setId(serverId);
+                server.setServiceIds(Arrays.asList(mockedServiceId));
                 server.setName("web100500");
                 return server;
             }
@@ -51,7 +57,7 @@ public class ConfigStaffResourceControllerClient {
             @Override
             public Server getServerByServiceId(@PathVariable("serviceId") String serviceId) {
                 Server server = new Server();
-                server.setServiceIds(Arrays.asList(ObjectId.get().toString()));
+                server.setServiceIds(Arrays.asList(serviceId));
                 server.setName("web100500");
                 return server;
             }
@@ -61,7 +67,7 @@ public class ConfigStaffResourceControllerClient {
                 List<Service> services = new ArrayList<>();
 
                 Service service = new Service();
-                service.setId(ObjectId.get().toString());
+                service.setId(mockedServiceId);
 
                 ServiceType serviceType = new ServiceType();
                 serviceType.setName("WEBSITE_APACHE2_PHP56_DEFAULT");

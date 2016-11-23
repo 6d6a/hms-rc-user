@@ -37,6 +37,43 @@ public class WebSite extends Resource implements Serviceable {
     private List<String> indexFileList = new ArrayList<>();
     private Boolean accessLogEnabled;
     private Boolean errorLogEnabled;
+    private Boolean followSymLinks;
+    private Boolean multiViews;
+    private Boolean allowUrlFopen;
+    private Integer mbstringFuncOverload;
+
+    public Boolean getFollowSymLinks() {
+        return followSymLinks;
+    }
+
+    public void setFollowSymLinks(Boolean followSymLinks) {
+        this.followSymLinks = followSymLinks;
+    }
+
+    public Boolean getMultiViews() {
+        return multiViews;
+    }
+
+    public void setMultiViews(Boolean multiViews) {
+        this.multiViews = multiViews;
+    }
+
+    public Boolean getAllowUrlFopen() {
+        return allowUrlFopen;
+    }
+
+    public void setAllowUrlFopen(Boolean allowUrlFopen) {
+        this.allowUrlFopen = allowUrlFopen;
+    }
+
+    public Integer getMbstringFuncOverload() {
+        return mbstringFuncOverload;
+    }
+
+    public void setMbstringFuncOverload(Integer mbstringFuncOverload) {
+        this.mbstringFuncOverload = mbstringFuncOverload;
+    }
+
     public CharSet getCharSet() {
         return charSet;
     }
