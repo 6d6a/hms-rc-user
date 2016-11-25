@@ -9,7 +9,7 @@ import java.util.List;
 
 public class RegSpec {
     private List<String> states = new ArrayList<>();
-    private String registrar;
+    private DomainRegistrar registrar;
     private LocalDate created;
     private LocalDate paidTill;
     private LocalDate freeDate;
@@ -26,11 +26,11 @@ public class RegSpec {
         this.states.add(state);
     }
 
-    public String getRegistrar() {
+    public DomainRegistrar getRegistrar() {
         return registrar;
     }
 
-    public void setRegistrar(String registrar) {
+    public void setRegistrar(DomainRegistrar registrar) {
         this.registrar = registrar;
     }
 
