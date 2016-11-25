@@ -16,6 +16,7 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.DomainRegistrar;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
@@ -31,6 +32,7 @@ import static ru.majordomo.hms.rc.user.resources.DBType.POSTGRES;
 import static ru.majordomo.hms.rc.user.resources.DNSResourceRecordClass.*;
 import static ru.majordomo.hms.rc.user.resources.DNSResourceRecordType.*;
 import static ru.majordomo.hms.rc.user.resources.DNSResourceRecordType.MX;
+import static ru.majordomo.hms.rc.user.resources.DomainRegistrar.NETHOUSE;
 
 public class ResourceGenerator {
     public static List<Person> generateBatchOfPerson() {
@@ -130,7 +132,7 @@ public class ResourceGenerator {
         List<Person> batchOfPersons = generateBatchOfPerson();
 
         RegSpec regSpec = new RegSpec();
-        regSpec.setRegistrar("NETHOUSE-RU");
+        regSpec.setRegistrar(NETHOUSE);
         regSpec.setCreatedAsString("2016-10-01");
         regSpec.setFreeDateAsString("2017-11-01");
         regSpec.setPaidTillAsString("2016-10-01");
