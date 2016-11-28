@@ -18,6 +18,7 @@ import java.util.List;
 public class ConfigStaffResourceControllerClient {
 
     private final String mockedServiceId = "583300c5a94c541d14d58c84";
+    private final String mockedDBServiceId = "583300c5a94c541d14d58c85";
 
     @Bean
     public StaffResourceControllerClient staffResourceControllerClient() {
@@ -35,6 +36,7 @@ public class ConfigStaffResourceControllerClient {
             public Server getActiveDatabaseServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
+                server.setServiceIds(Arrays.asList(mockedDBServiceId));
                 return server;
             }
 
@@ -56,9 +58,13 @@ public class ConfigStaffResourceControllerClient {
 
             @Override
             public Server getServerByServiceId(@PathVariable("serviceId") String serviceId) {
-                Server server = new Server();
-                server.setServiceIds(Arrays.asList(serviceId));
-                server.setName("web100500");
+                Server server = null;
+                if (serviceId.equals(mockedDBServiceId)) {
+                    server = new Server();
+                    server.setServiceIds(Arrays.asList(serviceId));
+                    server.setName("web100500");
+                    server.setId(ObjectId.get().toString());
+                }
                 return server;
             }
 
@@ -71,6 +77,22 @@ public class ConfigStaffResourceControllerClient {
 
                 ServiceType serviceType = new ServiceType();
                 serviceType.setName("WEBSITE_APACHE2_PHP56_DEFAULT");
+                service.setServiceType(serviceType);
+
+                services.add(service);
+
+                return services;
+            }
+
+            @Override
+            public List<Service> getDatabaseServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId) {
+                List<Service> services = new ArrayList<>();
+
+                Service service = new Service();
+                service.setId(mockedDBServiceId);
+
+                ServiceType serviceType = new ServiceType();
+                serviceType.setName("DATABASE_MYSQL");
                 service.setServiceType(serviceType);
 
                 services.add(service);

@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
@@ -20,16 +21,15 @@ import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabaseUser;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigGovernorOfDatabaseUser.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {})
+@SpringBootTest(classes = {ConfigGovernorOfDatabaseUser.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
+        "default.database.service.name:DATABASE_MYSQL"
+})
 public class GovernorOfDatabaseUserTest {
 
     @Autowired
@@ -38,6 +38,9 @@ public class GovernorOfDatabaseUserTest {
 
     @Autowired
     private DatabaseUserRepository repository;
+
+    @Value("${default.database.service.name}")
+    private String defaultDatabaseService;
 
     @Before
     public void setUp() throws Exception {
@@ -55,6 +58,28 @@ public class GovernorOfDatabaseUserTest {
     public void createWithoutAccountId() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateWithoutAccountIdServiceMessage();
         governor.create(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void createWithBadServiceId() {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
+        serviceMessage.addParam("serviceId", ObjectId.get().toString());
+        System.out.println(serviceMessage);
+        governor.create(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void createWithBadAllowedAddressList() {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
+        List<String> allowedAddressList = Arrays.asList("8.8.8.8", "9.9.9.9", "Валера");
+        serviceMessage.addParam("allowedAddressList", allowedAddressList);
+        System.out.println(serviceMessage);
+        governor.create(serviceMessage);
+    }
+
+    @Test
+    public void build() {
+
     }
 
     @Test

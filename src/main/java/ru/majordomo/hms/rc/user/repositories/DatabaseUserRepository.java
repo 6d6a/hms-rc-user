@@ -9,4 +9,5 @@ import java.util.List;
 public interface DatabaseUserRepository extends MongoRepository<DatabaseUser, String> {
     List<DatabaseUser> findByAccountId(String accountId);
     DatabaseUser findByIdAndAccountId(String databaseUserId, String accountId);
+    DatabaseUser findByName(String name);
 }
