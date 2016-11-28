@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.common.CharSet;
+import ru.majordomo.hms.rc.user.resources.CharSet;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;

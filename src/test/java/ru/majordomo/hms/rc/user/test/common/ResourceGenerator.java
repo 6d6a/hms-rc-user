@@ -5,7 +5,6 @@ import com.jcraft.jsch.JSchException;
 import org.bson.types.ObjectId;
 
 import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,7 +16,6 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.DomainRegistrar;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
@@ -27,7 +25,7 @@ import ru.majordomo.hms.rc.user.resources.RegSpec;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
-import static ru.majordomo.hms.rc.user.common.CharSet.UTF8;
+import static ru.majordomo.hms.rc.user.resources.CharSet.UTF8;
 import static ru.majordomo.hms.rc.user.resources.DBType.MYSQL;
 import static ru.majordomo.hms.rc.user.resources.DBType.POSTGRES;
 import static ru.majordomo.hms.rc.user.resources.DNSResourceRecordClass.*;

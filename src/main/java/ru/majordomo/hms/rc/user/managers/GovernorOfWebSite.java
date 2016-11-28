@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
@@ -14,14 +13,12 @@ import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.common.CharSet;
+import ru.majordomo.hms.rc.user.resources.CharSet;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
-
-import static ru.majordomo.hms.rc.user.common.CharSet.UTF8;
 
 @Component
 public class GovernorOfWebSite extends LordOfResources {

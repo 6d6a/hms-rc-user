@@ -1,4 +1,4 @@
-package ru.majordomo.hms.rc.user.common;
+package ru.majordomo.hms.rc.user.resources;
 
 public enum CharSet {
     KOI8R,
