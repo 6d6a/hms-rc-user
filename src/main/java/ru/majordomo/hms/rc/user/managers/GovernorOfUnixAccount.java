@@ -69,6 +69,16 @@ public class GovernorOfUnixAccount extends LordOfResources {
         return null;
     }
 
+    public void updateQuota(String accountId, Long quotaSize) {
+        UnixAccount unixAccount = repository.findByAccountId(accountId).get(0);
+        if (unixAccount != null) {
+            unixAccount.setQuotaUsed(quotaSize);
+        } else {
+            throw new ResourceNotFoundException("UnixAccount с ID: " + accountId + " не найден");
+        }
+        store(unixAccount);
+    }
+
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         repository.delete(resourceId);

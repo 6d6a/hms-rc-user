@@ -47,7 +47,8 @@ public class UnixAccountRESTController {
     }
 
     @RequestMapping(value = {"/unix-account/{unixAccountId}/quota/{quotaSize}"}, method = RequestMethod.POST)
-    public ResponseEntity<?> updateQuota() {
+    public ResponseEntity<?> updateQuota(@PathVariable String unixAccountId, @PathVariable Long quotaSize) {
+        governor.updateQuota(unixAccountId, quotaSize);
         return new ResponseEntity<Object>(HttpStatus.ACCEPTED);
     }
 
