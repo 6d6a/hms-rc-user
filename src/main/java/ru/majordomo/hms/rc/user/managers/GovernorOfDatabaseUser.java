@@ -25,7 +25,6 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 public class GovernorOfDatabaseUser extends LordOfResources {
     private Cleaner cleaner;
     private DatabaseUserRepository repository;
-    private UnixAccountRepository unixAccountRepository;
 
     private StaffResourceControllerClient staffRcClient;
     private String defaultServiceName;
@@ -33,11 +32,6 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     @Value("${default.database.service.name}")
     public void setDefaultServiceName(String defaultServiceName) {
         this.defaultServiceName = defaultServiceName;
-    }
-
-    @Autowired
-    public void setUnixAccountRepository(UnixAccountRepository unixAccountRepository) {
-        this.unixAccountRepository = unixAccountRepository;
     }
 
     @Autowired
