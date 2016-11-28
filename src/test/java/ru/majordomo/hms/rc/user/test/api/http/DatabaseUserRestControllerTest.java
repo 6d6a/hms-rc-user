@@ -1,10 +1,12 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
@@ -21,6 +23,7 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseUserRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -38,12 +41,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = ConfigDatabaseUserRestController.class, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = {ConfigDatabaseUserRestController.class, ConfigStaffResourceControllerClient.class}, webEnvironment = RANDOM_PORT, properties = {
+        "default.database.service.name:DATABASE_MYSQL"
+})
 public class DatabaseUserRestControllerTest {
 
     private MockMvc mockMvc;
     private String resourceName = "database-user";
     private List<DatabaseUser> batchOfDatabaseUsers = new ArrayList<>();
+
+    @Value("${default.database.service.name}")
+    private String defaultDatabaseService;
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -61,9 +69,12 @@ public class DatabaseUserRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfDatabaseUsers = ResourceGenerator.generateBatchOfDatabaseUsers();
-        for (DatabaseUser databaseUser: batchOfDatabaseUsers) {
-            repository.save(databaseUser);
-        }
+        repository.save(batchOfDatabaseUsers);
+    }
+
+    @After
+    public void deleteAll() {
+        repository.deleteAll();
     }
 
     @Test
@@ -80,7 +91,8 @@ public class DatabaseUserRestControllerTest {
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли база данных"),
                                 fieldWithPath("type").description("Тип базы данных"),
                                 fieldWithPath("passwordHash").description("Хэш пароля пользователя"),
-                                fieldWithPath("serviceId").description("ID сервиса в RC-STAFF")
+                                fieldWithPath("serviceId").description("ID сервиса в RC-STAFF"),
+                                fieldWithPath("allowedAddressList").description("IP, с которых возможен доступ")
                         )
                 ));
     }

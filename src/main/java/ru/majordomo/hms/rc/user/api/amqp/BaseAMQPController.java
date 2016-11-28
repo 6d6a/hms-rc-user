@@ -86,8 +86,16 @@ class BaseAMQPController {
         report.addParam("success", success);
 
         if (success && (resource instanceof ServerStorable || resource instanceof Serviceable)) {
-            String teRoutingKey = getTaskExecutorRoutingKey(resource);
-            sender.send(resourceType + ".create", teRoutingKey, report);
+            try {
+                String teRoutingKey = getTaskExecutorRoutingKey(resource);
+                sender.send(resourceType + ".create", teRoutingKey, report);
+            } catch (ParameterValidateException e) {
+                errorMessage = e.getMessage();
+                serviceMessage.delParam("success");
+                serviceMessage.addParam("success", false);
+                report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+                sender.send(resourceType + ".create", "pm", report);
+            }
         } else {
             sender.send(resourceType + ".create", "pm", report);
         }
@@ -195,7 +203,7 @@ class BaseAMQPController {
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
-        if (successEvent) {
+        if (successEvent && resource != null) {
             governor.drop(resource.getId());
         }
 

@@ -106,6 +106,7 @@ public class DatabaseUserAMQPControllerTest {
     @Test
     public void sendAndReceiveCreatePM() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
+        serviceMessage.addParam("serviceId", "583300c5a94c541d14d58c85");
         sender.send("database-user.create", "rc.user", serviceMessage, "pm");
         Message message = rabbitTemplate.receive("te.web100500", 1000);
         Assert.notNull(message);

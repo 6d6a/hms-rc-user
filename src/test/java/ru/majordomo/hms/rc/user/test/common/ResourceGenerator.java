@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
@@ -348,9 +349,11 @@ public class ResourceGenerator {
         for (int i = 0; i <= 2; i++) {
             DatabaseUser databaseUser = new DatabaseUser();
             databaseUser.setAccountId(ObjectId.get().toString());
+            databaseUser.setServiceId("583300c5a94c541d14d58c85");
             databaseUser.setId(ObjectId.get().toString());
             databaseUser.setType(POSTGRES);
             databaseUser.setPasswordHashByPlainPassword("123456" + i);
+            databaseUser.setAllowedIpsAsString(Collections.emptyList());
             databaseUser.setName("u10000" + i);
             databaseUser.setSwitchedOn(true);
 

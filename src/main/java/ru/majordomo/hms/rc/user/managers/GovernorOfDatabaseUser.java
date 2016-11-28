@@ -2,24 +2,43 @@ package ru.majordomo.hms.rc.user.managers;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
+import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
-@Service
+@Component
 public class GovernorOfDatabaseUser extends LordOfResources {
     private Cleaner cleaner;
     private DatabaseUserRepository repository;
+    private UnixAccountRepository unixAccountRepository;
+
+    private StaffResourceControllerClient staffRcClient;
+    private String defaultServiceName;
+
+    @Value("${default.database.service.name}")
+    public void setDefaultServiceName(String defaultServiceName) {
+        this.defaultServiceName = defaultServiceName;
+    }
+
+    @Autowired
+    public void setUnixAccountRepository(UnixAccountRepository unixAccountRepository) {
+        this.unixAccountRepository = unixAccountRepository;
+    }
 
     @Autowired
     public void setRepository(DatabaseUserRepository repository) {
@@ -29,6 +48,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     @Autowired
     public void setCleaner(Cleaner cleaner) {
         this.cleaner = cleaner;
+    }
+
+    @Autowired
+    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
+        this.staffRcClient = staffRcClient;
     }
 
     @Override
@@ -45,7 +69,8 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
+    public Resource update(ServiceMessage serviceMessage)
+            throws ParameterValidateException, UnsupportedEncodingException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -58,15 +83,20 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         keyValue.put("accountId", accountId);
 
         DatabaseUser databaseUser = (DatabaseUser) build(keyValue);
-
-        for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
-            switch (entry.getKey().toString()) {
-                case "password":
-                    databaseUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
-                    break;
-                default:
-                    break;
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "password":
+                        databaseUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "allowedAddressList":
+                        databaseUser.setAllowedIpsAsString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                    default:
+                        break;
+                }
             }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
         validate(databaseUser);
@@ -85,24 +115,41 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
+    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage)
+            throws ClassCastException, UnsupportedEncodingException {
         DatabaseUser databaseUser = new DatabaseUser();
         LordOfResources.setResourceParams(databaseUser, serviceMessage, cleaner);
         String password = null;
         DBType userType = null;
+        String serviceId = null;
         String userTypeAsString;
+        List<String> allowedIps = null;
 
-        if (serviceMessage.getParam("password") != null) {
-            password = cleaner.cleanString((String) serviceMessage.getParam("password"));
+        try {
+            if (serviceMessage.getParam("password") != null) {
+                password = cleaner.cleanString((String) serviceMessage.getParam("password"));
+            }
+
+            if (serviceMessage.getParam("type") != null) {
+                userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
+                userType = Enum.valueOf(DBType.class, userTypeAsString);
+            }
+
+            if (serviceMessage.getParam("serviceId") != null) {
+                serviceId = cleaner.cleanString((String) serviceMessage.getParam("serviceId"));
+            }
+
+            if (serviceMessage.getParam("allowedAddressList") != null) {
+                allowedIps = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedAddressList"));
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
-        if (serviceMessage.getParam("type") != null) {
-            userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
-            userType = Enum.valueOf(DBType.class, userTypeAsString);
-        }
-
+        databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
         databaseUser.setPasswordHashByPlainPassword(password);
+        databaseUser.setAllowedIpsAsString(allowedIps);
 
         return databaseUser;
     }
@@ -119,12 +166,39 @@ public class GovernorOfDatabaseUser extends LordOfResources {
             throw new ParameterValidateException("Имя не может быть пустым");
         }
 
+        if (databaseUser.getName().length() > 16) {
+            throw new ParameterValidateException("Имя не может быть длиннее 16 символов");
+        }
+
         if (databaseUser.getPasswordHash() == null) {
             throw new ParameterValidateException("Пароль не может быть пустым");
         }
 
         if (databaseUser.getType() == null) {
             throw new ParameterValidateException("Тип не может быть пустым");
+        }
+
+        if (databaseUser.getServiceId() != null && !databaseUser.getServiceId().equals("")) {
+            Server server = staffRcClient.getServerByServiceId(databaseUser.getServiceId());
+            if (server == null) {
+                throw new ParameterValidateException("Не найден сервис с ID: " + databaseUser.getServiceId());
+            }
+        } else {
+            String serverId = staffRcClient.getActiveDatabaseServer().getId();
+
+            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerIdAndServiceType(serverId);
+            if (databaseServices != null) {
+                for (Service service : databaseServices) {
+                    if (service.getServiceType().getName().equals(this.defaultServiceName)) {
+                        databaseUser.setServiceId(service.getId());
+                        break;
+                    }
+                }
+                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
+                    throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName +
+                            " для сервера: " + serverId);
+                }
+            }
         }
     }
 
@@ -152,7 +226,8 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         }
 
         if (databaseUser == null) {
-            throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("resourceId") + " и account ID:" + keyValue.get("accountId") + " не найден");
+            throw new ResourceNotFoundException("Пользователь баз данных с ID:" + keyValue.get("resourceId") +
+                    " и account ID:" + keyValue.get("accountId") + " не найден");
         }
 
         return databaseUser;
