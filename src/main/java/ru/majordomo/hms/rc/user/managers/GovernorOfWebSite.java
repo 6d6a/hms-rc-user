@@ -282,6 +282,8 @@ public class GovernorOfWebSite extends LordOfResources {
                     case "multiViews":
                         website.setMultiViews((Boolean) entry.getValue());
                         break;
+                    case "switchedOn":
+                        website.setSwitchedOn((Boolean) entry.getValue());
                     default:
                         break;
                 }
@@ -484,7 +486,7 @@ public class GovernorOfWebSite extends LordOfResources {
             webSite.setAccessByOldHttpVersion(defaultWebsiteAccessByOldHttpVersion);
         }
 
-        if (webSite.getStaticFileExtensions() == null || webSite.getStaticFileExtensions().isEmpty()) {
+        if (webSite.getStaticFileExtensions() == null) {
             webSite.setStaticFileExtensions(Arrays.asList(defaultWebsiteStaticFileExtensions));
         }
 
