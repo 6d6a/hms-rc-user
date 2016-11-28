@@ -16,7 +16,6 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
-import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -144,12 +143,20 @@ public class GovernorOfDatabaseUser extends LordOfResources {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
+        if (!hasUniqueName(databaseUser.getName())) {
+            throw new ParameterValidateException("Имя должно быть уникальным");
+        }
+
         databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
         databaseUser.setPasswordHashByPlainPassword(password);
         databaseUser.setAllowedIpsAsString(allowedIps);
 
         return databaseUser;
+    }
+
+    private Boolean hasUniqueName(String name) {
+        return (repository.findByName(name) == null);
     }
 
     @Override
