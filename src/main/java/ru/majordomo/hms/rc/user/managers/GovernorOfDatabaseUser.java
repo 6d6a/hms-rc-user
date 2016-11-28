@@ -91,6 +91,10 @@ public class GovernorOfDatabaseUser extends LordOfResources {
                         break;
                     case "allowedAddressList":
                         databaseUser.setAllowedIpsAsString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        break;
+                    case "switchedOn":
+                        databaseUser.setSwitchedOn((Boolean) entry.getValue());
+                        break;
                     default:
                         break;
                 }
@@ -172,6 +176,10 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
         if (databaseUser.getPasswordHash() == null) {
             throw new ParameterValidateException("Пароль не может быть пустым");
+        }
+
+        if (databaseUser.getSwitchedOn() == null) {
+            databaseUser.setSwitchedOn(true);
         }
 
         if (databaseUser.getType() == null) {
