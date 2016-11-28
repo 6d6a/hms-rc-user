@@ -8,8 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.common.CharSet;
-
 @Document(collection = "webSites")
 public class WebSite extends Resource implements Serviceable {
 
