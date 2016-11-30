@@ -50,6 +50,20 @@ public class DatabaseRestController {
         return governor.buildAll(keyValue);
     }
 
+    @RequestMapping(value = {"/{accountId}/database?databaseUserId={databaseUserId}"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByAccountIdAndDatabaseUserId(@PathVariable String accountId, @PathVariable String databaseUserId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("databaseUserId", databaseUserId);
+        return governor.buildAll(keyValue);
+    }
+
+    @RequestMapping(value = {"/database?databaseUserId={databaseUserId}"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByDatabaseUserId(@PathVariable String databaseUserId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("databaseUserId", databaseUserId);
+        return governor.buildAll(keyValue);
+    }
+
     @RequestMapping(value = {"/{accountId}/database/count", "/{accountId}/database/count/"}, method = RequestMethod.GET)
     public Count countByAccountId(@PathVariable String accountId) {
         return governor.countByAccountId(accountId);

@@ -2,13 +2,12 @@ package ru.majordomo.hms.rc.user.managers;
 
 import org.bouncycastle.asn1.dvcs.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -28,6 +27,12 @@ public class GovernorOfDatabase extends LordOfResources {
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
     private GovernorOfDatabaseUser governorOfDatabaseUser;
+    private String defaultServiceName;
+
+    @Value("${default.database.service.name}")
+    public void setDefaultServiceName(String defaultServiceName) {
+        this.defaultServiceName = defaultServiceName;
+    }
 
     @Autowired
     public void setGovernorOfDatabaseUser(GovernorOfDatabaseUser governorOfDatabaseUser) {
@@ -67,39 +72,108 @@ public class GovernorOfDatabase extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        Database database = (Database) build(keyValue);
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "databaseUserIds":
+                        database.setDatabaseUserIds((List<String>) entry.getValue());
+                        break;
+                    case "switchedOn":
+                        database.setSwitchedOn((Boolean) entry.getValue());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        validate(database);
+        store(database);
+
+        return database;
+    }
+
+    public void removeDatabaseUserIdFromDatabases(String databaseUserId) {
+        List<Database> databases = repository.findByDatabaseUserIdsContaining(databaseUserId);
+        for (Database database : databases) {
+            List<String> databaseUserIds = database.getDatabaseUserIds();
+            databaseUserIds.remove(databaseUserId);
+            database.setDatabaseUserIds(databaseUserIds);
+        }
+        repository.save(databases);
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
+        if (repository.findOne(resourceId) == null) {
+            throw new ResourceNotFoundException("Database c ID: " + resourceId + " не найден");
+        }
         repository.delete(resourceId);
     }
 
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Database database = new Database();
+        String serviceId = null;
+//        Long quota = null;
+//        Long quotaUsed = null;
+//        Boolean writable = null;
+        DBType type = null;
+
         LordOfResources.setResourceParams(database, serviceMessage, cleaner);
 
-        String serverId = cleaner.cleanString((String) serviceMessage.getParam("serverId"));
-        if (serverId == null) {
-            serverId = getActiveHostingServerId();
+        if (serviceMessage.getParam("serviceId") != null) {
+            serviceId = cleaner.cleanString((String) serviceMessage.getParam("serviceId"));
+        }
+//
+//        if (serviceMessage.getParam("quota") != null) {
+//            quota = ((Number) serviceMessage.getParam("quota")).longValue();
+//        }
+
+//        if (serviceMessage.getParam("quotaUsed") != null) {
+//            quotaUsed = ((Number) serviceMessage.getParam("quotaUsed")).longValue();
+//        }
+
+//        if (serviceMessage.getParam("writable") != null) {
+//            writable = (Boolean) serviceMessage.getParam("writable");
+//        }
+
+        if (serviceMessage.getParam("type") != null) {
+            for (DBType dbType : DBType.values()) {
+                if (dbType.name().equals(serviceMessage.getParam("type").toString())) {
+                    type = DBType.valueOf(serviceMessage.getParam("type").toString());
+                    break;
+                }
+            }
         }
 
-        Long quota = (Long) serviceMessage.getParam("quota");
-        Long quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
-        Boolean writable = (Boolean) serviceMessage.getParam("writable");
-        DBType type = (DBType) serviceMessage.getParam("type");
-        List<String> databaseUserIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("databaseUserIds"));
+        List<String> databaseUserIds = null;
+        if (serviceMessage.getParam("databaseUserIds") != null) {
+            databaseUserIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("databaseUserIds"));
 
-        for (String databaseUserId: databaseUserIds) {
-            DatabaseUser databaseUser = (DatabaseUser) governorOfDatabaseUser.build(databaseUserId);
-            database.addDatabaseUser(databaseUser);
+            database.setDatabaseUserIds(databaseUserIds);
+            construct(database);
         }
 
-        database.setServerId(serverId);
-        database.setQuota(quota);
-        database.setQuotaUsed(quotaUsed);
-        database.setWritable(writable);
+        database.setServiceId(serviceId);
+        database.setQuota(0L);
+        database.setQuotaUsed(0L);
+//        database.setQuotaUsed(quotaUsed);
+        database.setWritable(true);
         database.setType(type);
 
         return database;
@@ -109,44 +183,74 @@ public class GovernorOfDatabase extends LordOfResources {
     public void validate(Resource resource) throws ParameterValidateException {
         Database database = (Database) resource;
 
-        if (database.getName().equals("")) {
-            throw new ParameterValidateException("Имя базы не может быть пустым");
+        if (database.getAccountId() == null || database.getAccountId().equals("")) {
+            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
 
-        if (database.getSwitchedOn() == null) {
-            throw new ParameterValidateException("Статус включен/выключен не определен");
+//        if (database.getDatabaseUsers() == null || database.getDatabaseUsers().isEmpty()) {
+//            throw new ParameterValidateException("Отсутствует DatabaseUser");
+//        }
+
+        if (database.getName().equals("") || database.getName() == null) {
+            throw new ParameterValidateException("Имя базы не может быть пустым");
         }
 
         if (database.getType() == null) {
             throw new ParameterValidateException("Тип базы не указан");
         }
 
-        if (!serverExists(database.getServerId())) {
-            throw new ParameterValidateException("Выбранный database сервер не существует");
-        }
+        if (database.getServiceId() != null && !database.getServiceId().equals("")) {
+            Server server = staffRcClient.getServerByServiceId(database.getServiceId());
+            if (server == null) {
+                throw new ParameterValidateException("Не найден сервис с ID: " + database.getServiceId());
+            }
+        } else {
+            String serverId = staffRcClient.getActiveDatabaseServer().getId();
 
-        if (database.getQuota() < 0) {
-            throw new ParameterValidateException("Quota для базы не может быть меньше нуля");
-        }
-
-        if (database.getQuotaUsed() > database.getQuota()) {
-            throw new ParameterValidateException("QuotaUsed не может быть больше quota");
-        }
-
-        if (database.getWritable() == null) {
-            throw new ParameterValidateException("Флаг writable должен быть установлен");
+            List<ru.majordomo.hms.rc.staff.resources.Service> databaseServices = staffRcClient.getDatabaseServicesByServerIdAndServiceType(serverId);
+            if (databaseServices != null) {
+                for (ru.majordomo.hms.rc.staff.resources.Service service : databaseServices) {
+                    if (service.getServiceType().getName().equals(this.defaultServiceName)) {
+                        database.setServiceId(service.getId());
+                        break;
+                    }
+                }
+                if (database.getServiceId() == null || (database.getServiceId().equals(""))) {
+                    throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName +
+                            " для сервера: " + serverId);
+                }
+            }
         }
 
         DBType dbType = database.getType();
         for (DatabaseUser databaseUser: database.getDatabaseUsers()) {
             DBType userType = databaseUser.getType();
-            String databaseUserId =databaseUser.getId();
             if (dbType != userType) {
-                throw new ParameterValidateException("Тип базы: " + dbType +
-                        ". Тип пользователя с ID:" + databaseUserId + " " + userType +
-                        " Типы должны совпадать");
+                throw new ParameterValidateException("Тип базы данных: " + dbType +
+                        ". Тип пользователя с ID " + databaseUser.getId() + ": " + userType +
+                        ". Типы должны совпадать");
             }
         }
+
+        if (database.getSwitchedOn() == null) {
+            database.setSwitchedOn(true);
+        }
+
+        if (database.getWritable() == null) {
+            database.setWritable(true);
+        }
+
+//        if (database.getQuota() == null) {
+//            database.setQuota(0L);
+//        }
+
+//        if (database.getQuotaUsed() == null) {
+//            database.setQuotaUsed(0L);
+//        }
+
+//        if (database.getQuotaUsed() < 0L) {
+//            throw new ParameterValidateException("Quota для базы не может быть меньше нуля");
+//        }
     }
 
     @Override
@@ -187,14 +291,22 @@ public class GovernorOfDatabase extends LordOfResources {
         List<Database> buildedDatabases = new ArrayList<>();
 
         boolean byAccountId = false;
+        boolean byDatabaseUserId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
                 byAccountId = true;
             }
+            if (entry.getKey().equals("databaseUserId")) {
+                byDatabaseUserId = true;
+            }
         }
 
-        if (byAccountId) {
+        if (byDatabaseUserId) {
+            for (Database database : repository.findByDatabaseUserIdsContaining(keyValue.get("databaseUserId"))) {
+                buildedDatabases.add((Database) construct(database));
+            }
+        } else if (byAccountId) {
             for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedDatabases.add((Database) construct(database));
             }
@@ -224,14 +336,6 @@ public class GovernorOfDatabase extends LordOfResources {
         Count count = new Count();
         count.setCount(repository.countByAccountId(accountId));
         return count;
-    }
-
-    private String getActiveHostingServerId() {
-        return staffRcClient.getActiveDatabaseServer().getId();
-    }
-
-    private boolean serverExists(String serverId) {
-        return serverId != null && staffRcClient.getServerById(serverId) != null;
     }
 
 }

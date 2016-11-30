@@ -37,4 +37,36 @@ public class DatabaseAMQPController extends BaseAMQPController {
                 break;
         }
     }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database.update",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "database.update", type = "topic"),
+            key = "rc.user"))
+    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleUpdateEventFromPM("database", serviceMessage);
+                break;
+            case ("te"):
+                handleUpdateEventFromTE("database", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database.delete",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "database.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleDeleteEventFromPM("database", serviceMessage);
+                break;
+            case ("te"):
+                handleDeleteEventFromTE("database", serviceMessage);
+                break;
+        }
+    }
 }

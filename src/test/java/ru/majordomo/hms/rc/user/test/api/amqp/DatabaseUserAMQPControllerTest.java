@@ -19,6 +19,7 @@ import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.BrokerManager;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigDatabaseUserAMQPControllerTest;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabaseUser;
 
 import java.util.Collections;
@@ -31,7 +32,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         ConfigStaffResourceControllerClient.class,
         ConfigDatabaseUserAMQPControllerTest.class,
         AMQPBrokerConfig.class,
-        ConfigGovernorOfDatabaseUser.class
+        ConfigGovernorOfDatabaseUser.class,
+        ConfigGovernorOfDatabase.class
 }, webEnvironment = RANDOM_PORT)
 public class DatabaseUserAMQPControllerTest {
 

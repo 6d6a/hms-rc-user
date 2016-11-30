@@ -15,8 +15,10 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
+import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
@@ -24,6 +26,7 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 public class GovernorOfDatabaseUser extends LordOfResources {
     private Cleaner cleaner;
     private DatabaseUserRepository repository;
+    private GovernorOfDatabase governorOfDatabase;
 
     private StaffResourceControllerClient staffRcClient;
     private String defaultServiceName;
@@ -36,6 +39,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     @Autowired
     public void setRepository(DatabaseUserRepository repository) {
         this.repository = repository;
+    }
+
+    @Autowired
+    public void setGovernorOfDatabase(GovernorOfDatabase governorOfDatabase) {
+        this.governorOfDatabase = governorOfDatabase;
     }
 
     @Autowired
@@ -106,6 +114,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) != null) {
             repository.delete(resourceId);
+            governorOfDatabase.removeDatabaseUserIdFromDatabases(resourceId);
         } else {
             throw new ResourceNotFoundException("Ресурс не найден");
         }

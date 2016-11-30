@@ -13,12 +13,16 @@ import org.springframework.util.Assert;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
+import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
+import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabaseUser;
 
 import java.util.*;
@@ -27,7 +31,7 @@ import static org.junit.Assert.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigGovernorOfDatabaseUser.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
+@SpringBootTest(classes = {ConfigGovernorOfDatabaseUser.class, ConfigGovernorOfDatabase.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
         "default.database.service.name:DATABASE_MYSQL"
 })
 public class GovernorOfDatabaseUserTest {
@@ -38,6 +42,8 @@ public class GovernorOfDatabaseUserTest {
 
     @Autowired
     private DatabaseUserRepository repository;
+    @Autowired
+    private DatabaseRepository databaseRepository;
 
     @Value("${default.database.service.name}")
     private String defaultDatabaseService;
@@ -84,6 +90,13 @@ public class GovernorOfDatabaseUserTest {
 
     @Test
     public void drop() throws Exception {
+        List<Database> databases = ResourceGenerator.generateBatchOfDatabases();
+        List<String> databaseUserIds = new ArrayList<>();
+        for (DatabaseUser databaseUser : databaseUsers) {
+            databaseUserIds.add(databaseUser.getId());
+        }
+        databases.get(0).setDatabaseUserIds(databaseUserIds);
+        databaseRepository.save(databases);
         governor.drop(databaseUsers.get(0).getId());
     }
 

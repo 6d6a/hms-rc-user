@@ -7,10 +7,13 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
+@Document(collection = "databaseUsers")
 public class DatabaseUser extends Resource implements Serviceable, Securable {
     private String passwordHash;
     private DBType type;
