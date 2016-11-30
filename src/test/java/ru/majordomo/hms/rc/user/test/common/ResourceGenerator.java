@@ -16,6 +16,8 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.DomainRegistrar;
+import ru.majordomo.hms.rc.user.resources.DomainStates;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
@@ -32,6 +34,8 @@ import static ru.majordomo.hms.rc.user.resources.DNSResourceRecordClass.*;
 import static ru.majordomo.hms.rc.user.resources.DNSResourceRecordType.*;
 import static ru.majordomo.hms.rc.user.resources.DNSResourceRecordType.MX;
 import static ru.majordomo.hms.rc.user.resources.DomainRegistrar.NETHOUSE;
+import static ru.majordomo.hms.rc.user.resources.DomainStates.DELEGATED;
+import static ru.majordomo.hms.rc.user.resources.DomainStates.VERIFIED;
 
 public class ResourceGenerator {
     public static List<Person> generateBatchOfPerson() {
@@ -135,7 +139,8 @@ public class ResourceGenerator {
         regSpec.setCreatedAsString("2016-10-01");
         regSpec.setFreeDateAsString("2017-11-01");
         regSpec.setPaidTillAsString("2016-10-01");
-        Arrays.asList("REGISTERED", "DELEGATED", "VERIFIED").forEach(regSpec::addState);
+        regSpec.addState(DELEGATED);
+        regSpec.addState(VERIFIED);
 
         Domain ruDomain = new Domain();
         ruDomain.setId(ObjectId.get().toString());

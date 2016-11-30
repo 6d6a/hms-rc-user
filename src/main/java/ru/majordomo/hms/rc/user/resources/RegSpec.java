@@ -8,21 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RegSpec {
-    private List<String> states = new ArrayList<>();
+    private List<DomainStates> states = new ArrayList<DomainStates>();
     private DomainRegistrar registrar;
     private LocalDate created;
     private LocalDate paidTill;
     private LocalDate freeDate;
 
-    public List<String> getStates() {
+    public List<DomainStates> getStates() {
         return states;
     }
 
-    public void setStates(List<String> states) {
+    public void setStates(List<DomainStates> states) {
         this.states = states;
     }
 
-    public void addState(String state) {
+    public void addState(DomainStates state) {
         this.states.add(state);
     }
 
