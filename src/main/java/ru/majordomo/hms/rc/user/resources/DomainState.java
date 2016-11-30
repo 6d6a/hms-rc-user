@@ -1,6 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
-public enum  DomainStates {
+public enum DomainState {
     UNVERIFIED,
     VERIFIED,
     NOT_DELEGATED,
