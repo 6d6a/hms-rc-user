@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.bouncycastle.asn1.dvcs.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -129,13 +128,10 @@ public class GovernorOfDatabase extends LordOfResources {
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Database database = new Database();
         String serviceId = null;
-//        Long quota = null;
-//        Long quotaUsed = null;
-//        Boolean writable = null;
         DBType type = null;
 
         LordOfResources.setResourceParams(database, serviceMessage, cleaner);
-        
+
         if (!hasUniqueName(database.getName())) {
             throw new ParameterValidateException("Имя базы данных занято");
         }
@@ -143,18 +139,6 @@ public class GovernorOfDatabase extends LordOfResources {
         if (serviceMessage.getParam("serviceId") != null) {
             serviceId = cleaner.cleanString((String) serviceMessage.getParam("serviceId"));
         }
-//
-//        if (serviceMessage.getParam("quota") != null) {
-//            quota = ((Number) serviceMessage.getParam("quota")).longValue();
-//        }
-
-//        if (serviceMessage.getParam("quotaUsed") != null) {
-//            quotaUsed = ((Number) serviceMessage.getParam("quotaUsed")).longValue();
-//        }
-
-//        if (serviceMessage.getParam("writable") != null) {
-//            writable = (Boolean) serviceMessage.getParam("writable");
-//        }
 
         if (serviceMessage.getParam("type") != null) {
             for (DBType dbType : DBType.values()) {
@@ -176,7 +160,6 @@ public class GovernorOfDatabase extends LordOfResources {
         database.setServiceId(serviceId);
         database.setQuota(0L);
         database.setQuotaUsed(0L);
-//        database.setQuotaUsed(quotaUsed);
         database.setWritable(true);
         database.setType(type);
 
@@ -190,10 +173,6 @@ public class GovernorOfDatabase extends LordOfResources {
         if (database.getAccountId() == null || database.getAccountId().equals("")) {
             throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
-
-//        if (database.getDatabaseUsers() == null || database.getDatabaseUsers().isEmpty()) {
-//            throw new ParameterValidateException("Отсутствует DatabaseUser");
-//        }
 
         if (database.getName().equals("") || database.getName() == null) {
             throw new ParameterValidateException("Имя базы не может быть пустым");
@@ -243,18 +222,6 @@ public class GovernorOfDatabase extends LordOfResources {
         if (database.getWritable() == null) {
             database.setWritable(true);
         }
-
-//        if (database.getQuota() == null) {
-//            database.setQuota(0L);
-//        }
-
-//        if (database.getQuotaUsed() == null) {
-//            database.setQuotaUsed(0L);
-//        }
-
-//        if (database.getQuotaUsed() < 0L) {
-//            throw new ParameterValidateException("Quota для базы не может быть меньше нуля");
-//        }
     }
 
     private Boolean hasUniqueName(String name) {
