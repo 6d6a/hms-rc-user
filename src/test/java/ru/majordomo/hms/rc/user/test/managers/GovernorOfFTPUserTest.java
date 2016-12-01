@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {ConfigGovernorOfFTPUser.class, ConfigGovernorOfUnixAccount.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE)
@@ -62,7 +63,7 @@ public class GovernorOfFTPUserTest {
 
 
     @Test
-    public void buildByKeyValue() {
+    public void buildByKeyValue() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", ftpUsers.get(0).getId());
         keyValue.put("accountId", ftpUsers.get(0).getAccountId());
@@ -71,14 +72,14 @@ public class GovernorOfFTPUserTest {
     }
 
     @Test(expected = ResourceNotFoundException.class)
-    public void buildByKeyValueWithoutResourceId() {
+    public void buildByKeyValueWithoutResourceId() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", ftpUsers.get(0).getAccountId());
         governor.build(keyValue);
     }
 
     @Test(expected = ResourceNotFoundException.class)
-    public void buildKeyValueWithoutAccountId() {
+    public void buildKeyValueWithoutAccountId() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", ftpUsers.get(0).getId());
         governor.build(keyValue);
