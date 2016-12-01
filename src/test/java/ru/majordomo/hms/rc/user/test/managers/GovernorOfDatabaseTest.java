@@ -25,7 +25,6 @@ import java.util.*;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 
@@ -88,14 +87,14 @@ public class GovernorOfDatabaseTest {
     }
 
     @Test
-    public void createWithoutDatabaseUsers() {
+    public void createWithoutDatabaseUsers() throws Exception {
         List<String> emptyDatabaseUsers = new ArrayList<>();
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(emptyDatabaseUsers);
         governor.create(serviceMessage);
     }
 
     @Test(expected = ParameterValidateException.class)
-    public void createWithoutAccountId() {
+    public void createWithoutAccountId() throws Exception {
         String emptyString = "";
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.setAccountId(emptyString);
@@ -103,7 +102,7 @@ public class GovernorOfDatabaseTest {
     }
 
     @Test(expected = ParameterValidateException.class)
-    public void createWithWrongDBtype() {
+    public void createWithWrongDBtype() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.delParam("type");
         serviceMessage.addParam("type", "WRONGDBTYPE");
@@ -111,87 +110,67 @@ public class GovernorOfDatabaseTest {
     }
 
     @Test
-    public void build() {
+    public void build() throws Exception {
         Database buildedDatabase = (Database) governor.build(batchOfDatabases.get(0).getId());
-        try {
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
-            assertThat(buildedDatabase.getDatabaseUsers(), not(Collections.emptyList()));
-            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabase.getDatabaseUserIds()), is(true));
-            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabase.getServiceId()));
-            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabase.getQuota()));
-            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabase.getQuotaUsed()));
-            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabase.getType()));
-            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabase.getWritable()));
-        } catch (ParameterValidateException e) {
-            e.printStackTrace();
-            fail();
-        }
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
+        assertThat(buildedDatabase.getDatabaseUsers(), not(Collections.emptyList()));
+        assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabase.getDatabaseUserIds()), is(true));
+        assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabase.getServiceId()));
+        assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabase.getQuota()));
+        assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabase.getQuotaUsed()));
+        assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabase.getType()));
+        assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabase.getWritable()));
     }
 
     @Test
-    public void buildByKeyValue() {
+    public void buildByKeyValue() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", batchOfDatabases.get(0).getId());
         keyValue.put("accountId", batchOfDatabases.get(0).getAccountId());
         Database buildedDatabaseByDatabaseId = (Database) governor.build(keyValue);
-        try {
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
-            assertThat(buildedDatabaseByDatabaseId.getDatabaseUsers(), not(Collections.emptyList()));
-            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabaseByDatabaseId.getDatabaseUserIds()), is(true));
-            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabaseByDatabaseId.getServiceId()));
-            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabaseByDatabaseId.getQuota()));
-            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabaseByDatabaseId.getQuotaUsed()));
-            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabaseByDatabaseId.getType()));
-            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabaseByDatabaseId.getWritable()));
-        } catch (ParameterValidateException e) {
-            e.printStackTrace();
-            fail();
-        }
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
+        assertThat(buildedDatabaseByDatabaseId.getDatabaseUsers(), not(Collections.emptyList()));
+        assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabaseByDatabaseId.getDatabaseUserIds()), is(true));
+        assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabaseByDatabaseId.getServiceId()));
+        assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabaseByDatabaseId.getQuota()));
+        assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabaseByDatabaseId.getQuotaUsed()));
+        assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabaseByDatabaseId.getType()));
+        assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabaseByDatabaseId.getWritable()));
     }
 
     @Test
-    public void buildAll() {
+    public void buildAll() throws Exception {
         List<Database> buildedDatabases = (List<Database>) governor.buildAll();
-        try {
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabases.get(0).getName()));
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabases.get(0).getName()));
-            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabases.get(0).getDatabaseUserIds()), is(true));
-            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabases.get(0).getServiceId()));
-            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabases.get(0).getQuota()));
-            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabases.get(0).getQuotaUsed()));
-            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabases.get(0).getType()));
-            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabases.get(0).getWritable()));
-        } catch (ParameterValidateException e) {
-            e.printStackTrace();
-            fail();
-        }
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabases.get(0).getName()));
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabases.get(0).getName()));
+        assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabases.get(0).getDatabaseUserIds()), is(true));
+        assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabases.get(0).getServiceId()));
+        assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabases.get(0).getQuota()));
+        assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabases.get(0).getQuotaUsed()));
+        assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabases.get(0).getType()));
+        assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabases.get(0).getWritable()));
     }
 
     @Test
-    public void buildAllByKyeValue() {
+    public void buildAllByKyeValue() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", batchOfDatabases.get(0).getAccountId());
         List<Database> buildedDatabasesByAccountId = (List<Database>) governor.buildAll(keyValue);
-        try {
-            assertThat(buildedDatabasesByAccountId.size(), is(1));
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabasesByAccountId.get(0).getName()));
-            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabasesByAccountId.get(0).getName()));
-            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabasesByAccountId.get(0).getDatabaseUserIds()), is(true));
-            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabasesByAccountId.get(0).getServiceId()));
-            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabasesByAccountId.get(0).getQuota()));
-            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabasesByAccountId.get(0).getQuotaUsed()));
-            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabasesByAccountId.get(0).getType()));
-            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabasesByAccountId.get(0).getWritable()));
-        } catch (ParameterValidateException e) {
-            e.printStackTrace();
-            fail();
-        }
+        assertThat(buildedDatabasesByAccountId.size(), is(1));
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabasesByAccountId.get(0).getName()));
+        assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabasesByAccountId.get(0).getName()));
+        assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabasesByAccountId.get(0).getDatabaseUserIds()), is(true));
+        assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabasesByAccountId.get(0).getServiceId()));
+        assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabasesByAccountId.get(0).getQuota()));
+        assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabasesByAccountId.get(0).getQuotaUsed()));
+        assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabasesByAccountId.get(0).getType()));
+        assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabasesByAccountId.get(0).getWritable()));
     }
 
     @Test
-    public void buildAllByDatabaseUserId() {
+    public void buildAllByDatabaseUserId() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("databaseUserId", batchOfDatabases.get(0).getDatabaseUserIds().get(0));
         List<Database> buildedDatabasesByAccountId = (List<Database>) governor.buildAll(keyValue);
@@ -205,7 +184,7 @@ public class GovernorOfDatabaseTest {
     }
 
     @Test
-    public void removeUserFromDatabase() {
+    public void removeUserFromDatabase() throws Exception {
         Database database = repository.findOne(batchOfDatabases.get(0).getId());
         String databaseUserId = database.getDatabaseUserIds().get(0);
         governor.removeDatabaseUserIdFromDatabases(databaseUserId);
