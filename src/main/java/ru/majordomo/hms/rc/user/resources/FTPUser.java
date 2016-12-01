@@ -5,8 +5,10 @@ import org.springframework.data.annotation.Transient;
 
 import java.io.UnsupportedEncodingException;
 
+import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 
+@Document(collection = "ftpUsers")
 public class FTPUser extends Resource implements Securable {
     private String passwordHash;
     private String homeDir;

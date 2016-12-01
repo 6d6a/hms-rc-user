@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -56,26 +53,77 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+    public Resource update(ServiceMessage serviceMessage)
+            throws ParameterValidateException, UnsupportedEncodingException {
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        } else {
+            throw new ParameterValidateException("Не указан resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        FTPUser ftpUser = (FTPUser) build(keyValue);
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "password":
+                        ftpUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "homedir":
+                        ftpUser.setHomeDir(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "switchedOn":
+                        ftpUser.setSwitchedOn((Boolean) entry.getValue());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        validate(ftpUser);
+        store(ftpUser);
+
+        return ftpUser;
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-
+        FTPUser ftpUser = repository.findOne(resourceId);
+        if (ftpUser == null) {
+            throw new ResourceNotFoundException("Пользователь FTP с ID: " + resourceId + " не найден");
+        }
+        repository.delete(ftpUser);
     }
 
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
         FTPUser ftpUser = new FTPUser();
         LordOfResources.setResourceParams(ftpUser, serviceMessage, cleaner);
-        String plainPassword = cleaner.cleanString((String) serviceMessage.getParam("password"));
-        String homeDir = cleaner.cleanString((String) serviceMessage.getParam("homedir"));
-        String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
+
+        String plainPassword;
+        String homeDir;
+        String unixAccountId;
+
+        try {
+            plainPassword = cleaner.cleanString((String) serviceMessage.getParam("password"));
+            homeDir = cleaner.cleanString((String) serviceMessage.getParam("homedir"));
+            unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
 
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
         ftpUser.setHomeDir(homeDir);
-        ftpUser.setUnixAccount((UnixAccount) governorOfUnixAccount.build(unixAccountId));
+        ftpUser.setUnixAccountId(unixAccountId);
 
         return ftpUser;
     }
@@ -91,12 +139,18 @@ public class GovernorOfFTPUser extends LordOfResources {
             throw new ParameterValidateException("Пароль FTP пользователя не может быть пустым");
         }
 
-        if (ftpUser.getHomeDir() == null) {
-            throw new ParameterValidateException("Домашняя директория FTP пользователя должна быть указана");
+        if (ftpUser.getUnixAccountId() == null) {
+            throw new ParameterValidateException("Параметр unixAccount не может быть пустым");
         }
 
-        if (ftpUser.getUnixAccount() == null) {
-            throw new ParameterValidateException("Параметр unixAccount не может быть пустым");
+        try {
+            governorOfUnixAccount.build(ftpUser.getUnixAccountId());
+        } catch (ResourceNotFoundException e) {
+            throw new ParameterValidateException("Не найден UnixAccount с ID: " + ftpUser.getUnixAccountId());
+        }
+
+        if (ftpUser.getHomeDir() == null) {
+            throw new ParameterValidateException("Домашняя директория FTP пользователя должна быть указана");
         }
     }
 
@@ -112,7 +166,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     public Resource build(String resourceId) throws ResourceNotFoundException {
         FTPUser ftpUser = repository.findOne(resourceId);
         if (ftpUser == null) {
-            throw new ResourceNotFoundException("Пользователь с ID:" + resourceId + " не найден");
+            throw new ResourceNotFoundException("Пользователь FTP с ID:" + resourceId + " не найден");
         }
 
         return construct(ftpUser);
@@ -120,13 +174,17 @@ public class GovernorOfFTPUser extends LordOfResources {
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        FTPUser ftpUser = new FTPUser();
+        FTPUser ftpUser = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
-            ftpUser = (FTPUser) construct(repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId")));
+            ftpUser = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
-        return ftpUser;
+        if (ftpUser == null) {
+            throw new ResourceNotFoundException("Пользователь FTP не найден");
+        }
+
+        return construct(ftpUser);
     }
 
     @Override

@@ -324,7 +324,7 @@ public class GovernorOfWebSite extends LordOfResources {
             String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
 
             String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
-            UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
+//            UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
 
             CharSet charSet = null;
             String charsetAsString;
@@ -362,9 +362,7 @@ public class GovernorOfWebSite extends LordOfResources {
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
-            if (unixAccount != null) {
-                webSite.setUnixAccount(unixAccount);
-            }
+            webSite.setUnixAccountId(unixAccountId);
             webSite.setCharSet(charSet);
             webSite.setSsiEnabled(ssiEnabled);
             webSite.setSsiFileExtensions(ssiFileExtensions);
@@ -411,7 +409,7 @@ public class GovernorOfWebSite extends LordOfResources {
         }
 
 
-        if (webSite.getUnixAccount() == null) {
+        if (webSite.getUnixAccountId() == null || webSite.getUnixAccountId().equals("")) {
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("accountId", webSite.getAccountId());
             List<UnixAccount> unixAccounts = (List<UnixAccount>) governorOfUnixAccount.buildAll(keyValue);

@@ -144,6 +144,16 @@ public class ServiceMessageGenerator {
         return serviceMessage;
     }
 
+    public static ServiceMessage generateFTPUserCreateServiceMessageWithoutUnixAccountId() {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("name", "f111111");
+        serviceMessage.addParam("homedir", "/mjru");
+        serviceMessage.addParam("password", "12345678");
+
+        return serviceMessage;
+    }
+
     public static ServiceMessage generateDatabaseUserCreateServiceMessage() {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());

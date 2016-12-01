@@ -195,7 +195,11 @@ public class WebSite extends Resource implements Serviceable {
 
     public void setUnixAccount(UnixAccount unixAccount) {
         this.unixAccount = unixAccount;
-        this.unixAccountId = unixAccount.getId();
+        if (unixAccount == null) {
+            this.unixAccountId = null;
+        } else {
+            this.unixAccountId = unixAccount.getId();
+        }
     }
 
     @Override
