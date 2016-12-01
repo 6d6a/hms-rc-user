@@ -1,9 +1,7 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
-import org.bouncycastle.asn1.dvcs.Data;
 import org.bson.types.ObjectId;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +14,6 @@ import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
-import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
@@ -24,12 +21,13 @@ import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {ConfigGovernorOfDatabase.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
@@ -116,18 +114,18 @@ public class GovernorOfDatabaseTest {
     public void build() {
         Database buildedDatabase = (Database) governor.build(batchOfDatabases.get(0).getId());
         try {
-            Assert.assertEquals("Имя не совпадает с ожидаемым", batchOfDatabases.get(0).getName(), buildedDatabase.getName());
-            Assert.assertEquals("Статус включен/выключен не совпадает с ожидаемым", batchOfDatabases.get(0).getName(), buildedDatabase.getName());
-            Assert.assertTrue(!buildedDatabase.getDatabaseUsers().isEmpty());
-            Assert.assertTrue(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabase.getDatabaseUserIds()));
-            Assert.assertEquals("Service не совпадает с ожидаемым", batchOfDatabases.get(0).getServiceId(), buildedDatabase.getServiceId());
-            Assert.assertEquals("Quota не совпадает с ожидаемым", batchOfDatabases.get(0).getQuota(), buildedDatabase.getQuota());
-            Assert.assertEquals("QuotaUsed не совпадает с ожидаемым", batchOfDatabases.get(0).getQuotaUsed(), buildedDatabase.getQuotaUsed());
-            Assert.assertEquals("Type не совпадает с ожидаемым", batchOfDatabases.get(0).getType(), buildedDatabase.getType());
-            Assert.assertEquals("Writable не совпадает с ожидаемым", batchOfDatabases.get(0).getWritable(), buildedDatabase.getWritable());
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
+            assertThat(buildedDatabase.getDatabaseUsers(), not(Collections.emptyList()));
+            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabase.getDatabaseUserIds()), is(true));
+            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabase.getServiceId()));
+            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabase.getQuota()));
+            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabase.getQuotaUsed()));
+            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabase.getType()));
+            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabase.getWritable()));
         } catch (ParameterValidateException e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
     }
 
@@ -138,18 +136,18 @@ public class GovernorOfDatabaseTest {
         keyValue.put("accountId", batchOfDatabases.get(0).getAccountId());
         Database buildedDatabaseByDatabaseId = (Database) governor.build(keyValue);
         try {
-            Assert.assertEquals("Имя не совпадает", batchOfDatabases.get(0).getName(), buildedDatabaseByDatabaseId.getName());
-            Assert.assertEquals("Статус включен/выключен не совпадает с ожидаемым", batchOfDatabases.get(0).getName(), buildedDatabaseByDatabaseId.getName());
-            Assert.assertTrue(!buildedDatabaseByDatabaseId.getDatabaseUsers().isEmpty());
-            Assert.assertTrue(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabaseByDatabaseId.getDatabaseUserIds()));
-            Assert.assertEquals("Service не совпадает с ожидаемым", batchOfDatabases.get(0).getServiceId(), buildedDatabaseByDatabaseId.getServiceId());
-            Assert.assertEquals("Quota не совпадает с ожидаемым", batchOfDatabases.get(0).getQuota(), buildedDatabaseByDatabaseId.getQuota());
-            Assert.assertEquals("QuotaUsed не совпадает с ожидаемым", batchOfDatabases.get(0).getQuotaUsed(), buildedDatabaseByDatabaseId.getQuotaUsed());
-            Assert.assertEquals("Type не совпадает с ожидаемым", batchOfDatabases.get(0).getType(), buildedDatabaseByDatabaseId.getType());
-            Assert.assertEquals("Writable не совпадает с ожидаемым", batchOfDatabases.get(0).getWritable(), buildedDatabaseByDatabaseId.getWritable());
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
+            assertThat(buildedDatabaseByDatabaseId.getDatabaseUsers(), not(Collections.emptyList()));
+            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabaseByDatabaseId.getDatabaseUserIds()), is(true));
+            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabaseByDatabaseId.getServiceId()));
+            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabaseByDatabaseId.getQuota()));
+            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabaseByDatabaseId.getQuotaUsed()));
+            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabaseByDatabaseId.getType()));
+            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabaseByDatabaseId.getWritable()));
         } catch (ParameterValidateException e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
     }
 
@@ -157,17 +155,17 @@ public class GovernorOfDatabaseTest {
     public void buildAll() {
         List<Database> buildedDatabases = (List<Database>) governor.buildAll();
         try {
-            Assert.assertEquals("Имя не совпадает с ожидаемым", batchOfDatabases.get(0).getName(), buildedDatabases.get(0).getName());
-            Assert.assertEquals("Статус включен/выключен не совпадает с ожидаемым", batchOfDatabases.get(0).getName(), buildedDatabases.get(0).getName());
-            Assert.assertTrue(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabases.get(0).getDatabaseUserIds()));
-            Assert.assertEquals("Service не совпадает с ожидаемым", batchOfDatabases.get(0).getServiceId(), buildedDatabases.get(0).getServiceId());
-            Assert.assertEquals("Quota не совпадает с ожидаемым", batchOfDatabases.get(0).getQuota(), buildedDatabases.get(0).getQuota());
-            Assert.assertEquals("QuotaUsed не совпадает с ожидаемым", batchOfDatabases.get(0).getQuotaUsed(), buildedDatabases.get(0).getQuotaUsed());
-            Assert.assertEquals("Type не совпадает с ожидаемым", batchOfDatabases.get(0).getType(), buildedDatabases.get(0).getType());
-            Assert.assertEquals("Writable не совпадает с ожидаемым", batchOfDatabases.get(0).getWritable(), buildedDatabases.get(0).getWritable());
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabases.get(0).getName()));
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabases.get(0).getName()));
+            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabases.get(0).getDatabaseUserIds()), is(true));
+            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabases.get(0).getServiceId()));
+            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabases.get(0).getQuota()));
+            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabases.get(0).getQuotaUsed()));
+            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabases.get(0).getType()));
+            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabases.get(0).getWritable()));
         } catch (ParameterValidateException e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
     }
 
@@ -177,18 +175,18 @@ public class GovernorOfDatabaseTest {
         keyValue.put("accountId", batchOfDatabases.get(0).getAccountId());
         List<Database> buildedDatabasesByAccountId = (List<Database>) governor.buildAll(keyValue);
         try {
-            Assert.assertTrue("Количество элментов в списке не совпдает с ожидаемым", buildedDatabasesByAccountId.size() == 1);
-            Assert.assertEquals("Имя не совпадает с ожидаемым", batchOfDatabases.get(0).getName(), buildedDatabasesByAccountId.get(0).getName());
-            Assert.assertEquals("Статус включен/выключен не совпадает с ожидаемым", batchOfDatabases.get(0).getName(), buildedDatabasesByAccountId.get(0).getName());
-            Assert.assertTrue(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabasesByAccountId.get(0).getDatabaseUserIds()));
-            Assert.assertEquals("Service не совпадает с ожидаемым", batchOfDatabases.get(0).getServiceId(), buildedDatabasesByAccountId.get(0).getServiceId());
-            Assert.assertEquals("Quota не совпадает с ожидаемым", batchOfDatabases.get(0).getQuota(), buildedDatabasesByAccountId.get(0).getQuota());
-            Assert.assertEquals("QuotaUsed не совпадает с ожидаемым", batchOfDatabases.get(0).getQuotaUsed(), buildedDatabasesByAccountId.get(0).getQuotaUsed());
-            Assert.assertEquals("Type не совпадает с ожидаемым", batchOfDatabases.get(0).getType(), buildedDatabasesByAccountId.get(0).getType());
-            Assert.assertEquals("Writable не совпадает с ожидаемым", batchOfDatabases.get(0).getWritable(), buildedDatabasesByAccountId.get(0).getWritable());
+            assertThat(buildedDatabasesByAccountId.size(), is(1));
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabasesByAccountId.get(0).getName()));
+            assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabasesByAccountId.get(0).getName()));
+            assertThat(batchOfDatabases.get(0).getDatabaseUserIds().containsAll(buildedDatabasesByAccountId.get(0).getDatabaseUserIds()), is(true));
+            assertThat(batchOfDatabases.get(0).getServiceId(), is(buildedDatabasesByAccountId.get(0).getServiceId()));
+            assertThat(batchOfDatabases.get(0).getQuota(), is(buildedDatabasesByAccountId.get(0).getQuota()));
+            assertThat(batchOfDatabases.get(0).getQuotaUsed(), is(buildedDatabasesByAccountId.get(0).getQuotaUsed()));
+            assertThat(batchOfDatabases.get(0).getType(), is(buildedDatabasesByAccountId.get(0).getType()));
+            assertThat(batchOfDatabases.get(0).getWritable(), is(buildedDatabasesByAccountId.get(0).getWritable()));
         } catch (ParameterValidateException e) {
             e.printStackTrace();
-            Assert.fail();
+            fail();
         }
     }
 
@@ -197,7 +195,7 @@ public class GovernorOfDatabaseTest {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("databaseUserId", batchOfDatabases.get(0).getDatabaseUserIds().get(0));
         List<Database> buildedDatabasesByAccountId = (List<Database>) governor.buildAll(keyValue);
-        Assert.assertEquals(batchOfDatabases.get(0).getDatabaseUserIds().get(0), buildedDatabasesByAccountId.get(0).getDatabaseUserIds().get(0));
+        assertThat(batchOfDatabases.get(0).getDatabaseUserIds().get(0), is(buildedDatabasesByAccountId.get(0).getDatabaseUserIds().get(0)));
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -211,7 +209,7 @@ public class GovernorOfDatabaseTest {
         Database database = repository.findOne(batchOfDatabases.get(0).getId());
         String databaseUserId = database.getDatabaseUserIds().get(0);
         governor.removeDatabaseUserIdFromDatabases(databaseUserId);
-        Assert.assertEquals(0, repository.findByDatabaseUserIdsContaining(databaseUserId).size());
+        assertThat(repository.findByDatabaseUserIdsContaining(databaseUserId).size(), is(0));
     }
 
     @After

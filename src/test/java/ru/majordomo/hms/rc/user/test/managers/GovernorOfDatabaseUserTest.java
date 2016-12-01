@@ -6,14 +6,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.Assert;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
@@ -27,8 +24,11 @@ import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabaseUs
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.hasItem;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {ConfigGovernorOfDatabaseUser.class, ConfigGovernorOfDatabase.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
@@ -44,9 +44,6 @@ public class GovernorOfDatabaseUserTest {
     private DatabaseUserRepository repository;
     @Autowired
     private DatabaseRepository databaseRepository;
-
-    @Value("${default.database.service.name}")
-    private String defaultDatabaseService;
 
     @Before
     public void setUp() throws Exception {
@@ -73,7 +70,7 @@ public class GovernorOfDatabaseUserTest {
         System.out.println(databases);
         System.out.println(serviceMessage);
         DatabaseUser databaseUser = (DatabaseUser) governor.create(serviceMessage);
-        Assert.isTrue(databaseRepository.findOne(databases.get(0).getId()).getDatabaseUserIds().contains(databaseUser.getId()));
+        assertThat(databaseRepository.findOne(databases.get(0).getId()).getDatabaseUserIds(), hasItem(databaseUser.getId()));
     }
 
     @Test(expected = ParameterValidateException.class)
@@ -123,14 +120,14 @@ public class GovernorOfDatabaseUserTest {
 
     @Test
     public void buildAll() throws Exception {
-        Assert.isTrue(governor.buildAll().size() == 3);
+        assertThat(governor.buildAll().size(), is(3));
     }
 
     @Test
     public void buildAllByAccountId() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", databaseUsers.get(1).getAccountId());
-        Assert.isTrue(governor.buildAll(keyValue).size() == 2);
+        assertThat(governor.buildAll(keyValue).size(), is(2));
     }
 
     @Test
@@ -141,7 +138,7 @@ public class GovernorOfDatabaseUserTest {
         String oldPasswordHash = databaseUsers.get(0).getPasswordHash();
         serviceMessage.addParam("password", "87654321");
         DatabaseUser databaseUser = (DatabaseUser) governor.update(serviceMessage);
-        Assert.isTrue(!repository.findOne(databaseUser.getId()).getPasswordHash().equals(oldPasswordHash));
+        assertThat(repository.findOne(databaseUser.getId()).getPasswordHash(), not(oldPasswordHash));
     }
 
     @After
