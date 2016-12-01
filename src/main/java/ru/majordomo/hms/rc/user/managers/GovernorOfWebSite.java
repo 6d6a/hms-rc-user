@@ -324,7 +324,6 @@ public class GovernorOfWebSite extends LordOfResources {
             String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
 
             String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
-//            UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
 
             CharSet charSet = null;
             String charsetAsString;
