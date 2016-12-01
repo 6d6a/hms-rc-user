@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "databases")
-public class Database extends Resource implements ServerStorable, Quotable{
-    private String serverId;
+public class Database extends Resource implements Serviceable, Quotable {
+    private String serviceId;
     private DBType type;
     private Long quota;
     private Long quotaUsed;
@@ -25,16 +25,20 @@ public class Database extends Resource implements ServerStorable, Quotable{
 
     public void setDatabaseUsers(List<DatabaseUser> databaseUsers) {
         this.databaseUsers = databaseUsers;
+        List<String> databaseUserIds = new ArrayList<>();
         for (DatabaseUser databaseUser: databaseUsers) {
             if (databaseUser.getId() != null) {
                 databaseUserIds.add(databaseUser.getId());
             }
         }
+        this.databaseUserIds = databaseUserIds;
     }
 
     public void addDatabaseUser(DatabaseUser databaseUser) {
-        this.databaseUserIds.add(databaseUser.getId());
         this.databaseUsers.add(databaseUser);
+        if (!databaseUserIds.contains(databaseUser.getId())) {
+            this.databaseUserIds.add(databaseUser.getId());
+        }
     }
 
     @JsonIgnore
@@ -58,13 +62,13 @@ public class Database extends Resource implements ServerStorable, Quotable{
     }
 
     @Override
-    public String getServerId() {
-        return serverId;
+    public String getServiceId() {
+        return serviceId;
     }
 
     @Override
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
     public DBType getType() {
@@ -76,11 +80,13 @@ public class Database extends Resource implements ServerStorable, Quotable{
     }
 
     @Override
+    @JsonIgnore
     public void setQuota(Long quota) {
         this.quota = quota;
     }
 
     @Override
+    @JsonIgnore
     public Long getQuota() {
         return quota;
     }

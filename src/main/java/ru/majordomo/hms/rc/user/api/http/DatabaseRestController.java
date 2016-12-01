@@ -1,10 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,6 +20,16 @@ public class DatabaseRestController {
     @Autowired
     public void setGovernor(GovernorOfDatabase governor) {
         this.governor = governor;
+    }
+
+    @RequestMapping(value = {"/{accountId}/database/filter"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByAccountIdAndDatabaseUserId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        return governor.buildAll(requestParams);
+    }
+
+    @RequestMapping(value = {"/database/filter"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllByDatabaseUserId(@RequestParam Map<String, String> requestParams) {
+        return governor.buildAll(requestParams);
     }
 
     @RequestMapping(value = {"/database/{databaseId}", "/database/{databaseId}/"}, method = RequestMethod.GET)

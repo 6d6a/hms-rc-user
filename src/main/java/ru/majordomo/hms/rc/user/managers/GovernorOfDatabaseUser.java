@@ -15,8 +15,10 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
+import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
@@ -24,6 +26,7 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 public class GovernorOfDatabaseUser extends LordOfResources {
     private Cleaner cleaner;
     private DatabaseUserRepository repository;
+    private GovernorOfDatabase governorOfDatabase;
 
     private StaffResourceControllerClient staffRcClient;
     private String defaultServiceName;
@@ -36,6 +39,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     @Autowired
     public void setRepository(DatabaseUserRepository repository) {
         this.repository = repository;
+    }
+
+    @Autowired
+    public void setGovernorOfDatabase(GovernorOfDatabase governorOfDatabase) {
+        this.governorOfDatabase = governorOfDatabase;
     }
 
     @Autowired
@@ -55,6 +63,16 @@ public class GovernorOfDatabaseUser extends LordOfResources {
             databaseUser = (DatabaseUser) buildResourceFromServiceMessage(serviceMessage);
             validate(databaseUser);
             store(databaseUser);
+
+            if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
+                for (String databaseId : databaseUser.getDatabaseIds()) {
+                    Database database = (Database) governorOfDatabase.build(databaseId);
+                    database.addDatabaseUserId(databaseUser.getId());
+                    governorOfDatabase.validate(database);
+                    governorOfDatabase.store(database);
+                }
+            }
+
         } catch (UnsupportedEncodingException e) {
             throw new ParameterValidateException("В пароле используются некорретные символы");
         }
@@ -106,6 +124,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) != null) {
             repository.delete(resourceId);
+            governorOfDatabase.removeDatabaseUserIdFromDatabases(resourceId);
         } else {
             throw new ResourceNotFoundException("Ресурс не найден");
         }
@@ -121,6 +140,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         String serviceId = null;
         String userTypeAsString;
         List<String> allowedIps = null;
+        List<String> databaseIds = null;
 
         try {
             if (serviceMessage.getParam("password") != null) {
@@ -136,6 +156,10 @@ public class GovernorOfDatabaseUser extends LordOfResources {
                 serviceId = cleaner.cleanString((String) serviceMessage.getParam("serviceId"));
             }
 
+            if (serviceMessage.getParam("databaseIds") != null) {
+                databaseIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("databaseIds"));
+            }
+
             if (serviceMessage.getParam("allowedAddressList") != null) {
                 allowedIps = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedAddressList"));
             }
@@ -147,10 +171,12 @@ public class GovernorOfDatabaseUser extends LordOfResources {
             throw new ParameterValidateException("Имя должно быть уникальным");
         }
 
+        databaseUser.setDatabaseIds(databaseIds);
         databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
         databaseUser.setPasswordHashByPlainPassword(password);
         databaseUser.setAllowedIpsAsString(allowedIps);
+
 
         return databaseUser;
     }
@@ -185,6 +211,19 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
         if (databaseUser.getType() == null) {
             throw new ParameterValidateException("Тип не может быть пустым");
+        }
+
+        if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
+            for (String databaseId : databaseUser.getDatabaseIds()) {
+                Map<String, String> keyValue = new HashMap<>();
+                keyValue.put("accountId", databaseUser.getAccountId());
+                keyValue.put("resourceId", databaseId);
+                try {
+                    governorOfDatabase.build(keyValue);
+                } catch (ResourceNotFoundException e) {
+                    throw new ParameterValidateException("Не найдена база данных с ID: " + databaseId);
+                }
+            }
         }
 
         if (databaseUser.getServiceId() != null && !databaseUser.getServiceId().equals("")) {
