@@ -35,7 +35,6 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -87,9 +86,8 @@ public class DatabaseRestControllerTest {
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("name").description("Имя базы данных"),
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли база данных"),
-                                fieldWithPath("serverId").description("ID сервера, на котором расположена база"),
+                                fieldWithPath("serviceId").description("ID сервиса, к которому привязана база данных"),
                                 fieldWithPath("type").description("Тип базы данных"),
-                                fieldWithPath("quota").description("Максимальный размер базы данных в килобайтах"),
                                 fieldWithPath("quotaUsed").description("Фактический размер базы в килобайтах"),
                                 fieldWithPath("writable").description("Флаг доступности записи."),
                                 fieldWithPath("databaseUsers").description("Список пользователей этой базы")
@@ -113,9 +111,8 @@ public class DatabaseRestControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfDatabases.get(0).getName()))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfDatabases.get(0).getSwitchedOn()))
-                .andExpect(jsonPath("$[0].serverId").value(batchOfDatabases.get(0).getServerId()))
+                .andExpect(jsonPath("$[0].serviceId").value(batchOfDatabases.get(0).getServiceId()))
                 .andExpect(jsonPath("$[0].type").value(batchOfDatabases.get(0).getType().toString()))
-                .andExpect(jsonPath("$[0].quota").value(batchOfDatabases.get(0).getQuota()))
                 .andExpect(jsonPath("$[0].quotaUsed").value(batchOfDatabases.get(0).getQuotaUsed()))
                 .andExpect(jsonPath("$[0].writable").value(batchOfDatabases.get(0).getWritable()))
                 .andExpect(jsonPath("$[0].databaseUsers").isArray())
@@ -131,13 +128,25 @@ public class DatabaseRestControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("name").value(batchOfDatabases.get(0).getName()))
                 .andExpect(jsonPath("switchedOn").value(batchOfDatabases.get(0).getSwitchedOn()))
-                .andExpect(jsonPath("serverId").value(batchOfDatabases.get(0).getServerId()))
+                .andExpect(jsonPath("serviceId").value(batchOfDatabases.get(0).getServiceId()))
                 .andExpect(jsonPath("type").value(batchOfDatabases.get(0).getType().toString()))
-                .andExpect(jsonPath("quota").value(batchOfDatabases.get(0).getQuota()))
                 .andExpect(jsonPath("quotaUsed").value(batchOfDatabases.get(0).getQuotaUsed()))
                 .andExpect(jsonPath("writable").value(batchOfDatabases.get(0).getWritable()))
                 .andExpect(jsonPath("databaseUsers").isArray())
                 .andExpect(jsonPath("databaseUsers.[0].id").value(batchOfDatabases.get(0).getDatabaseUsers().get(0).getId()));
+    }
+
+    @Test
+    public void readAllByDatabaseUserId() throws Exception {
+        String accountId = batchOfDatabases.get(0).getAccountId();
+        String databaseUserId = batchOfDatabases.get(0).getDatabaseUserIds().get(0);
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get("/" + accountId + "/" + resourceName + "/filter?databaseUserId=" + databaseUserId)
+                .accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfDatabases.get(0).getName()))
+                .andExpect(jsonPath("$[0].databaseUsers.[0].id").value(batchOfDatabases.get(0).getDatabaseUsers().get(0).getId()));
     }
 
     @Test

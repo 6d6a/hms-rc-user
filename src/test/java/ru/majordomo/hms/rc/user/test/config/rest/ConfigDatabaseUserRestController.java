@@ -49,6 +49,12 @@ public class ConfigDatabaseUserRestController extends AbstractMongoConfiguration
     public GovernorOfDatabaseUser governorOfDatabaseUser() {
         return new GovernorOfDatabaseUser();
     }
+
+    @Bean
+    public GovernorOfDatabase governorOfDatabase() {
+        return new GovernorOfDatabase();
+    }
+
     @Bean
     public Cleaner cleaner() {
         return new Cleaner();

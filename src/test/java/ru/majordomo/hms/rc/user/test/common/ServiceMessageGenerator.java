@@ -5,6 +5,7 @@ import org.bson.types.ObjectId;
 import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
@@ -186,6 +187,17 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
+
+        return serviceMessage;
+    }
+
+    public static ServiceMessage generateDatabaseCreateServiceMessage(List<String> databaseUserIds) {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.addParam("databaseUserIds", databaseUserIds);
+        serviceMessage.addParam("type", "MYSQL");
+        serviceMessage.addParam("name", "database01");
 
         return serviceMessage;
     }
