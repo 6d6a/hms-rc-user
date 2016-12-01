@@ -192,6 +192,14 @@ public class GovernorOfDatabaseTest {
         }
     }
 
+    @Test
+    public void buildAllByDatabaseUserId() {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("databaseUserId", batchOfDatabases.get(0).getDatabaseUserIds().get(0));
+        List<Database> buildedDatabasesByAccountId = (List<Database>) governor.buildAll(keyValue);
+        Assert.assertEquals(batchOfDatabases.get(0).getDatabaseUserIds().get(0), buildedDatabasesByAccountId.get(0).getDatabaseUserIds().get(0));
+    }
+
     @Test(expected = ResourceNotFoundException.class)
     public void buildWithWrongId() {
         String resourceId = ObjectId.get().toString();

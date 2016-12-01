@@ -60,6 +60,22 @@ public class GovernorOfDatabaseUserTest {
         governor.create(serviceMessage);
     }
 
+    @Test
+    public void createWithDatabaseIds() throws Exception {
+        List<Database> databases = ResourceGenerator.generateBatchOfDatabases();
+        for (Database database : databases) {
+            database.setDatabaseUserIds(Collections.emptyList());
+        }
+        databaseRepository.save(databases);
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
+        serviceMessage.setAccountId(databases.get(0).getAccountId());
+        serviceMessage.addParam("databaseIds", Arrays.asList(databases.get(0).getId()));
+        System.out.println(databases);
+        System.out.println(serviceMessage);
+        DatabaseUser databaseUser = (DatabaseUser) governor.create(serviceMessage);
+        Assert.isTrue(databaseRepository.findOne(databases.get(0).getId()).getDatabaseUserIds().contains(databaseUser.getId()));
+    }
+
     @Test(expected = ParameterValidateException.class)
     public void createWithoutAccountId() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateWithoutAccountIdServiceMessage();

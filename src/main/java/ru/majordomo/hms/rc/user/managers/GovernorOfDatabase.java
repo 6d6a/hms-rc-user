@@ -135,6 +135,10 @@ public class GovernorOfDatabase extends LordOfResources {
         DBType type = null;
 
         LordOfResources.setResourceParams(database, serviceMessage, cleaner);
+        
+        if (!hasUniqueName(database.getName())) {
+            throw new ParameterValidateException("Имя базы данных занято");
+        }
 
         if (serviceMessage.getParam("serviceId") != null) {
             serviceId = cleaner.cleanString((String) serviceMessage.getParam("serviceId"));
@@ -253,6 +257,10 @@ public class GovernorOfDatabase extends LordOfResources {
 //        }
     }
 
+    private Boolean hasUniqueName(String name) {
+        return (repository.findByName(name) == null);
+    }
+
     @Override
     protected Resource construct(Resource resource) {
         Database database = (Database) resource;
@@ -276,13 +284,17 @@ public class GovernorOfDatabase extends LordOfResources {
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
 
-        Database database = new Database();
+        Database database = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
-            database = (Database) construct(repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId")));
+            database = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
-        return database;
+        if (database == null) {
+            throw new ResourceNotFoundException("База данных не найдена");
+        }
+
+        return construct(database);
     }
 
     @Override

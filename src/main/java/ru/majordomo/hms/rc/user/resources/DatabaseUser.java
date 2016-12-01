@@ -19,6 +19,17 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     private DBType type;
     private String serviceId;
     private List<Long> allowedAddressList;
+    @Transient
+    private List<String> databaseIds;
+
+    @JsonIgnore
+    public List<String> getDatabaseIds() {
+        return databaseIds;
+    }
+    @JsonIgnore
+    public void setDatabaseIds(List<String> databaseIds) {
+        this.databaseIds = databaseIds;
+    }
 
     @JsonIgnore
     public List<Long> getAllowedAddressList() {

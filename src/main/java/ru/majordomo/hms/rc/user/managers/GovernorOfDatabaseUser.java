@@ -63,6 +63,16 @@ public class GovernorOfDatabaseUser extends LordOfResources {
             databaseUser = (DatabaseUser) buildResourceFromServiceMessage(serviceMessage);
             validate(databaseUser);
             store(databaseUser);
+
+            if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
+                for (String databaseId : databaseUser.getDatabaseIds()) {
+                    Database database = (Database) governorOfDatabase.build(databaseId);
+                    database.addDatabaseUserId(databaseUser.getId());
+                    governorOfDatabase.validate(database);
+                    governorOfDatabase.store(database);
+                }
+            }
+
         } catch (UnsupportedEncodingException e) {
             throw new ParameterValidateException("В пароле используются некорретные символы");
         }
@@ -130,6 +140,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         String serviceId = null;
         String userTypeAsString;
         List<String> allowedIps = null;
+        List<String> databaseIds = null;
 
         try {
             if (serviceMessage.getParam("password") != null) {
@@ -145,6 +156,10 @@ public class GovernorOfDatabaseUser extends LordOfResources {
                 serviceId = cleaner.cleanString((String) serviceMessage.getParam("serviceId"));
             }
 
+            if (serviceMessage.getParam("databaseIds") != null) {
+                databaseIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("databaseIds"));
+            }
+
             if (serviceMessage.getParam("allowedAddressList") != null) {
                 allowedIps = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedAddressList"));
             }
@@ -156,10 +171,12 @@ public class GovernorOfDatabaseUser extends LordOfResources {
             throw new ParameterValidateException("Имя должно быть уникальным");
         }
 
+        databaseUser.setDatabaseIds(databaseIds);
         databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
         databaseUser.setPasswordHashByPlainPassword(password);
         databaseUser.setAllowedIpsAsString(allowedIps);
+
 
         return databaseUser;
     }
@@ -194,6 +211,19 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
         if (databaseUser.getType() == null) {
             throw new ParameterValidateException("Тип не может быть пустым");
+        }
+
+        if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
+            for (String databaseId : databaseUser.getDatabaseIds()) {
+                Map<String, String> keyValue = new HashMap<>();
+                keyValue.put("accountId", databaseUser.getAccountId());
+                keyValue.put("resourceId", databaseId);
+                try {
+                    governorOfDatabase.build(keyValue);
+                } catch (ResourceNotFoundException e) {
+                    throw new ParameterValidateException("Не найдена база данных с ID: " + databaseId);
+                }
+            }
         }
 
         if (databaseUser.getServiceId() != null && !databaseUser.getServiceId().equals("")) {
