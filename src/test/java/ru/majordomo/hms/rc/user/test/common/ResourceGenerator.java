@@ -338,9 +338,25 @@ public class ResourceGenerator {
             ftpUser.setAccountId(ObjectId.get().toString());
             ftpUser.setName("f13403" + i);
             ftpUser.setPasswordHashByPlainPassword("123456" + i);
-            ftpUser.setHomeDir("/home/u13403" + i + "/majordomoru/" + i);
+            ftpUser.setHomeDir("/majordomoru/" + i);
             ftpUser.setSwitchedOn(true);
             ftpUser.setUnixAccount(generateBatchOfUnixAccounts().get(0));
+            ftpUsers.add(ftpUser);
+        }
+
+        return ftpUsers;
+    }
+
+    public static List<FTPUser> generateBatchOfFTPUsersWithUnixAccountId(String unixAccountId) throws UnsupportedEncodingException, JSchException {
+        List<FTPUser> ftpUsers = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            FTPUser ftpUser = new FTPUser();
+            ftpUser.setAccountId(ObjectId.get().toString());
+            ftpUser.setName("f13403" + i);
+            ftpUser.setPasswordHashByPlainPassword("123456" + i);
+            ftpUser.setHomeDir("/majordomoru/" + i);
+            ftpUser.setSwitchedOn(true);
+            ftpUser.setUnixAccountId(unixAccountId);
             ftpUsers.add(ftpUser);
         }
 
@@ -356,7 +372,7 @@ public class ResourceGenerator {
             databaseUser.setId(ObjectId.get().toString());
             databaseUser.setType(POSTGRES);
             databaseUser.setPasswordHashByPlainPassword("123456" + i);
-            databaseUser.setAllowedIpsAsString(Collections.emptyList());
+            databaseUser.setAllowedIpsAsCollectionOfString(Collections.emptyList());
             databaseUser.setName("u10000" + i);
             databaseUser.setSwitchedOn(true);
 

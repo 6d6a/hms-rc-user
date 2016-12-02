@@ -91,7 +91,7 @@ public class DatabaseUserRestControllerTest {
                                 fieldWithPath("type").description("Тип базы данных"),
                                 fieldWithPath("passwordHash").description("Хэш пароля пользователя"),
                                 fieldWithPath("serviceId").description("ID сервиса в RC-STAFF"),
-                                fieldWithPath("allowedAddressList").description("IP, с которых возможен доступ")
+                                fieldWithPath("allowedIPAddresses").description("IP-адреса, с которых возможен доступ")
                         )
                 ));
     }

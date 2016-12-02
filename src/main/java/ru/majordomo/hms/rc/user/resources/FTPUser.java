@@ -1,18 +1,66 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import org.springframework.data.annotation.Transient;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
+@Document(collection = "ftpUsers")
 public class FTPUser extends Resource implements Securable {
     private String passwordHash;
     private String homeDir;
+    private List<Long> allowedIPAddresses;
     @Transient
     private UnixAccount unixAccount;
     private String unixAccountId;
+
+    @JsonIgnore
+    public List<Long> getAllowedIPAddresses() {
+        return allowedIPAddresses;
+    }
+
+    @JsonGetter(value = "allowedIPAddresses")
+    public List<String> getAllowedIpsAsCollectionOfString() {
+        List<String> allowedIpsAsString = new ArrayList<>();
+        if (allowedIPAddresses != null) {
+            for (Long entry : allowedIPAddresses) {
+                allowedIpsAsString.add(Network.ipAddressInIntegerToString(entry));
+            }
+        }
+        return allowedIpsAsString;
+    }
+
+    @JsonIgnore
+    public void setAllowedIPAddresses(List<Long> allowedIPAddresses) {
+        this.allowedIPAddresses = allowedIPAddresses;
+    }
+
+    @JsonSetter(value = "allowedIPAddresses")
+    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) {
+        List<Long> allowedIpsAsLong = new ArrayList<>();
+        if (allowedIpsAsString != null) {
+            try {
+                for (String entry : allowedIpsAsString) {
+                    Long ip = Network.ipAddressInStringToInteger(entry);
+                    if (!allowedIpsAsLong.contains(ip)) {
+                        allowedIpsAsLong.add(ip);
+                    }
+                }
+                setAllowedIPAddresses(allowedIpsAsLong);
+            } catch (NumberFormatException e) {
+                throw new ParameterValidateException("Неверный формат IP адреса");
+            }
+        }
+    }
 
     @JsonIgnore
     public String getUnixAccountId() {
