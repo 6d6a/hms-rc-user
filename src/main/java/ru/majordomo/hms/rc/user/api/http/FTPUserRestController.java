@@ -1,11 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,6 +24,16 @@ public class FTPUserRestController {
     @Autowired
     public void setGovernor(GovernorOfFTPUser governor) {
         this.governor = governor;
+    }
+
+    @RequestMapping(value = "/ftp-user/filter", method = RequestMethod.GET)
+    public FTPUser filter(@RequestParam Map<String, String> requestParams) {
+        return (FTPUser) governor.build(requestParams);
+    }
+
+    @RequestMapping(value = "/{accountId}/ftp-user/filter", method = RequestMethod.GET)
+    public FTPUser filter(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        return (FTPUser) governor.build(requestParams);
     }
 
     @RequestMapping(value = {"/ftp-user/{ftpUserId}", "/ftp-user/{ftpUserId}/"}, method = RequestMethod.GET)

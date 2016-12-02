@@ -24,13 +24,13 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceController
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfFTPUser;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfUnixAccount;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.anything;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {ConfigGovernorOfFTPUser.class, ConfigGovernorOfUnixAccount.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE)
@@ -91,7 +91,7 @@ public class GovernorOfFTPUserTest {
         keyValue.put("accountId", ObjectId.get().toString());
 
         Collection<? extends Resource> ftpUsers = governor.buildAll(keyValue);
-        Assert.assertEquals(0, ftpUsers.size());
+        assertThat(ftpUsers.size(), is(0));
     }
 
     @Test
@@ -99,12 +99,14 @@ public class GovernorOfFTPUserTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.addParam("unixAccountId", unixAccounts.get(1).getId());
         serviceMessage.setAccountId(unixAccounts.get(1).getAccountId());
+        serviceMessage.addParam("allowedAddressList", Arrays.asList("3.3.3.3", "4.4.4.4"));
         governor.create(serviceMessage);
         List<FTPUser> ftpUsers = repository.findByAccountId(unixAccounts.get(1).getAccountId());
-        Assert.assertEquals(1, ftpUsers.size());
-        Assert.assertEquals("f111111", ftpUsers.get(0).getName());
-        Assert.assertEquals("/mjru", ftpUsers.get(0).getHomeDir());
-        Assert.assertNotNull(ftpUsers.get(0).getPasswordHash());
+        assertThat(ftpUsers.size(), is(1));
+        assertThat(ftpUsers.get(0).getName(), is("f111111"));
+        assertThat(ftpUsers.get(0).getHomeDir(), is("/mjru"));
+        assertThat(ftpUsers.get(0).getPasswordHash(), anything());
+        assertThat(ftpUsers.get(0).getAllowedIpsAsString(), is(Arrays.asList("3.3.3.3", "4.4.4.4")));
     }
 
     @Test(expected = ParameterValidateException.class)
@@ -138,6 +140,15 @@ public class GovernorOfFTPUserTest {
         governor.create(serviceMessage);
     }
 
+    @Test(expected = ParameterValidateException.class)
+    public void createWithExistedName() {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.delParam("name");
+        serviceMessage.addParam("name", ftpUsers.get(0).getName());
+        governor.create(serviceMessage);
+    }
+
     @Test
     public void update() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
@@ -146,11 +157,13 @@ public class GovernorOfFTPUserTest {
         serviceMessage.addParam("resourceId", ftpUsers.get(0).getId());
         serviceMessage.addParam("switchedOn", false);
         serviceMessage.delParam("name");
+        serviceMessage.addParam("allowedAddressList", Arrays.asList("1.1.1.1", "2.2.2.2"));
         governor.update(serviceMessage);
         FTPUser ftpUser = repository.findOne(ftpUsers.get(0).getId());
-        Assert.assertEquals("/mjru", ftpUser.getHomeDir());
-        Assert.assertFalse(ftpUser.getSwitchedOn());
-        Assert.assertNotEquals(oldPasswordHash, ftpUser.getPasswordHash());
+        assertThat(ftpUser.getHomeDir(), is("/mjru"));
+        assertThat(ftpUser.getSwitchedOn(), is(false));
+        assertThat(ftpUser.getPasswordHash(), not(oldPasswordHash));
+        assertThat(ftpUser.getAllowedIpsAsString(), is(Arrays.asList("1.1.1.1", "2.2.2.2")));
     }
 
     @Test(expected = ResourceNotFoundException.class)

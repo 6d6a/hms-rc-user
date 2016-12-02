@@ -78,6 +78,9 @@ public class GovernorOfFTPUser extends LordOfResources {
                     case "homedir":
                         ftpUser.setHomeDir(cleaner.cleanString((String) entry.getValue()));
                         break;
+                    case "allowedAddressList":
+                        ftpUser.setAllowedIpsAsString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        break;
                     case "switchedOn":
                         ftpUser.setSwitchedOn((Boolean) entry.getValue());
                         break;
@@ -95,6 +98,10 @@ public class GovernorOfFTPUser extends LordOfResources {
         return ftpUser;
     }
 
+    private Boolean hasUniqueName(String name) {
+        return (repository.findOneByName(name) == null);
+    }
+
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         FTPUser ftpUser = repository.findOne(resourceId);
@@ -109,21 +116,36 @@ public class GovernorOfFTPUser extends LordOfResources {
         FTPUser ftpUser = new FTPUser();
         LordOfResources.setResourceParams(ftpUser, serviceMessage, cleaner);
 
-        String plainPassword;
-        String homeDir;
-        String unixAccountId;
+        String plainPassword = "";
+        String homeDir = null;
+        String unixAccountId = null;
+        List<String> allowedAddressListAsString = new ArrayList<>();
 
         try {
-            plainPassword = cleaner.cleanString((String) serviceMessage.getParam("password"));
-            homeDir = cleaner.cleanString((String) serviceMessage.getParam("homedir"));
-            unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
+            if (serviceMessage.getParam("password") != null) {
+                plainPassword = cleaner.cleanString((String) serviceMessage.getParam("password"));
+            }
+            if (serviceMessage.getParam("homedir") != null) {
+                homeDir = cleaner.cleanString((String) serviceMessage.getParam("homedir"));
+            }
+            if (serviceMessage.getParam("unixAccountId") != null) {
+                unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
+            }
+            if (serviceMessage.getParam("allowedAddressList") != null) {
+                allowedAddressListAsString = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedAddressList"));
+            }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        if (!hasUniqueName(ftpUser.getName())) {
+            throw new ParameterValidateException("Имя пользователя существует в системе");
         }
 
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
         ftpUser.setHomeDir(homeDir);
         ftpUser.setUnixAccountId(unixAccountId);
+        ftpUser.setAllowedIpsAsString(allowedAddressListAsString);
 
         return ftpUser;
     }
@@ -135,7 +157,7 @@ public class GovernorOfFTPUser extends LordOfResources {
             throw new ParameterValidateException("Имя FTP пользователя не может быть пустым");
         }
 
-        if (ftpUser.getPasswordHash() == null) {
+        if (ftpUser.getPasswordHash() == null || ftpUser.getPasswordHash().equals("")) {
             throw new ParameterValidateException("Пароль FTP пользователя не может быть пустым");
         }
 
@@ -178,6 +200,8 @@ public class GovernorOfFTPUser extends LordOfResources {
 
         if (hasResourceIdAndAccountId(keyValue)) {
             ftpUser = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
+        } else if (keyValue.get("name") != null && !keyValue.get("name").equals("")) {
+            ftpUser = repository.findOneByName(keyValue.get("name"));
         }
 
         if (ftpUser == null) {

@@ -87,7 +87,8 @@ public class FTPUserRestControllerTest {
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли домен"),
                                 fieldWithPath("homeDir").description("Домашняя директория FTP пользователя"),
                                 fieldWithPath("passwordHash").description("Хэш пользователя"),
-                                fieldWithPath("unixAccount").description("Аккаунт пользователя на сервере")
+                                fieldWithPath("unixAccount").description("Аккаунт пользователя на сервере"),
+                                fieldWithPath("allowedAddressList").description("Список адресов, с которых возможен доступ на сервер")
                         )
                 ));
     }
@@ -127,6 +128,21 @@ public class FTPUserRestControllerTest {
                 .andExpect(jsonPath("homeDir").value(batchOfFTPUsers.get(0).getHomeDir()))
                 .andExpect(jsonPath("unixAccount").isMap())
                 .andExpect(jsonPath("unixAccount.id").value(batchOfFTPUsers.get(0).getUnixAccount().getId()));
+    }
+
+    @Test
+    public void readByName() throws Exception {
+        FTPUser ftpUser = batchOfFTPUsers.get(0);
+        String accountId = ftpUser.getAccountId();
+        String name = ftpUser.getName();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/filter?name=" + name).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(ftpUser.getName()))
+                .andExpect(jsonPath("switchedOn").value(ftpUser.getSwitchedOn()))
+                .andExpect(jsonPath("passwordHash").value(ftpUser.getPasswordHash()))
+                .andExpect(jsonPath("homeDir").value(ftpUser.getHomeDir()))
+                .andExpect(jsonPath("unixAccount.id").value(ftpUser.getUnixAccountId()));
     }
 
     @Test
