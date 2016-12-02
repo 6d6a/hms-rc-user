@@ -372,7 +372,7 @@ public class ResourceGenerator {
             databaseUser.setId(ObjectId.get().toString());
             databaseUser.setType(POSTGRES);
             databaseUser.setPasswordHashByPlainPassword("123456" + i);
-            databaseUser.setAllowedIpsAsString(Collections.emptyList());
+            databaseUser.setAllowedIpsAsCollectionOfString(Collections.emptyList());
             databaseUser.setName("u10000" + i);
             databaseUser.setSwitchedOn(true);
 

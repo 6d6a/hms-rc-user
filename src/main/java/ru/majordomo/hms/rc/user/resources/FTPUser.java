@@ -18,21 +18,21 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 public class FTPUser extends Resource implements Securable {
     private String passwordHash;
     private String homeDir;
-    private List<Long> allowedAddressList;
+    private List<Long> allowedIPAddresses;
     @Transient
     private UnixAccount unixAccount;
     private String unixAccountId;
 
     @JsonIgnore
-    public List<Long> getAllowedAddressList() {
-        return allowedAddressList;
+    public List<Long> getAllowedIPAddresses() {
+        return allowedIPAddresses;
     }
 
-    @JsonGetter(value = "allowedAddressList")
-    public List<String> getAllowedIpsAsString() {
+    @JsonGetter(value = "allowedIPAddresses")
+    public List<String> getAllowedIpsAsCollectionOfString() {
         List<String> allowedIpsAsString = new ArrayList<>();
-        if (allowedAddressList != null) {
-            for (Long entry : allowedAddressList) {
+        if (allowedIPAddresses != null) {
+            for (Long entry : allowedIPAddresses) {
                 allowedIpsAsString.add(Network.ipAddressInIntegerToString(entry));
             }
         }
@@ -40,12 +40,12 @@ public class FTPUser extends Resource implements Securable {
     }
 
     @JsonIgnore
-    public void setAllowedAddressList(List<Long> allowedAddressList) {
-        this.allowedAddressList = allowedAddressList;
+    public void setAllowedIPAddresses(List<Long> allowedIPAddresses) {
+        this.allowedIPAddresses = allowedIPAddresses;
     }
 
-    @JsonSetter(value = "allowedAddressList")
-    public void setAllowedIpsAsString(List<String> allowedIpsAsString) {
+    @JsonSetter(value = "allowedIPAddresses")
+    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) {
         List<Long> allowedIpsAsLong = new ArrayList<>();
         if (allowedIpsAsString != null) {
             try {
@@ -55,7 +55,7 @@ public class FTPUser extends Resource implements Securable {
                         allowedIpsAsLong.add(ip);
                     }
                 }
-                setAllowedAddressList(allowedIpsAsLong);
+                setAllowedIPAddresses(allowedIpsAsLong);
             } catch (NumberFormatException e) {
                 throw new ParameterValidateException("Неверный формат IP адреса");
             }

@@ -15,7 +15,6 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
@@ -101,7 +100,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
                         databaseUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "allowedAddressList":
-                        databaseUser.setAllowedIpsAsString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        databaseUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         break;
                     case "switchedOn":
                         databaseUser.setSwitchedOn((Boolean) entry.getValue());
@@ -175,7 +174,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
         databaseUser.setPasswordHashByPlainPassword(password);
-        databaseUser.setAllowedIpsAsString(allowedIps);
+        databaseUser.setAllowedIpsAsCollectionOfString(allowedIps);
 
 
         return databaseUser;

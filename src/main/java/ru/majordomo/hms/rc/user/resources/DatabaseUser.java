@@ -18,7 +18,7 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     private String passwordHash;
     private DBType type;
     private String serviceId;
-    private List<Long> allowedAddressList;
+    private List<Long> allowedIPAddresses;
     @Transient
     private List<String> databaseIds;
 
@@ -32,15 +32,15 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     }
 
     @JsonIgnore
-    public List<Long> getAllowedAddressList() {
-        return allowedAddressList;
+    public List<Long> getAllowedIPAddresses() {
+        return allowedIPAddresses;
     }
 
-    @JsonGetter(value = "allowedAddressList")
-    public List<String> getAllowedIpsAsString() {
+    @JsonGetter(value = "allowedIPAddresses")
+    public List<String> getAllowedIpsAsCollectionOfString() {
         List<String> allowedIpsAsString = new ArrayList<>();
-        if (allowedAddressList != null) {
-            for (Long entry : allowedAddressList) {
+        if (allowedIPAddresses != null) {
+            for (Long entry : allowedIPAddresses) {
                 allowedIpsAsString.add(Network.ipAddressInIntegerToString(entry));
             }
         }
@@ -48,19 +48,19 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     }
 
     @JsonIgnore
-    public void setAllowedAddressList(List<Long> allowedAddressList) {
-        this.allowedAddressList = allowedAddressList;
+    public void setAllowedIPAddresses(List<Long> allowedIPAddresses) {
+        this.allowedIPAddresses = allowedIPAddresses;
     }
 
-    @JsonSetter(value = "allowedAddressList")
-    public void setAllowedIpsAsString(List<String> allowedIpsAsString) {
+    @JsonSetter(value = "allowedIPAddresses")
+    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) {
         List<Long> allowedIpsAsLong = new ArrayList<>();
         if (allowedIpsAsString != null) {
             try {
                 for (String entry : allowedIpsAsString) {
                     allowedIpsAsLong.add(Network.ipAddressInStringToInteger(entry));
                 }
-                setAllowedAddressList(allowedIpsAsLong);
+                setAllowedIPAddresses(allowedIpsAsLong);
             } catch (NumberFormatException e) {
                 throw new ParameterValidateException("Неверный формат IP адреса");
             }

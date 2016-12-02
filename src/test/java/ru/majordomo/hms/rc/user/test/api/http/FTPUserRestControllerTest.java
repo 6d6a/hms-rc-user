@@ -88,7 +88,7 @@ public class FTPUserRestControllerTest {
                                 fieldWithPath("homeDir").description("Домашняя директория FTP пользователя"),
                                 fieldWithPath("passwordHash").description("Хэш пользователя"),
                                 fieldWithPath("unixAccount").description("Аккаунт пользователя на сервере"),
-                                fieldWithPath("allowedAddressList").description("Список адресов, с которых возможен доступ на сервер")
+                                fieldWithPath("allowedIPAddresses").description("Список адресов, с которых возможен доступ на сервер")
                         )
                 ));
     }

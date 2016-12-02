@@ -79,7 +79,7 @@ public class GovernorOfFTPUser extends LordOfResources {
                         ftpUser.setHomeDir(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "allowedAddressList":
-                        ftpUser.setAllowedIpsAsString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        ftpUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         break;
                     case "switchedOn":
                         ftpUser.setSwitchedOn((Boolean) entry.getValue());
@@ -145,7 +145,7 @@ public class GovernorOfFTPUser extends LordOfResources {
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
         ftpUser.setHomeDir(homeDir);
         ftpUser.setUnixAccountId(unixAccountId);
-        ftpUser.setAllowedIpsAsString(allowedAddressListAsString);
+        ftpUser.setAllowedIpsAsCollectionOfString(allowedAddressListAsString);
 
         return ftpUser;
     }
