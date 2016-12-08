@@ -78,7 +78,7 @@ public class GovernorOfFTPUser extends LordOfResources {
                     case "homedir":
                         ftpUser.setHomeDir(cleaner.cleanString((String) entry.getValue()));
                         break;
-                    case "allowedAddressList":
+                    case "allowedIPAddresses":
                         ftpUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         break;
                     case "switchedOn":
@@ -131,8 +131,8 @@ public class GovernorOfFTPUser extends LordOfResources {
             if (serviceMessage.getParam("unixAccountId") != null) {
                 unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
             }
-            if (serviceMessage.getParam("allowedAddressList") != null) {
-                allowedAddressListAsString = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedAddressList"));
+            if (serviceMessage.getParam("allowedIPAddresses") != null) {
+                allowedAddressListAsString = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedIPAddresses"));
             }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
