@@ -189,6 +189,7 @@ class BaseAMQPController {
                 String teRoutingKey = getTaskExecutorRoutingKey(resource);
                 sender.send(resourceType + ".delete", teRoutingKey, report);
             } else {
+                governor.drop(resourceId);
                 sender.send(resourceType + ".delete", "pm", report);
             }
         }
