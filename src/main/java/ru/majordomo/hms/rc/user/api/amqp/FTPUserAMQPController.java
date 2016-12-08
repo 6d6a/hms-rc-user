@@ -54,9 +54,9 @@ public class FTPUserAMQPController extends BaseAMQPController {
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.create",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.delete",
             durable = "true", autoDelete = "true"),
-            exchange = @Exchange(value = "ftp-user.create", type = "topic"),
+            exchange = @Exchange(value = "ftp-user.delete", type = "topic"),
             key = "rc.user"))
     public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
