@@ -44,6 +44,7 @@ public class ConfigStaffResourceControllerClient {
             public Server getActiveMailboxServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
+                server.setName("pop100500");
                 return server;
             }
 

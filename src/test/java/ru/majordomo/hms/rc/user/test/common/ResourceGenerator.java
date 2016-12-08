@@ -142,7 +142,7 @@ public class ResourceGenerator {
 
         Domain ruDomain = new Domain();
         ruDomain.setId(ObjectId.get().toString());
-        ruDomain.setAccountId(ObjectId.get().toString());
+        ruDomain.setAccountId(batchOfPersons.get(0).getAccountId());
         ruDomain.setName("majordomo.ru");
         ruDomain.setSwitchedOn(true);
         ruDomain.setDnsResourceRecords(generateBatchOfDNSRecords("majordomo.ru"));
@@ -151,7 +151,7 @@ public class ResourceGenerator {
 
         Domain rfDomain = new Domain();
         rfDomain.setId(ObjectId.get().toString());
-        rfDomain.setAccountId(ObjectId.get().toString());
+        rfDomain.setAccountId(batchOfPersons.get(1).getAccountId());
         rfDomain.setName("мажордомо.рф");
         rfDomain.setSwitchedOn(true);
         rfDomain.setPerson(batchOfPersons.get(1));
@@ -186,22 +186,48 @@ public class ResourceGenerator {
         return records;
     }
 
-    public static List<Mailbox> generateBatchOfMailboxes() {
+    public static List<Mailbox> generateBatchOfMailboxes() throws UnsupportedEncodingException{
         List<Mailbox> batchOfMailboxes = new ArrayList<>();
         List<Domain> batchOfDomains = generateBatchOfDomains();
 
         for (int i = 0; i < 2; i++) {
             Mailbox mailbox = new Mailbox();
-            mailbox.setAccountId(ObjectId.get().toString());
-            mailbox.setName("box" + i + "@majordomo.ru");
+            mailbox.setAccountId(batchOfDomains.get(i).getAccountId());
+            mailbox.setName("box" + i);
             mailbox.setSwitchedOn(true);
             Arrays.asList("bad@address.ru", "spam@gmail.com").forEach(mailbox::addToBlackList);
             Arrays.asList("good@yandex.ru", "good@mail.ru").forEach(mailbox::addToWhiteList);
+            Arrays.asList("move1@yandex.ru", "another_move@mail.ru").forEach(mailbox::addRedirectAddress);
+            mailbox.setPasswordHashByPlainPassword("123456");
             mailbox.setDomain(batchOfDomains.get(i));
             mailbox.setAntiSpamEnabled(true);
             mailbox.setServerId(ObjectId.get().toString());
             mailbox.setQuota(1000000L);
             mailbox.setQuotaUsed(5000L);
+            mailbox.setWritable(true);
+
+            batchOfMailboxes.add(mailbox);
+        }
+
+        return batchOfMailboxes;
+    }
+
+    public static List<Mailbox> generateBatchOfMailboxesWithDomains(List<Domain> domains) throws UnsupportedEncodingException {
+        List<Mailbox> batchOfMailboxes = new ArrayList<>();
+
+        for (int i = 0; i < 2; i++) {
+            Mailbox mailbox = new Mailbox();
+            mailbox.setAccountId(domains.get(i).getAccountId());
+            mailbox.setName("box" + i);
+            mailbox.setSwitchedOn(true);
+            Arrays.asList("bad@address.ru", "spam@gmail.com").forEach(mailbox::addToBlackList);
+            Arrays.asList("good@yandex.ru", "good@mail.ru").forEach(mailbox::addToWhiteList);
+            mailbox.setPasswordHashByPlainPassword("123456");
+            mailbox.setDomain(domains.get(i));
+            mailbox.setAntiSpamEnabled(true);
+            mailbox.setServerId(ObjectId.get().toString());
+            mailbox.setQuota(1000000L);
+            mailbox.setQuotaUsed(0L);
             mailbox.setWritable(true);
 
             batchOfMailboxes.add(mailbox);

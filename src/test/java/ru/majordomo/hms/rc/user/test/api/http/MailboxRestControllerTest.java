@@ -64,7 +64,7 @@ public class MailboxRestControllerTest {
     private DomainRepository domainRepository;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         this.doc = document("domain/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))
@@ -96,7 +96,9 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("name").description("Имя ящика без указания домена"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли ящик"),
+                                fieldWithPath("passwordHash").description("Хэш пароля"),
                                 fieldWithPath("domain").description("Домен, на котором создан ящик"),
+                                fieldWithPath("redirectAddresses").description("Список переадресаций с текущего почтового ящика"),
                                 fieldWithPath("blackList").description("Список адресов, почта с которых не должна доставляться"),
                                 fieldWithPath("whiteList").description("Список адресов, с которых почта должна доставляться в любом случае"),
                                 fieldWithPath("antiSpamEnabled").description("Включен ли антиспам и антивирус"),

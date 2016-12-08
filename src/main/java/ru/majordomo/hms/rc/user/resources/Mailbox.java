@@ -4,15 +4,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.redis.core.RedisHash;
+import ru.majordomo.hms.rc.user.common.PasswordManager;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "mailboxes")
-public class Mailbox extends Resource implements ServerStorable, Quotable {
+public class Mailbox extends Resource implements ServerStorable, Quotable, Securable {
     @Transient
     private Domain domain;
     private String domainId;
+    private String passwordHash;
+    private List<String> redirectAddresses = new ArrayList<>();
     private List<String> blackList = new ArrayList<>();
     private List<String> whiteList = new ArrayList<>();
     private Boolean antiSpamEnabled = false;
@@ -33,6 +38,36 @@ public class Mailbox extends Resource implements ServerStorable, Quotable {
     public void setDomain(Domain domain) {
         this.domain = domain;
         setDomainId(domain.getId());
+    }
+
+    public String getFullName() {
+        return getName() + '@' + domain.getName();
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public void setPasswordHashByPlainPassword(String plainPassword) throws UnsupportedEncodingException {
+        if (plainPassword != null && !plainPassword.equals("")) {
+            passwordHash = PasswordManager.forPop(plainPassword);
+        }
+    }
+
+    public List<String> getRedirectAddresses() {
+        return redirectAddresses;
+    }
+
+    public void setRedirectAddresses(List<String> redirectAddresses) {
+        this.redirectAddresses = redirectAddresses;
+    }
+
+    public void addRedirectAddress(String emailAddress) {
+        this.redirectAddresses.add(emailAddress);
     }
 
     public List<String> getBlackList() {
@@ -105,8 +140,6 @@ public class Mailbox extends Resource implements ServerStorable, Quotable {
     public Boolean getWritable() {
         return writable;
     }
-
-
 
     @Override
     public String getServerId() {

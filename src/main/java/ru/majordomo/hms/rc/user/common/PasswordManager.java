@@ -37,6 +37,11 @@ public class PasswordManager {
         return md5Hex(password);
     }
 
+    public static String forPop(String plainPassword) throws UnsupportedEncodingException {
+        byte[] password = plainPassword.getBytes("UTF-8");
+        return md5Hex(password);
+    }
+
     public static String generatePlainPassword() {
         return randomAlphabetic(8);
     }

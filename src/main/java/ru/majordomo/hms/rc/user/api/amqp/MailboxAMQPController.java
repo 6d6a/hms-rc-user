@@ -38,4 +38,36 @@ public class MailboxAMQPController extends BaseAMQPController {
                 break;
         }
     }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.update",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "mailbox.update", type = "topic"),
+            key = "rc.user"))
+    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleUpdateEventFromPM("mailbox", serviceMessage);
+                break;
+            case ("te"):
+                handleUpdateEventFromTE("mailbox", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.delete",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "mailbox.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleDeleteEventFromPM("mailbox", serviceMessage);
+                break;
+            case ("te"):
+                handleDeleteEventFromTE("mailbox", serviceMessage);
+                break;
+        }
+    }
 }

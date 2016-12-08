@@ -140,7 +140,9 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.addParam("name", "address1");
         serviceMessage.addParam("domainId", domainId);
+        serviceMessage.addParam("password", "qwerty11");
 
         return serviceMessage;
     }
