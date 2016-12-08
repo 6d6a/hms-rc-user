@@ -108,7 +108,7 @@ public class GovernorOfFTPUser extends LordOfResources {
         if (ftpUser == null) {
             throw new ResourceNotFoundException("Пользователь FTP с ID: " + resourceId + " не найден");
         }
-        repository.delete(ftpUser);
+        repository.delete(resourceId);
     }
 
     @Override
