@@ -18,6 +18,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.majordomo.hms.rc.user.RedisConfig;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -43,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigMailboxRestController.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = {RedisConfig.class, ConfigStaffResourceControllerClient.class, ConfigMailboxRestController.class}, webEnvironment = RANDOM_PORT)
 public class MailboxRestControllerTest {
 
     private MockMvc mockMvc;

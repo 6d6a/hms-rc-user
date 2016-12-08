@@ -40,6 +40,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         setDomainId(domain.getId());
     }
 
+    @JsonIgnore
     public String getFullName() {
         return getName() + '@' + domain.getName();
     }
