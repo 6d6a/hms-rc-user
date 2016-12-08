@@ -28,6 +28,7 @@ import java.util.*;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.anything;
@@ -187,6 +188,7 @@ public class GovernorOfFTPUserTest {
     @Test
     public void drop() throws Exception {
         governor.drop(ftpUsers.get(0).getId());
+        assertNull(repository.findOne(ftpUsers.get(0).getId()));
     }
 
     @Test(expected = ResourceNotFoundException.class)
