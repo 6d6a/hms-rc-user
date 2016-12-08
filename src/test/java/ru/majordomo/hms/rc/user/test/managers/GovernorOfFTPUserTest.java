@@ -100,7 +100,7 @@ public class GovernorOfFTPUserTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.addParam("unixAccountId", unixAccounts.get(1).getId());
         serviceMessage.setAccountId(unixAccounts.get(1).getAccountId());
-        serviceMessage.addParam("allowedAddressList", Arrays.asList("3.3.3.3", "4.4.4.4"));
+        serviceMessage.addParam("allowedIPAddresses", Arrays.asList("3.3.3.3", "4.4.4.4"));
         governor.create(serviceMessage);
         List<FTPUser> ftpUsers = repository.findByAccountId(unixAccounts.get(1).getAccountId());
         assertThat(ftpUsers.size(), is(1));
@@ -158,7 +158,7 @@ public class GovernorOfFTPUserTest {
         serviceMessage.addParam("resourceId", ftpUsers.get(0).getId());
         serviceMessage.addParam("switchedOn", false);
         serviceMessage.delParam("name");
-        serviceMessage.addParam("allowedAddressList", Arrays.asList("1.1.1.1", "2.2.2.2"));
+        serviceMessage.addParam("allowedIPAddresses", Arrays.asList("1.1.1.1", "2.2.2.2"));
         governor.update(serviceMessage);
         FTPUser ftpUser = repository.findOne(ftpUsers.get(0).getId());
         assertThat(ftpUser.getHomeDir(), is("/mjru"));
