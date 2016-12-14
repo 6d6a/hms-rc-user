@@ -2,28 +2,32 @@ package ru.majordomo.hms.rc.user.managers;
 
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
 public class GovernorOfMailbox extends LordOfResources {
-    private final String redisPrefix = "mailbox";
     private MailboxRepository repository;
+    private MailboxRedisRepository redisRepository;
     private GovernorOfDomain governorOfDomain;
+    private GovernorOfUnixAccount governorOfUnixAccount;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
 
@@ -38,6 +42,11 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Autowired
+    public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
+        this.governorOfUnixAccount = governorOfUnixAccount;
+    }
+
+    @Autowired
     public void setRepository(MailboxRepository repository) {
         this.repository = repository;
     }
@@ -48,7 +57,9 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Autowired
-    public RedisTemplate<String, String> redisTemplate;
+    public void setRedisRepository(MailboxRedisRepository redisRepository) {
+        this.redisRepository = redisRepository;
+    }
 
     @Override
     public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
@@ -57,6 +68,7 @@ public class GovernorOfMailbox extends LordOfResources {
             mailbox = (Mailbox) buildResourceFromServiceMessage(serviceMessage);
             validate(mailbox);
             store(mailbox);
+            syncWithRedis(mailbox);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
         }
@@ -97,8 +109,19 @@ public class GovernorOfMailbox extends LordOfResources {
                     case "quota":
                         mailbox.setQuota(((Number) entry.getValue()).longValue());
                         break;
+                    case "antiSpamEnabled":
+                        mailbox.setAntiSpamEnabled((Boolean) entry.getValue());
+                        break;
                     case "switchedOn":
                         mailbox.setSwitchedOn((Boolean) entry.getValue());
+                        break;
+                    case "isAggregator":
+                        Boolean userValue = (Boolean) entry.getValue();
+                        if (userValue) {
+                            assignAsAggregator(mailbox);
+                        } else {
+                            mailbox.setIsAggregator(userValue);
+                        }
                         break;
                     default:
                         break;
@@ -111,6 +134,23 @@ public class GovernorOfMailbox extends LordOfResources {
         validate(mailbox);
         store(mailbox);
 
+        if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
+            setAggregatorInRedis(mailbox);
+        } else {
+            dropAggregatorInRedis(mailbox);
+        }
+        syncWithRedis(mailbox);
+
+        return mailbox;
+    }
+
+    private Mailbox assignAsAggregator(Mailbox mailbox) {
+        Mailbox currentAggregator = repository.findByDomainIdAndIsAggregator(mailbox.getDomainId(), true);
+        if (currentAggregator != null) {
+            currentAggregator.setIsAggregator(false);
+            store(currentAggregator);
+        }
+        mailbox.setIsAggregator(true);
         return mailbox;
     }
 
@@ -119,6 +159,8 @@ public class GovernorOfMailbox extends LordOfResources {
         if (repository.findOne(resourceId) == null) {
             throw new ResourceNotFoundException("Не найден почтовый ящик с ID: " + resourceId);
         }
+        Mailbox mailbox = (Mailbox) build(resourceId);
+        dropFromRedis(mailbox);
         repository.delete(resourceId);
     }
 
@@ -130,14 +172,16 @@ public class GovernorOfMailbox extends LordOfResources {
         String plainPassword = null;
         List<String> redirectAddresses = new ArrayList<>();
         List<String> blackList = new ArrayList<>();
-        List<String> whilteList = new ArrayList<>();
+        List<String> whiteList = new ArrayList<>();
         Long quota = null;
+        Boolean antiSpamEnabled = false;
         String domainId;
 
         try {
             if (serviceMessage.getParam("domainId") == null) {
                 throw new ParameterValidateException("Не указан domainId");
             }
+
             domainId = cleaner.cleanString((String) serviceMessage.getParam("domainId"));
 
             if (serviceMessage.getParam("password") != null) {
@@ -153,21 +197,31 @@ public class GovernorOfMailbox extends LordOfResources {
             }
 
             if (serviceMessage.getParam("whiteList") != null) {
-                whilteList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("whiteList"));
+                whiteList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("whiteList"));
             }
 
             if (serviceMessage.getParam("quota") != null) {
                 quota = ((Number) serviceMessage.getParam("quota")).longValue();
             }
+
+            if (serviceMessage.getParam("antiSpamEnabled") != null) {
+                antiSpamEnabled = (Boolean) serviceMessage.getParam("antiSpamEnabled");
+            }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
-        Boolean antiSpamEnabled = (Boolean) serviceMessage.getParam("antiSpamEnabled");
-
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("resourceId", domainId);
         keyValue.put("accountId", mailbox.getAccountId());
+
+        List<UnixAccount> unixAccounts = (List<UnixAccount>) governorOfUnixAccount.buildAll(keyValue);
+        if (unixAccounts.equals(Collections.emptyList())) {
+            throw new ParameterValidateException("Не найдено UnixAccount для AccountID: " + mailbox.getAccountId());
+        }
+
+        Integer uid = unixAccounts.get(0).getUid();
+
+        keyValue.put("resourceId", domainId);
         mailbox.setDomain((Domain) governorOfDomain.build(keyValue));
 
         if (!hasUniqueAddress(mailbox)) {
@@ -182,16 +236,30 @@ public class GovernorOfMailbox extends LordOfResources {
 
         String serverId = findMailStorageServer(domainId);
 
+        String mailSpool = "/homebig";
+        if (serverId != null && !serverId.equals("")) {
+            Storage storage = staffRcClient.getActiveMailboxStorageByServerId(serverId);
+            if (storage != null) {
+                mailSpool = storage.getMountPoint();
+            }
+        }
+
         mailbox.setBlackList(blackList);
-        mailbox.setWhiteList(whilteList);
+        mailbox.setWhiteList(whiteList);
         mailbox.setRedirectAddresses(redirectAddresses);
         mailbox.setQuota(quota);
         mailbox.setQuotaUsed(0L);
         mailbox.setWritable(true);
         mailbox.setServerId(serverId);
+        mailbox.setUid(uid);
+        mailbox.setMailSpool(mailSpool);
         mailbox.setAntiSpamEnabled(antiSpamEnabled);
 
         return mailbox;
+    }
+
+    private Boolean hasAggregator(String domainId) {
+        return repository.findByDomainIdAndIsAggregator(domainId, true) != null;
     }
 
     private Boolean hasUniqueAddress(Mailbox mailbox) {
@@ -231,7 +299,7 @@ public class GovernorOfMailbox extends LordOfResources {
         }
 
         if (mailbox.getQuota() == null) {
-            mailbox.setQuota(0L);
+            mailbox.setQuota(250000L);
         }
 
         if (mailbox.getQuotaUsed() == null) {
@@ -315,64 +383,46 @@ public class GovernorOfMailbox extends LordOfResources {
         repository.save(mailbox);
     }
 
-    private class MailboxRedisKeys {
-        String mailStorageKey;
-        final String aliasesKey = "domainList:aliases";
-        final String mailCheckerKey = "domainList:mailChecker";
-        String passwordHashKey;
-        String blackListKey;
-        String whiteListKey;
-        String redirectAddressesKey;
+    public MailboxForRedis convertMailboxToMailboxForRedis(Mailbox mailbox) {
+        MailboxForRedis mailboxForRedis = new MailboxForRedis();
+        mailboxForRedis.setName(mailbox.getFullName());
+        mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
+        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
+        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
+        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setWritable(mailbox.getWritable());
+        mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
+        String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
+        mailboxForRedis.setServerName(serverName);
 
-        MailboxRedisKeys(Mailbox mailbox) {
-            String name = mailbox.getFullName();
-            passwordHashKey = String.format("%s:%s:passwordHash", redisPrefix, name);
-            blackListKey = String.format("%s:%s:blackList", redisPrefix, name);
-            whiteListKey = String.format("%s:%s:whiteList", redisPrefix, name);
-            redirectAddressesKey = String.format("%s:%s:redirectAddresses", redisPrefix, name);
-            mailStorageKey = String.format("domainList:mailStorage:%s", staffRcClient.getServerById(mailbox.getServerId()).getName());
-        }
+        return mailboxForRedis;
     }
 
-    private void processMailboxRedisActions(Mailbox mailbox, MailboxRedisKeys keys) {
-        redisTemplate.boundValueOps(keys.passwordHashKey).set(mailbox.getPasswordHash());
-
-        redisTemplate.delete(keys.blackListKey);
-        for (String entry : mailbox.getBlackList()) {
-            redisTemplate.boundSetOps(keys.blackListKey).add(entry);
-        }
-
-        redisTemplate.delete(keys.whiteListKey);
-        for (String entry : mailbox.getWhiteList()) {
-            redisTemplate.boundSetOps(keys.whiteListKey).add(entry);
-        }
-
-        redisTemplate.delete(keys.redirectAddressesKey);
-        for (String entry : mailbox.getRedirectAddresses()) {
-            redisTemplate.boundSetOps(keys.redirectAddressesKey).add(entry);
-        }
+    public void syncWithRedis(Mailbox mailbox) {
+        redisRepository.save(convertMailboxToMailboxForRedis(mailbox));
     }
 
-    private void processDomainListsActions(Mailbox mailbox, MailboxRedisKeys keys) {
-        SetOperations<String, String> ops = redisTemplate.opsForSet();
-        String domainName = governorOfDomain.build(mailbox.getDomainId()).getName();
-
-        if (!ops.isMember(keys.mailStorageKey, domainName)) {
-            ops.add(keys.mailStorageKey, domainName);
-        }
-        if (!ops.isMember(keys.aliasesKey, domainName) && mailbox.getRedirectAddresses().size() > 0) {
-            ops.add(keys.aliasesKey, domainName);
-        }
-        if (!ops.isMember(keys.mailCheckerKey, domainName) && mailbox.getAntiSpamEnabled()) {
-            ops.add(keys.mailCheckerKey, domainName);
-        }
+    public void dropFromRedis(Mailbox mailbox) {
+        redisRepository.delete(mailbox.getFullName());
     }
 
-    public void addToRedis(Mailbox mailbox) {
-        MailboxRedisKeys keys = new MailboxRedisKeys(mailbox);
+    public void setAggregatorInRedis(Mailbox mailbox) {
+        MailboxForRedis mailboxForRedis = new MailboxForRedis();
+        mailboxForRedis.setName("*@" + ((Mailbox)construct(mailbox)).getDomain().getName());
+        mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
+        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
+        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
+        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setWritable(mailbox.getWritable());
+        mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
+        String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
+        mailboxForRedis.setServerName(serverName);
 
-        processMailboxRedisActions(mailbox, keys);
-        processDomainListsActions(mailbox, keys);
+        redisRepository.save(mailboxForRedis);
+    }
+
+    public void dropAggregatorInRedis(Mailbox mailbox) {
+        redisRepository.delete("*@" + ((Mailbox)construct(mailbox)).getDomain().getName());
     }
 
 }

@@ -222,10 +222,11 @@ public class ResourceGenerator {
             mailbox.setSwitchedOn(true);
             Arrays.asList("bad@address.ru", "spam@gmail.com").forEach(mailbox::addToBlackList);
             Arrays.asList("good@yandex.ru", "good@mail.ru").forEach(mailbox::addToWhiteList);
+            Arrays.asList("move1@yandex.ru", "another_move@mail.ru").forEach(mailbox::addRedirectAddress);
             mailbox.setPasswordHashByPlainPassword("123456");
             mailbox.setDomain(domains.get(i));
             mailbox.setAntiSpamEnabled(true);
-            mailbox.setServerId(ObjectId.get().toString());
+            mailbox.setServerId("583300c5a94c541d14d58c87");
             mailbox.setQuota(1000000L);
             mailbox.setQuotaUsed(0L);
             mailbox.setWritable(true);

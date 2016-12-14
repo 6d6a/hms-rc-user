@@ -19,10 +19,7 @@ import ru.majordomo.hms.rc.user.api.http.MailboxRestController;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrar;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
-import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
-import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.managers.*;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
 @Configuration
@@ -52,6 +49,11 @@ public class ConfigMailboxRestController extends AbstractMongoConfiguration {
     @Bean
     public GovernorOfMailbox governorOfMailbox() {
         return new GovernorOfMailbox();
+    }
+
+    @Bean
+    public GovernorOfUnixAccount governorOfUnixAccount() {
+        return new GovernorOfUnixAccount();
     }
 
     @Bean

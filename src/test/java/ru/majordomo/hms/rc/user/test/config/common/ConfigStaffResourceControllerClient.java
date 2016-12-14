@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.staff.resources.ServiceType;
+import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,9 +22,31 @@ public class ConfigStaffResourceControllerClient {
     private final String mockedServiceId = "583300c5a94c541d14d58c84";
     private final String mockedDBServiceId = "583300c5a94c541d14d58c85";
 
+    private Server mockedMailboxServer;
+
     @Bean
     public StaffResourceControllerClient staffResourceControllerClient() {
+        mockedMailboxServer = new Server();
+        mockedMailboxServer.setId("583300c5a94c541d14d58c87");
+        mockedMailboxServer.setName("pop100500");
+        Storage storage = new Storage();
+        storage.setMountPoint("/homebig");
+        storage.setId(ObjectId.get().toString());
+        mockedMailboxServer.addStorage(storage);
+
         return new StaffResourceControllerClient() {
+            @Override
+            public Storage getActiveMailboxStorageByServerId(String serverId) {
+                if (serverId.equals(mockedMailboxServer.getId())) {
+                    Storage storage = new Storage();
+                    storage.setId(ObjectId.get().toString());
+                    storage.setMountPoint("/homebig");
+                    return storage;
+                } else {
+                    throw new ResourceNotFoundException();
+                }
+            }
+
             @Override
             public Server getActiveHostingServer() {
                 Server server = new Server();
@@ -42,10 +66,15 @@ public class ConfigStaffResourceControllerClient {
 
             @Override
             public Server getActiveMailboxServer() {
-                Server server = new Server();
-                server.setId(ObjectId.get().toString());
-                server.setName("pop100500");
-                return server;
+//                Server server = new Server();
+//                server.setId(ObjectId.get().toString());
+//                server.setName("pop100500");
+//                Storage storage = new Storage();
+//                storage.setId(ObjectId.get().toString());
+//                storage.setMountPoint("/homebig");
+//                server.addStorage(storage);
+                return mockedMailboxServer;
+//                return server;
             }
 
             @Override
@@ -54,6 +83,9 @@ public class ConfigStaffResourceControllerClient {
                 server.setId(serverId);
                 server.setServiceIds(Arrays.asList(mockedServiceId));
                 server.setName("web100500");
+                if (serverId.equals(mockedMailboxServer.getId())) {
+                    return mockedMailboxServer;
+                }
                 return server;
             }
 

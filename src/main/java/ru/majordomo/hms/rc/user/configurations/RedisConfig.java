@@ -1,5 +1,6 @@
-package ru.majordomo.hms.rc.user;
+package ru.majordomo.hms.rc.user.configurations;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -9,14 +10,27 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@EnableRedisRepositories
+@EnableRedisRepositories(basePackages = {"ru.majordomo.hms.rc.user.repositories"})
 public class RedisConfig {
 
+    private Integer redisPort;
+    private String redisHost;
+
+    @Value("${default.redis.port}")
+    public void setRedisPort(Integer redisPort) {
+        this.redisPort = redisPort;
+    }
+
+    @Value("${default.redis.host}")
+    public void setRedisHost(String redisHost) {
+        this.redisHost = redisHost;
+    }
+
     @Bean
-    public RedisConnectionFactory connectionFactory() {
+    public RedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
-        jedisConnectionFactory.setPort(6379);
-        jedisConnectionFactory.setHostName("127.0.0.1");
+        jedisConnectionFactory.setPort(redisPort);
+        jedisConnectionFactory.setHostName(redisHost);
         jedisConnectionFactory.setUsePool(true);
         return jedisConnectionFactory;
     }
@@ -29,7 +43,7 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, String> redisTemplate() {
         RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory());
+        template.setConnectionFactory(redisConnectionFactory());
         template.setDefaultSerializer(stringRedisSerializer());
         return template;
     }

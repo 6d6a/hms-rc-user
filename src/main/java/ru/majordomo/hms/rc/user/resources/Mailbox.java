@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.redis.core.RedisHash;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 
 import java.io.UnsupportedEncodingException;
@@ -25,6 +24,9 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private Long quota;
     private Long quotaUsed;
     private Boolean writable;
+    private Boolean isAggregator;
+    private String mailSpool;
+    private Integer uid;
 
     @Override
     public void switchResource() {
@@ -42,7 +44,11 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     @JsonIgnore
     public String getFullName() {
-        return getName() + '@' + domain.getName();
+        if (domain != null) {
+            return getName() + '@' + domain.getName();
+        } else {
+            return null;
+        }
     }
 
     public String getPasswordHash() {
@@ -150,5 +156,29 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     @Override
     public void setServerId(String serverId) {
         this.serverId = serverId;
+    }
+
+    public Boolean getIsAggregator() {
+        return isAggregator;
+    }
+
+    public void setIsAggregator(Boolean isAggregator) {
+        this.isAggregator = isAggregator;
+    }
+
+    public String getMailSpool() {
+        return mailSpool;
+    }
+
+    public void setMailSpool(String mailSpool) {
+        this.mailSpool = mailSpool;
+    }
+
+    public Integer getUid() {
+        return uid;
+    }
+
+    public void setUid(Integer uid) {
+        this.uid = uid;
     }
 }

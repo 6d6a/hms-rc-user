@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 
 import static org.apache.commons.codec.digest.Crypt.crypt;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.codec.digest.DigestUtils.md5;
 import static org.apache.commons.codec.digest.DigestUtils.sha1;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
@@ -39,7 +40,8 @@ public class PasswordManager {
 
     public static String forPop(String plainPassword) throws UnsupportedEncodingException {
         byte[] password = plainPassword.getBytes("UTF-8");
-        return md5Hex(password);
+        String salt = "$1$" + randomAlphabetic(8) + "$";
+        return crypt(password, salt);
     }
 
     public static String generatePlainPassword() {

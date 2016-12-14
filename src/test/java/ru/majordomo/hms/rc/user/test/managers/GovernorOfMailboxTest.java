@@ -1,24 +1,23 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
 import org.bson.types.ObjectId;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.majordomo.hms.rc.user.RedisConfig;
+import redis.embedded.RedisServer;
+import ru.majordomo.hms.rc.user.configurations.RedisConfig;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
-import ru.majordomo.hms.rc.user.repositories.DomainRepository;
-import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
-import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.repositories.*;
+import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
@@ -31,33 +30,66 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {RedisConfig.class, ConfigGovernorOfMailbox.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE)
+@SpringBootTest(
+        classes = {RedisConfig.class, ConfigGovernorOfMailbox.class, ConfigStaffResourceControllerClient.class},
+        webEnvironment = NONE,
+        properties = {
+                "default.redis.host:127.0.0.1",
+                "default.redis.port:6379"
+        }
+)
 public class GovernorOfMailboxTest {
     @Autowired
     private GovernorOfMailbox governor;
     @Autowired
     private MailboxRepository repository;
     @Autowired
+    private UnixAccountRepository unixAccountRepository;
+    @Autowired
     private DomainRepository domainRepository;
     @Autowired
     private PersonRepository personRepository;
+    @Autowired
+    private MailboxRedisRepository redisRepository;
 
     private List<Mailbox> mailboxes;
     private List<Domain> batchOfDomains;
 
+    private static RedisServer redisServer;
+
+    @BeforeClass
+    public static void start() throws Exception {
+        redisServer = new RedisServer(6379);
+        redisServer.start();
+    }
+    @AfterClass
+    public static void stop() throws Exception {
+        redisServer.stop();
+    }
+
     @Before
     public void setUp() throws Exception {
+        List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
         batchOfDomains = ResourceGenerator.generateBatchOfDomains();
         for (Domain domain : batchOfDomains) {
             Person person = domain.getPerson();
             personRepository.save(person);
         }
         domainRepository.save(batchOfDomains);
+
+        unixAccounts.get(0).setAccountId(batchOfDomains.get(0).getAccountId());
+        unixAccountRepository.save(unixAccounts);
+
         mailboxes = ResourceGenerator.generateBatchOfMailboxesWithDomains(batchOfDomains);
+
+        for (Mailbox mailbox : mailboxes) {
+            governor.syncWithRedis(mailbox);
+        }
 
         repository.save(mailboxes);
     }
@@ -65,28 +97,33 @@ public class GovernorOfMailboxTest {
     @After
     public void deleteAll() throws Exception {
         repository.deleteAll();
-//        redisRepository.deleteAll();
+        redisRepository.deleteAll();
+        domainRepository.deleteAll();
+        personRepository.deleteAll();
     }
 
     @Test
-    public void redis() {
-        governor.addToRedis(mailboxes.get(0));
-
-//        redisRepository.save(mailboxes.get(0));
-//        Mailbox mailbox = (Mailbox) governor.construct(redisRepository.findOne(mailboxes.get(0).getId()));
-//        System.out.println();
+    public void redis() throws Exception {
+        governor.syncWithRedis(mailboxes.get(0));
     }
 
     @Test
     public void create() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+        repository.deleteAll();
         governor.create(serviceMessage);
         Mailbox mailbox = repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId());
+        System.out.println();
         assertNotNull(mailbox);
         assertNotNull(mailbox.getPasswordHash());
-        assertThat(mailbox.getQuota(), is(0L));
+        assertThat(mailbox.getQuota(), is(250000L));
         assertThat(mailbox.getQuotaUsed(), is(0L));
+        assertThat(mailbox.getAntiSpamEnabled(), is(false));
+
+        MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
+        assertThat(redisMailbox.getAntiSpamEnabled(), is(mailbox.getAntiSpamEnabled()));
+        assertThat(redisMailbox.getWritable(), is(mailbox.getWritable()));
     }
 
     @Test(expected = ParameterValidateException.class)
@@ -130,10 +167,10 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("whiteList", Arrays.asList("ololo@good.ru"));
         serviceMessage.addParam("redirectAddresses", Arrays.asList("ololo@redirect.ru"));
         governor.create(serviceMessage);
-        Mailbox mailbox = repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId());
+        Mailbox mailbox = (Mailbox) governor.construct(repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId()));
         assertNotNull(mailbox);
         assertNotNull(mailbox.getPasswordHash());
-        assertThat(mailbox.getQuota(), is(0L));
+        assertThat(mailbox.getQuota(), is(250000L));
         assertThat(mailbox.getQuotaUsed(), is(0L));
         assertThat(mailbox.getWhiteList(), is(Arrays.asList("ololo@good.ru")));
         assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru")));
@@ -150,8 +187,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("blackList", Arrays.asList("ololo@bad.ru"));
         serviceMessage.addParam("whiteList", Arrays.asList("ololo@good.ru"));
         serviceMessage.addParam("redirectAddresses", Arrays.asList("ololo@redirect.ru"));
-        String oldPasswordHash = mailboxes.get(0).getPasswordHash();
         governor.update(serviceMessage);
+
         Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
         assertNotNull(mailbox);
         assertNotNull(mailbox.getPasswordHash());
@@ -160,7 +197,46 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getWhiteList(), is(Arrays.asList("ololo@good.ru")));
         assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru")));
         assertThat(mailbox.getRedirectAddresses(), is(Arrays.asList("ololo@redirect.ru")));
-        assertThat(mailbox.getPasswordHash(), not(oldPasswordHash));
+        assertThat(mailbox.getPasswordHash(), not(mailboxes.get(0).getPasswordHash()));
+
+        MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
+        assertNotNull(redisMailbox);
+        assertThat(mailbox.getAntiSpamEnabled(), is(redisMailbox.getAntiSpamEnabled()));
+        assertThat(String.join(":", mailbox.getWhiteList()), is(redisMailbox.getWhiteList()));
+        assertThat(String.join(":", mailbox.getBlackList()), is(redisMailbox.getBlackList()));
+        assertThat(mailbox.getWritable(), is(redisMailbox.getWritable()));
+        assertThat(String.join(":", mailbox.getRedirectAddresses()), is(redisMailbox.getRedirectAddresses()));
+        assertThat(mailbox.getPasswordHash(), is(redisMailbox.getPasswordHash()));
+        assertThat(redisMailbox.getServerName(), is("pop100500"));
+    }
+
+    @Test
+    public void updateSetAggregatorAndDropAggregator() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
+        serviceMessage.delParam("name");
+        serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
+        serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
+        serviceMessage.addParam("isAggregator", true);
+        governor.update(serviceMessage);
+
+        Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
+        assertThat(mailbox.getIsAggregator(), is(true));
+
+        MailboxForRedis redisMailbox = redisRepository.findOne("*@" + ((Mailbox) governor.construct(mailbox)).getDomain().getName());
+        assertNotNull(redisMailbox);
+        assertThat(mailbox.getAntiSpamEnabled(), is(redisMailbox.getAntiSpamEnabled()));
+        assertThat(String.join(":", mailbox.getWhiteList()), is(redisMailbox.getWhiteList()));
+        assertThat(String.join(":", mailbox.getBlackList()), is(redisMailbox.getBlackList()));
+        assertThat(mailbox.getWritable(), is(redisMailbox.getWritable()));
+        assertThat(String.join(":", mailbox.getRedirectAddresses()), is(redisMailbox.getRedirectAddresses()));
+        assertThat(mailbox.getPasswordHash(), is(redisMailbox.getPasswordHash()));
+        assertThat(redisMailbox.getServerName(), is("pop100500"));
+
+        serviceMessage.delParam("isAggregator");
+        serviceMessage.addParam("isAggregator", false);
+        governor.update(serviceMessage);
+
+        assertNull(redisRepository.findOne("*@" + ((Mailbox) governor.construct(mailbox)).getDomain().getName()));
     }
 
     @Test(expected = ResourceNotFoundException.class)

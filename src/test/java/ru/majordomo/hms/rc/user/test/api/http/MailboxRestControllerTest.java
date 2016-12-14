@@ -18,7 +18,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.RedisConfig;
+import ru.majordomo.hms.rc.user.configurations.RedisConfig;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -44,7 +44,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {RedisConfig.class, ConfigStaffResourceControllerClient.class, ConfigMailboxRestController.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(
+        classes = {RedisConfig.class, ConfigStaffResourceControllerClient.class, ConfigMailboxRestController.class},
+        webEnvironment = RANDOM_PORT,
+        properties = {
+                "default.redis.host:127.0.0.1",
+                "default.redis.port:6379"
+        }
+)
 public class MailboxRestControllerTest {
 
     private MockMvc mockMvc;
@@ -104,8 +111,11 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("whiteList").description("Список адресов, с которых почта должна доставляться в любом случае"),
                                 fieldWithPath("antiSpamEnabled").description("Включен ли антиспам и антивирус"),
                                 fieldWithPath("serverId").description("ID сервера, на котором расположен ящик"),
-                                fieldWithPath("quota").description("Максимальный размер ящика"),
+                                fieldWithPath("quota").description("Максимальный размер ящика. Назначается сервером, изменение невозможно"),
                                 fieldWithPath("quotaUsed").description("Фактический размер ящика"),
+                                fieldWithPath("isAggregator").description("Флаг, указывающий на то, будут ли в него доставляться письма для несуществующих ящиков домена"),
+                                fieldWithPath("mailSpool").description("Служебное поле. Назначается сервером, изменение невозможно."),
+                                fieldWithPath("uid").description("Служебной поле. Назначается сервером, изменение невозможно."),
                                 fieldWithPath("writable").description("Флаг, указывающий на то, будут ли доставляться новые письма в ящик")
                         )
                 ));
