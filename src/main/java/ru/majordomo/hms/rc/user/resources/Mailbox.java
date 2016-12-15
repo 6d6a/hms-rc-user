@@ -20,6 +20,8 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private List<String> blackList = new ArrayList<>();
     private List<String> whiteList = new ArrayList<>();
     private Boolean antiSpamEnabled = false;
+    private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE;
+    private SpamFilterMood spamFilterMood = SpamFilterMood.NEUTRAL;
     private String serverId;
     private Long quota;
     private Long quotaUsed;
@@ -107,6 +109,22 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     public void setAntiSpamEnabled(Boolean antiSpamEnabled) {
         this.antiSpamEnabled = antiSpamEnabled;
+    }
+
+    public SpamFilterAction getSpamFilterAction() {
+        return spamFilterAction;
+    }
+
+    public void setSpamFilterAction(SpamFilterAction spamFilterAction) {
+        this.spamFilterAction = spamFilterAction;
+    }
+
+    public SpamFilterMood getSpamFilterMood() {
+        return spamFilterMood;
+    }
+
+    public void setSpamFilterMood(SpamFilterMood spamFilterMood) {
+        this.spamFilterMood = spamFilterMood;
     }
 
     @JsonIgnore

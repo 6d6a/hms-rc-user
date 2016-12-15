@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.managers;
 
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -14,13 +15,10 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.Mailbox;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
 public class GovernorOfMailbox extends LordOfResources {
@@ -30,6 +28,19 @@ public class GovernorOfMailbox extends LordOfResources {
     private GovernorOfUnixAccount governorOfUnixAccount;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
+
+    private SpamFilterAction defaultSpamFilterAction;
+    private SpamFilterMood defaultSpamFilterMood;
+
+    @Value("${default.mailbox.spamfilter.action}")
+    public void setDefaultSpamFilterAction(SpamFilterAction spamFilterAction) {
+        this.defaultSpamFilterAction = spamFilterAction;
+    }
+
+    @Value("${default.mailbox.spamfilter.mood}")
+    public void setDefaultSpamFilterMood(SpamFilterMood spamFilterMood) {
+        this.defaultSpamFilterMood = spamFilterMood;
+    }
 
     @Autowired
     public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
@@ -123,6 +134,22 @@ public class GovernorOfMailbox extends LordOfResources {
                             mailbox.setIsAggregator(userValue);
                         }
                         break;
+                    case "spamFilterAction":
+                        String spamFilterActionAsString = cleaner.cleanString((String) serviceMessage.getParam("spamFilterAction"));
+                        try {
+                            mailbox.setSpamFilterAction(Enum.valueOf(SpamFilterAction.class, spamFilterActionAsString));
+                        } catch (IllegalArgumentException e) {
+                            throw new ParameterValidateException("Недопустимый тип действия");
+                        }
+                        break;
+                    case "spamFilterMood":
+                        String spamFilterMoodAsString = cleaner.cleanString((String) serviceMessage.getParam("spamFilterMood"));
+                        try {
+                            mailbox.setSpamFilterMood(Enum.valueOf(SpamFilterMood.class, spamFilterMoodAsString));
+                        } catch (IllegalArgumentException e) {
+                            throw new ParameterValidateException("Недопустимый тип придирчивости");
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -175,6 +202,8 @@ public class GovernorOfMailbox extends LordOfResources {
         List<String> whiteList = new ArrayList<>();
         Long quota = null;
         Boolean antiSpamEnabled = false;
+        SpamFilterMood spamFilterMood = null;
+        SpamFilterAction spamFilterAction = null;
         String domainId;
 
         try {
@@ -206,6 +235,24 @@ public class GovernorOfMailbox extends LordOfResources {
 
             if (serviceMessage.getParam("antiSpamEnabled") != null) {
                 antiSpamEnabled = (Boolean) serviceMessage.getParam("antiSpamEnabled");
+            }
+
+            if (serviceMessage.getParam("spamFilterAction") != null) {
+                String asString = cleaner.cleanString((String) serviceMessage.getParam("spamFilterAction"));
+                try {
+                    spamFilterAction = Enum.valueOf(SpamFilterAction.class, asString);
+                } catch (IllegalArgumentException e) {
+                    throw new ParameterValidateException("Недопустимый тип действия");
+                }
+            }
+
+            if (serviceMessage.getParam("spamFilterMood") != null) {
+                String asString = cleaner.cleanString((String) serviceMessage.getParam("spamFilterMood"));
+                try {
+                    spamFilterMood = Enum.valueOf(SpamFilterMood.class, asString);
+                } catch (IllegalArgumentException e) {
+                    throw new ParameterValidateException("Недопустимый тип придирчивости");
+                }
             }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
@@ -254,6 +301,8 @@ public class GovernorOfMailbox extends LordOfResources {
         mailbox.setUid(uid);
         mailbox.setMailSpool(mailSpool);
         mailbox.setAntiSpamEnabled(antiSpamEnabled);
+        mailbox.setSpamFilterAction(spamFilterAction);
+        mailbox.setSpamFilterMood(spamFilterMood);
 
         return mailbox;
     }
@@ -296,6 +345,14 @@ public class GovernorOfMailbox extends LordOfResources {
 
         if (mailbox.getDomain() == null) {
             throw new ParameterValidateException("Для ящика должен быть указан домен");
+        }
+
+        if (mailbox.getSpamFilterAction() == null) {
+            mailbox.setSpamFilterAction(defaultSpamFilterAction);
+        }
+
+        if (mailbox.getSpamFilterMood() == null) {
+            mailbox.setSpamFilterMood(defaultSpamFilterMood);
         }
 
         if (mailbox.getQuota() == null) {
@@ -392,6 +449,8 @@ public class GovernorOfMailbox extends LordOfResources {
         mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
+        mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
+        mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
         mailboxForRedis.setServerName(serverName);
 
@@ -415,6 +474,8 @@ public class GovernorOfMailbox extends LordOfResources {
         mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
+        mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
+        mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
         mailboxForRedis.setServerName(serverName);
 

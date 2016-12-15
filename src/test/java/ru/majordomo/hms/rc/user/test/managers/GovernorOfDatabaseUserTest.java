@@ -83,7 +83,6 @@ public class GovernorOfDatabaseUserTest {
     public void createWithBadServiceId() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         serviceMessage.addParam("serviceId", ObjectId.get().toString());
-        System.out.println(serviceMessage);
         governor.create(serviceMessage);
     }
 
@@ -92,13 +91,14 @@ public class GovernorOfDatabaseUserTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         List<String> allowedAddressList = Arrays.asList("8.8.8.8", "9.9.9.9", "Валера");
         serviceMessage.addParam("allowedAddressList", allowedAddressList);
-        System.out.println(serviceMessage);
         governor.create(serviceMessage);
     }
 
-    @Test
-    public void build() {
-
+    @Test(expected = ParameterValidateException.class)
+    public void createWithBadDBType() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
+        serviceMessage.addParam("type", "BAD_DB_TYPE");
+        governor.create(serviceMessage);
     }
 
     @Test

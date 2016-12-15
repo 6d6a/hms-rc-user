@@ -3,6 +3,8 @@ package ru.majordomo.hms.rc.user.resources.DTO;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
+import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
 
 @RedisHash("mailboxes")
 public class MailboxForRedis {
@@ -13,6 +15,8 @@ public class MailboxForRedis {
     private String whiteList;
     private String redirectAddresses;
     private Boolean antiSpamEnabled;
+    private SpamFilterMood spamFilterMood;
+    private SpamFilterAction spamFilterAction;
     private Boolean writable;
     private String serverName;
 
@@ -62,6 +66,22 @@ public class MailboxForRedis {
 
     public void setAntiSpamEnabled(Boolean antiSpamEnabled) {
         this.antiSpamEnabled = antiSpamEnabled;
+    }
+
+    public SpamFilterMood getSpamFilterMood() {
+        return spamFilterMood;
+    }
+
+    public void setSpamFilterMood(SpamFilterMood spamFilterMood) {
+        this.spamFilterMood = spamFilterMood;
+    }
+
+    public SpamFilterAction getSpamFilterAction() {
+        return spamFilterAction;
+    }
+
+    public void setSpamFilterAction(SpamFilterAction spamFilterAction) {
+        this.spamFilterAction = spamFilterAction;
     }
 
     public Boolean getWritable() {

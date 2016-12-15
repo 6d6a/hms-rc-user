@@ -147,7 +147,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
             if (serviceMessage.getParam("type") != null) {
                 userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
-                userType = Enum.valueOf(DBType.class, userTypeAsString);
+                try {
+                    userType = Enum.valueOf(DBType.class, userTypeAsString);
+                } catch (IllegalArgumentException e) {
+                    throw new ParameterValidateException("Недопустимый тип баз данных");
+                }
             }
 
             if (serviceMessage.getParam("serviceId") != null) {

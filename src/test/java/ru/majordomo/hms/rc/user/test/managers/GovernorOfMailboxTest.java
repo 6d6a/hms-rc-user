@@ -13,11 +13,8 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.repositories.*;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.Mailbox;
-import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
@@ -40,7 +37,9 @@ import static org.hamcrest.CoreMatchers.not;
         webEnvironment = NONE,
         properties = {
                 "default.redis.host:127.0.0.1",
-                "default.redis.port:6379"
+                "default.redis.port:6379",
+                "default.mailbox.spamfilter.mood:NEUTRAL",
+                "default.mailbox.spamfilter.action:MOVE"
         }
 )
 public class GovernorOfMailboxTest {
@@ -111,10 +110,10 @@ public class GovernorOfMailboxTest {
     public void create() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
-        repository.deleteAll();
         governor.create(serviceMessage);
+
         Mailbox mailbox = repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId());
-        System.out.println();
+
         assertNotNull(mailbox);
         assertNotNull(mailbox.getPasswordHash());
         assertThat(mailbox.getQuota(), is(250000L));
@@ -124,6 +123,8 @@ public class GovernorOfMailboxTest {
         MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
         assertThat(redisMailbox.getAntiSpamEnabled(), is(mailbox.getAntiSpamEnabled()));
         assertThat(redisMailbox.getWritable(), is(mailbox.getWritable()));
+        assertThat(redisMailbox.getSpamFilterAction(), is(mailbox.getSpamFilterAction()));
+        assertThat(redisMailbox.getSpamFilterMood(), is(mailbox.getSpamFilterMood()));
     }
 
     @Test(expected = ParameterValidateException.class)
@@ -160,21 +161,43 @@ public class GovernorOfMailboxTest {
     }
 
     @Test
-    public void createWithBlacklistAndWhitelist() throws Exception {
+    public void createFull() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.addParam("blackList", Arrays.asList("ololo@bad.ru"));
         serviceMessage.addParam("whiteList", Arrays.asList("ololo@good.ru"));
         serviceMessage.addParam("redirectAddresses", Arrays.asList("ololo@redirect.ru"));
+        serviceMessage.addParam("quota", 200L);
+        serviceMessage.addParam("spamFilterMood", "NEUTRAL");
+        serviceMessage.addParam("spamFilterAction", "MOVE");
         governor.create(serviceMessage);
+
         Mailbox mailbox = (Mailbox) governor.construct(repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId()));
         assertNotNull(mailbox);
         assertNotNull(mailbox.getPasswordHash());
-        assertThat(mailbox.getQuota(), is(250000L));
+        assertThat(mailbox.getQuota(), is(200L));
         assertThat(mailbox.getQuotaUsed(), is(0L));
         assertThat(mailbox.getWhiteList(), is(Arrays.asList("ololo@good.ru")));
         assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru")));
         assertThat(mailbox.getRedirectAddresses(), is(Arrays.asList("ololo@redirect.ru")));
+        assertThat(mailbox.getSpamFilterMood(), is(SpamFilterMood.NEUTRAL));
+        assertThat(mailbox.getSpamFilterAction(), is(SpamFilterAction.MOVE));
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void createWithBadSpamFilterMood() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
+        serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+        serviceMessage.addParam("spamFilterMood", "BAD_FILTER_MOOD");
+        governor.create(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void createWithBadSpamFilterAction() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
+        serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+        serviceMessage.addParam("spamFilterAction", "BAD_FILTER_ACTION");
+        governor.create(serviceMessage);
     }
 
     @Test
@@ -254,6 +277,26 @@ public class GovernorOfMailboxTest {
         serviceMessage.delParam("name");
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("quota", 300000L);
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void updateWithBadFilterMood() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
+        serviceMessage.delParam("name");
+        serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
+        serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
+        serviceMessage.addParam("spamFilterMood", "BAD_FILTER_MOOD");
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void updateWithBadFilterAction() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
+        serviceMessage.delParam("name");
+        serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
+        serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
+        serviceMessage.addParam("spamFilterAction", "BAD_FILTER_ACTION");
         governor.update(serviceMessage);
     }
 
