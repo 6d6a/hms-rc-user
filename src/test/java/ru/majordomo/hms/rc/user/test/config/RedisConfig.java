@@ -1,4 +1,4 @@
-package ru.majordomo.hms.rc.user.configurations;
+package ru.majordomo.hms.rc.user.test.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,16 +13,11 @@ import org.springframework.util.SocketUtils;
 
 @Configuration
 @EnableRedisRepositories(basePackages = {"ru.majordomo.hms.rc.user.repositories"})
-@Profile({"default","prod"})
+@Profile("test")
 public class RedisConfig {
 
     private Integer redisPort = SocketUtils.findAvailableTcpPort();
     private String redisHost;
-
-    @Value("${default.redis.port}")
-    public void setRedisPort(Integer redisPort) {
-        this.redisPort = redisPort;
-    }
 
     @Value("${default.redis.host}")
     public void setRedisHost(String redisHost) {
@@ -31,6 +26,7 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
+        redisPort = SocketUtils.findAvailableTcpPort();
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
         jedisConnectionFactory.setPort(redisPort);
         jedisConnectionFactory.setHostName(redisHost);

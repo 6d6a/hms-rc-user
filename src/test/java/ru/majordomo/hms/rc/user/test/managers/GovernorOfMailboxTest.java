@@ -5,9 +5,11 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.test.context.junit4.SpringRunner;
 import redis.embedded.RedisServer;
-import ru.majordomo.hms.rc.user.configurations.RedisConfig;
+
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -17,6 +19,7 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfMailbox;
 
@@ -37,7 +40,6 @@ import static org.hamcrest.CoreMatchers.not;
         webEnvironment = NONE,
         properties = {
                 "default.redis.host:127.0.0.1",
-                "default.redis.port:6379",
                 "default.mailbox.spamfilter.mood:NEUTRAL",
                 "default.mailbox.spamfilter.action:MOVE"
         }
@@ -55,24 +57,22 @@ public class GovernorOfMailboxTest {
     private PersonRepository personRepository;
     @Autowired
     private MailboxRedisRepository redisRepository;
+    @Autowired
+    private RedisConnectionFactory redisConnectionFactory;
 
     private List<Mailbox> mailboxes;
     private List<Domain> batchOfDomains;
 
-    private static RedisServer redisServer;
-
-    @BeforeClass
-    public static void start() throws Exception {
-        redisServer = new RedisServer(6379);
-        redisServer.start();
-    }
-    @AfterClass
-    public static void stop() throws Exception {
-        redisServer.stop();
-    }
+    private RedisServer redisServer;
 
     @Before
     public void setUp() throws Exception {
+        if (redisServer == null) {
+            JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) redisConnectionFactory;
+            System.out.println("\n\n\nПОРТ:" + jedisConnectionFactory.getPort() + "\n\n\n");
+            redisServer = new RedisServer(jedisConnectionFactory.getPort());
+            redisServer.start();
+        }
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
         batchOfDomains = ResourceGenerator.generateBatchOfDomains();
         for (Domain domain : batchOfDomains) {
