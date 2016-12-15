@@ -63,13 +63,12 @@ public class GovernorOfMailboxTest {
     private List<Mailbox> mailboxes;
     private List<Domain> batchOfDomains;
 
-    private RedisServer redisServer;
+    private static RedisServer redisServer;
 
     @Before
     public void setUp() throws Exception {
         if (redisServer == null) {
             JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) redisConnectionFactory;
-            System.out.println("\n\n\nПОРТ:" + jedisConnectionFactory.getPort() + "\n\n\n");
             redisServer = new RedisServer(jedisConnectionFactory.getPort());
             redisServer.start();
         }
@@ -91,6 +90,11 @@ public class GovernorOfMailboxTest {
         }
 
         repository.save(mailboxes);
+    }
+
+    @AfterClass
+    public static void cleanUp() throws Exception {
+        redisServer.stop();
     }
 
     @After
