@@ -283,12 +283,16 @@ public class GovernorOfMailbox extends LordOfResources {
 
         String serverId = findMailStorageServer(domainId);
 
-        String mailSpool = "/homebig";
+        String mailSpool = null;
         if (serverId != null && !serverId.equals("")) {
             Storage storage = staffRcClient.getActiveMailboxStorageByServerId(serverId);
             if (storage != null) {
                 mailSpool = storage.getMountPoint();
             }
+        }
+
+        if (mailSpool == null) {
+            throw new ParameterValidateException("Внутренняя ошибка: не удалось сформировать");
         }
 
         mailbox.setBlackList(blackList);
@@ -325,7 +329,7 @@ public class GovernorOfMailbox extends LordOfResources {
             try {
                 serverId = staffRcClient.getActiveMailboxServer().getId();
             } catch (FeignException e) {
-                throw new ParameterValidateException("Внутренняя ошибка");
+                throw new ParameterValidateException("Внутренняя ошибка: не удалось найти подходящий сервер");
             }
         }
 

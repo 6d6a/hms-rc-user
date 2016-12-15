@@ -41,7 +41,7 @@ import static org.hamcrest.CoreMatchers.not;
         properties = {
                 "default.redis.host:127.0.0.1",
                 "default.mailbox.spamfilter.mood:NEUTRAL",
-                "default.mailbox.spamfilter.action:MOVE"
+                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER"
         }
 )
 public class GovernorOfMailboxTest {
@@ -169,7 +169,7 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("redirectAddresses", Arrays.asList("ololo@redirect.ru"));
         serviceMessage.addParam("quota", 200L);
         serviceMessage.addParam("spamFilterMood", "NEUTRAL");
-        serviceMessage.addParam("spamFilterAction", "MOVE");
+        serviceMessage.addParam("spamFilterAction", "MOVE_TO_SPAM_FOLDER");
         governor.create(serviceMessage);
 
         Mailbox mailbox = (Mailbox) governor.construct(repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId()));
@@ -181,7 +181,7 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru")));
         assertThat(mailbox.getRedirectAddresses(), is(Arrays.asList("ololo@redirect.ru")));
         assertThat(mailbox.getSpamFilterMood(), is(SpamFilterMood.NEUTRAL));
-        assertThat(mailbox.getSpamFilterAction(), is(SpamFilterAction.MOVE));
+        assertThat(mailbox.getSpamFilterAction(), is(SpamFilterAction.MOVE_TO_SPAM_FOLDER));
     }
 
     @Test(expected = ParameterValidateException.class)
