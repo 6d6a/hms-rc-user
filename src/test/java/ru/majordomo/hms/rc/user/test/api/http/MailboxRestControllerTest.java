@@ -18,6 +18,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -25,6 +26,7 @@ import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigMailboxRestController;
 
@@ -43,7 +45,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigMailboxRestController.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(
+        classes = {RedisConfig.class, ConfigStaffResourceControllerClient.class, ConfigMailboxRestController.class},
+        webEnvironment = RANDOM_PORT,
+        properties = {
+                "default.redis.host:127.0.0.1",
+                "default.redis.port:6379",
+                "default.mailbox.spamfilter.mood:NEUTRAL",
+                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER"
+        }
+)
 public class MailboxRestControllerTest {
 
     private MockMvc mockMvc;
@@ -64,7 +75,7 @@ public class MailboxRestControllerTest {
     private DomainRepository domainRepository;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         this.doc = document("domain/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))
@@ -96,14 +107,21 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("name").description("Имя ящика без указания домена"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли ящик"),
+                                fieldWithPath("passwordHash").description("Хэш пароля"),
                                 fieldWithPath("domain").description("Домен, на котором создан ящик"),
+                                fieldWithPath("redirectAddresses").description("Список переадресаций с текущего почтового ящика"),
                                 fieldWithPath("blackList").description("Список адресов, почта с которых не должна доставляться"),
                                 fieldWithPath("whiteList").description("Список адресов, с которых почта должна доставляться в любом случае"),
                                 fieldWithPath("antiSpamEnabled").description("Включен ли антиспам и антивирус"),
                                 fieldWithPath("serverId").description("ID сервера, на котором расположен ящик"),
-                                fieldWithPath("quota").description("Максимальный размер ящика"),
+                                fieldWithPath("quota").description("Максимальный размер ящика. Назначается сервером, изменение невозможно"),
                                 fieldWithPath("quotaUsed").description("Фактический размер ящика"),
-                                fieldWithPath("writable").description("Флаг, указывающий на то, будут ли доставляться новые письма в ящик")
+                                fieldWithPath("isAggregator").description("Флаг, указывающий на то, будут ли в него доставляться письма для несуществующих ящиков домена"),
+                                fieldWithPath("mailSpool").description("Служебное поле. Назначается сервером, изменение невозможно."),
+                                fieldWithPath("uid").description("Служебное поле. Назначается сервером, изменение невозможно."),
+                                fieldWithPath("writable").description("Флаг, указывающий на то, будут ли доставляться новые письма в ящик"),
+                                fieldWithPath("spamFilterAction").description("Действие SPAM-фильтра"),
+                                fieldWithPath("spamFilterMood").description("Придирчивость SPAM-фильтра")
                         )
                 ));
     }

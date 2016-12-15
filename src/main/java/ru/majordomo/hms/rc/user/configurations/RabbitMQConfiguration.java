@@ -1,4 +1,4 @@
-package ru.majordomo.hms.rc.user;
+package ru.majordomo.hms.rc.user.configurations;
 
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;

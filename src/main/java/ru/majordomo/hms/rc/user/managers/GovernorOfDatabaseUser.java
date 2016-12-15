@@ -121,12 +121,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) != null) {
-            repository.delete(resourceId);
-            governorOfDatabase.removeDatabaseUserIdFromDatabases(resourceId);
-        } else {
+        if (repository.findOne(resourceId) == null) {
             throw new ResourceNotFoundException("Ресурс не найден");
         }
+        repository.delete(resourceId);
+        governorOfDatabase.removeDatabaseUserIdFromDatabases(resourceId);
     }
 
     @Override
@@ -148,7 +147,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
 
             if (serviceMessage.getParam("type") != null) {
                 userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
-                userType = Enum.valueOf(DBType.class, userTypeAsString);
+                try {
+                    userType = Enum.valueOf(DBType.class, userTypeAsString);
+                } catch (IllegalArgumentException e) {
+                    throw new ParameterValidateException("Недопустимый тип баз данных");
+                }
             }
 
             if (serviceMessage.getParam("serviceId") != null) {

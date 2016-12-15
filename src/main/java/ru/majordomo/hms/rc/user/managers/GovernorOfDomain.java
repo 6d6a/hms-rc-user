@@ -113,13 +113,17 @@ public class GovernorOfDomain extends LordOfResources {
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        Domain domain = new Domain();
+        Domain domain = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
-            domain = (Domain) construct(repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId")));
+            domain = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
-        return domain;
+        if (domain == null) {
+            throw new ResourceNotFoundException("Не удалось найти указанный домен");
+        }
+
+        return construct(domain);
     }
 
     @Override

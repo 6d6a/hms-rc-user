@@ -17,6 +17,7 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
 @Configuration
@@ -40,6 +41,11 @@ public class ConfigGovernorOfMailbox extends AbstractMongoConfiguration {
     @Bean
     public GovernorOfPerson governorOfPerson() {
         return new GovernorOfPerson();
+    }
+
+    @Bean
+    public GovernorOfUnixAccount governorOfUnixAccount() {
+        return new GovernorOfUnixAccount();
     }
 
     @Bean
