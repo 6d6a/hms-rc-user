@@ -49,7 +49,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         webEnvironment = RANDOM_PORT,
         properties = {
                 "default.redis.host:127.0.0.1",
-                "default.redis.port:6379"
+                "default.redis.port:6379",
+                "default.mailbox.spamfilter.mood:NEUTRAL",
+                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER"
         }
 )
 public class MailboxRestControllerTest {
@@ -115,8 +117,10 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("quotaUsed").description("Фактический размер ящика"),
                                 fieldWithPath("isAggregator").description("Флаг, указывающий на то, будут ли в него доставляться письма для несуществующих ящиков домена"),
                                 fieldWithPath("mailSpool").description("Служебное поле. Назначается сервером, изменение невозможно."),
-                                fieldWithPath("uid").description("Служебной поле. Назначается сервером, изменение невозможно."),
-                                fieldWithPath("writable").description("Флаг, указывающий на то, будут ли доставляться новые письма в ящик")
+                                fieldWithPath("uid").description("Служебное поле. Назначается сервером, изменение невозможно."),
+                                fieldWithPath("writable").description("Флаг, указывающий на то, будут ли доставляться новые письма в ящик"),
+                                fieldWithPath("spamFilterAction").description("Действие SPAM-фильтра"),
+                                fieldWithPath("spamFilterMood").description("Придирчивость SPAM-фильтра")
                         )
                 ));
     }

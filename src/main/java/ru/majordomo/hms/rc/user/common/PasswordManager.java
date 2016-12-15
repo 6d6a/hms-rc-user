@@ -38,7 +38,7 @@ public class PasswordManager {
         return md5Hex(password);
     }
 
-    public static String forPop(String plainPassword) throws UnsupportedEncodingException {
+    public static String forMailStorage(String plainPassword) throws UnsupportedEncodingException {
         byte[] password = plainPassword.getBytes("UTF-8");
         String salt = "$1$" + randomAlphabetic(8) + "$";
         return crypt(password, salt);

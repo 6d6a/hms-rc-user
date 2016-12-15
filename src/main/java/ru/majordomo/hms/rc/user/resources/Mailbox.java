@@ -20,7 +20,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private List<String> blackList = new ArrayList<>();
     private List<String> whiteList = new ArrayList<>();
     private Boolean antiSpamEnabled = false;
-    private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE;
+    private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE_TO_SPAM_FOLDER;
     private SpamFilterMood spamFilterMood = SpamFilterMood.NEUTRAL;
     private String serverId;
     private Long quota;
@@ -63,7 +63,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     public void setPasswordHashByPlainPassword(String plainPassword) throws UnsupportedEncodingException {
         if (plainPassword != null && !plainPassword.equals("")) {
-            passwordHash = PasswordManager.forPop(plainPassword);
+            passwordHash = PasswordManager.forMailStorage(plainPassword);
         }
     }
 

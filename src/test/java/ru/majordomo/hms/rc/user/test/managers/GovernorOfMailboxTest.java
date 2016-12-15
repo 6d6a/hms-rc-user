@@ -181,7 +181,7 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru")));
         assertThat(mailbox.getRedirectAddresses(), is(Arrays.asList("ololo@redirect.ru")));
         assertThat(mailbox.getSpamFilterMood(), is(SpamFilterMood.NEUTRAL));
-        assertThat(mailbox.getSpamFilterAction(), is(SpamFilterAction.MOVE));
+        assertThat(mailbox.getSpamFilterAction(), is(SpamFilterAction.MOVE_TO_SPAM_FOLDER));
     }
 
     @Test(expected = ParameterValidateException.class)
