@@ -39,7 +39,7 @@ import static org.hamcrest.CoreMatchers.not;
                 "default.redis.host:127.0.0.1",
                 "default.redis.port:6379",
                 "default.mailbox.spamfilter.mood:NEUTRAL",
-                "default.mailbox.spamfilter.action:MOVE"
+                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER"
         }
 )
 public class GovernorOfMailboxTest {
@@ -169,7 +169,7 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("redirectAddresses", Arrays.asList("ololo@redirect.ru"));
         serviceMessage.addParam("quota", 200L);
         serviceMessage.addParam("spamFilterMood", "NEUTRAL");
-        serviceMessage.addParam("spamFilterAction", "MOVE");
+        serviceMessage.addParam("spamFilterAction", "MOVE_TO_SPAM_FOLDER");
         governor.create(serviceMessage);
 
         Mailbox mailbox = (Mailbox) governor.construct(repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId()));
