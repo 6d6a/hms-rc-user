@@ -10,7 +10,7 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 
 @Document(collection = "unixAccounts")
-public class UnixAccount extends Resource implements ServerStorable, Quotable, Securable{
+public class UnixAccount extends Resource implements ServerStorable, Quotable, Securable {
     @Indexed
     private Integer uid;
     private String homeDir;

@@ -39,4 +39,36 @@ public class UnixAccountAMQPController extends BaseAMQPController {
                 break;
         }
     }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.unix-account.update",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "unix-account.update", type = "topic"),
+            key = "rc.user"))
+    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleUpdateEventFromPM("unix-account", serviceMessage);
+                break;
+            case ("te"):
+                handleUpdateEventFromTE("unix-account", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.unix-account.delete",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "unix-account.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleDeleteEventFromPM("unix-account", serviceMessage);
+                break;
+            case ("te"):
+                handleDeleteEventFromTE("unix-account", serviceMessage);
+                break;
+        }
+    }
 }
