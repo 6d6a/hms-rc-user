@@ -5,6 +5,7 @@ import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -25,7 +26,7 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 import javax.validation.constraints.NotNull;
 
-@Service
+@Component
 public class GovernorOfUnixAccount extends LordOfResources {
 
     public final int MIN_UID = 2000;

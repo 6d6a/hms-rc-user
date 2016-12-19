@@ -17,8 +17,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 @Service
 public class UnixAccountAMQPController extends BaseAMQPController {
 
-    private GovernorOfUnixAccount governor;
-
     @Autowired
     public void setGovernor(GovernorOfUnixAccount governor) {
         this.governor = governor;
