@@ -101,7 +101,9 @@ public class GovernorOfUnixAccount extends LordOfResources {
                         break;
                     case "crontab":
                         List<CronTask> cronTasks = (List<CronTask>) entry.getValue();
-                        logger.info(cronTasks.toString());
+                        for (CronTask cronTask : cronTasks) {
+                            cronTask.setExecTime(cronTask.getExecTime());
+                        }
                         unixAccount.setCrontab(cronTasks);
                         break;
                     default:
