@@ -166,7 +166,7 @@ public class GovernorOfUnixAccountTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(unixAccounts.get(0).getAccountId());
         serviceMessage.addParam("resourceId", unixAccounts.get(0).getId());
-//        serviceMessage.addParam("keyPair", "GENERATE");
+        serviceMessage.addParam("keyPair", "GENERATE");
         CronTask cronTask = new CronTask();
         cronTask.setCommand("php ./index.php");
         cronTask.setExecTime("* 1 1 1 1");
@@ -175,7 +175,7 @@ public class GovernorOfUnixAccountTest {
         System.out.println(unixAccounts.get(0).getCrontab());
         governor.update(serviceMessage);
         UnixAccount unixAccount = repository.findOne(unixAccounts.get(0).getId());
-        assertThat(unixAccount.getKeyPair().toString(), is(keyPair.toString()));
+        assertThat(unixAccount.getKeyPair().toString(), not(keyPair.toString()));
         System.out.println(unixAccount.getCrontab());
     }
 }

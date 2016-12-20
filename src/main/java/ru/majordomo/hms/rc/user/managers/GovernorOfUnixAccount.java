@@ -4,14 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.JSchException;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
@@ -25,8 +22,6 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
-
-import javax.validation.constraints.NotNull;
 
 @Component
 public class GovernorOfUnixAccount extends LordOfResources {
@@ -137,8 +132,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        UnixAccount unixAccount = repository.findOne(resourceId);
-        if (unixAccount == null) {
+        if (repository.findOne(resourceId) == null) {
             throw new ParameterValidateException("Не найден UnixAccount с ID: " + resourceId);
         } else {
             repository.delete(resourceId);
