@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.JSchException;
 
 import org.apache.commons.lang.BooleanUtils;
@@ -100,12 +102,11 @@ public class GovernorOfUnixAccount extends LordOfResources {
                         }
                         break;
                     case "crontab":
-                        List<CronTask> cronTasks = (List<CronTask>) entry.getValue();
-                        if (cronTasks.get(0) instanceof CronTask) {
-                            for (CronTask cronTask : cronTasks) {
-                                if (cronTask != null) {
-                                    validateAndProcessCronTask(cronTask);
-                                }
+                        ObjectMapper mapper = new ObjectMapper();
+                        List<CronTask> cronTasks = mapper.convertValue(entry.getValue(), new TypeReference<List<CronTask>>() {});
+                        for (CronTask cronTask : cronTasks) {
+                            if (cronTask != null) {
+                                validateAndProcessCronTask(cronTask);
                             }
                         }
                         unixAccount.setCrontab(cronTasks);
