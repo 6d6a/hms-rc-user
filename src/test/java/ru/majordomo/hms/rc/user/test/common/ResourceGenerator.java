@@ -346,7 +346,6 @@ public class ResourceGenerator {
         String atPattern = "*/${MINUTES} * * * *";
         for (Integer i = 10; i < 15; i++) {
             CronTask cronTask = new CronTask();
-            cronTask.setName("Напоминатор нумеро " + i);
             cronTask.setSwitchedOn(true);
             String execTime = atPattern.replaceAll("\\$\\{MINUTES\\}", i.toString());
             cronTask.setExecTime(execTime);

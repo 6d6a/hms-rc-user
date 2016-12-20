@@ -1,13 +1,14 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.JSchException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
@@ -22,7 +23,7 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
-@Service
+@Component
 public class GovernorOfUnixAccount extends LordOfResources {
 
     public final int MIN_UID = 2000;
@@ -66,7 +67,57 @@ public class GovernorOfUnixAccount extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        } else {
+            throw new ParameterValidateException("Не указан resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        UnixAccount unixAccount = (UnixAccount) build(keyValue);
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "keyPair":
+                        String value = cleaner.cleanString((String) entry.getValue());
+                        if (value.equals("GENERATE")) {
+                            try {
+                                unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
+                            } catch (JSchException e) {
+                                throw new ParameterValidateException("Невозможно сгенерировать пару ключей:" + e.getMessage());
+                            }
+                        } else {
+                            throw new ParameterValidateException("Для генерации новой пары ключей необходимо передать \"GENERATE\" в сообщении");
+                        }
+                        break;
+                    case "crontab":
+                        ObjectMapper mapper = new ObjectMapper();
+                        List<CronTask> cronTasks = mapper.convertValue(entry.getValue(), new TypeReference<List<CronTask>>() {});
+                        for (CronTask cronTask : cronTasks) {
+                            if (cronTask != null) {
+                                validateAndProcessCronTask(cronTask);
+                            }
+                        }
+                        unixAccount.setCrontab(cronTasks);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        validate(unixAccount);
+        store(unixAccount);
+
+        return unixAccount;
     }
 
     public void updateQuota(String accountId, Long quotaSize) {
@@ -81,7 +132,11 @@ public class GovernorOfUnixAccount extends LordOfResources {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        repository.delete(resourceId);
+        if (repository.findOne(resourceId) == null) {
+            throw new ParameterValidateException("Не найден UnixAccount с ID: " + resourceId);
+        } else {
+            repository.delete(resourceId);
+        }
     }
 
     @Override
@@ -102,43 +157,52 @@ public class GovernorOfUnixAccount extends LordOfResources {
             unixAccount.setName(getFreeUnixAccountName());
         }
 
-        String homeDir = cleaner.cleanString((String) serviceMessage.getParam("homeDir"));
-        if (homeDir == null || homeDir.equals("")) {
-            homeDir = "/home/" + unixAccount.getName();
-        }
-
-        String serverId = cleaner.cleanString((String) serviceMessage.getParam("serverId"));
-        if (serverId == null || serverId.equals("")) {
-            serverId = getActiveHostingServerId();
-        }
-
-        if (serviceMessage.getParam("quota") == null) {
-            throw new ParameterValidateException("Квота не может быть нуль");
-        }
-
-        Long quota = ((Number) serviceMessage.getParam("quota")).longValue();
-        if (quota == 0) {
-            throw new ParameterValidateException("Квота не может быть нуль");
-        }
-
+        String homeDir;
+        String serverId;
+        Long quota;
         Long quotaUsed;
-        if (serviceMessage.getParam("quotaUsed") == null) {
-            quotaUsed = 0L;
-        } else {
-            quotaUsed = ((Number) serviceMessage.getParam("quotaUsed")).longValue();
-        }
+        String passwordHash;
+        String password;
+        List<CronTask> cronTasks = new ArrayList<>();
 
-        String passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));
-        String password = cleaner.cleanString((String) serviceMessage.getParam("password"));
-        if (!(password == null || password.equals(""))) {
-            try {
-                passwordHash = PasswordManager.forUbuntu(password);
-            } catch (UnsupportedEncodingException e) {
-                throw new ParameterValidateException("Невозможно обработать пароль:" + password);
+        try {
+            homeDir = cleaner.cleanString((String) serviceMessage.getParam("homeDir"));
+            if (homeDir == null || homeDir.equals("")) {
+                homeDir = "/home/" + unixAccount.getName();
             }
-        }
 
-        List<CronTask> cronTasks = (List<CronTask>) serviceMessage.getParam("cronTasks");
+            serverId = cleaner.cleanString((String) serviceMessage.getParam("serverId"));
+            if (serverId == null || serverId.equals("")) {
+                serverId = getActiveHostingServerId();
+            }
+
+            if (serviceMessage.getParam("quota") == null) {
+                throw new ParameterValidateException("Квота не может быть нуль");
+            }
+
+            quota = ((Number) serviceMessage.getParam("quota")).longValue();
+
+            if (serviceMessage.getParam("quotaUsed") == null) {
+                quotaUsed = 0L;
+            } else {
+                quotaUsed = ((Number) serviceMessage.getParam("quotaUsed")).longValue();
+            }
+
+            passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));
+            password = cleaner.cleanString((String) serviceMessage.getParam("password"));
+            if (!(password == null || password.equals(""))) {
+                try {
+                    passwordHash = PasswordManager.forUbuntu(password);
+                } catch (UnsupportedEncodingException e) {
+                    throw new ParameterValidateException("Невозможно обработать пароль:" + password);
+                }
+            }
+            if (serviceMessage.getParam("crontab") != null) {
+                cronTasks = (List<CronTask>) serviceMessage.getParam("crontab");
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
         Boolean writable = (Boolean) serviceMessage.getParam("writable");
         if (writable == null) {
             writable = true;
@@ -175,6 +239,9 @@ public class GovernorOfUnixAccount extends LordOfResources {
         }
         if (unixAccount.getHomeDir() == null || unixAccount.getHomeDir().equals("")) {
             throw new ParameterValidateException("homedir не может быть пустым");
+        }
+        if (unixAccount.getQuota() == null || unixAccount.getQuota() <= 0) {
+            throw new ParameterValidateException("Квота должна быть числом, большим 0");
         }
 
         if (unixAccount.getHomeDir().equals("/home") ||
@@ -355,4 +422,21 @@ public class GovernorOfUnixAccount extends LordOfResources {
         return (uid <= MAX_UID && uid >= MIN_UID);
     }
 
+    private void validateAndProcessCronTask(CronTask cronTask) throws ParameterValidateException {
+        if (cronTask.getExecTime() == null) {
+            throw new ParameterValidateException("Не указано время исполнения");
+        }
+        if (cronTask.getCommand() == null) {
+            throw new ParameterValidateException("Не указана команда для исполнения");
+        }
+        if (cronTask.getSwitchedOn() == null) {
+            cronTask.setSwitchedOn(true);
+        }
+
+        try {
+            cronTask.setExecTime(cronTask.getExecTime());
+        } catch (IllegalArgumentException e) {
+            throw new ParameterValidateException("Неверный формат времени выполнения задания");
+        }
+    }
 }

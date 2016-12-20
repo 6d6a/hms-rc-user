@@ -11,10 +11,11 @@ import java.util.Locale;
 
 import static com.cronutils.model.CronType.UNIX;
 
-public class CronTask extends Resource {
+public class CronTask {
     private String execTime;
     private String execTimeDescription;
     private String command;
+    private Boolean switchedOn = true;
 
     public String getExecTime() {
         return execTime;
@@ -46,7 +47,14 @@ public class CronTask extends Resource {
         this.command = command;
     }
 
-    @Override
+    public Boolean getSwitchedOn() {
+        return switchedOn;
+    }
+
+    public void setSwitchedOn(Boolean switchedOn) {
+        this.switchedOn = switchedOn;
+    }
+
     public void switchResource() {
         switchedOn = !switchedOn;
     }

@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
-import org.junit.Assert;
+import org.bson.types.ObjectId;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,15 +10,23 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.resources.CronTask;
+import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
+import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfUnixAccount;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
@@ -28,9 +37,19 @@ public class GovernorOfUnixAccountTest {
     private GovernorOfUnixAccount governor;
     @Autowired
     private UnixAccountRepository repository;
+    @Autowired
+    private Cleaner cleaner;
+
+    private List<UnixAccount> unixAccounts;
 
     @Before
     public void setUp() throws Exception {
+        unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
+        repository.save(unixAccounts);
+    }
+
+    @After
+    public void cleanUp() throws Exception {
         repository.deleteAll();
     }
 
@@ -63,11 +82,13 @@ public class GovernorOfUnixAccountTest {
 
     @Test
     public void getFreeUidWhenNoOneUsed() throws Exception {
+        repository.deleteAll();
         assertThat(governor.getFreeUid(), is(governor.MIN_UID));
     }
 
     @Test
     public void getFreeUidWhenAllUpperUidUsed() throws Exception {
+        repository.deleteAll();
         for (int i = (governor.MAX_UID - 3); i <= governor.MAX_UID; i++) {
             UnixAccount unixAccount = new UnixAccount();
             unixAccount.setUid(i);
@@ -107,6 +128,7 @@ public class GovernorOfUnixAccountTest {
 
     @Test
     public void getFreeNumNameWhenOnlyOneAccAndItsNameU2000() throws Exception {
+        repository.deleteAll();
         UnixAccount unixAccount = new UnixAccount();
         unixAccount.setName("u2000");
         repository.save(unixAccount);
@@ -115,6 +137,7 @@ public class GovernorOfUnixAccountTest {
 
     @Test
     public void freeNumName() throws Exception {
+        repository.deleteAll();
         UnixAccount unixAccount = new UnixAccount();
         unixAccount.setName("u134035");
         repository.save(unixAccount);
@@ -135,5 +158,24 @@ public class GovernorOfUnixAccountTest {
     @Test
     public void uidValid() throws Exception {
         assertThat(governor.isUidValid(2000), is(true));
+    }
+
+    @Test
+    public void update() throws Exception {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(unixAccounts.get(0).getAccountId());
+        serviceMessage.addParam("resourceId", unixAccounts.get(0).getId());
+        serviceMessage.addParam("keyPair", "GENERATE");
+        CronTask cronTask = new CronTask();
+        cronTask.setCommand("php ./index.php");
+        cronTask.setExecTime("* 1 1 1 1");
+        serviceMessage.addParam("crontab", Arrays.asList(cronTask));
+        SSHKeyPair keyPair = unixAccounts.get(0).getKeyPair();
+        System.out.println(unixAccounts.get(0).getCrontab());
+        governor.update(serviceMessage);
+        UnixAccount unixAccount = repository.findOne(unixAccounts.get(0).getId());
+        assertThat(unixAccount.getKeyPair().toString(), not(keyPair.toString()));
+        System.out.println(unixAccount.getCrontab());
     }
 }
