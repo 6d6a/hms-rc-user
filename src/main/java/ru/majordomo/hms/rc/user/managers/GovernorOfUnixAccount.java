@@ -101,7 +101,13 @@ public class GovernorOfUnixAccount extends LordOfResources {
                         break;
                     case "crontab":
                         List<CronTask> cronTasks = (List<CronTask>) entry.getValue();
-                        cronTasks.stream().filter(cronTask -> cronTask != null).forEach(this::validateAndProcessCronTask);
+                        if (cronTasks.get(0) instanceof CronTask) {
+                            for (CronTask cronTask : cronTasks) {
+                                if (cronTask != null) {
+                                    validateAndProcessCronTask(cronTask);
+                                }
+                            }
+                        }
                         unixAccount.setCrontab(cronTasks);
                         break;
                     default:
