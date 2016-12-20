@@ -168,7 +168,6 @@ public class GovernorOfUnixAccountTest {
         serviceMessage.addParam("resourceId", unixAccounts.get(0).getId());
 //        serviceMessage.addParam("keyPair", "GENERATE");
         CronTask cronTask = new CronTask();
-        cronTask.setName("some_name");
         cronTask.setCommand("php ./index.php");
         cronTask.setExecTime("* 1 1 1 1");
         serviceMessage.addParam("crontab", Arrays.asList(cronTask));
