@@ -101,9 +101,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
                         break;
                     case "crontab":
                         List<CronTask> cronTasks = (List<CronTask>) entry.getValue();
-                        for (CronTask cronTask : cronTasks) {
-                            cronTask.setExecTime(cronTask.getExecTime());
-                        }
+                        cronTasks.stream().filter(cronTask -> cronTask != null).forEach(this::validateAndProcessCronTask);
                         unixAccount.setCrontab(cronTasks);
                         break;
                     default:
@@ -423,8 +421,21 @@ public class GovernorOfUnixAccount extends LordOfResources {
         return (uid <= MAX_UID && uid >= MIN_UID);
     }
 
-    public List<CronTask> validateCronTasks(UnixAccount unixAccount) {
-        List<CronTask> cronTasks = unixAccount.getCrontab();
-        return cronTasks;
+    private void validateAndProcessCronTask(CronTask cronTask) throws ParameterValidateException {
+        if (cronTask.getExecTime() == null) {
+            throw new ParameterValidateException("Не указано время исполнения");
+        }
+        if (cronTask.getCommand() == null) {
+            throw new ParameterValidateException("Не указана команда для исполнения");
+        }
+        if (cronTask.getSwitchedOn() == null) {
+            cronTask.setSwitchedOn(true);
+        }
+
+        try {
+            cronTask.setExecTime(cronTask.getExecTime());
+        } catch (IllegalArgumentException e) {
+            throw new ParameterValidateException("Неверный формат времени выполнения задания");
+        }
     }
 }
