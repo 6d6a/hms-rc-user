@@ -27,6 +27,7 @@ import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigMailboxRestController;
 
@@ -46,7 +47,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-        classes = {RedisConfig.class, ConfigStaffResourceControllerClient.class, ConfigMailboxRestController.class},
+        classes = {
+                RedisConfig.class,
+                ConfigStaffResourceControllerClient.class,
+                ConfigMailboxRestController.class,
+                ConfigDomainRegistrarClient.class
+        },
         webEnvironment = RANDOM_PORT,
         properties = {
                 "default.redis.host:127.0.0.1",

@@ -20,6 +20,7 @@ import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfMailbox;
 
@@ -36,7 +37,12 @@ import static org.hamcrest.CoreMatchers.not;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-        classes = {RedisConfig.class, ConfigGovernorOfMailbox.class, ConfigStaffResourceControllerClient.class},
+        classes = {
+                RedisConfig.class,
+                ConfigGovernorOfMailbox.class,
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class
+        },
         webEnvironment = NONE,
         properties = {
                 "default.redis.host:127.0.0.1",

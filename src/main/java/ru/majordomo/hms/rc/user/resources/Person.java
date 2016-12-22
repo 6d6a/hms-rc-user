@@ -14,8 +14,8 @@ public class Person extends Resource {
     private LegalEntity legalEntity;
     private String country;
     private String postalAddress;
-    private Boolean owner;
     private String nicHandle;
+    private List<String> linkedAccountIds = new ArrayList<>();
 
     public String getNicHandle() {
         return nicHandle;
@@ -23,14 +23,6 @@ public class Person extends Resource {
 
     public void setNicHandle(String nicHandle) {
         this.nicHandle = nicHandle;
-    }
-
-    public Boolean getOwner() {
-        return owner;
-    }
-
-    public void setOwner(Boolean owner) {
-        this.owner = owner;
     }
 
     public String getPostalAddress() {
@@ -102,6 +94,26 @@ public class Person extends Resource {
         this.legalEntity = legalEntity;
     }
 
+    public List<String> getLinkedAccountIds() {
+        return linkedAccountIds;
+    }
+
+    public void setLinkedAccountIds(List<String> linkedAccountIds) {
+        this.linkedAccountIds = linkedAccountIds;
+    }
+
+    public void addLinkedAccountId(String linkedAccountId) {
+        if (!linkedAccountIds.contains(linkedAccountId)) {
+            linkedAccountIds.add(linkedAccountId);
+        }
+    }
+
+    public void removeLinkedAccountId(String linkedAccountId) {
+        if (linkedAccountIds.contains(linkedAccountId)) {
+            linkedAccountIds.remove(linkedAccountId);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -128,7 +140,6 @@ public class Person extends Resource {
                 ", legalEntity=" + legalEntity +
                 ", country='" + country + '\'' +
                 ", postalAddress='" + postalAddress + '\'' +
-                ", owner=" + owner +
                 '}';
     }
 }

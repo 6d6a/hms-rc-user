@@ -33,7 +33,6 @@ public class ServiceMessageGenerator {
         serviceMessage.addParam("legalEntity", person.getLegalEntity());
         serviceMessage.addParam("country", person.getCountry());
         serviceMessage.addParam("postalAddress", person.getPostalAddress());
-        serviceMessage.addParam("owner", person.getOwner());
 
         return serviceMessage;
     }

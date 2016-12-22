@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrar;
+import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
@@ -24,7 +24,7 @@ public class GovernorOfDomain extends LordOfResources {
     private Cleaner cleaner;
     private DomainRepository repository;
     private GovernorOfPerson governorOfPerson;
-    private DomainRegistrar registrar;
+    private DomainRegistrarClient registrar;
 
 
     @Autowired
@@ -43,7 +43,7 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Autowired
-    public void setRegistrar(DomainRegistrar registrar) {
+    public void setRegistrar(DomainRegistrarClient registrar) {
         this.registrar = registrar;
     }
 
@@ -56,7 +56,7 @@ public class GovernorOfDomain extends LordOfResources {
             domain = (Domain) buildResourceFromServiceMessage(serviceMessage);
             validate(domain);
             if (needRegister) {
-                registrar.register(domain);
+//                registrar.registerDomain(domain.getName());
             }
             store(domain);
 

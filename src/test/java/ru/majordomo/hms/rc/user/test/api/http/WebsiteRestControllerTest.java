@@ -30,6 +30,7 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigWebsiteRestController;
 
@@ -48,7 +49,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigWebsiteRestController.class}, webEnvironment = RANDOM_PORT, properties = {
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigWebsiteRestController.class,
+                ConfigDomainRegistrarClient.class
+        },
+        webEnvironment = RANDOM_PORT, properties = {
         "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",
         "default.website.documet.root.pattern:/www",
         "default.website.charset:UTF8",

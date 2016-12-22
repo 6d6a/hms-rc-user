@@ -7,11 +7,9 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PhoneNumberManager;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -27,6 +25,12 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 public class GovernorOfPerson extends LordOfResources {
     private PersonRepository repository;
     private Cleaner cleaner;
+    private DomainRegistrarClient domainRegistrarClient;
+
+    @Autowired
+    public void setDomainRegistrarClient(DomainRegistrarClient domainRegistrarClient) {
+        this.domainRegistrarClient = domainRegistrarClient;
+    }
 
     @Autowired
     public void setRepository(PersonRepository repository) {
@@ -44,6 +48,13 @@ public class GovernorOfPerson extends LordOfResources {
         try {
             person = (Person) buildResourceFromServiceMessage(serviceMessage);
             validate(person);
+
+            try {
+                domainRegistrarClient.createPerson(person);
+            } catch (Exception e) {
+                logger.error("Не удалось создать персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
+            }
+
             store(person);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
@@ -54,11 +65,80 @@ public class GovernorOfPerson extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        } else {
+            throw new ParameterValidateException("Не указан resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        Person person = (Person) build(keyValue);
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "name":
+                        person.setName(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "country":
+                        person.setCountry(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "phoneNumbers":
+                        person.setPhoneNumbers(cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("phoneNumbers")));
+                        break;
+                    case "emailAddresses":
+                        person.setEmailAddresses(cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses")));
+                        break;
+                    case "postalAddress":
+                        person.setPostalAddress(cleaner.cleanString((String) serviceMessage.getParam("postalAddress")));
+                        break;
+                    case "passport":
+                        Map<String, String> passportMap = (Map<String, String>) entry.getValue();
+                        Passport passport = null;
+                        if (passportMap != null) {
+                            passport = buildPassportFromMap(passportMap);
+                        }
+                        person.setPassport(passport);
+                        break;
+                    case "legalEntity":
+                        Map<String, String> legalEntityMap = (Map<String, String>) entry.getValue();
+                        LegalEntity legalEntity = null;
+                        if (legalEntityMap != null) {
+                            legalEntity = buildLegalEntityFromMap(legalEntityMap);
+                        }
+                        person.setLegalEntity(legalEntity);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        validate(person);
+
+        try {
+            domainRegistrarClient.updatePerson(person);
+        } catch (Exception e) {
+            logger.error("Не удалось обновить персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
+        }
+
+        store(person);
+
+        return person;
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
+        if (repository.findOne(resourceId) == null) {
+            throw new ResourceNotFoundException("Не найдена персона с ID: " + resourceId);
+        }
         repository.delete(resourceId);
     }
 
@@ -75,7 +155,6 @@ public class GovernorOfPerson extends LordOfResources {
         LordOfResources.setResourceParams(person, serviceMessage, cleaner);
         String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
         String postalAddress = cleaner.cleanString((String) serviceMessage.getParam("postalAddress"));
-        Boolean owner = (Boolean) serviceMessage.getParam("owner");
         List<String> phoneNumbers = new ArrayList<>();
         if (serviceMessage.getParam("phoneNumbers") != null) {
             phoneNumbers = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("phoneNumbers"));
@@ -84,31 +163,16 @@ public class GovernorOfPerson extends LordOfResources {
         if (serviceMessage.getParam("emailAddresses") != null) {
             emailAddresses = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses"));
         }
-        Object object = (Object) serviceMessage.getParam("passport");
+        Map<String, String> passportMap = (Map<String, String>) serviceMessage.getParam("passport");
         Passport passport = null;
-        if (object != null) {
-            passport = new Passport();
-            Map<String, String> passportMap = (Map<String, String>) object;
-            passport.setNumber(passportMap.get("number"));
-            passport.setIssuedOrg(passportMap.get("issuedOrg"));
-            passport.setIssuedDate(passportMap.get("issuedDate"));
-            passport.setBirthday(passportMap.get("birthday"));
-            passport.setMainPage(passportMap.get("mainPage"));
-            passport.setRegisterPage(passportMap.get("registerPage"));
-            passport.setAddress(passportMap.get("address"));
+        if (passportMap != null) {
+            passport = buildPassportFromMap(passportMap);
         }
 
-        object = (Object) serviceMessage.getParam("legalEntity");
+        Map<String, String> legalEntityMap = (Map<String, String>) serviceMessage.getParam("legalEntity");
         LegalEntity legalEntity = null;
-        if (object != null) {
-            legalEntity = new LegalEntity();
-            Map<String, String> legalEntityMap = (Map<String, String>) object;
-            legalEntity.setInn(legalEntityMap.get("inn"));
-            legalEntity.setOkpo(legalEntityMap.get("okpo"));
-            legalEntity.setKpp(legalEntityMap.get("kpp"));
-            legalEntity.setOgrn(legalEntityMap.get("ogrn"));
-            legalEntity.setOkvedCodes(legalEntityMap.get("okved"));
-            legalEntity.setAddress(legalEntityMap.get("address"));
+        if (legalEntityMap != null) {
+            legalEntity = buildLegalEntityFromMap(legalEntityMap);
         }
         String nicHandle = cleaner.cleanString((String) serviceMessage.getParam("nicHandle"));
 
@@ -118,7 +182,6 @@ public class GovernorOfPerson extends LordOfResources {
         person.setLegalEntity(legalEntity);
         person.setCountry(country);
         person.setPostalAddress(postalAddress);
-        person.setOwner(owner);
         person.setNicHandle(nicHandle);
 
         logger.debug("Action ID: " + actionId +
@@ -131,19 +194,11 @@ public class GovernorOfPerson extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         Person person = (Person) resource;
-        if (person.getAccountId() == null) {
+        if (person.getAccountId() == null || person.getAccountId().equals("")) {
             throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
 
-        if (person.getAccountId().equals("")) {
-            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
-        }
-
-        if (person.getName() == null) {
-            throw new ParameterValidateException("Имя персоны не может быть пустым");
-        }
-
-        if (person.getName().equals("")) {
+        if (person.getName() == null || person.getName().equals("")) {
             throw new ParameterValidateException("Имя персоны не может быть пустым");
         }
 
@@ -151,11 +206,7 @@ public class GovernorOfPerson extends LordOfResources {
             person.setSwitchedOn(true);
         }
 
-        if (person.getEmailAddresses() == null) {
-            throw new ParameterValidateException("Должен быть указан хотя бы 1 email адрес");
-        }
-
-        if (person.getEmailAddresses().size() == 0) {
+        if (person.getEmailAddresses() == null || person.getEmailAddresses().size() == 0) {
             throw new ParameterValidateException("Должен быть указан хотя бы 1 email адрес");
         }
 
@@ -178,25 +229,8 @@ public class GovernorOfPerson extends LordOfResources {
             }
         }
 
-        if (person.getOwner() == null) {
-            List<Person> persons = repository.findByAccountId(person.getAccountId());
-            Boolean accHasOwner = false;
-            for (Person storedPerson: persons) {
-                if (storedPerson.getOwner()) {
-                    accHasOwner = true;
-                }
-            }
-            if (!accHasOwner) {
-                person.setOwner(true);
-            }
-        }
-
         if (person.getCountry() == null || person.getCountry().equals("")) {
             person.setCountry("RU");
-        }
-
-        if (person.getPassport() != null && person.getLegalEntity() != null) {
-            throw new ParameterValidateException("Passport и LegalEntity не могут быть указаны вместе");
         }
     }
 
@@ -217,30 +251,17 @@ public class GovernorOfPerson extends LordOfResources {
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        Person person = new Person();
+        Person person = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
             person = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
-        }
-
-        boolean byAccountId = false;
-        boolean byOwner = false;
-        boolean OwnerState = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-            if (entry.getKey().equals("owner")) {
-                byOwner = true;
-                if (entry.getValue().equals("true")) {
-                    OwnerState = true;
-                }
+            if (person == null) {
+                person = repository.findByIdAndLinkedAccountIds(keyValue.get("resourceId"), keyValue.get("accountId"));
             }
         }
 
-        if (byAccountId && byOwner) {
-            person = repository.findByAccountIdAndOwner(keyValue.get("accountId"), OwnerState);
+        if (person == null) {
+            throw new ResourceNotFoundException("Не найдена персона с ID: " + keyValue.get("resourceId") + " для аккаунта с AccountID: " + keyValue.get("accountId"));
         }
 
         return person;
@@ -260,6 +281,7 @@ public class GovernorOfPerson extends LordOfResources {
 
         if (byAccountId) {
             buildedPersons = repository.findByAccountId(keyValue.get("accountId"));
+            buildedPersons.addAll(repository.findByLinkedAccountIds(keyValue.get("accountId")));
         }
 
         return buildedPersons;
@@ -274,6 +296,29 @@ public class GovernorOfPerson extends LordOfResources {
     public void store(Resource resource) {
         Person person = (Person) resource;
         repository.save(person);
+    }
+
+    public Passport buildPassportFromMap(Map<String, String> passportMap) {
+        Passport passport = new Passport();
+        passport.setNumber(passportMap.get("number"));
+        passport.setIssuedOrg(passportMap.get("issuedOrg"));
+        passport.setIssuedDate(passportMap.get("issuedDate"));
+        passport.setBirthday(passportMap.get("birthday"));
+        passport.setMainPage(passportMap.get("mainPage"));
+        passport.setRegisterPage(passportMap.get("registerPage"));
+        passport.setAddress(passportMap.get("address"));
+        return passport;
+    }
+
+    public LegalEntity buildLegalEntityFromMap(Map<String, String> legalEntityMap) {
+        LegalEntity legalEntity = new LegalEntity();
+        legalEntity.setInn(legalEntityMap.get("inn"));
+        legalEntity.setOkpo(legalEntityMap.get("okpo"));
+        legalEntity.setKpp(legalEntityMap.get("kpp"));
+        legalEntity.setOgrn(legalEntityMap.get("ogrn"));
+        legalEntity.setOkvedCodes(legalEntityMap.get("okved"));
+        legalEntity.setAddress(legalEntityMap.get("address"));
+        return legalEntity;
     }
 
 }
