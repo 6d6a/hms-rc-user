@@ -47,7 +47,6 @@ public class ResourceGenerator {
         parovozov.addEmailAddress("parovozov@gmail.com");
         parovozov.addPhoneNumber("+79110000911");
         parovozov.addPhoneNumber("+79110000001");
-        parovozov.setOwner(true);
 
         Passport passport = generatePassport();
         parovozov.setPassport(passport);
@@ -61,7 +60,6 @@ public class ResourceGenerator {
         hosting.addEmailAddress("info@majordomo.ru");
         hosting.addPhoneNumber("+78123353545");
         hosting.addPhoneNumber("+74957272278");
-        hosting.setOwner(false);
 
         LegalEntity hostingInfo = generateLegalEntity();
 

@@ -27,6 +27,7 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
 
@@ -37,28 +38,35 @@ import java.util.List;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigGovernorOfWebsite.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
-        "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",
-        "default.website.documet.root.pattern:/www",
-        "default.website.charset:UTF8",
-        "default.website.ssi.enabled:true",
-        "default.website.ssi.file.extensions:shtml,shtm",
-        "default.website.cgi.enabled:false",
-        "default.website.cgi.file.extensions:cgi,pl",
-        "default.website.script.aliace:cgi-bin",
-        "default.website.ddos.protection:true",
-        "default.website.auto.sub.domain:false",
-        "default.website.access.by.old.http.version:false",
-        "default.website.static.file.extensions:avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
-        "default.website.index.file.list:index.php,index.html,index.htm",
-        "default.website.custom.user.conf:",
-        "default.website.access.log.enabled:true",
-        "default.website.error.log.enabled:true",
-        "default.website.allow.url.fopen:false",
-        "default.website.mbstring.func.overload:0",
-        "default.website.follow.sym.links:true",
-        "default.website.multi.views:false"
-    }
+@SpringBootTest(
+        classes = {
+                ConfigGovernorOfWebsite.class,
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class
+        },
+        webEnvironment = NONE,
+        properties = {
+                "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",
+                "default.website.documet.root.pattern:/www",
+                "default.website.charset:UTF8",
+                "default.website.ssi.enabled:true",
+                "default.website.ssi.file.extensions:shtml,shtm",
+                "default.website.cgi.enabled:false",
+                "default.website.cgi.file.extensions:cgi,pl",
+                "default.website.script.aliace:cgi-bin",
+                "default.website.ddos.protection:true",
+                "default.website.auto.sub.domain:false",
+                "default.website.access.by.old.http.version:false",
+                "default.website.static.file.extensions:avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
+                "default.website.index.file.list:index.php,index.html,index.htm",
+                "default.website.custom.user.conf:",
+                "default.website.access.log.enabled:true",
+                "default.website.error.log.enabled:true",
+                "default.website.allow.url.fopen:false",
+                "default.website.mbstring.func.overload:0",
+                "default.website.follow.sym.links:true",
+                "default.website.multi.views:false"
+        }
 )
 public class GovernorOfWebsiteTest {
     @Autowired

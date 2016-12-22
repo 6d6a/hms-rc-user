@@ -46,12 +46,4 @@ public class PersonRestController {
         return governor.buildAll(keyValue);
     }
 
-    @RequestMapping(value = {"/{accountId}/person/owner", "/{accountId}/person/owner/"}, method = RequestMethod.GET)
-    public Person readOneByAccountIdAndParams(@PathVariable String accountId) {
-        Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("accountId", accountId);
-        keyValue.put("owner", "true");
-        return (Person) governor.build(keyValue);
-    }
-
 }
