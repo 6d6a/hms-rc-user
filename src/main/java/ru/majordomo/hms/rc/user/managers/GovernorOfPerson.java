@@ -2,7 +2,6 @@ package ru.majordomo.hms.rc.user.managers;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 
-import feign.FeignException;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
