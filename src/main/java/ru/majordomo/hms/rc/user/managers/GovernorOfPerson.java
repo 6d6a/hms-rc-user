@@ -52,7 +52,7 @@ public class GovernorOfPerson extends LordOfResources {
 
             try {
                 domainRegistrarClient.createPerson(person);
-            } catch (FeignException e) {
+            } catch (Exception e) {
                 logger.error("Не удалось создать персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
             }
 
@@ -126,7 +126,7 @@ public class GovernorOfPerson extends LordOfResources {
 
         try {
             domainRegistrarClient.updatePerson(person);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             logger.error("Не удалось обновить персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
         }
 
