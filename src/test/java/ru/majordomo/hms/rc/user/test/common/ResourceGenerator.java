@@ -162,6 +162,41 @@ public class ResourceGenerator {
         return batchOfDOmains;
     }
 
+    public static List<Domain> generateBatchOfDomains(List<Person> batchOfPersons) {
+        List<Domain> batchOfDOmains = new ArrayList<>();
+
+        RegSpec regSpec = new RegSpec();
+        regSpec.setRegistrar(NETHOUSE);
+        regSpec.setCreatedAsString("2016-10-01");
+        regSpec.setFreeDateAsString("2017-11-01");
+        regSpec.setPaidTillAsString("2016-10-01");
+        regSpec.addState(DELEGATED);
+        regSpec.addState(VERIFIED);
+
+        Domain ruDomain = new Domain();
+        ruDomain.setId(ObjectId.get().toString());
+        ruDomain.setAccountId(batchOfPersons.get(0).getAccountId());
+        ruDomain.setName("majordomo.ru");
+        ruDomain.setSwitchedOn(true);
+        ruDomain.setDnsResourceRecords(generateBatchOfDNSRecords("majordomo.ru"));
+        ruDomain.setRegSpec(regSpec);
+        ruDomain.setPerson(batchOfPersons.get(0));
+
+        Domain rfDomain = new Domain();
+        rfDomain.setId(ObjectId.get().toString());
+        rfDomain.setAccountId(batchOfPersons.get(1).getAccountId());
+        rfDomain.setName("мажордомо.рф");
+        rfDomain.setSwitchedOn(true);
+        rfDomain.setPerson(batchOfPersons.get(1));
+        rfDomain.setDnsResourceRecords(generateBatchOfDNSRecords("мажордомо.рф"));
+        rfDomain.setRegSpec(regSpec);
+
+        batchOfDOmains.add(ruDomain);
+        batchOfDOmains.add(rfDomain);
+
+        return batchOfDOmains;
+    }
+
     public static List<DNSResourceRecord> generateBatchOfDNSRecords(String domainName) {
         List<DNSResourceRecord> records = new ArrayList<>();
         DNSResourceRecord aRecord = new DNSResourceRecord();

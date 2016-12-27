@@ -87,4 +87,15 @@ public class RegSpec {
     public void setFreeDateAsString(String freeDate) {
         this.freeDate = LocalDate.parse(freeDate);
     }
+
+    @Override
+    public String toString() {
+        return " RegSpec: " +
+                "{ states=" + states +
+                ", registrar=" + registrar +
+                ", created=" + created +
+                ", paidTill=" + paidTill +
+                ", freeDate=" + freeDate +
+                " }";
+    }
 }

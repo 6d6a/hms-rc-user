@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 @Service
 public class GovernorOfDomain extends LordOfResources {
@@ -24,12 +26,18 @@ public class GovernorOfDomain extends LordOfResources {
     private Cleaner cleaner;
     private DomainRepository repository;
     private GovernorOfPerson governorOfPerson;
+    private GovernorOfSSLCertificate governorOfSSLCertificate;
     private DomainRegistrarClient registrar;
 
 
     @Autowired
     public void setGovernorOfPerson(GovernorOfPerson governorOfPerson) {
         this.governorOfPerson = governorOfPerson;
+    }
+
+    @Autowired
+    public void setGovernorOfSSLCertificate(GovernorOfSSLCertificate governorOfSSLCertificate) {
+        this.governorOfSSLCertificate = governorOfSSLCertificate;
     }
 
     @Autowired
@@ -51,12 +59,24 @@ public class GovernorOfDomain extends LordOfResources {
     public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Domain domain;
         try {
-            Boolean needRegister = (Boolean) serviceMessage.getParam("register");
+            Boolean needRegister = null;
+            if (serviceMessage.getParam("register") != null) {
+                needRegister =(Boolean) serviceMessage.getParam("register");
+            }
 
             domain = (Domain) buildResourceFromServiceMessage(serviceMessage);
             validate(domain);
-            if (needRegister) {
-//                registrar.registerDomain(domain.getName());
+            if (needRegister != null && needRegister) {
+                try {
+                     registrar.registerDomain(domain.getPerson().getNicHandle(), domain.getName());
+                } catch (Exception e) {
+                    throw new ParameterValidateException();
+                }
+                try {
+                    domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                } catch (Exception e) {
+                    throw new ParameterValidateException();
+                }
             }
             store(domain);
 
@@ -81,7 +101,10 @@ public class GovernorOfDomain extends LordOfResources {
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         LordOfResources.setResourceParams(domain, serviceMessage, cleaner);
-        String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
+        String domainPersonId = null;
+        if (serviceMessage.getParam("personId") != null) {
+             domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
+        }
         domain.setPerson((Person) governorOfPerson.build(domainPersonId));
         return domain;
     }
@@ -89,9 +112,21 @@ public class GovernorOfDomain extends LordOfResources {
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         Domain domain = (Domain) resource;
+        if (domain.getName() == null || domain.getName().equals("")) {
+            throw new ParameterValidateException("Имя домена не может быть пустым");
+        }
         validateDomainName(domain.getName());
+
         Person domainPerson = domain.getPerson();
+        if (domainPerson == null) {
+            throw new ParameterValidateException("Персона должна быть указана");
+        }
         governorOfPerson.validate(domainPerson);
+
+        SSLCertificate sslCertificate = domain.getSslCertificate();
+        if (sslCertificate != null) {
+            governorOfSSLCertificate.validate(sslCertificate);
+        }
     }
 
     @Override
@@ -117,6 +152,10 @@ public class GovernorOfDomain extends LordOfResources {
 
         if (hasResourceIdAndAccountId(keyValue)) {
             domain = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
+        }
+
+        if (hasNameAndAccountId(keyValue)) {
+            domain = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
         }
 
         if (domain == null) {

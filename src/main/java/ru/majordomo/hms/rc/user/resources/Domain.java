@@ -13,9 +13,13 @@ public class Domain extends Resource {
     @Transient
     private Person person;
 
+    @Transient
+    private SSLCertificate sslCertificate;
+
     private String personId;
     private RegSpec regSpec;
     private List<DNSResourceRecord> dnsResourceRecords;
+    private String sslCertificateId;
 
     @Override
     public void switchResource() {
@@ -55,6 +59,15 @@ public class Domain extends Resource {
         this.personId = person.getId();
     }
 
+    public SSLCertificate getSslCertificate() {
+        return sslCertificate;
+    }
+
+    public void setSslCertificate(SSLCertificate sslCertificate) {
+        this.sslCertificate = sslCertificate;
+        this.sslCertificateId = sslCertificate.getId();
+    }
+
     @JsonIgnore
     public String getPersonId() {
         return personId;
@@ -62,6 +75,15 @@ public class Domain extends Resource {
 
     public void setPersonId(String personId) {
         this.personId = personId;
+    }
+
+    @JsonIgnore
+    public String getSslCertificateId() {
+        return sslCertificateId;
+    }
+
+    public void setSslCertificateId(String sslCertificateId) {
+        this.sslCertificateId = sslCertificateId;
     }
 
     @Override

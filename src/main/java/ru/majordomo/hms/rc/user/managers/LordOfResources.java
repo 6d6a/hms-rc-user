@@ -54,6 +54,23 @@ public abstract class LordOfResources {
         return (byAccountId && byId);
     }
 
+    protected Boolean hasNameAndAccountId(Map<String, String> keyValue) {
+
+        boolean byAccountId = false;
+        boolean byName = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("name")) {
+                byName = true;
+            }
+            if (entry.getKey().equals("accountId")) {
+                byAccountId = true;
+            }
+        }
+
+        return (byAccountId && byName);
+    }
+
     public static void setResourceParams(Resource resource,
                                          ServiceMessage serviceMessage,
                                          Cleaner cleaner) throws ClassCastException {
