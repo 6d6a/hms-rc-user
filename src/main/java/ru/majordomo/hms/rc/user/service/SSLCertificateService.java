@@ -76,7 +76,7 @@ public class SSLCertificateService {
             for (SSLCertificate sslCertificate : certificates) {
                 try {
                     sslCertificate = letsEncrypt.requestCertificateChallenge(sslCertificate);
-                    repository.save(sslCertificate);
+                    governor.store(sslCertificate);
                 } catch (IOException | AcmeException e) {
                     e.printStackTrace();
                 }
@@ -94,7 +94,7 @@ public class SSLCertificateService {
             for (SSLCertificate sslCertificate : certificates) {
                 try {
                     sslCertificate = letsEncrypt.checkChallenge(sslCertificate);
-                    repository.save(sslCertificate);
+                    governor.store(sslCertificate);
                     SslCertificateActionIdentity actionIdentity = actionIdentityRepository.findBySslCertificateId(sslCertificate.getId());
                     if (actionIdentity != null) {
                         ServiceMessage serviceMessage = governor.createSslCertificateServiceMessageForTE(sslCertificate.getId());
@@ -118,7 +118,7 @@ public class SSLCertificateService {
             for (SSLCertificate sslCertificate : certificates) {
                 try {
                     sslCertificate = letsEncrypt.renewCertificate(sslCertificate);
-                    repository.save(sslCertificate);
+                    governor.store(sslCertificate);
                 } catch (IOException | AcmeException e) {
                     e.printStackTrace();
                 }
@@ -138,7 +138,7 @@ public class SSLCertificateService {
         if (!certificates.isEmpty()) {
             for (SSLCertificate sslCertificate : certificates) {
                 sslCertificate.setState(SSLCertificateState.NEED_TO_RENEW);
-                repository.save(sslCertificate);
+                governor.store(sslCertificate);
             }
         }
     }
@@ -168,7 +168,7 @@ public class SSLCertificateService {
                     governorOfDomain.store(domain);
 
                     sslCertificate.setState(SSLCertificateState.AWAITING_DNS_UPDATE);
-                    repository.save(sslCertificate);
+                    governor.store(sslCertificate);
                 }
             }
         }
@@ -196,7 +196,7 @@ public class SSLCertificateService {
                                     logger.info("Correct TXT record found");
 
                                     sslCertificate.setState(SSLCertificateState.DNS_UPDATED);
-                                    repository.save(sslCertificate);
+                                    governor.store(sslCertificate);
                                     return;
                                 }
                             }

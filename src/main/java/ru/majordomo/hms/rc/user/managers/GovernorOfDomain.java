@@ -68,14 +68,10 @@ public class GovernorOfDomain extends LordOfResources {
             validate(domain);
             if (needRegister != null && needRegister) {
                 try {
-                     registrar.registerDomain(domain.getPerson().getNicHandle(), domain.getName());
-                } catch (Exception e) {
-                    throw new ParameterValidateException();
-                }
-                try {
+                    registrar.registerDomain(domain.getPerson().getNicHandle(), domain.getName());
                     domain.setRegSpec(registrar.getRegSpec(domain.getName()));
                 } catch (Exception e) {
-                    throw new ParameterValidateException();
+                    throw new ParameterValidateException(e.getMessage());
                 }
             }
             store(domain);
