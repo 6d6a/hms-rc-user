@@ -7,10 +7,15 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
+import ru.majordomo.hms.rc.user.repositories.SslCertificateActionIdentityRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.SslCertificateActionIdentity;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificateState;
+import ru.majordomo.hms.rc.user.resources.WebSite;
 
 @EnableRabbit
 @Service
@@ -18,6 +23,13 @@ public class SslCertificateAMQPController extends BaseAMQPController {
 
     @Autowired
     private Sender sender;
+
+    private SslCertificateActionIdentityRepository actionIdentityRepository;
+
+    @Autowired
+    public void setActionIdentityRepository(SslCertificateActionIdentityRepository actionIdentityRepository) {
+        this.actionIdentityRepository = actionIdentityRepository;
+    }
 
     @Autowired
     public void setGovernor(GovernorOfSSLCertificate governor) {
@@ -55,5 +67,10 @@ public class SslCertificateAMQPController extends BaseAMQPController {
                 handleDeleteEventFromTE("ssl-certificate", serviceMessage);
                 break;
         }
+    }
+
+    private void sendReportToTE(String resourceId) {
+        ServiceMessage report = ((GovernorOfSSLCertificate) governor).createSslCertificateServiceMessageForTE(resourceId);
+        sender.send("ssl-certificate.delete", ((GovernorOfSSLCertificate) governor).getTaskExecutorRoutingKeyForSslCertificate(resourceId), report);
     }
 }

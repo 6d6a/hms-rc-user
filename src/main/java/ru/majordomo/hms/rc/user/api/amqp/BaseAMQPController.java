@@ -26,7 +26,7 @@ import ru.majordomo.hms.rc.user.resources.Serviceable;
 @EnableRabbit
 class BaseAMQPController {
 
-    private String applicationName;
+    protected String applicationName;
     private Sender sender;
     private StaffResourceControllerClient staffRcClient;
     private static final Logger logger = LoggerFactory.getLogger(BaseAMQPController.class);

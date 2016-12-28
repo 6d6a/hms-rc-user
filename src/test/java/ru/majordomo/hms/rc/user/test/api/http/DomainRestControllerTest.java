@@ -23,6 +23,7 @@ import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDomainRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigDomainRestController.class, ConfigDomainRegistrarClient.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = {ConfigDomainRestController.class, ConfigDomainRegistrarClient.class, ConfigStaffResourceControllerClient.class}, webEnvironment = RANDOM_PORT)
 public class DomainRestControllerTest {
 
     private MockMvc mockMvc;
@@ -86,7 +87,8 @@ public class DomainRestControllerTest {
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли домен"),
                                 fieldWithPath("person").description("Персона, на которую зарегистрирован домен"),
                                 fieldWithPath("regSpec").description("Регистрационная информация"),
-                                fieldWithPath("dnsResourceRecords").description("Список записей в зоне домена (DNS resource records)")
+                                fieldWithPath("dnsResourceRecords").description("Список записей в зоне домена (DNS resource records)"),
+                                fieldWithPath("sslCertificate").description("Объект SSL сертификата")
                         )
                 ));
     }

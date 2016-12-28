@@ -20,6 +20,7 @@ import ru.majordomo.hms.rc.user.resources.RegSpec;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDomain;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfPerson;
 
@@ -37,7 +38,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(
         classes = {
                 ConfigGovernorOfDomain.class,
-                ConfigDomainRegistrarClient.class
+                ConfigDomainRegistrarClient.class,
+                ConfigStaffResourceControllerClient.class
         },
         webEnvironment = NONE
 )

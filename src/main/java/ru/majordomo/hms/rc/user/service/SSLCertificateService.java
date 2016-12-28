@@ -97,8 +97,8 @@ public class SSLCertificateService {
                     repository.save(sslCertificate);
                     SslCertificateActionIdentity actionIdentity = actionIdentityRepository.findBySslCertificateId(sslCertificate.getId());
                     if (actionIdentity != null) {
-                        ServiceMessage serviceMessage = governor.createSslCertificateServiceMessageForTE(sslCertificate, actionIdentity.getActionIdentity());
-                        sender.send("ssl-certificate.create", governor.getTaskExecutorRoutingKeyForSslCertificate(sslCertificate), serviceMessage);
+                        ServiceMessage serviceMessage = governor.createSslCertificateServiceMessageForTE(sslCertificate.getId());
+                        sender.send("ssl-certificate.create", governor.getTaskExecutorRoutingKeyForSslCertificate(sslCertificate.getId()), serviceMessage);
                         actionIdentityRepository.delete(actionIdentity);
                     }
                 } catch (IOException | AcmeException e) {

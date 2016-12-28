@@ -11,5 +11,5 @@ public interface WebSiteRepository extends MongoRepository<WebSite,String> {
     List<WebSite> findByAccountId(String accountId);
     WebSite findByIdAndAccountId(String websiteId, String accountId);
     Long countByAccountId(String accountId);
-    WebSite findByDomainId(String domainId);
+    WebSite findByDomainIds(String domainId);
 }

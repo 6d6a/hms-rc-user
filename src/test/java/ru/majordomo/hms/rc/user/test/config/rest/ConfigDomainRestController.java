@@ -12,11 +12,13 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.http.DomainRestController;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
 @Configuration
@@ -51,6 +53,11 @@ public class ConfigDomainRestController extends AbstractMongoConfiguration {
     @Bean
     public GovernorOfPerson governorOfPerson() {
         return new GovernorOfPerson();
+    }
+
+    @Bean
+    public GovernorOfSSLCertificate governorOfSSLCertificate() {
+        return new GovernorOfSSLCertificate();
     }
 
     @Bean

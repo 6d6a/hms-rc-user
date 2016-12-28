@@ -23,13 +23,6 @@ import ru.majordomo.hms.rc.user.resources.DTO.SslCertificateActionIdentity;
 @Service
 public class GovernorOfSSLCertificate extends LordOfResources {
 
-    private Sender sender;
-
-    @Autowired
-    public void setSender(Sender sender) {
-        this.sender = sender;
-    }
-
     private SSLCertificateRepository repository;
     private SslCertificateActionIdentityRepository actionIdentityRepository;
     private GovernorOfDomain governorOfDomain;
@@ -126,7 +119,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
 
         SslCertificateActionIdentity actionIdentity = actionIdentityRepository.findBySslCertificateId(certificate.getId());
         if (actionNeeded) {
-            sendReportToTE(resourceId, actionIdentity.getActionIdentity());
+
         }
 
         validate(certificate);
@@ -261,12 +254,16 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         repository.save((SSLCertificate) resource);
     }
 
-    public String getTaskExecutorRoutingKeyForSslCertificate(SSLCertificate sslCertificate) {
+    public String getTaskExecutorRoutingKeyForSslCertificate(String sslCertificateId) throws ParameterValidateException {
+        SSLCertificate sslCertificate = (SSLCertificate) build(sslCertificateId);
+        if (sslCertificate == null) {
+            throw new ParameterValidateException("Не найден SSL сертифика");
+        }
         Domain domain = domainRepository.findBySslCertificateId(sslCertificate.getId());
         if (domain == null) {
             throw new ParameterValidateException("Не найден домен для SSL сертификата с ID: " + sslCertificate.getId());
         }
-        WebSite webSite = webSiteRepository.findByDomainId(domain.getId());
+        WebSite webSite = webSiteRepository.findByDomainIds(domain.getId());
         if (webSite == null) {
             throw new ParameterValidateException("Не найден webSite для домена с ID: " + domain.getId());
         }
@@ -278,19 +275,17 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         }
     }
 
-    public ServiceMessage createSslCertificateServiceMessageForTE(SSLCertificate sslCertificate, String actionIdentity) {
+    public ServiceMessage createSslCertificateServiceMessageForTE(String sslCertificateId) {
+        SSLCertificate certificate = (SSLCertificate) build(sslCertificateId);
         ServiceMessage serviceMessage = new ServiceMessage();
-        serviceMessage.setAccountId(sslCertificate.getAccountId());
-        serviceMessage.setActionIdentity(actionIdentity);
-        serviceMessage.setObjRef("http://" + applicationName + "/ssl-certificate/" + sslCertificate.getId());
+        serviceMessage.setAccountId(certificate.getAccountId());
+        SslCertificateActionIdentity actionIdentity = actionIdentityRepository.findOne(sslCertificateId);
+        if (actionIdentity != null) {
+            serviceMessage.setActionIdentity(actionIdentity.getActionIdentity());
+        }
+        serviceMessage.setObjRef("http://" + applicationName + "/ssl-certificate/" + sslCertificateId);
         serviceMessage.addParam("success", true);
         return serviceMessage;
-    }
-
-    private void sendReportToTE(String resourceId, String actionIdentity) {
-        SSLCertificate certificate = (SSLCertificate) build(resourceId);
-        ServiceMessage report = createSslCertificateServiceMessageForTE(certificate, actionIdentity);
-        sender.send("ssl-certificate.delete", getTaskExecutorRoutingKeyForSslCertificate(certificate), report);
     }
 
 }
