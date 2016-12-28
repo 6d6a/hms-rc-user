@@ -28,7 +28,7 @@ public class ConfigDomainRegistrarClient {
             }
 
             @Override
-            public ResponseEntity updatePerson(@RequestBody Person person) {
+            public ResponseEntity updatePerson(@PathVariable("nicHandle") String nicHandle, @RequestBody Person person) {
                 return new ResponseEntity(HttpStatus.CREATED);
             }
 
