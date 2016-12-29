@@ -416,6 +416,8 @@ public class GovernorOfWebSite extends LordOfResources {
                 throw new ParameterValidateException("Для создания WebSite необходим UnixAccount");
             }
             webSite.setUnixAccount(unixAccounts.get(0));
+        } else {
+            webSite.setUnixAccount((UnixAccount) governorOfUnixAccount.build(webSite.getUnixAccountId()));
         }
 
         List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerIdAndServiceType(webSite.getUnixAccount().getServerId());
