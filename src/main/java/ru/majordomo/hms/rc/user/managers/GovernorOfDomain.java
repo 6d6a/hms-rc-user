@@ -198,7 +198,9 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     private void validateDomainName(String domainName) throws ParameterValidateException {
-
+        if (repository.findByName(domainName) != null) {
+            throw new ParameterValidateException("Домен " + domainName + " уже присутствует в системе");
+        }
     }
 
 }

@@ -395,6 +395,13 @@ public class GovernorOfWebSite extends LordOfResources {
             throw new ParameterValidateException("Должен присутствовать хотя бы один домен");
         }
 
+        for (String domainId: webSite.getDomainIds()) {
+            WebSite compare = repository.findByDomainIds(domainId);
+            if (compare != null && !compare.getId().equals(webSite.getId())) {
+                throw new ParameterValidateException("Домен уже используется в другом веб-сайте");
+            }
+        }
+
         if (webSite.getName() == null || webSite.getName().equals("")) {
             webSite.setName(webSite.getDomains().get(0).getName());
         }

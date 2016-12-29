@@ -175,7 +175,7 @@ public class GovernorOfWebsiteTest {
     @Test
     public void create() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, accountId);
-
+        webSiteRepository.deleteAll();
         governor.create(serviceMessage);
     }
 
