@@ -98,10 +98,16 @@ public class GovernorOfDomain extends LordOfResources {
         Domain domain = new Domain();
         LordOfResources.setResourceParams(domain, serviceMessage, cleaner);
         String domainPersonId = null;
-        if (serviceMessage.getParam("personId") != null) {
-             domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
+        if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
+            if (serviceMessage.getParam("personId") != null) {
+                domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
+                Person domainPerson = (Person) governorOfPerson.build(domainPersonId);
+                domain.setPerson(domainPerson);
+                governorOfPerson.validate(domainPerson);
+            } else {
+                throw new ParameterValidateException("Персона должна быть указана");
+            }
         }
-        domain.setPerson((Person) governorOfPerson.build(domainPersonId));
         return domain;
     }
 
@@ -113,11 +119,11 @@ public class GovernorOfDomain extends LordOfResources {
         }
         validateDomainName(domain.getName());
 
-        Person domainPerson = domain.getPerson();
-        if (domainPerson == null) {
-            throw new ParameterValidateException("Персона должна быть указана");
-        }
-        governorOfPerson.validate(domainPerson);
+//        Person domainPerson = domain.getPerson();
+//        if (domainPerson == null) {
+//            throw new ParameterValidateException("Персона должна быть указана");
+//        }
+//        governorOfPerson.validate(domainPerson);
 
         SSLCertificate sslCertificate = domain.getSslCertificate();
         if (sslCertificate != null) {
