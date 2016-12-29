@@ -37,4 +37,36 @@ public class PersonAMQPController extends BaseAMQPController {
                 break;
         }
     }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.person.update",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "person.update", type = "topic"),
+            key = "rc.user"))
+    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleUpdateEventFromPM("person", serviceMessage);
+                break;
+            case ("te"):
+                handleUpdateEventFromTE("person", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.person.delete",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "person.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleDeleteEventFromPM("person", serviceMessage);
+                break;
+            case ("te"):
+                handleDeleteEventFromTE("person", serviceMessage);
+                break;
+        }
+    }
 }
