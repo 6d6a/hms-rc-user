@@ -218,6 +218,7 @@ class BaseAMQPController {
         ServiceMessage report = new ServiceMessage();
         report.setActionIdentity(event.getActionIdentity());
         report.setOperationIdentity(event.getOperationIdentity());
+        report.setAccountId(event.getAccountId());
         if (resource != null) {
             report.setObjRef("http://" + applicationName + "/" + resourceType + "/" + resource.getId());
         }
