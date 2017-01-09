@@ -20,6 +20,7 @@ public class Domain extends Resource {
     private RegSpec regSpec;
     private List<DNSResourceRecord> dnsResourceRecords;
     private String sslCertificateId;
+    private Boolean autoRenew;
 
     @Override
     public void switchResource() {
@@ -84,6 +85,14 @@ public class Domain extends Resource {
 
     public void setSslCertificateId(String sslCertificateId) {
         this.sslCertificateId = sslCertificateId;
+    }
+
+    public Boolean getAutoRenew() {
+        return autoRenew;
+    }
+
+    public void setAutoRenew(Boolean autoRenew) {
+        this.autoRenew = autoRenew;
     }
 
     @Override

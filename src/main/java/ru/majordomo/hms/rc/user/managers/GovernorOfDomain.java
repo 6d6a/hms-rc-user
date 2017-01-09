@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -85,7 +82,38 @@ public class GovernorOfDomain extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        } else {
+            throw new ParameterValidateException("Не указан resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        Domain domain = (Domain) build(keyValue);
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "autoRenew":
+                        domain.setAutoRenew((Boolean) entry.getValue());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        validate(domain);
+        store(domain);
+
+        return domain;
     }
 
     @Override
@@ -124,6 +152,9 @@ public class GovernorOfDomain extends LordOfResources {
 //            throw new ParameterValidateException("Персона должна быть указана");
 //        }
 //        governorOfPerson.validate(domainPerson);
+        if (domain.getAutoRenew() == null) {
+            domain.setAutoRenew(false);
+        }
 
         SSLCertificate sslCertificate = domain.getSslCertificate();
         if (sslCertificate != null) {

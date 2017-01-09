@@ -23,6 +23,6 @@ public interface DomainRegistrarClient {
     @RequestMapping(value = "/person/{nicHandle}", method = RequestMethod.GET)
     Person getPerson(@PathVariable("nicHandle") String nicHandle);
 
-    @RequestMapping(value = "/domain/{domainName}/reg-spec")
+    @RequestMapping(value = "/domain/{domainName}/reg-spec", method = RequestMethod.GET)
     RegSpec getRegSpec(@PathVariable("domainName") String domainName);
 }
