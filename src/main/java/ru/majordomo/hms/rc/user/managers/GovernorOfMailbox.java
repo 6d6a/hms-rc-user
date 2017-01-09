@@ -388,7 +388,7 @@ public class GovernorOfMailbox extends LordOfResources {
     public Resource build(String resourceId) throws ResourceNotFoundException {
         Mailbox mailbox = repository.findOne(resourceId);
         if (mailbox == null) {
-            throw new ResourceNotFoundException("Mailbox с ID:" + mailbox.getId() + " не найден");
+            throw new ResourceNotFoundException("Mailbox с ID:" + resourceId + " не найден");
         }
         return construct(mailbox);
     }
