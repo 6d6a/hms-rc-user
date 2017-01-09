@@ -37,4 +37,36 @@ public class DomainAMQPController extends BaseAMQPController {
                 break;
         }
     }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.domain.update",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "domain.update", type = "topic"),
+            key = "rc.user"))
+    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleUpdateEventFromPM("domain", serviceMessage);
+                break;
+            case ("te"):
+                handleUpdateEventFromTE("domain", serviceMessage);
+                break;
+        }
+    }
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.domain.delete",
+            durable = "true", autoDelete = "true"),
+            exchange = @Exchange(value = "domain.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                handleDeleteEventFromPM("domain", serviceMessage);
+                break;
+            case ("te"):
+                handleDeleteEventFromTE("domain", serviceMessage);
+                break;
+        }
+    }
 }
