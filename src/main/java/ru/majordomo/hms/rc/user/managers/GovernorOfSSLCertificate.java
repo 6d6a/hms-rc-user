@@ -142,6 +142,14 @@ public class GovernorOfSSLCertificate extends LordOfResources {
                 actionIdentity.setActionIdentity(serviceMessage.getActionIdentity());
                 actionIdentity.setSslCertificateId(sslCertificate.getId());
                 actionIdentityRepository.save(actionIdentity);
+
+                Map<String, String> keyValue = new HashMap<>();
+                keyValue.put("name", sslCertificate.getName());
+                keyValue.put("accountId", sslCertificate.getAccountId());
+                Domain domain = (Domain) governorOfDomain.build(keyValue);
+                domain.setSslCertificateId(sslCertificate.getId());
+                governorOfDomain.validate(domain);
+                governorOfDomain.store(domain);
             }
 
         } catch (ClassCastException e) {
@@ -158,6 +166,14 @@ public class GovernorOfSSLCertificate extends LordOfResources {
             throw new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId);
         }
         certificate.setSwitchedOn(false);
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", certificate.getName());
+        keyValue.put("accountId", certificate.getAccountId());
+        Domain domain = (Domain) governorOfDomain.build(keyValue);
+        domain.setSslCertificateId(null);
+        governorOfDomain.validate(domain);
+        governorOfDomain.store(domain);
 
         repository.save(certificate);
     }

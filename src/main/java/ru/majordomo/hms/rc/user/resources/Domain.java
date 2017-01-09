@@ -66,7 +66,9 @@ public class Domain extends Resource {
 
     public void setSslCertificate(SSLCertificate sslCertificate) {
         this.sslCertificate = sslCertificate;
-        this.sslCertificateId = sslCertificate.getId();
+        if (this.sslCertificate != null) {
+            this.sslCertificateId = sslCertificate.getId();
+        }
     }
 
     @JsonIgnore

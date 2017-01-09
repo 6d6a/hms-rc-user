@@ -44,7 +44,8 @@ public class SslCertificateAMQPController extends BaseAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                governor.create(serviceMessage);
+                SSLCertificate sslCertificate = (SSLCertificate) governor.create(serviceMessage);
+                sendReportToTE(sslCertificate.getId());
                 break;
             case ("te"):
                 handleCreateEventFromTE("ssl-certificate", serviceMessage);

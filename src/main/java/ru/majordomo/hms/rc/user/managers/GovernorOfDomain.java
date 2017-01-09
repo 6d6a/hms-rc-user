@@ -152,11 +152,11 @@ public class GovernorOfDomain extends LordOfResources {
         }
         validateDomainName(domain.getName());
 
-//        Person domainPerson = domain.getPerson();
-//        if (domainPerson == null) {
-//            throw new ParameterValidateException("Персона должна быть указана");
-//        }
-//        governorOfPerson.validate(domainPerson);
+        Person domainPerson = domain.getPerson();
+        if (domainPerson != null) {
+            governorOfPerson.validate(domainPerson);
+        }
+
         if (domain.getAutoRenew() == null) {
             domain.setAutoRenew(false);
         }
@@ -170,8 +170,17 @@ public class GovernorOfDomain extends LordOfResources {
     @Override
     protected Resource construct(Resource resource) throws ParameterValidateException {
         Domain domain = (Domain) resource;
+
         Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
         domain.setPerson(domainPerson);
+
+        if (domain.getSslCertificateId() != null) {
+            SSLCertificate sslCertificate = (SSLCertificate) governorOfSSLCertificate.build(domain.getSslCertificateId());
+            domain.setSslCertificate(sslCertificate);
+        } else {
+            domain.setSslCertificate(null);
+        }
+
         return domain;
     }
 
