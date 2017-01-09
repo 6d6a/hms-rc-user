@@ -88,7 +88,8 @@ public class DomainRestControllerTest {
                                 fieldWithPath("person").description("Персона, на которую зарегистрирован домен"),
                                 fieldWithPath("regSpec").description("Регистрационная информация"),
                                 fieldWithPath("dnsResourceRecords").description("Список записей в зоне домена (DNS resource records)"),
-                                fieldWithPath("sslCertificate").description("Объект SSL сертификата")
+                                fieldWithPath("sslCertificate").description("Объект SSL сертификата"),
+                                fieldWithPath("autoRenew").description("Флаг автоматического продления")
                         )
                 ));
     }
