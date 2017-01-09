@@ -63,6 +63,11 @@ public class GovernorOfDomain extends LordOfResources {
 
             domain = (Domain) buildResourceFromServiceMessage(serviceMessage);
             validate(domain);
+
+            if (repository.findByName(domain.getName()) != null) {
+                throw new ParameterValidateException("Домен " + domain.getName() + " уже присутствует в системе");
+            }
+
             if (needRegister != null && needRegister) {
                 try {
                     registrar.registerDomain(domain.getPerson().getNicHandle(), domain.getName());
@@ -235,9 +240,6 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     private void validateDomainName(String domainName) throws ParameterValidateException {
-        if (repository.findByName(domainName) != null) {
-            throw new ParameterValidateException("Домен " + domainName + " уже присутствует в системе");
-        }
     }
 
 }
