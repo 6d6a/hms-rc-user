@@ -23,6 +23,11 @@ public class ConfigDomainRegistrarClient {
             }
 
             @Override
+            public ResponseEntity renewDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName) {
+                return new ResponseEntity(HttpStatus.CREATED);
+            }
+
+            @Override
             public ResponseEntity createPerson(@RequestBody Person person) {
                 return new ResponseEntity(HttpStatus.CREATED);
             }

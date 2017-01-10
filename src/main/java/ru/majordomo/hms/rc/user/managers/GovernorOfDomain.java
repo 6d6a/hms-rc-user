@@ -1,6 +1,8 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.google.common.net.InternetDomainName;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -107,6 +109,20 @@ public class GovernorOfDomain extends LordOfResources {
                     case "autoRenew":
                         domain.setAutoRenew((Boolean) entry.getValue());
                         break;
+                    case "renew":
+                        if ((Boolean) entry.getValue()) {
+                            try {
+                                if (domain.getPersonId() == null) {
+                                    throw new ParameterValidateException("Отсутствует personId");
+                                }
+                                Person person = (Person) governorOfPerson.build(domain.getPersonId());
+                                registrar.renewDomain(person.getNicHandle(), domain.getName());
+                                domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                            } catch (Exception e) {
+                                throw new ParameterValidateException(e.getMessage());
+                            }
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -130,10 +146,9 @@ public class GovernorOfDomain extends LordOfResources {
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         LordOfResources.setResourceParams(domain, serviceMessage, cleaner);
-        String domainPersonId = null;
         if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
             if (serviceMessage.getParam("personId") != null) {
-                domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
+                String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
                 Person domainPerson = (Person) governorOfPerson.build(domainPersonId);
                 domain.setPerson(domainPerson);
                 governorOfPerson.validate(domainPerson);
@@ -249,6 +264,11 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     private void validateDomainName(String domainName) throws ParameterValidateException {
+        try {
+            InternetDomainName domain = InternetDomainName.from(domainName);
+            String domainPublicPart = domain.publicSuffix().toString();
+        } catch (Exception e) {
+            throw new ParameterValidateException("Некорректное имя домена");
+        }
     }
-
 }
