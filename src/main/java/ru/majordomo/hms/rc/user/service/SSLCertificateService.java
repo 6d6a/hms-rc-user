@@ -67,7 +67,7 @@ public class SSLCertificateService {
 
     @Scheduled(fixedDelay = 5000)
     public void processNewSSLCertificates() {
-//        logger.info("Trying to process NEW SSLCertificates");
+        logger.debug("Trying to process NEW SSLCertificates");
 
         List<SSLCertificate> certificates = repository.findByStateIn(Arrays.asList(SSLCertificateState.NEW, SSLCertificateState.CHALLENGE_INVALID, SSLCertificateState.DNS_UPDATED, SSLCertificateState.NEED_TO_RENEW));
 
@@ -86,7 +86,7 @@ public class SSLCertificateService {
 
     @Scheduled(fixedDelay = 12500)
     public void processAwaitingConfirmationSSLCertificates() {
-//        logger.info("Trying to process AWAITING_CONFIRMATION SSLCertificates");
+        logger.debug("Trying to process AWAITING_CONFIRMATION SSLCertificates");
 
         List<SSLCertificate> certificates = repository.findByState(SSLCertificateState.AWAITING_CONFIRMATION);
 
@@ -110,7 +110,7 @@ public class SSLCertificateService {
 
     @Scheduled(fixedDelay = 11500)
     public void processRenewSSLCertificates() {
-//        logger.info("Trying to process renewing SSLCertificates");
+        logger.debug("Trying to process renewing SSLCertificates");
 
         List<SSLCertificate> certificates = repository.findByState(SSLCertificateState.NEED_TO_RENEW);
 
@@ -128,7 +128,7 @@ public class SSLCertificateService {
 
     @Scheduled(fixedDelay = 36000000)
     public void processNeedToRenewSSLCertificates() {
-//        logger.info("Trying to process NeedToRenew SSLCertificates");
+        logger.debug("Trying to process NeedToRenew SSLCertificates");
 
         LocalDateTime dateTime = LocalDateTime.now();
         dateTime = dateTime.plusDays(30);
@@ -145,7 +145,7 @@ public class SSLCertificateService {
 
     @Scheduled(fixedDelay = 7000)
     public void processNeedDnsAddingSSLCertificates() {
-//        logger.info("Trying to process NeedDnsAdding SSLCertificates");
+        logger.debug("Trying to process NeedDnsAdding SSLCertificates");
 
         List<SSLCertificate> certificates = repository.findByState(SSLCertificateState.NEED_DNS_ADDING);
 
@@ -176,7 +176,7 @@ public class SSLCertificateService {
 
     @Scheduled(fixedDelay = 8000)
     public void processAwaitingDnsUpdateSSLCertificates() {
-//        logger.info("Trying to process AWAITING_DNS_UPDATE SSLCertificates");
+        logger.debug("Trying to process AWAITING_DNS_UPDATE SSLCertificates");
 
         List<SSLCertificate> certificates = repository.findByState(SSLCertificateState.AWAITING_DNS_UPDATE);
 
