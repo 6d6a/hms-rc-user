@@ -116,7 +116,10 @@ public class GovernorOfDomain extends LordOfResources {
                                     throw new ParameterValidateException("Отсутствует personId");
                                 }
                                 Person person = (Person) governorOfPerson.build(domain.getPersonId());
-                                registrar.renewDomain(person.getNicHandle(), domain.getName());
+                                ResponseEntity responseEntity = registrar.renewDomain(person.getNicHandle(), domain.getName());
+                                if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                                    throw new ParameterValidateException("Ошибка при продлении домена");
+                                }
                                 domain.setRegSpec(registrar.getRegSpec(domain.getName()));
                             } catch (Exception e) {
                                 throw new ParameterValidateException(e.getMessage());
