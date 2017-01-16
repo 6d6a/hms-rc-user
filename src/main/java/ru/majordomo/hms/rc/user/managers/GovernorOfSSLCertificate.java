@@ -137,20 +137,13 @@ public class GovernorOfSSLCertificate extends LordOfResources {
             validate(sslCertificate);
             store(sslCertificate);
 
-            if (sslCertificate.getState().equals(SSLCertificateState.NEW)) {
-                SslCertificateActionIdentity actionIdentity = new SslCertificateActionIdentity();
-                actionIdentity.setActionIdentity(serviceMessage.getActionIdentity());
-                actionIdentity.setSslCertificateId(sslCertificate.getId());
-                actionIdentityRepository.save(actionIdentity);
-
-                Map<String, String> keyValue = new HashMap<>();
-                keyValue.put("name", sslCertificate.getName());
-                keyValue.put("accountId", sslCertificate.getAccountId());
-                Domain domain = (Domain) governorOfDomain.build(keyValue);
-                domain.setSslCertificateId(sslCertificate.getId());
-                governorOfDomain.validate(domain);
-                governorOfDomain.store(domain);
-            }
+            Map<String, String> keyValue = new HashMap<>();
+            keyValue.put("name", sslCertificate.getName());
+            keyValue.put("accountId", sslCertificate.getAccountId());
+            Domain domain = (Domain) governorOfDomain.build(keyValue);
+            domain.setSslCertificateId(sslCertificate.getId());
+            governorOfDomain.validate(domain);
+            governorOfDomain.store(domain);
 
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
@@ -180,18 +173,12 @@ public class GovernorOfSSLCertificate extends LordOfResources {
 
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
-        String name = (String) serviceMessage.getParam("name");
-        SSLCertificate sslCertificate = repository.findByName(name);
-        if (sslCertificate != null) {
-            sslCertificate.setSwitchedOn(true);
-            return sslCertificate;
+        SSLCertificate sslCertificate;
+        try {
+            sslCertificate = (SSLCertificate) serviceMessage.getParam("sslCertificate");
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("В поле sslCertificate должен быть валидный SSLCertificate");
         }
-
-        sslCertificate = new SSLCertificate();
-        LordOfResources.setResourceParams(sslCertificate, serviceMessage, cleaner);
-
-        sslCertificate.setName(name);
-        sslCertificate.setState(SSLCertificateState.NEW);
 
         return sslCertificate;
     }
@@ -270,18 +257,18 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         repository.save((SSLCertificate) resource);
     }
 
-    public String getTaskExecutorRoutingKeyForSslCertificate(String sslCertificateId) throws ParameterValidateException {
+    public String getTERoutingKey(String sslCertificateId) throws ParameterValidateException {
         SSLCertificate sslCertificate = (SSLCertificate) build(sslCertificateId);
         if (sslCertificate == null) {
-            throw new ParameterValidateException("Не найден SSL сертифика");
+            return null;
         }
         Domain domain = domainRepository.findBySslCertificateId(sslCertificate.getId());
         if (domain == null) {
-            throw new ParameterValidateException("Не найден домен для SSL сертификата с ID: " + sslCertificate.getId());
+            return null;
         }
         WebSite webSite = webSiteRepository.findByDomainIds(domain.getId());
         if (webSite == null) {
-            throw new ParameterValidateException("Не найден webSite для домена с ID: " + domain.getId());
+            return null;
         }
         try {
             String serverName = staffRcClient.getServerByServiceId(webSite.getServiceId()).getName();
@@ -289,19 +276,6 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         } catch (Exception e) {
             throw new ParameterValidateException("Exception: " + e.getMessage());
         }
-    }
-
-    public ServiceMessage createSslCertificateServiceMessageForTE(String sslCertificateId) {
-        SSLCertificate certificate = (SSLCertificate) build(sslCertificateId);
-        ServiceMessage serviceMessage = new ServiceMessage();
-        serviceMessage.setAccountId(certificate.getAccountId());
-        SslCertificateActionIdentity actionIdentity = actionIdentityRepository.findOne(sslCertificateId);
-        if (actionIdentity != null) {
-            serviceMessage.setActionIdentity(actionIdentity.getActionIdentity());
-        }
-        serviceMessage.setObjRef("http://" + applicationName + "/ssl-certificate/" + sslCertificateId);
-        serviceMessage.addParam("success", true);
-        return serviceMessage;
     }
 
 }
