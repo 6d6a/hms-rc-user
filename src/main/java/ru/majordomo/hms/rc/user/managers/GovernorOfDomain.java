@@ -189,8 +189,10 @@ public class GovernorOfDomain extends LordOfResources {
     protected Resource construct(Resource resource) throws ParameterValidateException {
         Domain domain = (Domain) resource;
 
-        Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
-        domain.setPerson(domainPerson);
+        if (domain.getPersonId() != null) {
+            Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
+            domain.setPerson(domainPerson);
+        }
 
         if (domain.getSslCertificateId() != null) {
             SSLCertificate sslCertificate = (SSLCertificate) governorOfSSLCertificate.build(domain.getSslCertificateId());
