@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "domains")
@@ -18,7 +19,7 @@ public class Domain extends Resource {
 
     private String personId;
     private RegSpec regSpec;
-    private List<DNSResourceRecord> dnsResourceRecords;
+    private List<DNSResourceRecord> dnsResourceRecords = new ArrayList<>();
     private String sslCertificateId;
     private Boolean autoRenew;
 

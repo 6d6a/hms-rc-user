@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +21,9 @@ import java.util.List;
 
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
+import ru.majordomo.hms.rc.user.resources.DNSResourceRecordClass;
+import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
@@ -129,5 +133,24 @@ public class DomainRestControllerTest {
                 .andExpect(jsonPath("person.id").value(batchOfDomains.get(0).getPerson().getId()))
                 .andExpect(jsonPath("regSpec").isMap())
                 .andExpect(jsonPath("dnsResourceRecords").isArray());
+    }
+
+    @Test
+    public void postDNSRecord() throws Exception {
+        String domainName = batchOfDomains.get(0).getName();
+
+        DNSResourceRecord dnsRecord = new DNSResourceRecord();
+        dnsRecord.setRrClass(DNSResourceRecordClass.IN);
+        dnsRecord.setTtl(300L);
+        dnsRecord.setRrType(DNSResourceRecordType.TXT);
+        dnsRecord.setOwnerName("test1." + batchOfDomains.get(0).getName());
+        dnsRecord.setData("some text");
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(dnsRecord);
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/domain/" + domainName + "/add-dns-record")
+                .contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
+        String response = mockMvc.perform(request).andReturn().getResponse().getContentAsString();
+        System.out.println(response);
     }
 }
