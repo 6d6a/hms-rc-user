@@ -28,23 +28,9 @@ public class DatabaseConfig {
         return new JdbcTemplate(pdnsDataSource);
     }
 
-    @Bean(name = "jdbcTemplate")
-    @Primary
-    @Autowired
-    public JdbcTemplate jdbcTemplate(@Qualifier("pdnsDataSource") DataSource billingDataSource) {
-        return new JdbcTemplate(billingDataSource);
-    }
-
     @Bean(name = "pdnsNamedParameterJdbcTemplate")
     @Autowired
     public NamedParameterJdbcTemplate pdnsNamedParameterJdbcTemplate(@Qualifier("pdnsDataSource") DataSource pdnsDataSource) {
         return new NamedParameterJdbcTemplate(pdnsDataSource);
-    }
-
-    @Bean(name = "namedParameterJdbcTemplate")
-    @Primary
-    @Autowired
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("billingDataSource") DataSource billingDataSource) {
-        return new NamedParameterJdbcTemplate(billingDataSource);
     }
 }
