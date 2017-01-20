@@ -13,7 +13,7 @@ import org.springframework.util.SocketUtils;
 
 @Configuration
 @EnableRedisRepositories(basePackages = {"ru.majordomo.hms.rc.user.repositories"})
-@Profile({"default","prod"})
+@Profile({"default","prod","dev"})
 public class RedisConfig {
 
     private Integer redisPort = SocketUtils.findAvailableTcpPort();

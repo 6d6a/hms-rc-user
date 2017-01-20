@@ -1,11 +1,29 @@
 package ru.majordomo.hms.rc.user.resources;
 
-public class DNSResourceRecord {
+public class DNSResourceRecord extends Resource {
+    private Long pdnsDomainId;
+    private Long pdnsRecordId;
     private String ownerName;
     private Long ttl;
     private String data;
     private DNSResourceRecordClass rrClass;
     private DNSResourceRecordType rrType;
+
+    public Long getPdnsDomainId() {
+        return pdnsDomainId;
+    }
+
+    public void setPdnsDomainId(Long pdnsDomainId) {
+        this.pdnsDomainId = pdnsDomainId;
+    }
+
+    public Long getPdnsRecordId() {
+        return pdnsRecordId;
+    }
+
+    public void setPdnsRecordId(Long pdnsRecordId) {
+        this.pdnsRecordId = pdnsRecordId;
+    }
 
     public String getOwnerName() {
         return ownerName;
@@ -45,5 +63,10 @@ public class DNSResourceRecord {
 
     public void setRrType(DNSResourceRecordType rrType) {
         this.rrType = rrType;
+    }
+
+    @Override
+    public void switchResource() {
+
     }
 }

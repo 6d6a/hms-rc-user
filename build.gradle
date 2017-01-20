@@ -87,7 +87,7 @@ jar {
     baseName = 'rc-user'
     version = '0.0.1-SNAPSHOT'
     dependsOn asciidoctor
-    from ("${asciidoctor.outputDir}/html5") {
+    from("${asciidoctor.outputDir}/html5") {
         into "static/docs"
     }
 }
@@ -118,12 +118,12 @@ dependencies {
     compile('org.springframework.cloud:spring-cloud-starter-feign')
     compile('org.springframework.boot:spring-boot-starter-data-mongodb')
     compile('org.springframework.boot:spring-boot-starter-data-redis')
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile('org.springframework.boot:spring-boot-starter-jdbc')
     compile('org.springframework.boot:spring-boot-starter-amqp')
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.boot:spring-boot-starter-jetty")
     compile("ru.majordomo.hms.rc.staff:resources:1.0.6.+")
-    compile("org.shredzone.acme4j:acme4j-client:0.8")
-    compile("org.shredzone.acme4j:acme4j-utils:0.8")
     compile("dnsjava:dnsjava:2.1.7")
     compile("com.cronutils:cron-utils:5.0.1")
     compile("commons-validator:commons-validator:1.5.1")
@@ -134,6 +134,7 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile("org.springframework.restdocs:spring-restdocs-mockmvc:${springRestDocsVersion}")
     testCompile('org.apache.qpid:qpid-broker:6.0.4')
+    compile(group: 'com.mysql', name: 'management', version: '1.1.6') { exclude(module: 'jmxtools') }
 }
 
 dependencyManagement {
@@ -171,8 +172,8 @@ task buildDocker(type: Docker, dependsOn: build) {
         // в gitlab-runner после пулла branch.getCurrent() указывает всегда на HEAD в любой ветке
         tagVersion = project.projectBranch
     }
-    if(project.hasProperty('debug')) {
-        if(project.debug == "yes") {
+    if (project.hasProperty('debug')) {
+        if (project.debug == "yes") {
             entryPoint = entryPoint_debug
         }
     }
