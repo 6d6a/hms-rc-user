@@ -69,4 +69,15 @@ public class DNSResourceRecord extends Resource {
     public void switchResource() {
 
     }
+
+    @Override
+    public String toString() {
+        return "DNSRecord for domain with id " + pdnsDomainId + ":{\n" +
+                "id=" + pdnsRecordId + '\n' +
+                ", name='" + ownerName + '\'' + '\n' +
+                ", type=" + rrType + '\n' +
+                ", content='" + data + '\'' + '\n' +
+                ", ttl=" + ttl + '\n' +
+                '}';
+    }
 }

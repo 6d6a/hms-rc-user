@@ -12,12 +12,9 @@ import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.Resource;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 @Service
 public class GovernorOfDomain extends LordOfResources {
@@ -26,6 +23,7 @@ public class GovernorOfDomain extends LordOfResources {
     private DomainRepository repository;
     private GovernorOfPerson governorOfPerson;
     private GovernorOfSSLCertificate governorOfSSLCertificate;
+    private GovernorOfDnsRecord governorOfDnsRecord;
     private DomainRegistrarClient registrar;
 
 
@@ -37,6 +35,11 @@ public class GovernorOfDomain extends LordOfResources {
     @Autowired
     public void setGovernorOfSSLCertificate(GovernorOfSSLCertificate governorOfSSLCertificate) {
         this.governorOfSSLCertificate = governorOfSSLCertificate;
+    }
+
+    @Autowired
+    public void setGovernorOfDnsRecord(GovernorOfDnsRecord governorOfDnsRecord) {
+        this.governorOfDnsRecord = governorOfDnsRecord;
     }
 
     @Autowired
@@ -179,6 +182,9 @@ public class GovernorOfDomain extends LordOfResources {
             domain.setAutoRenew(false);
         }
 
+        governorOfDnsRecord.validateDomain(domain);
+        governorOfDnsRecord.addSoaAndNsRecords(domain);
+
         SSLCertificate sslCertificate = domain.getSslCertificate();
         if (sslCertificate != null) {
             governorOfSSLCertificate.validate(sslCertificate);
@@ -200,6 +206,11 @@ public class GovernorOfDomain extends LordOfResources {
         } else {
             domain.setSslCertificate(null);
         }
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", domain.getName());
+        keyValue.put("accountId", domain.getAccountId());
+        domain.setDnsResourceRecords((List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue));
 
         return domain;
     }

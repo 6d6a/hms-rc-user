@@ -48,6 +48,11 @@ public class ConfigGovernorOfMailbox extends AbstractMongoConfiguration {
         return new GovernorOfUnixAccount();
     }
 
+    @Bean
+    public GovernorOfDnsRecord governorOfDnsRecord() {
+        return new GovernorOfDnsRecord();
+    }
+
     @Override
     protected String getDatabaseName() {
         return "rc-user-" + ObjectId.get().toString();

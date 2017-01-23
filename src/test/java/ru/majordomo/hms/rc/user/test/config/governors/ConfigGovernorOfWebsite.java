@@ -28,6 +28,11 @@ public class ConfigGovernorOfWebsite extends AbstractMongoConfiguration {
     }
 
     @Bean
+    public GovernorOfDnsRecord governorOfDnsRecord() {
+        return new GovernorOfDnsRecord();
+    }
+
+    @Bean
     public GovernorOfDomain governorOfDomain() {
         return new GovernorOfDomain();
     }

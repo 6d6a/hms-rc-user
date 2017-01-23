@@ -26,6 +26,7 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecordClass;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDomainRestController;
@@ -45,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigDomainRestController.class, ConfigDomainRegistrarClient.class, ConfigStaffResourceControllerClient.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = {ConfigDomainRestController.class, ConfigDomainRegistrarClient.class, ConfigStaffResourceControllerClient.class, DatabaseConfig.class}, webEnvironment = RANDOM_PORT)
 public class DomainRestControllerTest {
 
     private MockMvc mockMvc;

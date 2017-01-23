@@ -59,6 +59,11 @@ public class ConfigWebsiteRestController extends AbstractMongoConfiguration {
     }
 
     @Bean
+    public GovernorOfDnsRecord governorOfDnsRecord() {
+        return new GovernorOfDnsRecord();
+    }
+
+    @Bean
     public GovernorOfSSLCertificate governorOfSSLCertificate() {
         return new GovernorOfSSLCertificate();
     }

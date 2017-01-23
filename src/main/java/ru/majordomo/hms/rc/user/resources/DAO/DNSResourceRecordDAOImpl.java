@@ -34,7 +34,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         parameters.addValue("domain_id", record.getPdnsDomainId());
         parameters.addValue("prio", 0);
         parameters.addValue("ttl", record.getTtl());
-        parameters.addValue("name", record.getName());
+        parameters.addValue("name", record.getOwnerName());
         parameters.addValue("id", record.getId());
         jdbcTemplate.update(query, parameters);
     }
@@ -48,36 +48,36 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         parameters.addValue("domain_id", record.getPdnsDomainId());
         parameters.addValue("prio", 0);
         parameters.addValue("ttl", record.getTtl());
-        parameters.addValue("name", record.getName());
+        parameters.addValue("name", record.getOwnerName());
         parameters.addValue("content", record.getData());
         jdbcTemplate.update(query, parameters);
     }
 
     @Override
     public boolean insertByDomainName(String domainName, DNSResourceRecord record) {
-        String query = "SELECT d.id FROM domains d WHERE d.name = :domainName";
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("domainName", domainName);
-        Long domainId;
-        try {
-            domainId = jdbcTemplate.queryForObject(query, parameters, Long.class);
-        } catch (DataAccessException e) {
-            e.printStackTrace();
-            return false;
-        }
-        if (domainId == null) {
-            return false;
-        }
-        query = "insert into records (domain_id, prio, `type`, ttl, `name`, content) values (:domain_id, :prio, :type, :ttl, :name, :content)";
-        parameters = new MapSqlParameterSource();
-        parameters.registerSqlType("type", Types.VARCHAR);
-        parameters.addValue("type", record.getRrType());
-        parameters.addValue("domain_id", domainId);
-        parameters.addValue("prio", 0);
-        parameters.addValue("ttl", record.getTtl());
-        parameters.addValue("name", record.getName());
-        parameters.addValue("content", record.getData());
-        jdbcTemplate.update(query, parameters);
+//        String query = "SELECT d.id FROM domains d WHERE d.name = :domainName";
+//        MapSqlParameterSource parameters = new MapSqlParameterSource();
+//        parameters.addValue("domainName", domainName);
+//        Long domainId;
+//        try {
+//            domainId = jdbcTemplate.queryForObject(query, parameters, Long.class);
+//        } catch (DataAccessException e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//        if (domainId == null) {
+//            return false;
+//        }
+//        query = "insert into records (domain_id, prio, `type`, ttl, `name`, content) values (:domain_id, :prio, :type, :ttl, :name, :content)";
+//        parameters = new MapSqlParameterSource();
+//        parameters.registerSqlType("type", Types.VARCHAR);
+//        parameters.addValue("type", record.getRrType());
+//        parameters.addValue("domain_id", domainId);
+//        parameters.addValue("prio", 0);
+//        parameters.addValue("ttl", record.getTtl());
+//        parameters.addValue("name", record.getOwnerName());
+//        parameters.addValue("content", record.getData());
+//        jdbcTemplate.update(query, parameters);
         return true;
     }
 
@@ -96,11 +96,22 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
     private DNSResourceRecord rowMap(ResultSet rs, int rowNum) throws SQLException {
         DNSResourceRecord record = new DNSResourceRecord();
         record.setPdnsRecordId(rs.getLong("id"));
-        record.setName(rs.getString("name"));
+        record.setOwnerName(rs.getString("name"));
         record.setData(rs.getString("content"));
         record.setPdnsDomainId(rs.getLong("domain_id"));
         record.setTtl(rs.getLong("ttl"));
         record.setRrType(DNSResourceRecordType.valueOf(rs.getString("type")));
         return record;
+    }
+
+    @Override
+    public List<DNSResourceRecord> getByDomainName(String domainName) {
+        String query = "SELECT r.* FROM records r LEFT JOIN domains d ON d.id = r.domain_id where d.name = :domainName";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.registerSqlType("types", Types.VARCHAR);
+        parameters.addValue("domainName", domainName);
+        List<DNSResourceRecord> records;
+        records = jdbcTemplate.query(query, parameters, this::rowMap);
+        return records;
     }
 }

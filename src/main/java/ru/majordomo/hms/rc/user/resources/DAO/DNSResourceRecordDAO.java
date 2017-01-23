@@ -9,6 +9,5 @@ public interface DNSResourceRecordDAO {
     void insert(DNSResourceRecord record);
     boolean insertByDomainName(String domainName, DNSResourceRecord record);
     List<DNSResourceRecord> getByDomainNameAndTypeIn(String domainName, List<DNSResourceRecordType> types);
+    List<DNSResourceRecord> getByDomainName(String domainName);
 }
-
-

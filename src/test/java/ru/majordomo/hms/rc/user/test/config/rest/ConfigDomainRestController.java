@@ -16,6 +16,7 @@ import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.http.DomainRestController;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
@@ -48,6 +49,11 @@ public class ConfigDomainRestController extends AbstractMongoConfiguration {
     @Bean
     public GovernorOfDomain governorOfDomain() {
         return new GovernorOfDomain();
+    }
+
+    @Bean
+    public GovernorOfDnsRecord governorOfDnsRecord() {
+        return new GovernorOfDnsRecord();
     }
 
     @Bean

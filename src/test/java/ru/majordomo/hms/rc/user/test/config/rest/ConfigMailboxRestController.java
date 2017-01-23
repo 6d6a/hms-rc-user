@@ -64,6 +64,11 @@ public class ConfigMailboxRestController extends AbstractMongoConfiguration {
     }
 
     @Bean
+    public GovernorOfDnsRecord governorOfDnsRecord() {
+        return new GovernorOfDnsRecord();
+    }
+
+    @Bean
     public GovernorOfPerson governorOfPerson() {
         return new GovernorOfPerson();
     }
