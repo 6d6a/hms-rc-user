@@ -87,6 +87,8 @@ public class GovernorOfDomain extends LordOfResources {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
         }
 
+        governorOfDnsRecord.initDomain(domain);
+
         return domain;
     }
 
@@ -181,9 +183,6 @@ public class GovernorOfDomain extends LordOfResources {
         if (domain.getAutoRenew() == null) {
             domain.setAutoRenew(false);
         }
-
-        governorOfDnsRecord.validateDomain(domain);
-        governorOfDnsRecord.addSoaAndNsRecords(domain);
 
         SSLCertificate sslCertificate = domain.getSslCertificate();
         if (sslCertificate != null) {

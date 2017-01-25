@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 
@@ -18,12 +20,17 @@ public class DatabaseConfig {
     @Bean(name = "pdnsDataSource")
     @Primary
     public DataSource pdnsDataSource() {
-        return DataSourceBuilder.create()
-                .url("jdbc:mysql://dev.majordomo.ru/pdns")
-                .driverClassName("com.mysql.jdbc.Driver")
-                .username("root")
-                .password("cfg0;0r")
+//        return DataSourceBuilder.create()
+        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+        return builder
+//                .url("jdbc:mysql://dev.majordomo.ru/pdns")
+//                .driverClassName("com.mysql.jdbc.Driver")
+//                .username("root")
+//                .password("cfg0;0r")
+                .setType(EmbeddedDatabaseType.H2)
+                .addScript("classpath:createRecordsTable.sql")
                 .build();
+//        DBConfigurationBuilder config = DBConfigurationBuilder.newBuilder();
     }
 
     @Bean(name = "pdnsJdbcTemplate")

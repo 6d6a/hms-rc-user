@@ -1,18 +1,15 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.apache.commons.lang.NotImplementedException;
+import com.mysql.management.util.Str;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAOImpl;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAO;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
-import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.Resource;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -26,7 +23,6 @@ public class GovernorOfDnsRecord extends LordOfResources {
     private Cleaner cleaner;
     private GovernorOfDomain governorOfDomain;
 
-    private DNSDomainDAOImpl dnsDomainDAO;
     private DNSResourceRecordDAOImpl dnsResourceRecordDAO;
 
     @Autowired
@@ -40,33 +36,91 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Autowired
-    public void setDnsDomainDAO(DNSDomainDAOImpl dnsDomainDAO) {
-        this.dnsDomainDAO = dnsDomainDAO;
-    }
-
-    @Autowired
     public void setDnsResourceRecordDAO(DNSResourceRecordDAOImpl dnsResourceRecordDAO) {
         this.dnsResourceRecordDAO = dnsResourceRecordDAO;
     }
 
     @Override
     public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        DNSResourceRecord record = (DNSResourceRecord) buildResourceFromServiceMessage(serviceMessage);
+        validate(record);
+        store(record);
+
+        return record;
     }
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
-        return null;
+        Long recordId = (Long) serviceMessage.getParam("recordId");
+        if (recordId == null) {
+            throw new ParameterValidateException("Необходимо указать recordId");
+        }
+        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
+        try {
+            if (serviceMessage.getParam("ownerName") != null) {
+                record.setOwnerName(cleaner.cleanString((String) serviceMessage.getParam("ownerName")));
+            }
+            if (serviceMessage.getParam("data") != null) {
+                record.setData(cleaner.cleanString((String) serviceMessage.getParam("data")));
+            }
+            if (serviceMessage.getParam("ttl") != null) {
+                record.setTtl((Long) serviceMessage.getParam("ttl"));
+            }
+            if (serviceMessage.getParam("prio") != null) {
+                record.setPrio((Long) serviceMessage.getParam("prio"));
+            }
+            if (serviceMessage.getParam("type") != null) {
+                for (DNSResourceRecordType type : DNSResourceRecordType.values()) {
+                    if (serviceMessage.getParam("type").equals(type.name())) {
+                        record.setRrType(type);
+                    }
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+        validate(record);
+        store(record);
+        return record;
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-
+        Long recordId = Long.parseLong(resourceId);
+        dnsResourceRecordDAO.delete(recordId);
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
-        return null;
+    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+        DNSResourceRecord record = new DNSResourceRecord();
+        try {
+            if (serviceMessage.getParam("name") != null) {
+                record.setName(cleaner.cleanString((String) serviceMessage.getParam("name")));
+            }
+            if (serviceMessage.getParam("ownerName") != null) {
+                record.setOwnerName(cleaner.cleanString((String) serviceMessage.getParam("ownerName")));
+            }
+            if (serviceMessage.getParam("data") != null) {
+                record.setData(cleaner.cleanString((String) serviceMessage.getParam("data")));
+            }
+            if (serviceMessage.getParam("ttl") != null) {
+                record.setTtl((Long) serviceMessage.getParam("ttl"));
+            }
+            if (serviceMessage.getParam("prio") != null) {
+                record.setPrio((Long) serviceMessage.getParam("prio"));
+            }
+            if (serviceMessage.getParam("type") != null) {
+                for (DNSResourceRecordType type : DNSResourceRecordType.values()) {
+                    if (serviceMessage.getParam("type").equals(type.name())) {
+                        record.setRrType(type);
+                    }
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        return record;
     }
 
     @Override
@@ -76,12 +130,20 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     protected Resource construct(Resource resource) throws ParameterValidateException {
-        throw new NotImplementedException();
+        DNSResourceRecord record = (DNSResourceRecord) resource;
+        record.setRrClass(DNSResourceRecordClass.IN);
+        record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getDomainId()));
+        return resource;
     }
 
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
-        return null;
+        Long recordId = Long.parseLong(resourceId);
+        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
+        if (record == null) {
+            throw new ResourceNotFoundException("Не найдено DNS-записи с ID " + resourceId);
+        }
+        return construct(record);
     }
 
     @Override
@@ -93,8 +155,15 @@ public class GovernorOfDnsRecord extends LordOfResources {
     public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<DNSResourceRecord> records = new ArrayList<>();
 
+        List<DNSResourceRecord> preRrecords = new ArrayList<>();
         if (hasNameAndAccountId(keyValue)) {
-            records = dnsResourceRecordDAO.getByDomainName(keyValue.get("name"));
+            preRrecords = dnsResourceRecordDAO.getByDomainName(keyValue.get("name"));
+        }
+
+        if (preRrecords.size() > 0) {
+            for (DNSResourceRecord record : records) {
+                records.add((DNSResourceRecord) construct(record));
+            }
         }
 
         return records;
@@ -107,19 +176,39 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public void store(Resource resource) {
-
+        dnsResourceRecordDAO.save((DNSResourceRecord) resource);
     }
 
-    void validateDomain(Domain domain) {
+    public void initDomain(Domain domain) {
         String domainName = domain.getName();
-        if (!dnsDomainDAO.hasDomainRecord(domainName)) {
-            dnsDomainDAO.insert(domainName);
-        }
+        dnsResourceRecordDAO.initDomain(domainName);
+        addSoaRecord(domain);
+        addNsRecords(domain);
     }
 
-    void addSoaAndNsRecords(Domain domain) {
-        dnsResourceRecordDAO.insertByDomainName(domain.getName(), new DNSResourceRecord());
-        dnsResourceRecordDAO.insertByDomainName(domain.getName(), new DNSResourceRecord());
-        dnsResourceRecordDAO.insertByDomainName(domain.getName(), new DNSResourceRecord());
+    public void addNsRecords(Domain domain) {
+        String domainName = domain.getName();
+
+        DNSResourceRecord record = new DNSResourceRecord();
+        record.setRrType(DNSResourceRecordType.NS);
+        record.setOwnerName(domainName);
+        record.setTtl(3600L);
+        record.setData("ns.majordomo.ru");
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        record.setData("ns2.majordomo.ru");
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        record.setData("ns3.majordomo.ru");
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+    }
+
+    public void addSoaRecord(Domain domain) {
+        String domainName = domain.getName();
+
+        DNSResourceRecord record = new DNSResourceRecord();
+        record.setRrType(DNSResourceRecordType.SOA);
+        record.setOwnerName(domainName);
+        record.setTtl(3600L);
+        record.setData("ns.majordomo.ru. support.majordomo.ru. 2004032900 3600 900 3600000 3600");
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
     }
 }

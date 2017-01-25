@@ -134,6 +134,7 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile("org.springframework.restdocs:spring-restdocs-mockmvc:${springRestDocsVersion}")
     testCompile('org.apache.qpid:qpid-broker:6.0.4')
+    testCompile('com.h2database:h2')
     compile(group: 'com.mysql', name: 'management', version: '1.1.6') { exclude(module: 'jmxtools') }
 }
 

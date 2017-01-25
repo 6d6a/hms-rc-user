@@ -1,28 +1,29 @@
 package ru.majordomo.hms.rc.user.resources;
 
 public class DNSResourceRecord extends Resource {
-    private Long pdnsDomainId;
-    private Long pdnsRecordId;
+    private Long domainId;
+    private Long recordId;
     private String ownerName;
     private Long ttl;
     private String data;
+    private Long prio;
     private DNSResourceRecordClass rrClass;
     private DNSResourceRecordType rrType;
 
-    public Long getPdnsDomainId() {
-        return pdnsDomainId;
+    public Long getDomainId() {
+        return domainId;
     }
 
-    public void setPdnsDomainId(Long pdnsDomainId) {
-        this.pdnsDomainId = pdnsDomainId;
+    public void setDomainId(Long domainId) {
+        this.domainId = domainId;
     }
 
-    public Long getPdnsRecordId() {
-        return pdnsRecordId;
+    public Long getRecordId() {
+        return recordId;
     }
 
-    public void setPdnsRecordId(Long pdnsRecordId) {
-        this.pdnsRecordId = pdnsRecordId;
+    public void setRecordId(Long recordId) {
+        this.recordId = recordId;
     }
 
     public String getOwnerName() {
@@ -49,6 +50,14 @@ public class DNSResourceRecord extends Resource {
         this.data = data;
     }
 
+    public Long getPrio() {
+        return prio;
+    }
+
+    public void setPrio(Long prio) {
+        this.prio = prio;
+    }
+
     public DNSResourceRecordClass getRrClass() {
         return rrClass;
     }
@@ -72,12 +81,13 @@ public class DNSResourceRecord extends Resource {
 
     @Override
     public String toString() {
-        return "DNSRecord for domain with id " + pdnsDomainId + ":{\n" +
-                "id=" + pdnsRecordId + '\n' +
+        return "DNSRecord for domain with id " + domainId + ":{\n" +
+                "id=" + recordId + '\n' +
                 ", name='" + ownerName + '\'' + '\n' +
                 ", type=" + rrType + '\n' +
                 ", content='" + data + '\'' + '\n' +
                 ", ttl=" + ttl + '\n' +
+                ", priority=" + prio + '\n' +
                 '}';
     }
 }

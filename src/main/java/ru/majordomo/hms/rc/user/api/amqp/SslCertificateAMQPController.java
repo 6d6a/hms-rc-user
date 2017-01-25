@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,15 +8,9 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.repositories.SslCertificateActionIdentityRepository;
-import ru.majordomo.hms.rc.user.resources.DTO.SslCertificateActionIdentity;
-import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
-import ru.majordomo.hms.rc.user.resources.SSLCertificateState;
-import ru.majordomo.hms.rc.user.resources.WebSite;
 
 import java.util.HashMap;
 import java.util.Map;
