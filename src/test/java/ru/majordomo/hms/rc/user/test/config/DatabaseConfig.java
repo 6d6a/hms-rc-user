@@ -20,17 +20,12 @@ public class DatabaseConfig {
     @Bean(name = "pdnsDataSource")
     @Primary
     public DataSource pdnsDataSource() {
-//        return DataSourceBuilder.create()
         EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
         return builder
-//                .url("jdbc:mysql://dev.majordomo.ru/pdns")
-//                .driverClassName("com.mysql.jdbc.Driver")
-//                .username("root")
-//                .password("cfg0;0r")
                 .setType(EmbeddedDatabaseType.H2)
-                .addScript("classpath:createRecordsTable.sql")
+                .addScript("classpath:create-schema.sql")
+//                .addScript("classpath:test-data.sql")
                 .build();
-//        DBConfigurationBuilder config = DBConfigurationBuilder.newBuilder();
     }
 
     @Bean(name = "pdnsJdbcTemplate")

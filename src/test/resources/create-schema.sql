@@ -1,5 +1,6 @@
 CREATE DOMAIN IF NOT EXISTS enum as int(1);
 
+DROP TABLE IF EXISTS records;
 CREATE TABLE records (
   id int(11) NOT NULL AUTO_INCREMENT,
   domain_id int(11) DEFAULT NULL,
@@ -13,6 +14,7 @@ CREATE TABLE records (
   PRIMARY KEY (id)
 );
 
+DROP TABLE IF EXISTS domains;
 CREATE TABLE domains (
   id int(11) NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL DEFAULT '',

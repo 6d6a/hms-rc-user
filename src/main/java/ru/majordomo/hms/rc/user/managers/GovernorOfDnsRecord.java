@@ -155,13 +155,13 @@ public class GovernorOfDnsRecord extends LordOfResources {
     public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<DNSResourceRecord> records = new ArrayList<>();
 
-        List<DNSResourceRecord> preRrecords = new ArrayList<>();
+        List<DNSResourceRecord> preRecords = new ArrayList<>();
         if (hasNameAndAccountId(keyValue)) {
-            preRrecords = dnsResourceRecordDAO.getByDomainName(keyValue.get("name"));
+            preRecords = dnsResourceRecordDAO.getByDomainName(keyValue.get("name"));
         }
 
-        if (preRrecords.size() > 0) {
-            for (DNSResourceRecord record : records) {
+        if (preRecords.size() > 0) {
+            for (DNSResourceRecord record : preRecords) {
                 records.add((DNSResourceRecord) construct(record));
             }
         }
