@@ -1,10 +1,12 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
@@ -175,7 +177,12 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         SSLCertificate sslCertificate;
         try {
-            sslCertificate = (SSLCertificate) serviceMessage.getParam("sslCertificate");
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                sslCertificate = mapper.readValue((String) serviceMessage.getParam("sslCertificate"), SSLCertificate.class);
+            } catch (IOException e) {
+                throw new ClassCastException();
+            }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("В поле sslCertificate должен быть валидный SSLCertificate");
         }
