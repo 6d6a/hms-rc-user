@@ -57,8 +57,7 @@ public class GovernorOfDnsRecordTest {
         keyValue.put("name", "example.com");
         keyValue.put("accountId", "example.com");
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        assertThat(records.get(1).getOwnerName(), is("example.com"));
-        assertThat(records.get(1).getData(), is("8.8.8.8"));
+        assertThat(records.size(), is(7));
     }
 
     @Test
