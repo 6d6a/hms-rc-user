@@ -146,7 +146,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
     protected Resource construct(Resource resource) throws ParameterValidateException {
         DNSResourceRecord record = (DNSResourceRecord) resource;
         record.setRrClass(DNSResourceRecordClass.IN);
-        record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getDomainId()));
+        record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getRecordId()));
         return resource;
     }
 
