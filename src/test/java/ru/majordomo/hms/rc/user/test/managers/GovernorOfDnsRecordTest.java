@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAO;
@@ -99,6 +100,11 @@ public class GovernorOfDnsRecordTest {
 //        governorOfDnsRecord.build("2");
 //    }
 
+    @Test(expected = ParameterValidateException.class)
+    public void buildBadResourceId() throws Exception {
+        governorOfDnsRecord.build("notnumericid");
+    }
+
     @Test
     public void findOne() throws Exception {
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(4L);
@@ -127,5 +133,21 @@ public class GovernorOfDnsRecordTest {
         keyValue.put("accountId", "0");
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         System.out.println(records);
+    }
+
+    @Test
+    public void update() throws Exception {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("resourceId", 2L);
+        serviceMessage.addParam("name", "example.com");
+        serviceMessage.addParam("ownerName", "sub.example.com");
+        serviceMessage.addParam("data", "78.108.80.36");
+        serviceMessage.addParam("ttl", 3700L);
+        governorOfDnsRecord.update(serviceMessage);
+
+        DNSResourceRecord record = (DNSResourceRecord) governorOfDnsRecord.build("2");
+        System.out.println(record);
     }
 }

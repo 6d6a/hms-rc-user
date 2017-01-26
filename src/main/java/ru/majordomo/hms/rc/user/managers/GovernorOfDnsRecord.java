@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.mysql.management.util.NotImplementedException;
 import com.mysql.management.util.Str;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,12 +52,17 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
-        Long recordId = (Long) serviceMessage.getParam("recordId");
+//        DNSResourceRecord record = (DNSResourceRecord) buildResourceFromServiceMessage(serviceMessage);
+        Long recordId = (Long) serviceMessage.getParam("resourceId");
         if (recordId == null) {
-            throw new ParameterValidateException("Необходимо указать recordId");
+            throw new ParameterValidateException("Необходимо указать resourceId");
         }
+//        record.setRecordId(recordId);
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
         try {
+            if (serviceMessage.getParam("name") != null) {
+                record.setName(cleaner.cleanString((String) serviceMessage.getParam("name")));
+            }
             if (serviceMessage.getParam("ownerName") != null) {
                 record.setOwnerName(cleaner.cleanString((String) serviceMessage.getParam("ownerName")));
             }
@@ -86,7 +92,12 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        Long recordId = Long.parseLong(resourceId);
+        Long recordId;
+        try {
+            recordId = Long.parseLong(resourceId);
+        } catch (NumberFormatException e) {
+            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
+        }
         dnsResourceRecordDAO.delete(recordId);
     }
 
@@ -125,7 +136,10 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
-
+        DNSResourceRecord record = (DNSResourceRecord) resource;
+        if (record.getName() == null || record.getName().equals("")) {
+            throw new ParameterValidateException("Имя домена должно быть указано");
+        }
     }
 
     @Override
@@ -138,17 +152,19 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
-        Long recordId = Long.parseLong(resourceId);
-        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
-        if (record == null) {
-            throw new ResourceNotFoundException("Не найдено DNS-записи с ID " + resourceId);
+        Long recordId;
+        try {
+            recordId = Long.parseLong(resourceId);
+        } catch (NumberFormatException e) {
+            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
         }
+        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
         return construct(record);
     }
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
@@ -171,7 +187,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public Collection<? extends Resource> buildAll() {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override

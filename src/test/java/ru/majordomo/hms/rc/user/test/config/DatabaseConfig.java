@@ -2,7 +2,6 @@ package ru.majordomo.hms.rc.user.test.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -24,7 +23,6 @@ public class DatabaseConfig {
         return builder
                 .setType(EmbeddedDatabaseType.H2)
                 .addScript("classpath:create-schema.sql")
-//                .addScript("classpath:test-data.sql")
                 .build();
     }
 

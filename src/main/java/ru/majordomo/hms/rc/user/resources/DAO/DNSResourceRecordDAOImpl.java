@@ -181,8 +181,8 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         return records;
     }
 
-    @Override
-    public Long getDomainIDByDomainName(String domainName) {
+//    @Override
+    private Long getDomainIDByDomainName(String domainName) {
         String query = "SELECT d.id FROM domains d WHERE d.name = :domainName";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
