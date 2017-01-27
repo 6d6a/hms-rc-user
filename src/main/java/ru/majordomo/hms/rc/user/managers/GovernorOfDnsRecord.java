@@ -55,7 +55,13 @@ public class GovernorOfDnsRecord extends LordOfResources {
         if (serviceMessage.getParam("resourceId") == null) {
             throw new ParameterValidateException("Необходимо указать resourceId");
         }
-        Long recordId = ((Number) serviceMessage.getParam("resourceId")).longValue();
+        String resourceId = (String) serviceMessage.getParam("resourceId");
+        Long recordId;
+        try {
+            recordId = Long.parseLong(resourceId);
+        } catch (NumberFormatException e) {
+            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
+        }
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
         record = setRecordParams(serviceMessage, record);
         validate(record);
