@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import redis.embedded.RedisServer;
 
@@ -67,6 +68,8 @@ public class GovernorOfMailboxTest {
     private MailboxRedisRepository redisRepository;
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     private List<Mailbox> mailboxes;
     private List<Domain> batchOfDomains;
@@ -94,6 +97,8 @@ public class GovernorOfMailboxTest {
         mailboxes = ResourceGenerator.generateBatchOfMailboxesWithDomains(batchOfDomains);
 
         for (Mailbox mailbox : mailboxes) {
+            mailbox.setUid(unixAccounts.get(0).getUid());
+            mailbox.setMailSpool("/homebig/" + mailbox.getDomain().getName());
             governor.syncWithRedis(mailbox);
         }
 
@@ -116,6 +121,7 @@ public class GovernorOfMailboxTest {
     @Test
     public void redis() throws Exception {
         governor.syncWithRedis(mailboxes.get(0));
+        System.out.println(redisTemplate.boundValueOps("mailboxUserData:" + mailboxes.get(0).getFullName()).get());
     }
 
     @Test
@@ -243,6 +249,8 @@ public class GovernorOfMailboxTest {
         assertThat(String.join(":", mailbox.getRedirectAddresses()), is(redisMailbox.getRedirectAddresses()));
         assertThat(mailbox.getPasswordHash(), is(redisMailbox.getPasswordHash()));
         assertThat(redisMailbox.getServerName(), is("pop100500"));
+        Integer uid = mailbox.getUid();
+        assertThat(redisMailbox.getStorageData(), is("#" + uid + ":#" + uid + ":#" + mailbox.getMailSpool()));
     }
 
     @Test

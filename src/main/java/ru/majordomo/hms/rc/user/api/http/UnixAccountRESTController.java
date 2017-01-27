@@ -3,11 +3,7 @@ package ru.majordomo.hms.rc.user.api.http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +11,7 @@ import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
@@ -46,10 +43,15 @@ public class UnixAccountRESTController {
         return governor.buildAll();
     }
 
-    @RequestMapping(value = {"/unix-account/{unixAccountId}/quota/{quotaSize}"}, method = RequestMethod.POST)
-    public ResponseEntity<?> updateQuota(@PathVariable String unixAccountId, @PathVariable Long quotaSize) {
-        governor.updateQuota(unixAccountId, quotaSize);
-        return new ResponseEntity<Object>(HttpStatus.ACCEPTED);
+    @RequestMapping(value = {"/unix-account/{unixAccountId}/quota-report"}, method = RequestMethod.POST)
+    public ResponseEntity<?> updateQuota(@PathVariable String unixAccountId, @RequestBody QuotaReport quotaSize) {
+        try {
+            governor.updateQuota(unixAccountId, quotaSize.getQuotaUsed());
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @RequestMapping(value = {"/{accountId}/unix-account", "/{accountId}/unix-account/"}, method = RequestMethod.GET)
