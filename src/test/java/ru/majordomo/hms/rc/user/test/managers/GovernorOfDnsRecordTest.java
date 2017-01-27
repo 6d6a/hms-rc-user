@@ -56,7 +56,7 @@ public class GovernorOfDnsRecordTest {
         keyValue.put("name", "example.com");
         keyValue.put("accountId", "example.com");
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        assertThat(records.size(), is(7));
+        assertThat(records.size(), is(6));
     }
 
     @Test
@@ -94,11 +94,11 @@ public class GovernorOfDnsRecordTest {
         assertThat(recordsAfter.size(), is(recordsBefore.size() + 1));
     }
 
-//    @Test(expected = ResourceNotFoundException.class)
-//    public void delete() throws Exception {
-//        governorOfDnsRecord.drop("2");
-//        governorOfDnsRecord.build("2");
-//    }
+    @Test(expected = ResourceNotFoundException.class)
+    public void delete() throws Exception {
+        governorOfDnsRecord.drop("7");
+        governorOfDnsRecord.build("7");
+    }
 
     @Test(expected = ParameterValidateException.class)
     public void buildBadResourceId() throws Exception {
@@ -106,14 +106,8 @@ public class GovernorOfDnsRecordTest {
     }
 
     @Test
-    public void findOne() throws Exception {
-        DNSResourceRecord record = dnsResourceRecordDAO.findOne(4L);
-        assertThat(record.getRecordId(), is(4L));
-    }
-
-    @Test
     public void getDomainNameByRecordId() throws Exception {
-        String domainName = dnsResourceRecordDAO.getDomainNameByRecordId(7L);
+        String domainName = dnsResourceRecordDAO.getDomainNameByRecordId(2L);
         assertThat(domainName, is("example.com"));
     }
 
@@ -153,5 +147,11 @@ public class GovernorOfDnsRecordTest {
         assertThat(record.getOwnerName(), is("sub2.example.com"));
         assertThat(record.getData(), is("78.108.80.36"));
         assertThat(record.getTtl(), is(3700L));
+    }
+
+    @Test
+    public void findOne() throws Exception {
+        DNSResourceRecord record = dnsResourceRecordDAO.findOne(4L);
+        assertThat(record.getRecordId(), is(4L));
     }
 }

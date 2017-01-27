@@ -66,7 +66,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
     @Override
     public void delete(DNSResourceRecord record) {
         Long id = record.getRecordId();
-        String query = "DELETE FROM records r where r.id = :recordId";
+        String query = "DELETE FROM records where id = :recordId";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("recordId", id);
@@ -75,7 +75,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
     @Override
     public void delete(Long recordId) {
-        String query = "DELETE FROM records r where r.id = :recordId";
+        String query = "DELETE FROM records where id = :recordId";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("recordId", recordId);
