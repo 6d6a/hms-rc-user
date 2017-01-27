@@ -150,7 +150,17 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        throw new NotImplementedException();
+        if (keyValue.get("resourceId") == null) {
+            throw new ResourceNotFoundException("Должен быть указан resourceId");
+        }
+        Long recordId;
+        try {
+            recordId = Long.parseLong(keyValue.get("resourceId"));
+        } catch (NumberFormatException e) {
+            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
+        }
+        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
+        return construct(record);
     }
 
     @Override
