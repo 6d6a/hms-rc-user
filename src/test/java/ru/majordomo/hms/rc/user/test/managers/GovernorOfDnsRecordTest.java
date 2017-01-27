@@ -27,7 +27,6 @@ import java.util.Map;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(SpringRunner.class)
@@ -76,6 +75,11 @@ public class GovernorOfDnsRecordTest {
 
     @Test
     public void storeNew() throws Exception {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", "example.com");
+        keyValue.put("accountId", "0");
+
+        List<DNSResourceRecord> recordsBefore = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
@@ -86,11 +90,8 @@ public class GovernorOfDnsRecordTest {
         serviceMessage.addParam("ttl", 3600L);
         governorOfDnsRecord.create(serviceMessage);
 
-        Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "example.com");
-        keyValue.put("accountId", "0");
-        List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        System.out.println(records);
+        List<DNSResourceRecord> recordsAfter = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
+        assertThat(recordsAfter.size(), is(recordsBefore.size() + 1));
     }
 
 //    @Test(expected = ResourceNotFoundException.class)
@@ -107,7 +108,7 @@ public class GovernorOfDnsRecordTest {
     @Test
     public void findOne() throws Exception {
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(4L);
-        System.out.println(record);
+        assertThat(record.getRecordId(), is(4L));
     }
 
     @Test
@@ -139,14 +140,18 @@ public class GovernorOfDnsRecordTest {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
-        serviceMessage.addParam("resourceId", 2L);
+        serviceMessage.addParam("resourceId", "2");
         serviceMessage.addParam("name", "example.com");
-        serviceMessage.addParam("ownerName", "sub.example.com");
+        serviceMessage.addParam("ownerName", "sub2.example.com");
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3700L);
         governorOfDnsRecord.update(serviceMessage);
 
         DNSResourceRecord record = (DNSResourceRecord) governorOfDnsRecord.build("2");
-        System.out.println(record);
+        assertThat(record.getRecordId(), is(2L));
+        assertThat(record.getName(), is("example.com"));
+        assertThat(record.getOwnerName(), is("sub2.example.com"));
+        assertThat(record.getData(), is("78.108.80.36"));
+        assertThat(record.getTtl(), is(3700L));
     }
 }
