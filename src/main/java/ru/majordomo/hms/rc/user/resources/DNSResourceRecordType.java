@@ -6,5 +6,7 @@ public enum DNSResourceRecordType {
     CNAME,
     MX,
     SRV,
-    TXT
+    TXT,
+    SOA,
+    NS
 }

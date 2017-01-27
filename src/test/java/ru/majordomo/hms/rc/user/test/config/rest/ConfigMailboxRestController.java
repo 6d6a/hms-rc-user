@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.http.MailboxRestController;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -55,6 +56,16 @@ public class ConfigMailboxRestController extends AbstractMongoConfiguration {
     @Bean
     public GovernorOfDomain governorOfDomain() {
         return new GovernorOfDomain();
+    }
+
+    @Bean
+    public GovernorOfSSLCertificate governorOfSSLCertificate() {
+        return new GovernorOfSSLCertificate();
+    }
+
+    @Bean
+    public GovernorOfDnsRecord governorOfDnsRecord() {
+        return new GovernorOfDnsRecord();
     }
 
     @Bean

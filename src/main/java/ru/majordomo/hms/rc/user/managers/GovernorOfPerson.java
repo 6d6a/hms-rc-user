@@ -5,6 +5,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -50,7 +51,10 @@ public class GovernorOfPerson extends LordOfResources {
             validate(person);
 
             try {
-                domainRegistrarClient.createPerson(person);
+                ResponseEntity responseEntity = domainRegistrarClient.createPerson(person);
+                String location = responseEntity.getHeaders().getLocation().getPath();
+                String nicHandle = location.substring(location.lastIndexOf('/') + 1);
+                person.setNicHandle(nicHandle);
             } catch (Exception e) {
                 logger.error("Не удалось создать персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
             }
@@ -124,7 +128,7 @@ public class GovernorOfPerson extends LordOfResources {
         validate(person);
 
         try {
-            domainRegistrarClient.updatePerson(person);
+            domainRegistrarClient.updatePerson(person.getNicHandle(), person);
         } catch (Exception e) {
             logger.error("Не удалось обновить персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
         }

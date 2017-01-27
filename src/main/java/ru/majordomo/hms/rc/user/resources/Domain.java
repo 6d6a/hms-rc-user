@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "domains")
@@ -13,9 +14,14 @@ public class Domain extends Resource {
     @Transient
     private Person person;
 
+    @Transient
+    private SSLCertificate sslCertificate;
+
     private String personId;
     private RegSpec regSpec;
-    private List<DNSResourceRecord> dnsResourceRecords;
+    private List<DNSResourceRecord> dnsResourceRecords = new ArrayList<>();
+    private String sslCertificateId;
+    private Boolean autoRenew;
 
     @Override
     public void switchResource() {
@@ -55,6 +61,17 @@ public class Domain extends Resource {
         this.personId = person.getId();
     }
 
+    public SSLCertificate getSslCertificate() {
+        return sslCertificate;
+    }
+
+    public void setSslCertificate(SSLCertificate sslCertificate) {
+        this.sslCertificate = sslCertificate;
+        if (this.sslCertificate != null) {
+            this.sslCertificateId = sslCertificate.getId();
+        }
+    }
+
     @JsonIgnore
     public String getPersonId() {
         return personId;
@@ -62,6 +79,23 @@ public class Domain extends Resource {
 
     public void setPersonId(String personId) {
         this.personId = personId;
+    }
+
+    @JsonIgnore
+    public String getSslCertificateId() {
+        return sslCertificateId;
+    }
+
+    public void setSslCertificateId(String sslCertificateId) {
+        this.sslCertificateId = sslCertificateId;
+    }
+
+    public Boolean getAutoRenew() {
+        return autoRenew;
+    }
+
+    public void setAutoRenew(Boolean autoRenew) {
+        this.autoRenew = autoRenew;
     }
 
     @Override

@@ -26,7 +26,7 @@ import ru.majordomo.hms.rc.user.resources.Serviceable;
 @EnableRabbit
 class BaseAMQPController {
 
-    private String applicationName;
+    protected String applicationName;
     private Sender sender;
     private StaffResourceControllerClient staffRcClient;
     private static final Logger logger = LoggerFactory.getLogger(BaseAMQPController.class);
@@ -218,6 +218,7 @@ class BaseAMQPController {
         ServiceMessage report = new ServiceMessage();
         report.setActionIdentity(event.getActionIdentity());
         report.setOperationIdentity(event.getOperationIdentity());
+        report.setAccountId(event.getAccountId());
         if (resource != null) {
             report.setObjRef("http://" + applicationName + "/" + resourceType + "/" + resource.getId());
         }

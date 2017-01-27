@@ -395,6 +395,13 @@ public class GovernorOfWebSite extends LordOfResources {
             throw new ParameterValidateException("Должен присутствовать хотя бы один домен");
         }
 
+        for (String domainId: webSite.getDomainIds()) {
+            WebSite compare = repository.findByDomainIds(domainId);
+            if (compare != null && !compare.getId().equals(webSite.getId())) {
+                throw new ParameterValidateException("Домен уже используется в другом веб-сайте");
+            }
+        }
+
         if (webSite.getName() == null || webSite.getName().equals("")) {
             webSite.setName(webSite.getDomains().get(0).getName());
         }
@@ -416,6 +423,8 @@ public class GovernorOfWebSite extends LordOfResources {
                 throw new ParameterValidateException("Для создания WebSite необходим UnixAccount");
             }
             webSite.setUnixAccount(unixAccounts.get(0));
+        } else {
+            webSite.setUnixAccount((UnixAccount) governorOfUnixAccount.build(webSite.getUnixAccountId()));
         }
 
         List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerIdAndServiceType(webSite.getUnixAccount().getServerId());

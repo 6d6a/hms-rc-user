@@ -19,6 +19,7 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
@@ -41,7 +42,8 @@ import static org.hamcrest.CoreMatchers.not;
                 RedisConfig.class,
                 ConfigGovernorOfMailbox.class,
                 ConfigStaffResourceControllerClient.class,
-                ConfigDomainRegistrarClient.class
+                ConfigDomainRegistrarClient.class,
+                DatabaseConfig.class
         },
         webEnvironment = NONE,
         properties = {

@@ -27,6 +27,7 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
@@ -42,7 +43,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         classes = {
                 ConfigGovernorOfWebsite.class,
                 ConfigStaffResourceControllerClient.class,
-                ConfigDomainRegistrarClient.class
+                ConfigDomainRegistrarClient.class,
+                DatabaseConfig.class
         },
         webEnvironment = NONE,
         properties = {
@@ -175,7 +177,7 @@ public class GovernorOfWebsiteTest {
     @Test
     public void create() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, accountId);
-
+        webSiteRepository.deleteAll();
         governor.create(serviceMessage);
     }
 

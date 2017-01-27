@@ -1,71 +1,66 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
-
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
+import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 
 @EnableRabbit
 @Service
-public class DomainAMQPController extends BaseAMQPController {
+public class DnsRecordAMQPController extends BaseAMQPController {
 
     @Autowired
-    public void setGovernor(GovernorOfDomain governor) {
+    public void setGovernor(GovernorOfDnsRecord governor) {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.domain.create",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.dns-record.create",
             durable = "true", autoDelete = "true"),
-            exchange = @Exchange(value = "domain.create", type = "topic"),
+            exchange = @Exchange(value = "dns-record.create", type = "topic"),
             key = "rc.user"))
     public void handleCreateEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleCreateEventFromPM("domain", serviceMessage);
+                handleCreateEventFromPM("dns-record", serviceMessage);
                 break;
             case ("te"):
-                handleCreateEventFromTE("domain", serviceMessage);
+                handleCreateEventFromTE("dns-record", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.domain.update",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.dns-record.update",
             durable = "true", autoDelete = "true"),
-            exchange = @Exchange(value = "domain.update", type = "topic"),
+            exchange = @Exchange(value = "dns-record.update", type = "topic"),
             key = "rc.user"))
     public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleUpdateEventFromPM("domain", serviceMessage);
+                handleUpdateEventFromPM("dns-record", serviceMessage);
                 break;
             case ("te"):
-                handleUpdateEventFromTE("domain", serviceMessage);
+                handleUpdateEventFromTE("dns-record", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.domain.delete",
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.dns-record.delete",
             durable = "true", autoDelete = "true"),
-            exchange = @Exchange(value = "domain.delete", type = "topic"),
+            exchange = @Exchange(value = "dns-record.delete", type = "topic"),
             key = "rc.user"))
     public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                handleDeleteEventFromPM("domain", serviceMessage);
+                handleDeleteEventFromPM("dns-record", serviceMessage);
                 break;
             case ("te"):
-                handleDeleteEventFromTE("domain", serviceMessage);
+                handleDeleteEventFromTE("dns-record", serviceMessage);
                 break;
         }
     }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
+import ru.majordomo.hms.rc.user.resources.DomainState;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 
@@ -22,12 +23,17 @@ public class ConfigDomainRegistrarClient {
             }
 
             @Override
+            public ResponseEntity renewDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName) {
+                return new ResponseEntity(HttpStatus.CREATED);
+            }
+
+            @Override
             public ResponseEntity createPerson(@RequestBody Person person) {
                 return new ResponseEntity(HttpStatus.CREATED);
             }
 
             @Override
-            public ResponseEntity updatePerson(@RequestBody Person person) {
+            public ResponseEntity updatePerson(@PathVariable("nicHandle") String nicHandle, @RequestBody Person person) {
                 return new ResponseEntity(HttpStatus.CREATED);
             }
 
@@ -38,7 +44,10 @@ public class ConfigDomainRegistrarClient {
 
             @Override
             public RegSpec getRegSpec(@PathVariable("domainName") String domainName) {
-                return new RegSpec();
+                RegSpec regSpec = new RegSpec();
+                regSpec.addState(DomainState.NOT_DELEGATED);
+                regSpec.addState(DomainState.VERIFIED);
+                return regSpec;
             }
         };
     }

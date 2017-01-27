@@ -1,20 +1,18 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.google.common.net.InternetDomainName;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.Resource;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
@@ -24,12 +22,24 @@ public class GovernorOfDomain extends LordOfResources {
     private Cleaner cleaner;
     private DomainRepository repository;
     private GovernorOfPerson governorOfPerson;
+    private GovernorOfSSLCertificate governorOfSSLCertificate;
+    private GovernorOfDnsRecord governorOfDnsRecord;
     private DomainRegistrarClient registrar;
 
 
     @Autowired
     public void setGovernorOfPerson(GovernorOfPerson governorOfPerson) {
         this.governorOfPerson = governorOfPerson;
+    }
+
+    @Autowired
+    public void setGovernorOfSSLCertificate(GovernorOfSSLCertificate governorOfSSLCertificate) {
+        this.governorOfSSLCertificate = governorOfSSLCertificate;
+    }
+
+    @Autowired
+    public void setGovernorOfDnsRecord(GovernorOfDnsRecord governorOfDnsRecord) {
+        this.governorOfDnsRecord = governorOfDnsRecord;
     }
 
     @Autowired
@@ -51,12 +61,25 @@ public class GovernorOfDomain extends LordOfResources {
     public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Domain domain;
         try {
-            Boolean needRegister = (Boolean) serviceMessage.getParam("register");
+            Boolean needRegister = null;
+            if (serviceMessage.getParam("register") != null) {
+                needRegister =(Boolean) serviceMessage.getParam("register");
+            }
 
             domain = (Domain) buildResourceFromServiceMessage(serviceMessage);
             validate(domain);
-            if (needRegister) {
-//                registrar.registerDomain(domain.getName());
+
+            if (repository.findByName(domain.getName()) != null) {
+                throw new ParameterValidateException("Домен " + domain.getName() + " уже присутствует в системе");
+            }
+
+            if (needRegister != null && needRegister) {
+                try {
+                    registrar.registerDomain(domain.getPerson().getNicHandle(), domain.getName());
+                    domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                } catch (Exception e) {
+                    throw new ParameterValidateException(e.getMessage());
+                }
             }
             store(domain);
 
@@ -64,12 +87,62 @@ public class GovernorOfDomain extends LordOfResources {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
         }
 
+        governorOfDnsRecord.initDomain(domain);
+
         return domain;
     }
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        } else {
+            throw new ParameterValidateException("Не указан resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        Domain domain = (Domain) build(keyValue);
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "autoRenew":
+                        domain.setAutoRenew((Boolean) entry.getValue());
+                        break;
+                    case "renew":
+                        if ((Boolean) entry.getValue()) {
+                            try {
+                                if (domain.getPersonId() == null) {
+                                    throw new ParameterValidateException("Отсутствует personId");
+                                }
+                                Person person = (Person) governorOfPerson.build(domain.getPersonId());
+                                ResponseEntity responseEntity = registrar.renewDomain(person.getNicHandle(), domain.getName());
+                                if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                                    throw new ParameterValidateException("Ошибка при продлении домена");
+                                }
+                                domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                            } catch (Exception e) {
+                                throw new ParameterValidateException(e.getMessage());
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+
+        validate(domain);
+        store(domain);
+
+        return domain;
     }
 
     @Override
@@ -81,24 +154,63 @@ public class GovernorOfDomain extends LordOfResources {
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         LordOfResources.setResourceParams(domain, serviceMessage, cleaner);
-        String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
-        domain.setPerson((Person) governorOfPerson.build(domainPersonId));
+        if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
+            if (serviceMessage.getParam("personId") != null) {
+                String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
+                Person domainPerson = (Person) governorOfPerson.build(domainPersonId);
+                domain.setPerson(domainPerson);
+                governorOfPerson.validate(domainPerson);
+            } else {
+                throw new ParameterValidateException("Персона должна быть указана");
+            }
+        }
         return domain;
     }
 
     @Override
     public void validate(Resource resource) throws ParameterValidateException {
         Domain domain = (Domain) resource;
+        if (domain.getName() == null || domain.getName().equals("")) {
+            throw new ParameterValidateException("Имя домена не может быть пустым");
+        }
         validateDomainName(domain.getName());
+
         Person domainPerson = domain.getPerson();
-        governorOfPerson.validate(domainPerson);
+        if (domainPerson != null) {
+            governorOfPerson.validate(domainPerson);
+        }
+
+        if (domain.getAutoRenew() == null) {
+            domain.setAutoRenew(false);
+        }
+
+        SSLCertificate sslCertificate = domain.getSslCertificate();
+        if (sslCertificate != null) {
+            governorOfSSLCertificate.validate(sslCertificate);
+        }
     }
 
     @Override
     protected Resource construct(Resource resource) throws ParameterValidateException {
         Domain domain = (Domain) resource;
-        Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
-        domain.setPerson(domainPerson);
+
+        if (domain.getPersonId() != null) {
+            Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
+            domain.setPerson(domainPerson);
+        }
+
+        if (domain.getSslCertificateId() != null) {
+            SSLCertificate sslCertificate = (SSLCertificate) governorOfSSLCertificate.build(domain.getSslCertificateId());
+            domain.setSslCertificate(sslCertificate);
+        } else {
+            domain.setSslCertificate(null);
+        }
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", domain.getName());
+        keyValue.put("accountId", domain.getAccountId());
+        domain.setDnsResourceRecords((List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue));
+
         return domain;
     }
 
@@ -115,8 +227,16 @@ public class GovernorOfDomain extends LordOfResources {
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
         Domain domain = null;
 
+        if (keyValue.get("name") != null) {
+            domain = repository.findByName(keyValue.get("name"));
+        }
+
         if (hasResourceIdAndAccountId(keyValue)) {
             domain = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
+        }
+
+        if (hasNameAndAccountId(keyValue)) {
+            domain = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
         }
 
         if (domain == null) {
@@ -163,7 +283,11 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     private void validateDomainName(String domainName) throws ParameterValidateException {
-
+        try {
+            InternetDomainName domain = InternetDomainName.from(domainName);
+            String domainPublicPart = domain.publicSuffix().toString();
+        } catch (Exception e) {
+            throw new ParameterValidateException("Некорректное имя домена");
+        }
     }
-
 }
