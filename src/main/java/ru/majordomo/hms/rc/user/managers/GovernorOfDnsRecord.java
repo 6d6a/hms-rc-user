@@ -52,39 +52,12 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
-//        DNSResourceRecord record = (DNSResourceRecord) buildResourceFromServiceMessage(serviceMessage);
         Long recordId = (Long) serviceMessage.getParam("resourceId");
         if (recordId == null) {
             throw new ParameterValidateException("Необходимо указать resourceId");
         }
-//        record.setRecordId(recordId);
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
-        try {
-            if (serviceMessage.getParam("name") != null) {
-                record.setName(cleaner.cleanString((String) serviceMessage.getParam("name")));
-            }
-            if (serviceMessage.getParam("ownerName") != null) {
-                record.setOwnerName(cleaner.cleanString((String) serviceMessage.getParam("ownerName")));
-            }
-            if (serviceMessage.getParam("data") != null) {
-                record.setData(cleaner.cleanString((String) serviceMessage.getParam("data")));
-            }
-            if (serviceMessage.getParam("ttl") != null) {
-                record.setTtl((Long) serviceMessage.getParam("ttl"));
-            }
-            if (serviceMessage.getParam("prio") != null) {
-                record.setPrio((Long) serviceMessage.getParam("prio"));
-            }
-            if (serviceMessage.getParam("type") != null) {
-                for (DNSResourceRecordType type : DNSResourceRecordType.values()) {
-                    if (serviceMessage.getParam("type").equals(type.name())) {
-                        record.setRrType(type);
-                    }
-                }
-            }
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
-        }
+        record = setRecordParams(serviceMessage, record);
         validate(record);
         store(record);
         return record;
@@ -104,6 +77,10 @@ public class GovernorOfDnsRecord extends LordOfResources {
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         DNSResourceRecord record = new DNSResourceRecord();
+        return setRecordParams(serviceMessage, record);
+    }
+
+    private DNSResourceRecord setRecordParams(ServiceMessage serviceMessage, DNSResourceRecord record) {
         try {
             if (serviceMessage.getParam("name") != null) {
                 record.setName(cleaner.cleanString((String) serviceMessage.getParam("name")));
@@ -115,10 +92,10 @@ public class GovernorOfDnsRecord extends LordOfResources {
                 record.setData(cleaner.cleanString((String) serviceMessage.getParam("data")));
             }
             if (serviceMessage.getParam("ttl") != null) {
-                record.setTtl((Long) serviceMessage.getParam("ttl"));
+                record.setTtl(((Number) serviceMessage.getParam("ttl")).longValue());
             }
             if (serviceMessage.getParam("prio") != null) {
-                record.setPrio((Long) serviceMessage.getParam("prio"));
+                record.setPrio(((Number) serviceMessage.getParam("prio")).longValue());
             }
             if (serviceMessage.getParam("type") != null) {
                 for (DNSResourceRecordType type : DNSResourceRecordType.values()) {
