@@ -52,10 +52,10 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
-        Long recordId = (Long) serviceMessage.getParam("resourceId");
-        if (recordId == null) {
+        if (serviceMessage.getParam("resourceId") == null) {
             throw new ParameterValidateException("Необходимо указать resourceId");
         }
+        Long recordId = ((Number) serviceMessage.getParam("resourceId")).longValue();
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
         record = setRecordParams(serviceMessage, record);
         validate(record);
@@ -65,6 +65,9 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
+        if (resourceId == null) {
+            throw new ParameterValidateException("Необходимо указать resourceId");
+        }
         Long recordId;
         try {
             recordId = Long.parseLong(resourceId);
