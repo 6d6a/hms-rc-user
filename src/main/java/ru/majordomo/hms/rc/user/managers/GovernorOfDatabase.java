@@ -325,4 +325,14 @@ public class GovernorOfDatabase extends LordOfResources {
         return count;
     }
 
+    public void updateQuota(String databaseId, Long quotaSize) {
+        Database database = repository.findOne(databaseId);
+        if (database != null) {
+            database.setQuotaUsed(quotaSize);
+        } else {
+            throw new ResourceNotFoundException("Database с ID: " + databaseId + " не найден");
+        }
+        store(database);
+    }
+
 }

@@ -533,4 +533,14 @@ public class GovernorOfMailbox extends LordOfResources {
         redisRepository.delete("*@" + ((Mailbox)construct(mailbox)).getDomain().getName());
     }
 
+    public void updateQuota(String mailboxId, Long quotaSize) {
+        Mailbox mailbox = repository.findOne(mailboxId);
+        if (mailbox != null) {
+            mailbox.setQuotaUsed(quotaSize);
+        } else {
+            throw new ResourceNotFoundException("Mailbox с ID: " + mailboxId + " не найден");
+        }
+        store(mailbox);
+    }
+
 }

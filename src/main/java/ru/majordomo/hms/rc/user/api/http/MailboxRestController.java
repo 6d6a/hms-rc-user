@@ -1,6 +1,8 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -9,6 +11,7 @@ import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -51,6 +54,17 @@ public class MailboxRestController {
     @RequestMapping(value = {"/mailbox/filter"}, method = RequestMethod.GET)
     public Collection<? extends Resource> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
+    }
+
+    @RequestMapping(value = {"/mailbox/{mailboxId}/quota-report"}, method = RequestMethod.POST)
+    public ResponseEntity<?> updateQuota(@PathVariable String mailboxId, @RequestBody QuotaReport report) {
+        try {
+            governor.updateQuota(mailboxId, report.getQuotaUsed());
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
 }

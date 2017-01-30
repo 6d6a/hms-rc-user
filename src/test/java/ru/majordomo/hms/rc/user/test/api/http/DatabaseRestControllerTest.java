@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
@@ -169,5 +171,17 @@ public class DatabaseRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(print());
+    }
+
+    @Test
+    public void updateQuota() throws Exception {
+        QuotaReport report = new QuotaReport();
+        report.setQuotaUsed(100000L);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(report);
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(
+                "/" + resourceName + "/" + batchOfDatabases.get(0).getId() + "/quota-report"
+        ).contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
+        mockMvc.perform(request).andExpect(status().isAccepted());
     }
 }
