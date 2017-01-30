@@ -122,9 +122,6 @@ public class GovernorOfDnsRecordTest {
         record.setData("78.108.87.68");
         governorOfDnsRecord.store(record);
 
-        Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "example.com");
-        keyValue.put("accountId", "0");
         DNSResourceRecord newRecord = (DNSResourceRecord) governorOfDnsRecord.build("2");
         assertThat(newRecord.getRecordId(), is(2L));
         assertThat(newRecord.getTtl(), is(300L));
