@@ -136,6 +136,18 @@ public class GovernorOfDnsRecord extends LordOfResources {
         return resource;
     }
 
+    private List<DNSResourceRecord> constructByDomain(List<DNSResourceRecord> records) throws ParameterValidateException {
+        if (records.size() > 0) {
+            String domainName = dnsResourceRecordDAO.getDomainNameByRecordId(records.get(0).getRecordId());
+            for (DNSResourceRecord record : records) {
+                record.setRrClass(DNSResourceRecordClass.IN);
+                record.setName(domainName);
+            }
+        }
+
+        return records;
+    }
+
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         Long recordId;
@@ -167,18 +179,11 @@ public class GovernorOfDnsRecord extends LordOfResources {
     public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<DNSResourceRecord> records = new ArrayList<>();
 
-        List<DNSResourceRecord> preRecords = new ArrayList<>();
         if (hasNameAndAccountId(keyValue)) {
-            preRecords = dnsResourceRecordDAO.getByDomainName(keyValue.get("name"));
+            records = dnsResourceRecordDAO.getByDomainName(keyValue.get("name"));
         }
 
-        if (preRecords.size() > 0) {
-            for (DNSResourceRecord record : preRecords) {
-                records.add((DNSResourceRecord) construct(record));
-            }
-        }
-
-        return records;
+        return constructByDomain(records);
     }
 
     @Override
