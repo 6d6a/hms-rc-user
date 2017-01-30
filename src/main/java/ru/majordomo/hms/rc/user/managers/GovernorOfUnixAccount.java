@@ -285,15 +285,21 @@ public class GovernorOfUnixAccount extends LordOfResources {
         List<UnixAccount> buildedUnixAccounts = new ArrayList<>();
 
         boolean byAccountId = false;
+        boolean byServerId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
                 byAccountId = true;
             }
+            if (entry.getKey().equals("serverId")) {
+                byServerId = true;
+            }
         }
 
         if (byAccountId) {
             buildedUnixAccounts = repository.findByAccountId(keyValue.get("accountId"));
+        } else if (byServerId) {
+            buildedUnixAccounts = repository.findByServerId(keyValue.get("serverId"));
         }
 
         return buildedUnixAccounts;

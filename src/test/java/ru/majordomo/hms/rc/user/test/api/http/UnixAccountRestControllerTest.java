@@ -143,6 +143,14 @@ public class UnixAccountRestControllerTest {
     }
 
     @Test
+    public void readAllByServerId() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?serverId=" + batchOfUnixAccount.get(0).getServerId()).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andDo(print());
+    }
+
+    @Test
     public void readByIdAndByAccountId() throws Exception {
         String accountId = batchOfUnixAccount.get(0).getAccountId();
         String unixAccountId = batchOfUnixAccount.get(0).getId();

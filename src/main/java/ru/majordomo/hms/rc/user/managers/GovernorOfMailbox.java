@@ -425,8 +425,12 @@ public class GovernorOfMailbox extends LordOfResources {
         List<Mailbox> buildedMailboxes = new ArrayList<>();
 
         boolean byAccountId = false;
+        boolean byServerId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("serverId")) {
+                byServerId = true;
+            }
             if (entry.getKey().equals("accountId")) {
                 byAccountId = true;
             }
@@ -434,6 +438,10 @@ public class GovernorOfMailbox extends LordOfResources {
 
         if (byAccountId) {
             for (Mailbox mailbox : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedMailboxes.add((Mailbox) construct(mailbox));
+            }
+        } else if (byServerId) {
+            for (Mailbox mailbox : repository.findByServerId(keyValue.get("serverId"))) {
                 buildedMailboxes.add((Mailbox) construct(mailbox));
             }
         }

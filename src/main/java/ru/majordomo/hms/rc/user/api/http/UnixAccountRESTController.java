@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
-import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
@@ -41,6 +40,11 @@ public class UnixAccountRESTController {
     @RequestMapping(value = {"/unix-account/","/unix-account"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();
+    }
+
+    @RequestMapping(value = {"/unix-account/filter"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> filter(@RequestParam Map<String, String> keyValue) {
+        return governor.buildAll(keyValue);
     }
 
     @RequestMapping(value = {"/unix-account/{unixAccountId}/quota-report"}, method = RequestMethod.POST)

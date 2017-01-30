@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
+import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -70,6 +72,7 @@ public class DatabaseRestControllerTest {
             for (DatabaseUser databaseUser: database.getDatabaseUsers()) {
                 database.addDatabaseUserId(databaseUser.getId());
             }
+            database.setServiceId(ObjectId.get().toString());
             repository.save(database);
         }
     }
@@ -158,5 +161,13 @@ public class DatabaseRestControllerTest {
                 .andExpect(jsonPath("count").value(1))
                 .andDo(doc)
                 .andDo(doc.document(responseFields(fieldWithPath("count").description("Количество ресурсов WebSite для указанного accountId"))));
+    }
+
+    @Test
+    public void readAllByServerId() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?serviceId=" + batchOfDatabases.get(0).getServiceId()).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andDo(print());
     }
 }

@@ -180,4 +180,12 @@ public class MailboxRestControllerTest {
                 .andExpect(jsonPath("quotaUsed").value(batchOfMailboxes.get(0).getQuotaUsed()))
                 .andExpect(jsonPath("writable").value(batchOfMailboxes.get(0).getWritable()));
     }
+
+    @Test
+    public void readAllByServerId() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?serverId=" + batchOfMailboxes.get(0).getServerId()).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andDo(print());
+    }
 }

@@ -1,11 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,6 +45,11 @@ public class MailboxRestController {
     public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
+        return governor.buildAll(keyValue);
+    }
+
+    @RequestMapping(value = {"/mailbox/filter"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
     }
 

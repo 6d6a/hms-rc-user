@@ -13,5 +13,6 @@ public interface UnixAccountRepository extends MongoRepository<UnixAccount,Strin
     UnixAccount findFirstByOrderByUidAsc();
     Page<UnixAccount> findAllByOrderByUidAsc(Pageable pageable);
     List<UnixAccount> findByAccountId(String accountId);
+    List<UnixAccount> findByServerId(String accountId);
     UnixAccount findByIdAndAccountId(String unixAccountId, String accountId);
 }
