@@ -15,8 +15,7 @@ public class SSHKeyManager {
         ByteArrayOutputStream privateKey = new ByteArrayOutputStream();
         ByteArrayOutputStream publicKey = new ByteArrayOutputStream();
 
-        JSch jSch = new JSch();
-        KeyPair keyPair = KeyPair.genKeyPair(new JSch(), KeyPair.DSA);
+        KeyPair keyPair = KeyPair.genKeyPair(new JSch(), KeyPair.RSA, 2048);
         keyPair.writePrivateKey(privateKey);
         keyPair.writePublicKey(publicKey, "");
 

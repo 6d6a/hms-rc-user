@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
@@ -64,6 +66,18 @@ public class UnixAccountRestControllerTest {
                 .build();
         batchOfUnixAccount = ResourceGenerator.generateBatchOfUnixAccounts();
         repository.save((Iterable) batchOfUnixAccount);
+    }
+
+    @Test
+    public void updateQuota() throws Exception {
+        QuotaReport report = new QuotaReport();
+        report.setQuotaUsed(100000L);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(report);
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(
+                "/" + resourceName + "/" + batchOfUnixAccount.get(0).getId() + "/quota-report"
+        ).contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
+        mockMvc.perform(request).andExpect(status().isAccepted());
     }
 
     @Test
@@ -126,6 +140,14 @@ public class UnixAccountRestControllerTest {
                 .andExpect(jsonPath("$[0].keyPair").isMap())
                 .andExpect(jsonPath("$[0].keyPair.privateKey").value(batchOfUnixAccount.get(0).getKeyPair().getPrivateKey()))
                 .andExpect(jsonPath("$[0].keyPair.publicKey").value(batchOfUnixAccount.get(0).getKeyPair().getPublicKey()));
+    }
+
+    @Test
+    public void readAllByServerId() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?serverId=" + batchOfUnixAccount.get(0).getServerId()).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andDo(print());
     }
 
     @Test

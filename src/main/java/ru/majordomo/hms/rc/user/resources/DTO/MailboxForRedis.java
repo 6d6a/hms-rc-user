@@ -19,6 +19,7 @@ public class MailboxForRedis {
     private SpamFilterAction spamFilterAction;
     private Boolean writable;
     private String serverName;
+    private String storageData;
 
     public String getName() {
         return name;
@@ -98,5 +99,13 @@ public class MailboxForRedis {
 
     public void setServerName(String serverName) {
         this.serverName = serverName;
+    }
+
+    public String getStorageData() {
+        return storageData;
+    }
+
+    public void setStorageData(String storageData) {
+        this.storageData = storageData;
     }
 }

@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +22,7 @@ import java.util.List;
 
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
@@ -35,6 +38,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -70,6 +74,7 @@ public class DatabaseRestControllerTest {
             for (DatabaseUser databaseUser: database.getDatabaseUsers()) {
                 database.addDatabaseUserId(databaseUser.getId());
             }
+            database.setServiceId(ObjectId.get().toString());
             repository.save(database);
         }
     }
@@ -158,5 +163,25 @@ public class DatabaseRestControllerTest {
                 .andExpect(jsonPath("count").value(1))
                 .andDo(doc)
                 .andDo(doc.document(responseFields(fieldWithPath("count").description("Количество ресурсов WebSite для указанного accountId"))));
+    }
+
+    @Test
+    public void readAllByServerId() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?serviceId=" + batchOfDatabases.get(0).getServiceId()).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andDo(print());
+    }
+
+    @Test
+    public void updateQuota() throws Exception {
+        QuotaReport report = new QuotaReport();
+        report.setQuotaUsed(100000L);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(report);
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(
+                "/" + resourceName + "/" + batchOfDatabases.get(0).getId() + "/quota-report"
+        ).contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
+        mockMvc.perform(request).andExpect(status().isAccepted());
     }
 }

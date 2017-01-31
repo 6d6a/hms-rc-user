@@ -271,6 +271,7 @@ public class GovernorOfDatabase extends LordOfResources {
 
         boolean byAccountId = false;
         boolean byDatabaseUserId = false;
+        boolean byServiceId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
@@ -278,6 +279,9 @@ public class GovernorOfDatabase extends LordOfResources {
             }
             if (entry.getKey().equals("databaseUserId")) {
                 byDatabaseUserId = true;
+            }
+            if (entry.getKey().equals("serviceId")) {
+                byServiceId = true;
             }
         }
 
@@ -287,6 +291,10 @@ public class GovernorOfDatabase extends LordOfResources {
             }
         } else if (byAccountId) {
             for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedDatabases.add((Database) construct(database));
+            }
+        } else if (byServiceId) {
+            for (Database database : repository.findByServiceId(keyValue.get("serviceId"))) {
                 buildedDatabases.add((Database) construct(database));
             }
         }
@@ -315,6 +323,16 @@ public class GovernorOfDatabase extends LordOfResources {
         Count count = new Count();
         count.setCount(repository.countByAccountId(accountId));
         return count;
+    }
+
+    public void updateQuota(String databaseId, Long quotaSize) {
+        Database database = repository.findOne(databaseId);
+        if (database != null) {
+            database.setQuotaUsed(quotaSize);
+        } else {
+            throw new ResourceNotFoundException("Database с ID: " + databaseId + " не найден");
+        }
+        store(database);
     }
 
 }

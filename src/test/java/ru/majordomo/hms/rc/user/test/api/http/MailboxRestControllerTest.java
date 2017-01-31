@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +23,7 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
@@ -179,5 +181,25 @@ public class MailboxRestControllerTest {
                 .andExpect(jsonPath("quota").value(batchOfMailboxes.get(0).getQuota()))
                 .andExpect(jsonPath("quotaUsed").value(batchOfMailboxes.get(0).getQuotaUsed()))
                 .andExpect(jsonPath("writable").value(batchOfMailboxes.get(0).getWritable()));
+    }
+
+    @Test
+    public void readAllByServerId() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?serverId=" + batchOfMailboxes.get(0).getServerId()).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andDo(print());
+    }
+
+    @Test
+    public void updateQuota() throws Exception {
+        QuotaReport report = new QuotaReport();
+        report.setQuotaUsed(100000L);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(report);
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(
+                "/" + resourceName + "/" + batchOfMailboxes.get(0).getId() + "/quota-report"
+        ).contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
+        mockMvc.perform(request).andExpect(status().isAccepted());
     }
 }
