@@ -24,10 +24,10 @@ public class MailboxAMQPController extends BaseAMQPController {
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.create",
-            durable = "true", autoDelete = "true"),
+            durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "mailbox.create", type = "topic"),
             key = "rc.user"))
-    public void handleCreateEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
@@ -40,10 +40,10 @@ public class MailboxAMQPController extends BaseAMQPController {
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.update",
-            durable = "true", autoDelete = "true"),
+            durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "mailbox.update", type = "topic"),
             key = "rc.user"))
-    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
@@ -56,10 +56,10 @@ public class MailboxAMQPController extends BaseAMQPController {
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.delete",
-            durable = "true", autoDelete = "true"),
+            durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "mailbox.delete", type = "topic"),
             key = "rc.user"))
-    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):

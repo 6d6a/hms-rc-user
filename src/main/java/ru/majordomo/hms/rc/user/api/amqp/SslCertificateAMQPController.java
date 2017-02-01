@@ -44,10 +44,10 @@ public class SslCertificateAMQPController {
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ssl-certificate.create",
-            durable = "true", autoDelete = "true"),
+            durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "ssl-certificate.create", type = "topic"),
             key = "rc.user"))
-    public void handleCreateEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):

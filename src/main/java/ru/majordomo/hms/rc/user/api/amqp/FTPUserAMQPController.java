@@ -23,10 +23,10 @@ public class FTPUserAMQPController extends BaseAMQPController {
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.create",
-            durable = "true", autoDelete = "true"),
+            durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "ftp-user.create", type = "topic"),
             key = "rc.user"))
-    public void handleCreateEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
@@ -39,10 +39,10 @@ public class FTPUserAMQPController extends BaseAMQPController {
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.update",
-            durable = "true", autoDelete = "true"),
+            durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "ftp-user.update", type = "topic"),
             key = "rc.user"))
-    public void handleUpdateEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
@@ -55,10 +55,10 @@ public class FTPUserAMQPController extends BaseAMQPController {
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.delete",
-            durable = "true", autoDelete = "true"),
+            durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "ftp-user.delete", type = "topic"),
             key = "rc.user"))
-    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
