@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -24,7 +25,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database-user.create",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "database-user.create", type = "topic"),
+            exchange = @Exchange(value = "database-user.create", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -40,7 +41,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database-user.delete",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "database-user.delete"),
+            exchange = @Exchange(value = "database-user.delete", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -56,7 +57,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.database-user.update",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "database-user.update", type = "topic"),
+            exchange = @Exchange(value = "database-user.update", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {

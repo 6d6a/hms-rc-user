@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -25,7 +26,7 @@ public class MailboxAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.create",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "mailbox.create", type = "topic"),
+            exchange = @Exchange(value = "mailbox.create", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -41,7 +42,7 @@ public class MailboxAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.update",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "mailbox.update", type = "topic"),
+            exchange = @Exchange(value = "mailbox.update", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -57,7 +58,7 @@ public class MailboxAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.mailbox.delete",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "mailbox.delete", type = "topic"),
+            exchange = @Exchange(value = "mailbox.delete", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {

@@ -81,8 +81,7 @@ public class DatabaseUserAMQPControllerTest {
     }
 
     private void setUpTE(String actionString) throws Exception {
-        Exchange exchange = new TopicExchange("database-user." + actionString, true, false);
-//        rabbitAdmin.declareExchange(exchange);
+        Exchange exchange = new TopicExchange("database-user." + actionString);
 
         Queue queue = new Queue("te.web100500", false);
         String routingKey = "te.web100500";
@@ -93,7 +92,6 @@ public class DatabaseUserAMQPControllerTest {
                         queue.getName(),
                         Binding.DestinationType.QUEUE,
                         exchange.getName(),
-//                        "database-user." + actionString,
                         routingKey,
                         Collections.emptyMap()
                 )
@@ -101,10 +99,9 @@ public class DatabaseUserAMQPControllerTest {
     }
 
     private void setUpPM(String actionString) throws Exception {
-        Exchange exchange = new TopicExchange("database-user." + actionString, true, false);
-//        rabbitAdmin.declareExchange(exchange);
+        Exchange exchange = new TopicExchange("database-user." + actionString);
 
-        Queue queue = new Queue("pm-" + actionString, false, false, false);
+        Queue queue = new Queue("pm-" + actionString, false);
         String routingKey = "pm";
 
         rabbitAdmin.declareQueue(queue);
@@ -113,27 +110,6 @@ public class DatabaseUserAMQPControllerTest {
                         queue.getName(),
                         Binding.DestinationType.QUEUE,
                         exchange.getName(),
-//                        "database-user." + actionString,
-                        routingKey,
-                        Collections.emptyMap()
-                )
-        );
-    }
-
-    private void setUpRC(String actionString) throws Exception {
-        Exchange exchange = new TopicExchange("database-user." + actionString, true, false);
-//        rabbitAdmin.declareExchange(exchange);
-
-        Queue queue = new Queue("database-user." + actionString, false, false, false);
-        String routingKey = "rc.user";
-
-        rabbitAdmin.declareQueue(queue);
-        rabbitAdmin.declareBinding(
-                new Binding(
-                        queue.getName(),
-                        Binding.DestinationType.QUEUE,
-                        exchange.getName(),
-//                        "database-user." + actionString,
                         routingKey,
                         Collections.emptyMap()
                 )
@@ -201,14 +177,4 @@ public class DatabaseUserAMQPControllerTest {
         Assert.notNull(message);
         Assert.notNull(message.getBody());
     }
-
-    @Test
-    public void idiot() throws Exception {
-        System.out.println("Stupid q-pid");
-    }
-
-//    @Test
-//    public void testStopBroker() throws Exception {
-//        brokerManager.stop();
-//    }
 }

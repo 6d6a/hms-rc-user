@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -24,7 +25,7 @@ public class FTPUserAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.create",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "ftp-user.create", type = "topic"),
+            exchange = @Exchange(value = "ftp-user.create", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -40,7 +41,7 @@ public class FTPUserAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.update",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "ftp-user.update", type = "topic"),
+            exchange = @Exchange(value = "ftp-user.update", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -56,7 +57,7 @@ public class FTPUserAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.delete",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "ftp-user.delete", type = "topic"),
+            exchange = @Exchange(value = "ftp-user.delete", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {

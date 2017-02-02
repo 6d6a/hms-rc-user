@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
@@ -19,7 +20,7 @@ public class DnsRecordAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.dns-record.create",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "dns-record.create", type = "topic"),
+            exchange = @Exchange(value = "dns-record.create", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -35,7 +36,7 @@ public class DnsRecordAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.dns-record.update",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "dns-record.update", type = "topic"),
+            exchange = @Exchange(value = "dns-record.update", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
@@ -51,7 +52,7 @@ public class DnsRecordAMQPController extends BaseAMQPController {
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.dns-record.delete",
             durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "dns-record.delete", type = "topic"),
+            exchange = @Exchange(value = "dns-record.delete", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
