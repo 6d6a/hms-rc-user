@@ -76,7 +76,11 @@ public class GovernorOfFTPUser extends LordOfResources {
                         ftpUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "homedir":
-                        ftpUser.setHomeDir(cleaner.cleanString((String) entry.getValue()));
+                        String homedir = cleaner.cleanString((String) entry.getValue());
+                        if (homedir != null && homedir.startsWith("/")) {
+                            homedir = homedir.substring(1);
+                        }
+                        ftpUser.setHomeDir(homedir);
                         break;
                     case "allowedIPAddresses":
                         ftpUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
