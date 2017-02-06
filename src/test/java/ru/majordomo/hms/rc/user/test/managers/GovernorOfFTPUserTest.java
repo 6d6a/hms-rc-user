@@ -161,7 +161,7 @@ public class GovernorOfFTPUserTest {
         serviceMessage.addParam("allowedIPAddresses", Arrays.asList("1.1.1.1", "2.2.2.2"));
         governor.update(serviceMessage);
         FTPUser ftpUser = repository.findOne(ftpUsers.get(0).getId());
-        assertThat(ftpUser.getHomeDir(), is("/mjru"));
+        assertThat(ftpUser.getHomeDir(), is("mjru"));
         assertThat(ftpUser.getSwitchedOn(), is(false));
         assertThat(ftpUser.getPasswordHash(), not(oldPasswordHash));
         assertThat(ftpUser.getAllowedIpsAsCollectionOfString(), is(Arrays.asList("1.1.1.1", "2.2.2.2")));
