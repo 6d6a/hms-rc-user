@@ -510,6 +510,8 @@ public class GovernorOfMailbox extends LordOfResources {
 
     private void dropFromRedis(Mailbox mailbox) {
         redisRepository.delete(mailbox.getFullName());
+        String key = "mailboxUserData:" + mailbox.getFullName();
+        redisTemplate.delete(key);
     }
 
     private void setAggregatorInRedis(Mailbox mailbox) {

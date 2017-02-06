@@ -56,7 +56,7 @@ public class GovernorOfDnsRecordTest {
         keyValue.put("name", "example.com");
         keyValue.put("accountId", "example.com");
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        assertThat(records.size(), is(6));
+        assertThat(records.size(), is(7));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class GovernorOfDnsRecordTest {
     }
 
     @Test
-    public void storeNew() throws Exception {
+    public void create() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "example.com");
         keyValue.put("accountId", "0");
@@ -92,6 +92,41 @@ public class GovernorOfDnsRecordTest {
 
         List<DNSResourceRecord> recordsAfter = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         assertThat(recordsAfter.size(), is(recordsBefore.size() + 1));
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void createBad() throws Exception {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", "example.com");
+        keyValue.put("accountId", "0");
+
+        List<DNSResourceRecord> recordsBefore = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("name", "example.com");
+        serviceMessage.addParam("ownerName", "*.bad.com");
+        serviceMessage.addParam("type", "A");
+        serviceMessage.addParam("data", "78.108.80.36");
+        serviceMessage.addParam("ttl", 3600L);
+        governorOfDnsRecord.create(serviceMessage);
+    }
+
+    @Test(expected = ParameterValidateException.class)
+    public void createWithoutType() throws Exception {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", "example.com");
+        keyValue.put("accountId", "0");
+
+        List<DNSResourceRecord> recordsBefore = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("name", "example.com");
+        serviceMessage.addParam("ownerName", "*.example.com");
+        serviceMessage.addParam("data", "78.108.80.36");
+        serviceMessage.addParam("ttl", 3600L);
+        governorOfDnsRecord.create(serviceMessage);
     }
 
     @Test(expected = ResourceNotFoundException.class)
