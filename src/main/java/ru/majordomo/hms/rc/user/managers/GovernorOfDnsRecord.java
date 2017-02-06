@@ -13,10 +13,7 @@ import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class GovernorOfDnsRecord extends LordOfResources {
@@ -126,6 +123,34 @@ public class GovernorOfDnsRecord extends LordOfResources {
         if (record.getName() == null || record.getName().equals("")) {
             throw new ParameterValidateException("Имя домена должно быть указано");
         }
+        if (!record.getOwnerName().endsWith(record.getName())) {
+            throw new ParameterValidateException("Запись должна кончаться именем домена");
+        }
+        if (record.getRrType() == null) {
+            throw new ParameterValidateException("Тип записи должен быть указан");
+        }
+        if (record.getTtl() == null) {
+            record.setTtl(3600L);
+        }
+        DNSResourceRecordType type = record.getRrType();
+        switch (type) {
+            case A:
+                record.setPrio(null);
+                break;
+            case MX:
+                if (record.getPrio() == null) record.setPrio(10L);
+                break;
+            case AAAA:
+                break;
+            default:
+                break;
+        }
+//        Map<String, String> keyValue = new HashMap<>();
+//        keyValue.put("name", record.getName());
+//        keyValue.put("accountId", record.getAccountId());
+//        if (governorOfDomain.build(keyValue) == null) {
+//            throw new ParameterValidateException("Домен, для которого создаётся запись, не принадлежит аккаунту " + record.getAccountId());
+//        }
     }
 
     @Override
