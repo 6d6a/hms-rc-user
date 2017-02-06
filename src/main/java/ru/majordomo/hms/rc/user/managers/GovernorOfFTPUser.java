@@ -176,7 +176,7 @@ public class GovernorOfFTPUser extends LordOfResources {
         }
 
         if (ftpUser.getHomeDir() == null) {
-            throw new ParameterValidateException("Домашняя директория FTP пользователя должна быть указана");
+            ftpUser.setHomeDir("");
         }
     }
 
