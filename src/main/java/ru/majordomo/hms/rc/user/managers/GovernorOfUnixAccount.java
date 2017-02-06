@@ -153,9 +153,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
             uid = getFreeUid();
         }
 
-        if (unixAccount.getName() == null || unixAccount.getName().equals("")) {
-            unixAccount.setName(getFreeUnixAccountName());
-        }
+        unixAccount.setName(getFreeUnixAccountName());
 
         String homeDir;
         String serverId;

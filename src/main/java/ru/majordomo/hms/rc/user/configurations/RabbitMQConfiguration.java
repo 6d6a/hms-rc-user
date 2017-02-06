@@ -12,11 +12,13 @@ import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
 @Configuration
+@Profile({"default","prod","dev"})
 public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 
     private String rabbitHost;

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 
-import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -17,16 +16,13 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
-import ru.majordomo.hms.rc.user.repositories.SslCertificateActionIdentityRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.*;
-import ru.majordomo.hms.rc.user.resources.DTO.SslCertificateActionIdentity;
 
 @Service
 public class GovernorOfSSLCertificate extends LordOfResources {
 
     private SSLCertificateRepository repository;
-    private SslCertificateActionIdentityRepository actionIdentityRepository;
     private GovernorOfDomain governorOfDomain;
     private DomainRepository domainRepository;
     private WebSiteRepository webSiteRepository;
@@ -61,11 +57,6 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Autowired
-    public void setActionIdentityRepository(SslCertificateActionIdentityRepository actionIdentityRepository) {
-        this.actionIdentityRepository = actionIdentityRepository;
-    }
-
-    @Autowired
     public void setCleaner(Cleaner cleaner) {
         this.cleaner = cleaner;
     }
@@ -92,36 +83,21 @@ public class GovernorOfSSLCertificate extends LordOfResources {
             throw new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId);
         }
 
-        Boolean actionNeeded = false;
-
         params.remove(resourceId);
         try {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 switch (entry.getKey()) {
                     case "state":
-                        if (entry.getValue() instanceof SSLCertificateState) {
-                            certificate.setState((SSLCertificateState) entry.getValue());
-                            if (entry.getValue().equals("ISSUED")) {
-                                actionNeeded = true;
-                            }
-                        }
-                        break;
                     case "switchedOn":
                         Boolean switchedOn = (Boolean) entry.getValue();
                         if (!certificate.getSwitchedOn().equals(switchedOn)) {
                             certificate.setSwitchedOn(switchedOn);
-                            actionNeeded = true;
                         }
                         break;
                 }
             }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
-        }
-
-        SslCertificateActionIdentity actionIdentity = actionIdentityRepository.findBySslCertificateId(certificate.getId());
-        if (actionNeeded) {
-
         }
 
         validate(certificate);

@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
-import ru.majordomo.hms.rc.user.repositories.SslCertificateActionIdentityRepository;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 import java.util.HashMap;
@@ -31,23 +31,16 @@ public class SslCertificateAMQPController {
     @Autowired
     private Sender sender;
 
-    private SslCertificateActionIdentityRepository actionIdentityRepository;
-
-    @Autowired
-    public void setActionIdentityRepository(SslCertificateActionIdentityRepository actionIdentityRepository) {
-        this.actionIdentityRepository = actionIdentityRepository;
-    }
-
     @Autowired
     public void setGovernor(GovernorOfSSLCertificate governor) {
         this.governor = governor;
     }
 
     @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ssl-certificate.create",
-            durable = "true", autoDelete = "true"),
-            exchange = @Exchange(value = "ssl-certificate.create", type = "topic"),
+            durable = "true", autoDelete = "false"),
+            exchange = @Exchange(value = "ssl-certificate.create", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
-    public void handleCreateEvent(@Header(value = "provider", required = false) String eventProvider,
+    public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
