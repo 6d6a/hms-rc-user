@@ -57,8 +57,10 @@ public class Domain extends Resource {
     }
 
     public void setPerson(Person person) {
-        this.person = person;
-        this.personId = person.getId();
+        if (person != null) {
+            this.person = person;
+            this.personId = person.getId();
+        }
     }
 
     public SSLCertificate getSslCertificate() {
