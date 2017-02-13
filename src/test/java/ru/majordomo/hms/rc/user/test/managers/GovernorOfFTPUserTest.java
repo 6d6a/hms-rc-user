@@ -105,7 +105,7 @@ public class GovernorOfFTPUserTest {
         List<FTPUser> ftpUsers = repository.findByAccountId(unixAccounts.get(1).getAccountId());
         assertThat(ftpUsers.size(), is(1));
         assertThat(ftpUsers.get(0).getName(), is("f111111"));
-        assertThat(ftpUsers.get(0).getHomeDir(), is("/mjru"));
+        assertThat(ftpUsers.get(0).getHomeDir(), is("mjru"));
         assertThat(ftpUsers.get(0).getPasswordHash(), anything());
         assertThat(ftpUsers.get(0).getAllowedIpsAsCollectionOfString(), is(Arrays.asList("3.3.3.3", "4.4.4.4")));
     }
