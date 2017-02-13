@@ -131,6 +131,9 @@ public class GovernorOfFTPUser extends LordOfResources {
             }
             if (serviceMessage.getParam("homedir") != null) {
                 homeDir = cleaner.cleanString((String) serviceMessage.getParam("homedir"));
+                if (homeDir != null && homeDir.startsWith("/")) {
+                    homeDir = homeDir.substring(1);
+                }
             }
             if (serviceMessage.getParam("unixAccountId") != null) {
                 unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));

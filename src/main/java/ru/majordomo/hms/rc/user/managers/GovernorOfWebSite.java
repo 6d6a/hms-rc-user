@@ -220,7 +220,11 @@ public class GovernorOfWebSite extends LordOfResources {
                         website.setServiceId(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "documentRoot":
-                        website.setDocumentRoot(cleaner.cleanString((String) entry.getValue()));
+                        String documentRoot = cleaner.cleanString((String) entry.getValue());
+                        if (documentRoot.startsWith("/")) {
+                            documentRoot = documentRoot.substring(1);
+                        }
+                        website.setDocumentRoot(documentRoot);
                         break;
                     case "charSet":
                         String charsetAsString = cleaner.cleanString((String) serviceMessage.getParam("charSet"));
@@ -322,6 +326,9 @@ public class GovernorOfWebSite extends LordOfResources {
 
             String applicationServiceId = cleaner.cleanString((String) serviceMessage.getParam("applicationServiceId"));
             String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
+            if (documentRoot.startsWith("/")) {
+                documentRoot = documentRoot.substring(1);
+            }
 
             String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
 
