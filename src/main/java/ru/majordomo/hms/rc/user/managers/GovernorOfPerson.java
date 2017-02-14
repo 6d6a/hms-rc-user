@@ -322,6 +322,10 @@ public class GovernorOfPerson extends LordOfResources {
         legalEntity.setOgrn(legalEntityMap.get("ogrn"));
         legalEntity.setOkvedCodes(legalEntityMap.get("okved"));
         legalEntity.setAddress(legalEntityMap.get("address"));
+        legalEntity.setBankName(legalEntityMap.get("bankName"));
+        legalEntity.setBik(legalEntityMap.get("bik"));
+        legalEntity.setCorrespondentAccount(legalEntityMap.get("correspondentAccount"));
+        legalEntity.setBankAccount(legalEntityMap.get("bankAccount"));
         return legalEntity;
     }
 

@@ -10,6 +10,10 @@ public class LegalEntity {
     private String ogrn;
     private String okvedCodes;
     private String address;
+    private String bankName;
+    private String bik;
+    private String correspondentAccount;
+    private String bankAccount;
 
     public String getAddress() {
         return address;
@@ -57,6 +61,38 @@ public class LegalEntity {
 
     public void setOkvedCodes(String okvedCodes) {
         this.okvedCodes = okvedCodes;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getBik() {
+        return bik;
+    }
+
+    public void setBik(String bik) {
+        this.bik = bik;
+    }
+
+    public String getCorrespondentAccount() {
+        return correspondentAccount;
+    }
+
+    public void setCorrespondentAccount(String correspondentAccount) {
+        this.correspondentAccount = correspondentAccount;
+    }
+
+    public String getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(String bankAccount) {
+        this.bankAccount = bankAccount;
     }
 
     @Override
