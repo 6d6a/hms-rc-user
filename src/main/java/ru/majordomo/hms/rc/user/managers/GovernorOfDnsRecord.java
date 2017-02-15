@@ -97,10 +97,10 @@ public class GovernorOfDnsRecord extends LordOfResources {
             if (serviceMessage.getParam("data") != null) {
                 record.setData(cleaner.cleanString((String) serviceMessage.getParam("data")));
             }
-            if (serviceMessage.getParam("ttl") != null) {
+            if (serviceMessage.getParam("ttl") != null && !serviceMessage.getParam("ttl").equals("")) {
                 record.setTtl(((Number) serviceMessage.getParam("ttl")).longValue());
             }
-            if (serviceMessage.getParam("prio") != null) {
+            if (serviceMessage.getParam("prio") != null && !serviceMessage.getParam("prio").equals("")) {
                 record.setPrio(((Number) serviceMessage.getParam("prio")).longValue());
             }
             if (serviceMessage.getParam("type") != null) {
