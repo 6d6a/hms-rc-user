@@ -100,7 +100,11 @@ public class GovernorOfDatabaseUser extends LordOfResources {
                         databaseUser.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "allowedAddressList":
-                        databaseUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        try {
+                            databaseUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        } catch (NumberFormatException e) {
+                            throw new ParameterValidateException("Неверный формат IP-адреса");
+                        }
                         break;
                     case "switchedOn":
                         databaseUser.setSwitchedOn((Boolean) entry.getValue());
@@ -176,8 +180,16 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         databaseUser.setDatabaseIds(databaseIds);
         databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
-        databaseUser.setPasswordHashByPlainPassword(password);
-        databaseUser.setAllowedIpsAsCollectionOfString(allowedIps);
+        try {
+            databaseUser.setPasswordHashByPlainPassword(password);
+        } catch (IllegalArgumentException e) {
+            throw new ParameterValidateException(e.getMessage());
+        }
+        try {
+            databaseUser.setAllowedIpsAsCollectionOfString(allowedIps);
+        } catch (NumberFormatException e) {
+            throw new ParameterValidateException("Неверный формат IP-адреса");
+        }
 
 
         return databaseUser;
