@@ -108,7 +108,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
 
     @Override
     public Long getQuotaUsed() {
-        return quotaUsed;
+        return quotaUsed == null ? 0L : quotaUsed;
     }
 
     @Override
