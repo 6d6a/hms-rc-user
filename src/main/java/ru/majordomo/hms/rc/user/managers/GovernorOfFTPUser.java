@@ -83,7 +83,11 @@ public class GovernorOfFTPUser extends LordOfResources {
                         ftpUser.setHomeDir(homedir);
                         break;
                     case "allowedIPAddresses":
-                        ftpUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        try {
+                            ftpUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                        } catch (NumberFormatException e) {
+                            throw new ParameterValidateException("Неверный формат IP-адреса");
+                        }
                         break;
                     case "switchedOn":
                         ftpUser.setSwitchedOn((Boolean) entry.getValue());
@@ -152,7 +156,11 @@ public class GovernorOfFTPUser extends LordOfResources {
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
         ftpUser.setHomeDir(homeDir);
         ftpUser.setUnixAccountId(unixAccountId);
-        ftpUser.setAllowedIpsAsCollectionOfString(allowedAddressListAsString);
+        try {
+            ftpUser.setAllowedIpsAsCollectionOfString(allowedAddressListAsString);
+        } catch (NumberFormatException e) {
+            throw new ParameterValidateException("Неверный формат IP-адреса");
+        }
 
         return ftpUser;
     }

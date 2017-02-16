@@ -12,7 +12,6 @@ import java.util.List;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
 @Document(collection = "ftpUsers")
 public class FTPUser extends Resource implements Securable {
@@ -45,20 +44,16 @@ public class FTPUser extends Resource implements Securable {
     }
 
     @JsonSetter(value = "allowedIPAddresses")
-    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) {
+    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) throws NumberFormatException {
         List<Long> allowedIpsAsLong = new ArrayList<>();
         if (allowedIpsAsString != null) {
-            try {
-                for (String entry : allowedIpsAsString) {
-                    Long ip = Network.ipAddressInStringToInteger(entry);
-                    if (!allowedIpsAsLong.contains(ip)) {
-                        allowedIpsAsLong.add(ip);
-                    }
+            for (String entry : allowedIpsAsString) {
+                Long ip = Network.ipAddressInStringToInteger(entry);
+                if (!allowedIpsAsLong.contains(ip)) {
+                    allowedIpsAsLong.add(ip);
                 }
-                setAllowedIPAddresses(allowedIpsAsLong);
-            } catch (NumberFormatException e) {
-                throw new ParameterValidateException("Неверный формат IP адреса");
             }
+            setAllowedIPAddresses(allowedIpsAsLong);
         }
     }
 

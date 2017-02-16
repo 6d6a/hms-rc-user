@@ -11,7 +11,6 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
 @Document(collection = "databaseUsers")
 public class DatabaseUser extends Resource implements Serviceable, Securable {
@@ -53,17 +52,13 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     }
 
     @JsonSetter(value = "allowedIPAddresses")
-    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) {
+    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) throws NumberFormatException {
         List<Long> allowedIpsAsLong = new ArrayList<>();
         if (allowedIpsAsString != null) {
-            try {
-                for (String entry : allowedIpsAsString) {
-                    allowedIpsAsLong.add(Network.ipAddressInStringToInteger(entry));
-                }
-                setAllowedIPAddresses(allowedIpsAsLong);
-            } catch (NumberFormatException e) {
-                throw new ParameterValidateException("Неверный формат IP адреса");
+            for (String entry : allowedIpsAsString) {
+                allowedIpsAsLong.add(Network.ipAddressInStringToInteger(entry));
             }
+            setAllowedIPAddresses(allowedIpsAsLong);
         }
     }
 
@@ -96,9 +91,9 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     }
 
     @Override
-    public void setPasswordHashByPlainPassword(String plainPassword) throws UnsupportedEncodingException {
+    public void setPasswordHashByPlainPassword(String plainPassword) throws UnsupportedEncodingException, IllegalArgumentException {
         if (type == null) {
-            throw new ParameterValidateException("Не могу определить тип хеширования, т.к. тип не установлен");
+            throw new IllegalArgumentException("Не могу определить тип хеширования, т.к. тип не установлен");
         }
         switch (type) {
             case MYSQL:
@@ -108,7 +103,7 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
                 passwordHash = PasswordManager.forPostgres(plainPassword);
                 break;
             default:
-                throw new ParameterValidateException("Неизвестный тип базы");
+                throw new IllegalArgumentException("Неизвестный тип базы");
         }
     }
 
