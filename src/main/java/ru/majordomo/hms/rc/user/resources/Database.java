@@ -98,7 +98,7 @@ public class Database extends Resource implements Serviceable, Quotable {
 
     @Override
     public Long getQuotaUsed() {
-        return quotaUsed;
+        return quotaUsed == null ? 0L : quotaUsed;
     }
 
     @Override

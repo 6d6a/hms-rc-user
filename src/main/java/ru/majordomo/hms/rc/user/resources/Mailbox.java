@@ -153,7 +153,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     @Override
     public Long getQuotaUsed() {
-        return quotaUsed;
+        return quotaUsed == null ? 0L : quotaUsed;
     }
 
     @Override
