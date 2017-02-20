@@ -154,4 +154,13 @@ public class DomainRestControllerTest {
         String response = mockMvc.perform(request).andReturn().getResponse().getContentAsString();
         System.out.println(response);
     }
+
+    @Test
+    public void filterAll() throws Exception {
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?paidTillStart=2017-09-01&paidTillEnd=2017-11-01").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfDomains.get(0).getName()))
+                .andExpect(jsonPath("$[1].name").value(batchOfDomains.get(1).getName()));
+    }
 }
