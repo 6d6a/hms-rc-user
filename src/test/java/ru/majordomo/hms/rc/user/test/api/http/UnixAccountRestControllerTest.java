@@ -1,10 +1,9 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.bson.types.ObjectId;
+import org.hamcrest.CoreMatchers;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -88,6 +87,7 @@ public class UnixAccountRestControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andDo(print());
     }
+
     @Test
     public void readOne() throws Exception {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/"
@@ -171,6 +171,16 @@ public class UnixAccountRestControllerTest {
                 .andExpect(jsonPath("keyPair").isMap())
                 .andExpect(jsonPath("keyPair.privateKey").value(batchOfUnixAccount.get(0).getKeyPair().getPrivateKey()))
                 .andExpect(jsonPath("keyPair.publicKey").value(batchOfUnixAccount.get(0).getKeyPair().getPublicKey()));
+    }
+
+    @Test
+    public void updateSendmailAllowed() throws Exception {
+        String json = "{\"sendmailAllowed\": false}";
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.patch("/" + resourceName + "/" + batchOfUnixAccount.get(0).getId())
+                .contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
+        mockMvc.perform(request).andExpect(status().isAccepted());
+        UnixAccount unixAccount = repository.findOne(batchOfUnixAccount.get(0).getId());
+        Assert.assertThat(unixAccount.getSendmailAllowed(), CoreMatchers.is(false));
     }
 
 }
