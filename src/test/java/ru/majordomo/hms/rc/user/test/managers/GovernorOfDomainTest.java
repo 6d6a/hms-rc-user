@@ -184,4 +184,15 @@ public class GovernorOfDomainTest {
         List<Domain> domains = (List<Domain>) governor.buildAll(keyValue);
         assertThat(domains.size(), is(2));
     }
+
+    @Test
+    public void getExpiringByAccount() throws Exception {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("paidTillStart", "2017-09-01");
+        keyValue.put("paidTillEnd", "2017-11-01");
+        keyValue.put("accountId", domains.get(0).getAccountId());
+        List<Domain> domains = (List<Domain>) governor.buildAll(keyValue);
+        System.out.println(domains);
+        assertThat(domains.size(), is(1));
+    }
 }
