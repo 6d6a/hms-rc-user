@@ -178,4 +178,16 @@ public class GovernorOfUnixAccountTest {
         assertThat(unixAccount.getKeyPair().toString(), not(keyPair.toString()));
         System.out.println(unixAccount.getCrontab());
     }
+
+    @Test
+    public void stopSpam() throws Exception {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.setAccountId(unixAccounts.get(0).getAccountId());
+        serviceMessage.addParam("resourceId", unixAccounts.get(0).getId());
+        serviceMessage.addParam("sendmailAllowed", false);
+        governor.update(serviceMessage);
+        UnixAccount unixAccount = repository.findOne(unixAccounts.get(0).getId());
+        assertThat(unixAccount.getSendmailAllowed(), is(false));
+    }
 }

@@ -18,6 +18,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     private Long quota;
     private Long quotaUsed;
     private Boolean writable;
+    private Boolean sendmailAllowed;
     private String passwordHash;
     private SSHKeyPair keyPair;
     private List<CronTask> crontab = new ArrayList<>();
@@ -119,6 +120,14 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     @Override
     public Boolean getWritable() {
         return writable;
+    }
+
+    public Boolean getSendmailAllowed() {
+        return sendmailAllowed;
+    }
+
+    public void setSendmailAllowed(Boolean sendmailAllowed) {
+        this.sendmailAllowed = sendmailAllowed;
     }
 
     @Override
