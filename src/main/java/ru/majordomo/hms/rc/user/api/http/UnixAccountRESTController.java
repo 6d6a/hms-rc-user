@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -35,6 +36,22 @@ public class UnixAccountRESTController {
         keyValue.put("resourceId", unixAccountId);
         keyValue.put("accountId", accountId);
         return (UnixAccount) governor.build(keyValue);
+    }
+
+    @RequestMapping(value = {"/unix-account/{unixAccountId}", "/unix-account/{unixAccountId}/"}, method = RequestMethod.PATCH)
+    public ResponseEntity updateUnixAccount(@PathVariable("unixAccountId") String unixAccountId, @RequestBody Map<String, Object> keyValue) {
+        try {
+            for (Map.Entry<String, Object> entry : keyValue.entrySet()) {
+                switch (entry.getKey()) {
+                    case "sendmailAllowed":
+                        governor.updateSendmailAllowed(unixAccountId, (Boolean) entry.getValue());
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно");
+        }
+        return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(value = {"/unix-account/","/unix-account"}, method = RequestMethod.GET)
