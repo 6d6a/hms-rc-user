@@ -4,6 +4,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import ru.majordomo.hms.rc.user.resources.Domain;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface DomainRepository extends MongoRepository<Domain,String> {
@@ -12,4 +13,5 @@ public interface DomainRepository extends MongoRepository<Domain,String> {
     Domain findByNameAndAccountId(String name, String accountId);
     Domain findBySslCertificateId(String sslCertificateId);
     Domain findByName(String name);
+    List<Domain> findByRegSpecPaidTillBetween(LocalDate start, LocalDate end);
 }

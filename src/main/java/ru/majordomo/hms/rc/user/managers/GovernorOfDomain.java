@@ -6,6 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
@@ -251,10 +254,15 @@ public class GovernorOfDomain extends LordOfResources {
         List<Domain> buildedDomains = new ArrayList<>();
 
         boolean byAccountId = false;
+        boolean byExpiringDates = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
                 byAccountId = true;
+            }
+
+            if (hasPaidTillDates(keyValue)) {
+                byExpiringDates = true;
             }
         }
 
@@ -262,9 +270,35 @@ public class GovernorOfDomain extends LordOfResources {
             for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedDomains.add((Domain) construct(domain));
             }
+        } else if (byExpiringDates) {
+            try {
+                LocalDate startDate = LocalDate.parse(keyValue.get("paidTillStart"));
+                LocalDate endDate = LocalDate.parse(keyValue.get("paidTillEnd"));
+                for (Domain domain : repository.findByRegSpecPaidTillBetween(startDate, endDate)) {
+                    buildedDomains.add((Domain) construct(domain));
+                }
+            } catch (DateTimeParseException e) {
+                throw new ParameterValidateException("Одна из дат указана неверно");
+            }
         }
 
         return buildedDomains;
+    }
+
+    private boolean hasPaidTillDates(Map<String, String> keyValue) {
+        boolean hasPaidTillStart = false;
+        boolean hasPaidTillEnd = false;
+
+        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
+            if (entry.getKey().equals("paidTillStart")) {
+                hasPaidTillStart = true;
+            }
+            if (entry.getKey().equals("paidTillStart")) {
+                hasPaidTillEnd = true;
+            }
+        }
+
+        return hasPaidTillStart && hasPaidTillEnd;
     }
 
     @Override

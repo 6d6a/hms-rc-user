@@ -65,4 +65,9 @@ public class DomainRestController {
         return governor.buildAll(keyValue);
     }
 
+    @RequestMapping(value = {"/domain/filter"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllExpiring(@RequestParam Map<String, String> requestParams) {
+        return governor.buildAll(requestParams);
+    }
+
 }

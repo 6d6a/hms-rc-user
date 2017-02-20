@@ -134,7 +134,7 @@ public class ResourceGenerator {
         regSpec.setRegistrar(NETHOUSE);
         regSpec.setCreatedAsString("2016-10-01");
         regSpec.setFreeDateAsString("2017-11-01");
-        regSpec.setPaidTillAsString("2016-10-01");
+        regSpec.setPaidTillAsString("2017-10-01");
         regSpec.addState(DELEGATED);
         regSpec.addState(VERIFIED);
 
@@ -169,7 +169,7 @@ public class ResourceGenerator {
         regSpec.setRegistrar(NETHOUSE);
         regSpec.setCreatedAsString("2016-10-01");
         regSpec.setFreeDateAsString("2017-11-01");
-        regSpec.setPaidTillAsString("2016-10-01");
+        regSpec.setPaidTillAsString("2017-10-01");
         regSpec.addState(DELEGATED);
         regSpec.addState(VERIFIED);
 
