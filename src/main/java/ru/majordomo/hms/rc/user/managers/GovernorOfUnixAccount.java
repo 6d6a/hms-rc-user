@@ -106,6 +106,8 @@ public class GovernorOfUnixAccount extends LordOfResources {
                         }
                         unixAccount.setCrontab(cronTasks);
                         break;
+                    case "sendmailAllowed":
+                        unixAccount.setSendmailAllowed((Boolean) entry.getValue());
                     default:
                         break;
                 }
@@ -214,6 +216,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
         unixAccount.setQuotaUsed(quotaUsed);
         unixAccount.setPasswordHash(passwordHash);
         unixAccount.setWritable(true);
+        unixAccount.setSendmailAllowed(true);
         try {
             unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
         } catch (JSchException e) {
@@ -246,6 +249,10 @@ public class GovernorOfUnixAccount extends LordOfResources {
                 unixAccount.getHomeDir().equals("/home/") ||
                 unixAccount.getHomeDir().equals("/")) {
             throw new ParameterValidateException("homedir не может быть /home или /");
+        }
+
+        if (unixAccount.getSendmailAllowed() == null) {
+            unixAccount.setSendmailAllowed(true);
         }
     }
 

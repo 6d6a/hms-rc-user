@@ -108,7 +108,8 @@ public class UnixAccountRestControllerTest {
                                 fieldWithPath("quotaUsed").description("Фактический совокупный размер файлов пользователя"),
                                 fieldWithPath("writable").description("Флаг, указывающий на то, возможна ли запись новых файлов пользователем"),
                                 fieldWithPath("passwordHash").description("Криптованный хеш пароля"),
-                                fieldWithPath("keyPair").description("Пара ключей для доступа по SSH")
+                                fieldWithPath("keyPair").description("Пара ключей для доступа по SSH"),
+                                fieldWithPath("sendmailAllowed").description("Разрешена ли отправка почты из скриптов аккаунта")
                         )
                 ));
     }
