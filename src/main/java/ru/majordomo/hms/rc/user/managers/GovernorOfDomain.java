@@ -266,7 +266,17 @@ public class GovernorOfDomain extends LordOfResources {
             }
         }
 
-        if (byAccountId) {
+        if (byAccountId && byExpiringDates) {
+            try {
+                LocalDate startDate = LocalDate.parse(keyValue.get("paidTillStart"));
+                LocalDate endDate = LocalDate.parse(keyValue.get("paidTillEnd"));
+                for (Domain domain : repository.findByAccountIdAndRegSpecPaidTillBetween(keyValue.get("accountId"), startDate, endDate)) {
+                    buildedDomains.add((Domain) construct(domain));
+                }
+            } catch (DateTimeParseException e) {
+                throw new ParameterValidateException("Одна из дат указана неверно");
+            }
+        } else if (byAccountId) {
             for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedDomains.add((Domain) construct(domain));
             }

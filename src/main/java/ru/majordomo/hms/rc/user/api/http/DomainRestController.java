@@ -70,4 +70,10 @@ public class DomainRestController {
         return governor.buildAll(requestParams);
     }
 
+    @RequestMapping(value = {"{accountId}/domain/filter"}, method = RequestMethod.GET)
+    public Collection<? extends Resource> readAllExpiringByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
+        return governor.buildAll(requestParams);
+    }
+
 }

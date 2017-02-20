@@ -156,11 +156,20 @@ public class DomainRestControllerTest {
     }
 
     @Test
-    public void filterAll() throws Exception {
+    public void filterExpiring() throws Exception {
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + resourceName + "/filter?paidTillStart=2017-09-01&paidTillEnd=2017-11-01").accept(APPLICATION_JSON_UTF8);
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfDomains.get(0).getName()))
                 .andExpect(jsonPath("$[1].name").value(batchOfDomains.get(1).getName()));
+    }
+
+    @Test
+    public void filterExpiringByAccountId() throws Exception {
+        String accountId = batchOfDomains.get(0).getAccountId();
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/filter?paidTillStart=2017-09-01&paidTillEnd=2017-11-01").accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$[0].name").value(batchOfDomains.get(0).getName()));
     }
 }
