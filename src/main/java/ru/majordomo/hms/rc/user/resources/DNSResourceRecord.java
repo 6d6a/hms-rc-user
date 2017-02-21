@@ -81,13 +81,13 @@ public class DNSResourceRecord extends Resource {
 
     @Override
     public String toString() {
-        return "DNSRecord for domain with id " + domainId + ":{\n" +
-                "id=" + recordId + '\n' +
-                ", name='" + ownerName + '\'' + '\n' +
-                ", type=" + rrType + '\n' +
-                ", content='" + data + '\'' + '\n' +
-                ", ttl=" + ttl + '\n' +
-                ", priority=" + prio + '\n' +
+        return "DNSRecord for domain with id " + domainId + ":{" +
+                "id=" + recordId +
+                ", name='" + ownerName + '\'' +
+                ", type=" + rrType +
+                ", content='" + data + '\'' +
+                ", ttl=" + ttl +
+                ", priority=" + prio + 
                 '}';
     }
 }
