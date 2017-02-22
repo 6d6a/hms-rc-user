@@ -46,7 +46,7 @@ public class Sender {
         rabbitTemplate.convertAndSend(exchange, routingKey, message);
         logger.info("ACTION_IDENTITY: " + payload.getActionIdentity() +
                 " OPERATION_IDENTITY: " + payload.getOperationIdentity() +
-                " Сообщение от:" + provider + " " +
+                " Сообщение от: " + provider + " " +
                 "в exchange: " + exchange + " " +
                 "с routing key: " + routingKey + " " +
                 "отправлено." + " " +
