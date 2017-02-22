@@ -32,7 +32,9 @@ public class Sender {
     public void send(String exchange, String routingKey, ServiceMessage payload) {
         Message message = buildMessage(payload, applicationName);
         rabbitTemplate.convertAndSend(exchange, routingKey, message);
-        logger.info("Сообщение от: " + applicationName + " " +
+        logger.info("ACTION_IDENTITY: " + payload.getActionIdentity() +
+                " OPERATION_IDENTITY: " + payload.getOperationIdentity() +
+                " Сообщение от: " + applicationName + " " +
                 "в exchange: " + exchange + " " +
                 "с routing key: " + routingKey + " " +
                 "отправлено." + " " +
@@ -42,7 +44,9 @@ public class Sender {
     public void send(String exchange, String routingKey, ServiceMessage payload, String provider) {
         Message message = buildMessage(payload, provider);
         rabbitTemplate.convertAndSend(exchange, routingKey, message);
-        logger.info("Сообщение от:" + provider + " " +
+        logger.info("ACTION_IDENTITY: " + payload.getActionIdentity() +
+                " OPERATION_IDENTITY: " + payload.getOperationIdentity() +
+                " Сообщение от:" + provider + " " +
                 "в exchange: " + exchange + " " +
                 "с routing key: " + routingKey + " " +
                 "отправлено." + " " +

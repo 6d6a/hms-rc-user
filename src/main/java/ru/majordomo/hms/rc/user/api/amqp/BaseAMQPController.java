@@ -77,7 +77,9 @@ class BaseAMQPController {
             resource = governor.create(serviceMessage);
             success = true;
         } catch (Exception e) {
-            logger.error("Создание ресурса не удалось:" + e.getMessage());
+            logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                    " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                    " Создание ресурса " + resourceType + " не удалось: " + e.getMessage());
             errorMessage = e.getMessage();
             success = false;
         }
@@ -128,7 +130,9 @@ class BaseAMQPController {
             resource = governor.update(serviceMessage);
             success = true;
         } catch (Exception e) {
-            logger.error("Обновление ресурса " + resourceType + " не удалось:" + e.getMessage());
+            logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                    " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                    " Обновление ресурса " + resourceType + " не удалось: " + e.getMessage());
             errorMessage = e.getMessage();
             success = false;
         }
