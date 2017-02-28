@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
@@ -39,6 +40,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(SpringRunner.class)
+@EnableMongoAuditing
 @SpringBootTest(
         classes = {
                 ConfigGovernorOfResourceArchive.class,

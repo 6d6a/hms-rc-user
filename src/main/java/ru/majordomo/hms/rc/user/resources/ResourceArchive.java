@@ -1,8 +1,13 @@
 package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
+@Document(collection = "resourceArchives")
 public class ResourceArchive extends Resource implements Serviceable {
     private ResourceArchiveType resourceType;
     private String resourceId;
@@ -10,6 +15,9 @@ public class ResourceArchive extends Resource implements Serviceable {
     private Resource resource;
     private String fileLink;
     private String serviceId;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
 
     public ResourceArchiveType getResourceType() {
         return resourceType;
@@ -42,6 +50,14 @@ public class ResourceArchive extends Resource implements Serviceable {
 
     public void setFileLink(String fileLink) {
         this.fileLink = fileLink;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override
