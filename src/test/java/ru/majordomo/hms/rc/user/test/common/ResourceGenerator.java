@@ -121,6 +121,7 @@ public class ResourceGenerator {
             database.setQuota(100000L);
             database.setQuotaUsed(5000L);
             database.setWritable(true);
+            database.setServiceId("583300c5a94c541d14d58c85");
             batchOfDatabases.add(database);
         }
         return batchOfDatabases;
