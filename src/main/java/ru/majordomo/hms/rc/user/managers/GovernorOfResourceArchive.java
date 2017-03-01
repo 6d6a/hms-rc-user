@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.managers;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class GovernorOfResourceArchive extends LordOfResources {
     private ResourceArchiveRepository repository;
     private GovernorOfWebSite governorOfWebSite;
