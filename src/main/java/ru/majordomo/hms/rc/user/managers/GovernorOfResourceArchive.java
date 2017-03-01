@@ -27,7 +27,6 @@ public class GovernorOfResourceArchive extends LordOfResources {
     private ResourceArchiveRepository repository;
     private GovernorOfWebSite governorOfWebSite;
     private GovernorOfDatabase governorOfDatabase;
-    private StaffResourceControllerClient rcStaff;
     private String archiveHostname;
     
     private Cleaner cleaner;
@@ -45,11 +44,6 @@ public class GovernorOfResourceArchive extends LordOfResources {
     @Autowired
     public void setGovernorOfDatabase(GovernorOfDatabase governorOfDatabase) {
         this.governorOfDatabase = governorOfDatabase;
-    }
-
-    @Autowired
-    public void setRcStaff(StaffResourceControllerClient rcStaff) {
-        this.rcStaff = rcStaff;
     }
 
     @Autowired
@@ -140,7 +134,7 @@ public class GovernorOfResourceArchive extends LordOfResources {
 
         SecureRandom random = new SecureRandom();
         String filename = new BigInteger(260, random).toString(32);
-        String fileLink = archiveHostname + "/" + filename;
+        String fileLink = "http://" + archiveHostname + "/" + filename;
         archive.setFileLink(fileLink);
 
         try {
