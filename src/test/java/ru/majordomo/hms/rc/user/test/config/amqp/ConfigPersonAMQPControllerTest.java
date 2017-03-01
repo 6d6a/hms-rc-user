@@ -21,16 +21,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 
 @Configuration
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
-public class ConfigPersonAMQPControllerTest extends AbstractMongoConfiguration {
-    @Override
-    protected String getDatabaseName() {
-        return "rc-user-" + ObjectId.get().toString();
-    }
-
-    @Override
-    public Mongo mongo() throws Exception {
-        return new Fongo(getDatabaseName()).getMongo();
-    }
+public class ConfigPersonAMQPControllerTest {
 
     @Bean
     public GovernorOfPerson governorOfPerson() {
@@ -39,10 +30,6 @@ public class ConfigPersonAMQPControllerTest extends AbstractMongoConfiguration {
     @Bean
     public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
         return new JettyEmbeddedServletContainerFactory(0);
-    }
-    @Bean
-    public PersonAMQPController personAMQPController() {
-        return new PersonAMQPController();
     }
 
     @Bean

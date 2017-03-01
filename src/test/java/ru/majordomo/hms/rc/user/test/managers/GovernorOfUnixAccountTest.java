@@ -19,8 +19,13 @@ import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfUnixAccount;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +36,18 @@ import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigGovernorOfUnixAccount.class}, webEnvironment = NONE)
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
+        },
+        webEnvironment = NONE)
 public class GovernorOfUnixAccountTest {
     @Autowired
     private GovernorOfUnixAccount governor;

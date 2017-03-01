@@ -188,12 +188,18 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+        Mailbox mailbox = (Mailbox) build(resourceId);
+        dropFromRedis(mailbox);
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) == null) {
             throw new ResourceNotFoundException("Не найден почтовый ящик с ID: " + resourceId);
         }
-        Mailbox mailbox = (Mailbox) build(resourceId);
-        dropFromRedis(mailbox);
+
+        preDelete(resourceId);
         repository.delete(resourceId);
     }
 
@@ -426,6 +432,7 @@ public class GovernorOfMailbox extends LordOfResources {
 
         boolean byAccountId = false;
         boolean byServerId = false;
+        boolean byDomainId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("serverId")) {
@@ -433,6 +440,9 @@ public class GovernorOfMailbox extends LordOfResources {
             }
             if (entry.getKey().equals("accountId")) {
                 byAccountId = true;
+            }
+            if (entry.getKey().equals("domainId")) {
+                byDomainId = true;
             }
         }
 
@@ -442,6 +452,10 @@ public class GovernorOfMailbox extends LordOfResources {
             }
         } else if (byServerId) {
             for (Mailbox mailbox : repository.findByServerId(keyValue.get("serverId"))) {
+                buildedMailboxes.add((Mailbox) construct(mailbox));
+            }
+        } else if (byDomainId) {
+            for (Mailbox mailbox : repository.findByDomainId(keyValue.get("domainId"))) {
                 buildedMailboxes.add((Mailbox) construct(mailbox));
             }
         }

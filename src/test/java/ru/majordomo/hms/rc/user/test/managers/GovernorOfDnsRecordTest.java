@@ -17,9 +17,12 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDnsRecord;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,12 +35,14 @@ import static org.hamcrest.CoreMatchers.is;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         classes = {
-                ConfigDomainRegistrarClient.class,
                 ConfigStaffResourceControllerClient.class,
-                ConfigGovernorOfDnsRecord.class,
-                DNSResourceRecordDAOImpl.class,
-                DNSDomainDAOImpl.class,
-                DatabaseConfig.class
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
         },
         webEnvironment = NONE,
         properties = {

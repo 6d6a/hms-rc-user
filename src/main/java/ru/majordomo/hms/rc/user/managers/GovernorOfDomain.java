@@ -27,6 +27,8 @@ public class GovernorOfDomain extends LordOfResources {
     private GovernorOfPerson governorOfPerson;
     private GovernorOfSSLCertificate governorOfSSLCertificate;
     private GovernorOfDnsRecord governorOfDnsRecord;
+    private GovernorOfMailbox governorOfMailbox;
+    private GovernorOfWebSite governorOfWebSite;
     private DomainRegistrarClient registrar;
 
 
@@ -43,6 +45,16 @@ public class GovernorOfDomain extends LordOfResources {
     @Autowired
     public void setGovernorOfDnsRecord(GovernorOfDnsRecord governorOfDnsRecord) {
         this.governorOfDnsRecord = governorOfDnsRecord;
+    }
+
+    @Autowired
+    public void setGovernorOfMailbox(GovernorOfMailbox governorOfMailbox) {
+        this.governorOfMailbox = governorOfMailbox;
+    }
+
+    @Autowired
+    public void setGovernorOfWebSite(GovernorOfWebSite governorOfWebSite) {
+        this.governorOfWebSite = governorOfWebSite;
     }
 
     @Autowired
@@ -66,7 +78,7 @@ public class GovernorOfDomain extends LordOfResources {
         try {
             Boolean needRegister = null;
             if (serviceMessage.getParam("register") != null) {
-                needRegister =(Boolean) serviceMessage.getParam("register");
+                needRegister = (Boolean) serviceMessage.getParam("register");
             }
 
             domain = (Domain) buildResourceFromServiceMessage(serviceMessage);
@@ -149,7 +161,42 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("domainId", resourceId);
+
+        WebSite webSite;
+        try {
+            webSite = (WebSite) governorOfWebSite.build(keyValue);
+            if (webSite != null) {
+                throw new ParameterValidateException("Домен используется в вебсайте с ID " + webSite.getId());
+            }
+        } catch (ResourceNotFoundException e) {
+            logger.debug("Вебсайтов использующих домен с ID " + resourceId + " не обнаружено");
+        }
+
+        List<Mailbox> mailboxes = (List<Mailbox>) governorOfMailbox.buildAll(keyValue);
+        if (mailboxes.size() > 0) {
+            for (Mailbox mailbox : mailboxes) {
+                governorOfMailbox.drop(mailbox.getId());
+            }
+        }
+
+        Domain domain = repository.findOne(resourceId);
+        keyValue = new HashMap<>();
+        keyValue.put("name", domain.getName());
+        keyValue.put("accountId", domain.getAccountId());
+        List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
+        if (records.size() > 0) {
+            for (DNSResourceRecord record : records) {
+                governorOfDnsRecord.drop(record.getRecordId().toString());
+            }
+        }
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
+        preDelete(resourceId);
         repository.delete(resourceId);
     }
 
@@ -230,16 +277,12 @@ public class GovernorOfDomain extends LordOfResources {
     public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
         Domain domain = null;
 
-        if (keyValue.get("name") != null) {
-            domain = repository.findByName(keyValue.get("name"));
-        }
-
         if (hasResourceIdAndAccountId(keyValue)) {
             domain = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
-        }
-
-        if (hasNameAndAccountId(keyValue)) {
+        } else if (hasNameAndAccountId(keyValue)) {
             domain = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+        } else if (keyValue.get("name") != null) {
+            domain = repository.findByName(keyValue.get("name"));
         }
 
         if (domain == null) {
@@ -255,6 +298,7 @@ public class GovernorOfDomain extends LordOfResources {
 
         boolean byAccountId = false;
         boolean byExpiringDates = false;
+        boolean byPersonId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
@@ -263,6 +307,10 @@ public class GovernorOfDomain extends LordOfResources {
 
             if (hasPaidTillDates(keyValue)) {
                 byExpiringDates = true;
+            }
+
+            if (entry.getKey().equals("personId")) {
+                byPersonId = true;
             }
         }
 
@@ -290,6 +338,10 @@ public class GovernorOfDomain extends LordOfResources {
             } catch (DateTimeParseException e) {
                 throw new ParameterValidateException("Одна из дат указана неверно");
             }
+        } else if (byPersonId) {
+            for (Domain domain : repository.findByPersonId(keyValue.get("personId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
         }
 
         return buildedDomains;
@@ -314,7 +366,7 @@ public class GovernorOfDomain extends LordOfResources {
     @Override
     public Collection<? extends Resource> buildAll() {
         List<Domain> buildedDomains = new ArrayList<>();
-        for (Domain domain: repository.findAll()) {
+        for (Domain domain : repository.findAll()) {
             buildedDomains.add((Domain) construct(domain));
         }
         return buildedDomains;

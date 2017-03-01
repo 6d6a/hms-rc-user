@@ -18,8 +18,14 @@ import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import java.util.*;
 
@@ -29,9 +35,22 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigGovernorOfDatabase.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE, properties = {
-        "default.database.service.name:DATABASE_MYSQL"
-})
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
+        },
+        webEnvironment = NONE,
+        properties = {
+                "default.database.service.name:DATABASE_MYSQL"
+        }
+)
 public class GovernorOfDatabaseTest {
     @Autowired
     private GovernorOfDatabase governor;
@@ -47,7 +66,7 @@ public class GovernorOfDatabaseTest {
     @Before
     public void setUp() throws Exception {
         batchOfDatabases = ResourceGenerator.generateBatchOfDatabases();
-        for (Database database: batchOfDatabases) {
+        for (Database database : batchOfDatabases) {
             for (DatabaseUser databaseUser : database.getDatabaseUsers()) {
                 databaseUserRepository.save(databaseUser);
             }

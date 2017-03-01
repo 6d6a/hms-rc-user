@@ -13,15 +13,36 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.BrokerManager;
+import ru.majordomo.hms.rc.user.test.config.amqp.ConfigAMQPControllers;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigWebSiteAMQPControllerTest;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @Ignore
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigWebSiteAMQPControllerTest.class, AMQPBrokerConfig.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigAMQPControllers.class,
+                AMQPBrokerConfig.class,
+
+                ConfigGovernors.class
+        },
+        webEnvironment = RANDOM_PORT)
 public class WebSiteAMQPControllerTest {
 
     private static BrokerManager brokerManager = new BrokerManager();

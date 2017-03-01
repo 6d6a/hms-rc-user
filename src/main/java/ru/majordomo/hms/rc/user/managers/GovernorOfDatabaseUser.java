@@ -124,12 +124,18 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+        governorOfDatabase.removeDatabaseUserIdFromDatabases(resourceId);
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) == null) {
             throw new ResourceNotFoundException("Ресурс не найден");
         }
+
+        preDelete(resourceId);
         repository.delete(resourceId);
-        governorOfDatabase.removeDatabaseUserIdFromDatabases(resourceId);
     }
 
     @Override

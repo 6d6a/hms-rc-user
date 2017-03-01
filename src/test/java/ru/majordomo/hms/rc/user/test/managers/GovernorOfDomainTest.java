@@ -20,9 +20,12 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDomain;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,12 +41,14 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         classes = {
-                ConfigGovernorOfDomain.class,
-                DNSResourceRecordDAOImpl.class,
-                DNSDomainDAOImpl.class,
-                DatabaseConfig.class,
+                ConfigStaffResourceControllerClient.class,
                 ConfigDomainRegistrarClient.class,
-                ConfigStaffResourceControllerClient.class
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
         },
         webEnvironment = NONE
 )

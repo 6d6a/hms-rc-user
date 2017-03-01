@@ -16,8 +16,13 @@ import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfPerson;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
 
@@ -27,7 +32,18 @@ import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigGovernorOfPerson.class, ConfigDomainRegistrarClient.class}, webEnvironment = NONE)
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
+        },
+        webEnvironment = NONE)
 public class GovernorOfPersonTest {
     @Autowired
     private GovernorOfPerson governor;

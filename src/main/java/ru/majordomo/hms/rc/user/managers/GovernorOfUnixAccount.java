@@ -30,12 +30,24 @@ public class GovernorOfUnixAccount extends LordOfResources {
     public final int MAX_UID = 65535;
 
     private UnixAccountRepository repository;
+    private GovernorOfFTPUser governorOfFTPUser;
+    private GovernorOfWebSite governorOfWebSite;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
 
     @Autowired
     public void setRepository(UnixAccountRepository repository) {
         this.repository = repository;
+    }
+
+    @Autowired
+    public void setGovernorOfFTPUser(GovernorOfFTPUser governorOfFTPUser) {
+        this.governorOfFTPUser = governorOfFTPUser;
+    }
+
+    @Autowired
+    public void setGovernorOfWebSite(GovernorOfWebSite governorOfWebSite) {
+        this.governorOfWebSite = governorOfWebSite;
     }
 
     @Autowired
@@ -142,12 +154,27 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("unixAccountId", resourceId);
+
+        if (governorOfFTPUser.buildAll(keyValue).size() > 0) {
+            throw new ParameterValidateException("У UnixAccount'а есть FTPUser'ы");
+        }
+
+        if (governorOfWebSite.buildAll(keyValue).size() > 0) {
+            throw new ParameterValidateException("У UnixAccount'а есть Website'ы");
+        }
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) == null) {
             throw new ParameterValidateException("Не найден UnixAccount с ID: " + resourceId);
-        } else {
-            repository.delete(resourceId);
         }
+
+        preDelete(resourceId);
+        repository.delete(resourceId);
     }
 
     @Override

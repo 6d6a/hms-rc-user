@@ -19,6 +19,8 @@ public abstract class LordOfResources {
 
     public abstract Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException;
 
+    public abstract void preDelete(String resourceId);
+
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
 
     protected abstract Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
