@@ -26,8 +26,16 @@ import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
+import ru.majordomo.hms.rc.user.test.config.amqp.ConfigAMQPControllers;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseRestController;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -44,7 +52,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigStaffResourceControllerClient.class, ConfigDatabaseRestController.class}, webEnvironment = RANDOM_PORT)
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigRestControllers.class,
+
+                ConfigGovernors.class
+        },
+        webEnvironment = RANDOM_PORT)
 public class DatabaseRestControllerTest {
 
     private MockMvc mockMvc;

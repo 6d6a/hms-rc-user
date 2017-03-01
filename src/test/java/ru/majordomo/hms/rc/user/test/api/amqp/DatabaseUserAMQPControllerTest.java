@@ -15,12 +15,18 @@ import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.BrokerManager;
+import ru.majordomo.hms.rc.user.test.config.amqp.ConfigAMQPControllers;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigDatabaseUserAMQPControllerTest;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabaseUser;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,10 +36,16 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
         ConfigStaffResourceControllerClient.class,
-        ConfigDatabaseUserAMQPControllerTest.class,
+        ConfigDomainRegistrarClient.class,
+
+        FongoConfig.class,
+        RedisConfig.class,
+        DatabaseConfig.class,
+
+        ConfigAMQPControllers.class,
         AMQPBrokerConfig.class,
-        ConfigGovernorOfDatabaseUser.class,
-        ConfigGovernorOfDatabase.class
+
+        ConfigGovernors.class
 }, webEnvironment = RANDOM_PORT)
 public class DatabaseUserAMQPControllerTest {
 

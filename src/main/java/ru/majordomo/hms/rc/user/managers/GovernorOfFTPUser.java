@@ -111,11 +111,18 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         FTPUser ftpUser = repository.findOne(resourceId);
         if (ftpUser == null) {
             throw new ResourceNotFoundException("Пользователь FTP с ID: " + resourceId + " не найден");
         }
+
+        preDelete(resourceId);
         repository.delete(resourceId);
     }
 
@@ -231,15 +238,23 @@ public class GovernorOfFTPUser extends LordOfResources {
         List<FTPUser> buildedFTPUsers = new ArrayList<>();
 
         boolean byAccountId = false;
+        boolean byUnixAccountId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
                 byAccountId = true;
             }
+            if (entry.getKey().equals("unixAccountId")) {
+                byUnixAccountId = true;
+            }
         }
 
         if (byAccountId) {
             for (FTPUser ftpUser : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedFTPUsers.add((FTPUser) construct(ftpUser));
+            }
+        } else if (byUnixAccountId) {
+            for (FTPUser ftpUser : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
                 buildedFTPUsers.add((FTPUser) construct(ftpUser));
             }
         }

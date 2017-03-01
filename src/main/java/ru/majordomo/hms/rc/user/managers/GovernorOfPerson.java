@@ -27,10 +27,16 @@ public class GovernorOfPerson extends LordOfResources {
     private PersonRepository repository;
     private Cleaner cleaner;
     private DomainRegistrarClient domainRegistrarClient;
+    private GovernorOfDomain governorOfDomain;
 
     @Autowired
     public void setDomainRegistrarClient(DomainRegistrarClient domainRegistrarClient) {
         this.domainRegistrarClient = domainRegistrarClient;
+    }
+
+    @Autowired
+    public void setGovernorOfDomain(GovernorOfDomain governorOfDomain) {
+        this.governorOfDomain = governorOfDomain;
     }
 
     @Autowired
@@ -139,10 +145,22 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("personId", resourceId);
+
+        if (governorOfDomain.buildAll(keyValue).size() > 0) {
+            throw new ParameterValidateException("Имеется");
+        }
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) == null) {
             throw new ResourceNotFoundException("Не найдена персона с ID: " + resourceId);
         }
+
+        preDelete(resourceId);
         repository.delete(resourceId);
     }
 

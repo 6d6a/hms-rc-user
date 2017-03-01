@@ -67,6 +67,11 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (resourceId == null) {
             throw new ParameterValidateException("Необходимо указать resourceId");
@@ -77,6 +82,8 @@ public class GovernorOfDnsRecord extends LordOfResources {
         } catch (NumberFormatException e) {
             throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
         }
+
+        preDelete(resourceId);
         dnsResourceRecordDAO.delete(recordId);
     }
 

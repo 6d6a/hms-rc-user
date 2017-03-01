@@ -26,6 +26,7 @@ public class GovernorOfWebSite extends LordOfResources {
     private WebSiteRepository repository;
     private GovernorOfDomain governorOfDomain;
     private GovernorOfUnixAccount governorOfUnixAccount;
+    private GovernorOfResourceArchive governorOfResourceArchive;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
     private String defaultServiceName;
@@ -157,6 +158,11 @@ public class GovernorOfWebSite extends LordOfResources {
     @Autowired
     public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
         this.governorOfUnixAccount = governorOfUnixAccount;
+    }
+
+    @Autowired
+    public void setGovernorOfResourceArchive(GovernorOfResourceArchive governorOfResourceArchive) {
+        this.governorOfResourceArchive = governorOfResourceArchive;
     }
 
     @Autowired
@@ -300,12 +306,18 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+        governorOfResourceArchive.dropByResourceId(resourceId);
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) != null) {
-            repository.delete(resourceId);
-        } else {
+        if (repository.findOne(resourceId) == null) {
             throw new ResourceNotFoundException("Ресурс не найден");
         }
+
+        preDelete(resourceId);
+        repository.delete(resourceId);
     }
 
     @Override
@@ -568,6 +580,13 @@ public class GovernorOfWebSite extends LordOfResources {
             } else {
                 construct(website);
             }
+        } else if (keyValue.get("domainId") != null) {
+            website = repository.findByDomainIds(keyValue.get("domainId"));
+            if (website == null) {
+                throw new ResourceNotFoundException();
+            } else {
+                construct(website);
+            }
         }
 
         return website;
@@ -578,15 +597,23 @@ public class GovernorOfWebSite extends LordOfResources {
         List<WebSite> buildedWebSites = new ArrayList<>();
 
         boolean byAccountId = false;
+        boolean byUnixAccountId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
                 byAccountId = true;
             }
+            if (entry.getKey().equals("unixAccountId")) {
+                byUnixAccountId = true;
+            }
         }
 
         if (byAccountId) {
             for (WebSite webSite : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedWebSites.add((WebSite) construct(webSite));
+            }
+        } else if (byUnixAccountId) {
+            for (WebSite webSite : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
                 buildedWebSites.add((WebSite) construct(webSite));
             }
         }

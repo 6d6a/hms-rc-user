@@ -13,6 +13,8 @@ import ru.majordomo.hms.rc.user.api.amqp.DatabaseUserAMQPController;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
+import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 
 @Configuration
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
@@ -31,13 +33,19 @@ public class ConfigDatabaseUserAMQPControllerTest extends AbstractMongoConfigura
     public GovernorOfDatabaseUser governorOfDatabaseUser() {
         return new GovernorOfDatabaseUser();
     }
+
+    @Bean
+    public GovernorOfResourceArchive governorOfResourceArchive() {
+        return new GovernorOfResourceArchive();
+    }
+
+    @Bean
+    public GovernorOfWebSite governorOfWebSite() {
+        return new GovernorOfWebSite();
+    }
     @Bean
     public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
         return new JettyEmbeddedServletContainerFactory(0);
-    }
-    @Bean
-    public DatabaseUserAMQPController personAMQPController() {
-        return new DatabaseUserAMQPController();
     }
 
     @Bean

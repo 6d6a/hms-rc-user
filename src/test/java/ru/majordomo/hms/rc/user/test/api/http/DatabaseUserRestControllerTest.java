@@ -23,8 +23,14 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseUserRestController;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -40,9 +46,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigDatabaseUserRestController.class, ConfigStaffResourceControllerClient.class}, webEnvironment = RANDOM_PORT, properties = {
-        "default.database.service.name:DATABASE_MYSQL"
-})
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigRestControllers.class,
+
+                ConfigGovernors.class
+        },
+        webEnvironment = RANDOM_PORT,
+        properties = {
+                "default.database.service.name:DATABASE_MYSQL"
+        }
+)
 public class DatabaseUserRestControllerTest {
 
     private MockMvc mockMvc;

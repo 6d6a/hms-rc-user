@@ -81,11 +81,25 @@ public class GovernorOfResourceArchive extends LordOfResources {
         throw new NotImplementedException();
     }
 
+    public void dropByResourceId(String resourceId) {
+        ResourceArchive archive = repository.findByResourceId(resourceId);
+        if (archive != null) {
+            repository.delete(resourceId);
+        }
+    }
+
+    @Override
+    public void preDelete(String resourceId) {
+
+    }
+
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (resourceId == null) {
             throw new ResourceNotFoundException();
         }
+
+        preDelete(resourceId);
         repository.delete(resourceId);
     }
 

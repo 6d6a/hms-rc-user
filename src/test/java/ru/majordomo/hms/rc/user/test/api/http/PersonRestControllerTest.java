@@ -19,9 +19,14 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigPersonRestController;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -40,9 +45,16 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         classes = {
-                ConfigPersonRestController.class,
                 ConfigStaffResourceControllerClient.class,
-                ConfigDomainRegistrarClient.class
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigRestControllers.class,
+
+                ConfigGovernors.class
         },
         webEnvironment = RANDOM_PORT)
 public class PersonRestControllerTest {

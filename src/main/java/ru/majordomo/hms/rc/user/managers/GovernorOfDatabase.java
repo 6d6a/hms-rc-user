@@ -26,6 +26,7 @@ public class GovernorOfDatabase extends LordOfResources {
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
     private GovernorOfDatabaseUser governorOfDatabaseUser;
+    private GovernorOfResourceArchive governorOfResourceArchive;
     private String defaultServiceName;
 
     @Value("${default.database.service.name}")
@@ -36,6 +37,11 @@ public class GovernorOfDatabase extends LordOfResources {
     @Autowired
     public void setGovernorOfDatabaseUser(GovernorOfDatabaseUser governorOfDatabaseUser) {
         this.governorOfDatabaseUser = governorOfDatabaseUser;
+    }
+
+    @Autowired
+    public void setGovernorOfResourceArchive(GovernorOfResourceArchive governorOfResourceArchive) {
+        this.governorOfResourceArchive = governorOfResourceArchive;
     }
 
     @Autowired
@@ -117,10 +123,17 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+        governorOfResourceArchive.dropByResourceId(resourceId);
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) == null) {
             throw new ResourceNotFoundException("Database c ID: " + resourceId + " не найден");
         }
+
+        preDelete(resourceId);
         repository.delete(resourceId);
     }
 

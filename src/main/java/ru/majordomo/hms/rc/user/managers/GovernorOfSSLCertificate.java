@@ -131,6 +131,11 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
+    public void preDelete(String resourceId) {
+
+    }
+
+    @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         SSLCertificate certificate = repository.findOne(resourceId);
         if (certificate == null) {
@@ -146,6 +151,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         governorOfDomain.validate(domain);
         governorOfDomain.store(domain);
 
+        preDelete(resourceId);
         repository.save(certificate);
     }
 

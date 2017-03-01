@@ -31,8 +31,12 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
+import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigWebsiteRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -53,9 +57,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(
         classes = {
                 ConfigStaffResourceControllerClient.class,
-                ConfigWebsiteRestController.class,
                 ConfigDomainRegistrarClient.class,
-                DatabaseConfig.class
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigRestControllers.class,
+
+                ConfigGovernors.class
         },
         webEnvironment = RANDOM_PORT, properties = {
         "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",

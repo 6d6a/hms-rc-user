@@ -20,9 +20,14 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
+import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfFTPUser;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfUnixAccount;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
 
@@ -34,7 +39,19 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.anything;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {ConfigGovernorOfFTPUser.class, ConfigGovernorOfUnixAccount.class, ConfigStaffResourceControllerClient.class}, webEnvironment = NONE)
+@SpringBootTest(
+        classes = {
+                ConfigStaffResourceControllerClient.class,
+                ConfigDomainRegistrarClient.class,
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
+        },
+        webEnvironment = NONE
+)
 public class GovernorOfFTPUserTest {
 
     @Autowired

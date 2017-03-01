@@ -24,11 +24,14 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
+import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfResourceArchive;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,10 +46,14 @@ import static org.hamcrest.CoreMatchers.is;
 @EnableMongoAuditing
 @SpringBootTest(
         classes = {
-                ConfigGovernorOfResourceArchive.class,
                 ConfigStaffResourceControllerClient.class,
                 ConfigDomainRegistrarClient.class,
-                DatabaseConfig.class
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
         },
         webEnvironment = NONE,
         properties = {

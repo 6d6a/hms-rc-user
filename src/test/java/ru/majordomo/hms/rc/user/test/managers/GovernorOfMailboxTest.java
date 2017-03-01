@@ -21,10 +21,12 @@ import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
+import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfMailbox;
+import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,11 +42,14 @@ import static org.hamcrest.CoreMatchers.not;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         classes = {
-                RedisConfig.class,
-                ConfigGovernorOfMailbox.class,
                 ConfigStaffResourceControllerClient.class,
                 ConfigDomainRegistrarClient.class,
-                DatabaseConfig.class
+
+                FongoConfig.class,
+                RedisConfig.class,
+                DatabaseConfig.class,
+
+                ConfigGovernors.class
         },
         webEnvironment = NONE,
         properties = {
