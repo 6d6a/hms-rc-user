@@ -191,9 +191,24 @@ class BaseAMQPController {
             report.addParam("success", true);
             if (resource instanceof ServerStorable || resource instanceof Serviceable) {
                 String teRoutingKey = getTaskExecutorRoutingKey(resource);
+                try {
+                    governor.preDelete(resourceId);
+                } catch (ParameterValidateException e) {
+                    report.delParam("success");
+                    report.delParam("errorMessage");
+                    report.addParam("success", false);
+                    report.addParam("errorMessage", e.getMessage());
+                }
                 sender.send(resourceType + ".delete", teRoutingKey, report);
             } else {
-                governor.drop(resourceId);
+                try {
+                    governor.drop(resourceId);
+                } catch (ParameterValidateException e) {
+                    report.delParam("success");
+                    report.delParam("errorMessage");
+                    report.addParam("success", false);
+                    report.addParam("errorMessage", e.getMessage());
+                }
                 sender.send(resourceType + ".delete", "pm", report);
             }
         }
