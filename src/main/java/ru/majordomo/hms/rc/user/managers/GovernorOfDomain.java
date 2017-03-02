@@ -177,21 +177,16 @@ public class GovernorOfDomain extends LordOfResources {
 
         List<Mailbox> mailboxes = (List<Mailbox>) governorOfMailbox.buildAll(keyValue);
         if (mailboxes.size() > 0) {
+            String message = "На домене имеются почтовые ящики: ";
+
             for (Mailbox mailbox : mailboxes) {
-                governorOfMailbox.drop(mailbox.getId());
+                message += mailbox.getFullName() + ", ";
             }
+            throw new ParameterValidateException(message.substring(-2));
         }
 
         Domain domain = repository.findOne(resourceId);
-        keyValue = new HashMap<>();
-        keyValue.put("name", domain.getName());
-        keyValue.put("accountId", domain.getAccountId());
-        List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        if (records.size() > 0) {
-            for (DNSResourceRecord record : records) {
-                governorOfDnsRecord.drop(record.getRecordId().toString());
-            }
-        }
+        governorOfDnsRecord.dropDomain(domain.getName());
     }
 
     @Override

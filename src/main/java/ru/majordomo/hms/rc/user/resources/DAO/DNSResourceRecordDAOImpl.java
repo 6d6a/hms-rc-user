@@ -198,4 +198,17 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         parameters.addValue("domainName", domainName);
         jdbcTemplate.update(query, parameters);
     }
+
+    public void dropDomain(String domainName) {
+        Long domainId = getDomainIDByDomainName(domainName);
+        String recordsQuery = "DELETE FROM records WHERE domain_id = :domainId";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.registerSqlType("types", Types.VARCHAR);
+        parameters.addValue("domainId", domainId);
+
+        jdbcTemplate.update(recordsQuery, parameters);
+
+        String domainsQuery = "DELETE FROM domains WHERE domain_id = :domainId";
+        jdbcTemplate.update(domainsQuery, parameters);
+    }
 }
