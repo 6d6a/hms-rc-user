@@ -208,7 +208,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
         jdbcTemplate.update(recordsQuery, parameters);
 
-        String domainsQuery = "DELETE FROM domains WHERE domain_id = :domainId";
+        String domainsQuery = "DELETE FROM domains WHERE id = :domainId";
         jdbcTemplate.update(domainsQuery, parameters);
     }
 }
