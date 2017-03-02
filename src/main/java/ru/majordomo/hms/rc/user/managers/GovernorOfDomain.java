@@ -182,7 +182,7 @@ public class GovernorOfDomain extends LordOfResources {
             for (Mailbox mailbox : mailboxes) {
                 message += mailbox.getFullName() + ", ";
             }
-            throw new ParameterValidateException(message.substring(-2));
+            throw new ParameterValidateException(message.substring(0, message.length() - 2));
         }
 
         Domain domain = repository.findOne(resourceId);
