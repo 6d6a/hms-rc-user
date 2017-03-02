@@ -71,6 +71,10 @@ public class GovernorOfDnsRecord extends LordOfResources {
 
     }
 
+    public void dropDomain(String domainName) {
+        dnsResourceRecordDAO.dropDomain(domainName);
+    }
+
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (resourceId == null) {

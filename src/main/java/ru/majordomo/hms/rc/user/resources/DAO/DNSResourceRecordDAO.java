@@ -16,4 +16,5 @@ public interface DNSResourceRecordDAO {
     List<DNSResourceRecord> getNSRecords(String domainName);
     String getDomainNameByRecordId(Long recordId);
     void initDomain(String domainName);
+    void dropDomain(String domainName);
 }
