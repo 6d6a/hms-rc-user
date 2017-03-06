@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@RestController
 public class ResourceArchiveRestController {
 
     private GovernorOfResourceArchive governor;
