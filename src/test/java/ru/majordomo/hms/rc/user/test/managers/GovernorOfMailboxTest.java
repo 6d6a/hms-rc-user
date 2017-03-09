@@ -255,7 +255,7 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getPasswordHash(), is(redisMailbox.getPasswordHash()));
         assertThat(redisMailbox.getServerName(), is("pop100500"));
         Integer uid = mailbox.getUid();
-        assertThat(redisMailbox.getStorageData(), is("#" + uid + ":#" + uid + ":#" + mailbox.getMailSpool()));
+        assertThat(redisMailbox.getStorageData(), is(uid + ":" + uid + ":" + mailbox.getMailSpool()));
     }
 
     @Test
