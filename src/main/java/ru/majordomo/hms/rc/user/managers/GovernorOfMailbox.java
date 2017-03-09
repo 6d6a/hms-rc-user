@@ -491,7 +491,7 @@ public class GovernorOfMailbox extends LordOfResources {
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData("#" + uidAsString + ":#" + uidAsString + ":#" + mailbox.getMailSpool());
+        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
 
         return mailboxForRedis;
     }
@@ -505,6 +505,7 @@ public class GovernorOfMailbox extends LordOfResources {
         userData.put("home", mailbox.getMailSpool() + "/" + mailbox.getName());
         userData.put("host", serverName);
         userData.put("proxy_maybe", "y");
+        userData.put("password", mailbox.getPasswordHash());
         ObjectMapper mapper = new ObjectMapper();
         String data = "";
         try {
