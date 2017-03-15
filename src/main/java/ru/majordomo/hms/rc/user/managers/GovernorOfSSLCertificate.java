@@ -158,15 +158,11 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         SSLCertificate sslCertificate;
+        ObjectMapper mapper = new ObjectMapper();
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                sslCertificate = mapper.readValue((String) serviceMessage.getParam("sslCertificate"), SSLCertificate.class);
-            } catch (IOException e) {
-                throw new ClassCastException();
-            }
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("В поле sslCertificate должен быть валидный SSLCertificate");
+            sslCertificate = mapper.readValue((String) serviceMessage.getParam("sslCertificate"), SSLCertificate.class);
+        } catch (IOException e) {
+            throw new ParameterValidateException(e.getMessage());
         }
 
         return sslCertificate;
