@@ -186,8 +186,8 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         Map<String, String> properties = new HashMap<>();
         properties.put("name", sslCertificate.getName());
 
-        List<Domain> foundDomains = (List<Domain>) governorOfDomain.buildAll(properties);
-        if (foundDomains == null || foundDomains.isEmpty()) {
+        Domain domain = (Domain) governorOfDomain.build(properties);
+        if (domain == null) {
             throw new ParameterValidateException("Домен с указанным именем не найден");
         }
     }
