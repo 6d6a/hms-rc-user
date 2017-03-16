@@ -117,7 +117,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
 
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", sslCertificate.getName());
-            keyValue.put("accountId", sslCertificate.getAccountId());
+            keyValue.put("accountId", serviceMessage.getAccountId());
             Domain domain = (Domain) governorOfDomain.build(keyValue);
             domain.setSslCertificateId(sslCertificate.getId());
             governorOfDomain.validate(domain);
