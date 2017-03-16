@@ -200,4 +200,12 @@ public class GovernorOfDomainTest {
         System.out.println(domains);
         assertThat(domains.size(), is(1));
     }
+
+    @Test
+    public void build() throws Exception {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", domains.get(0).getName());
+        Domain domain = (Domain) governor.build(keyValue);
+        System.out.println(domain.getName());
+    }
 }
