@@ -149,14 +149,6 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         }
         certificate.setSwitchedOn(false);
 
-        Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", certificate.getName());
-        keyValue.put("accountId", certificate.getAccountId());
-        Domain domain = (Domain) governorOfDomain.build(keyValue);
-        domain.setSslCertificateId(null);
-        governorOfDomain.validate(domain);
-        governorOfDomain.store(domain);
-
         preDelete(resourceId);
         repository.save(certificate);
     }
@@ -173,6 +165,8 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         } catch (IOException e) {
             throw new ParameterValidateException(e.getMessage());
         }
+
+        sslCertificate.setAccountId(serviceMessage.getAccountId());
 
         return sslCertificate;
     }
