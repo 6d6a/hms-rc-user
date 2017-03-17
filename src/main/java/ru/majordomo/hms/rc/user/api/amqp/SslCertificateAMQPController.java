@@ -107,8 +107,8 @@ public class SslCertificateAMQPController {
             }
         } catch (Exception e) {
             ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
-            report.addParam("success", false);
             report.delParam("success");
+            report.addParam("success", false);
             sender.send("ssl-certificate.create", "pm", report);
         }
     }
