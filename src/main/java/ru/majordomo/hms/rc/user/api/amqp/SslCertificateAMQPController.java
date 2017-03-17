@@ -146,8 +146,14 @@ public class SslCertificateAMQPController {
 
     private void handleDeleteSslEventFromPM(ServiceMessage serviceMessage) {
         String resourceId = (String) serviceMessage.getParam("resourceId");
-        governor.drop(resourceId);
-        SSLCertificate certificate = (SSLCertificate) governor.build(resourceId);
+        SSLCertificate certificate = new SSLCertificate();
+        try {
+            governor.drop(resourceId);
+            certificate = (SSLCertificate) governor.build(resourceId);
+        } catch (Exception e) {
+            ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
+            sender.send("ssl-certificate.delete", "pm", report);
+        }
         String teRoutingKey = governor.getTERoutingKey(certificate.getId());
 
         ServiceMessage report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));

@@ -210,7 +210,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         }
 
         if (certificate == null) {
-            throw new ResourceNotFoundException("Не найден SSL сертификат");
+            throw new ResourceNotFoundException("Не найден SSL сертификат по данным: " + keyValue.toString());
         }
 
         return certificate;
