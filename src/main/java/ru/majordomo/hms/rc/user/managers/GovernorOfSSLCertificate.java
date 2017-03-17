@@ -68,7 +68,13 @@ public class GovernorOfSSLCertificate extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String name = (String) serviceMessage.getParam("name");
+        SSLCertificate sslCertificate = repository.findByName(name);
+        if (sslCertificate == null) {
+            throw new ResourceNotFoundException();
+        }
+        sslCertificate.setSwitchedOn(true);
+        return sslCertificate;
     }
 
     public Resource update(Map<String, Object> params) throws ParameterValidateException, ResourceNotFoundException {
