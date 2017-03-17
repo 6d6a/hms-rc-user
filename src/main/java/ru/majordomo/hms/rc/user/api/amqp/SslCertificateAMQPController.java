@@ -68,8 +68,7 @@ public class SslCertificateAMQPController {
                                   @Payload ServiceMessage serviceMessage) {
         switch (eventProvider) {
             case ("pm"):
-                String resourceId = (String) serviceMessage.getParam("resourceId");
-                governor.drop(resourceId);
+                handleDeleteSslEventFromPM(serviceMessage);
                 break;
             case ("te"):
                 handleDeleteSslEventFromTE(serviceMessage);
@@ -94,8 +93,15 @@ public class SslCertificateAMQPController {
                 SSLCertificate certificate = (SSLCertificate) governor.update(serviceMessage);
                 governor.validate(certificate);
                 governor.store(certificate);
+
                 ServiceMessage report = createReport(serviceMessage, certificate, "");
-                sender.send("ssl-certificate.create", "pm", report);
+                String teRoutingKey = governor.getTERoutingKey(certificate.getId());
+
+                if (teRoutingKey != null) {
+                    sender.send("ssl-certificate.create", teRoutingKey, report);
+                } else {
+                    sender.send("ssl-certificate.create", "pm", report);
+                }
             } else {
                 sender.send("ssl-certificate.create", "letsencrypt", serviceMessage, "rc");
             }
@@ -136,6 +142,20 @@ public class SslCertificateAMQPController {
 
     private void handleCreateSslEventFromTE(ServiceMessage serviceMessage) {
         sender.send("ssl-certificate.create", "pm", serviceMessage);
+    }
+
+    private void handleDeleteSslEventFromPM(ServiceMessage serviceMessage) {
+        String resourceId = (String) serviceMessage.getParam("resourceId");
+        governor.drop(resourceId);
+        SSLCertificate certificate = (SSLCertificate) governor.build(resourceId);
+        String teRoutingKey = governor.getTERoutingKey(certificate.getId());
+
+        ServiceMessage report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
+        if (teRoutingKey != null) {
+            sender.send("ssl-certificate.create", teRoutingKey, report);
+        } else {
+            sender.send("ssl-certificate.create", "pm", report);
+        }
     }
 
     private void handleDeleteSslEventFromTE(ServiceMessage serviceMessage) {
