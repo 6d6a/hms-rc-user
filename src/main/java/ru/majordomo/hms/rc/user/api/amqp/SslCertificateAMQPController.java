@@ -152,9 +152,9 @@ public class SslCertificateAMQPController {
 
         ServiceMessage report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
         if (teRoutingKey != null) {
-            sender.send("ssl-certificate.create", teRoutingKey, report);
+            sender.send("ssl-certificate.delete", teRoutingKey, report);
         } else {
-            sender.send("ssl-certificate.create", "pm", report);
+            sender.send("ssl-certificate.delete", "pm", report);
         }
     }
 
