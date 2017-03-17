@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
@@ -18,6 +21,8 @@ import java.util.Map;
 @EnableRabbit
 @Service
 public class SslCertificateAMQPController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SslCertificateAMQPController.class);
 
     private String applicationName;
 
@@ -55,35 +60,50 @@ public class SslCertificateAMQPController {
         }
     }
 
-//    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ssl-certificate.delete",
-//            durable = "true", autoDelete = "true"),
-//            exchange = @Exchange(value = "ssl-certificate.delete", type = "topic"),
-//            key = "rc.user"))
-//    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
-//                                  @Payload ServiceMessage serviceMessage) {
-//        switch (eventProvider) {
-//            case ("pm"):
-//                String resourceId = (String) serviceMessage.getParam("resourceId");
-//                governor.drop(resourceId);
-//                break;
-//            case ("te"):
-//                handleDeleteEventFromTE("ssl-certificate", serviceMessage);
-//                break;
-//        }
-//    }
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ssl-certificate.delete",
+            durable = "true", autoDelete = "false"),
+            exchange = @Exchange(value = "ssl-certificate.delete", type = "topic"),
+            key = "rc.user"))
+    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
+                                  @Payload ServiceMessage serviceMessage) {
+        switch (eventProvider) {
+            case ("pm"):
+                String resourceId = (String) serviceMessage.getParam("resourceId");
+                governor.drop(resourceId);
+                break;
+            case ("te"):
+                handleDeleteSslEventFromTE(serviceMessage);
+                break;
+        }
+    }
 
     private void handleCreateSslEventFromPM(ServiceMessage serviceMessage) {
+        if (serviceMessage.getParam("name") == null || serviceMessage.getParam("name").equals("")) {
+            ServiceMessage report = createReport(serviceMessage, null, "Необходимо указать имя домена в поле name");
+            report.addParam("success", false);
+            sender.send("ssl-certificate.create", "pm", report);
+            return;
+        }
         String name = (String) serviceMessage.getParam("name");
         String accountId = serviceMessage.getAccountId();
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", name);
         keyValue.put("accountId", accountId);
-        if (governor.build(keyValue) != null) {
-            SSLCertificate certificate = (SSLCertificate) governor.update(serviceMessage);
-            ServiceMessage report = createReport(serviceMessage, certificate, "");
+        try {
+            if (governor.build(keyValue) != null) {
+                SSLCertificate certificate = (SSLCertificate) governor.update(serviceMessage);
+                governor.validate(certificate);
+                governor.store(certificate);
+                ServiceMessage report = createReport(serviceMessage, certificate, "");
+                sender.send("ssl-certificate.create", "pm", report);
+            } else {
+                sender.send("ssl-certificate.create", "letsencrypt", serviceMessage, "rc");
+            }
+        } catch (Exception e) {
+            ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
+            report.addParam("success", false);
+            report.delParam("success");
             sender.send("ssl-certificate.create", "pm", report);
-        } else {
-            sender.send("ssl-certificate.create", "letsencrypt", serviceMessage, "rc");
         }
     }
 
@@ -91,13 +111,21 @@ public class SslCertificateAMQPController {
         Boolean success = (Boolean) serviceMessage.getParam("success");
         ServiceMessage report;
         if (success) {
-            SSLCertificate certificate = (SSLCertificate) governor.create(serviceMessage);
-            String teRoutingKey = governor.getTERoutingKey(certificate.getId());
+            try {
+                SSLCertificate certificate = (SSLCertificate) governor.create(serviceMessage);
+                String teRoutingKey = governor.getTERoutingKey(certificate.getId());
 
-            report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
-            if (teRoutingKey != null) {
-                sender.send("ssl-certificate.create", teRoutingKey, report);
-            } else {
+                report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
+                if (teRoutingKey != null) {
+                    sender.send("ssl-certificate.create", teRoutingKey, report);
+                } else {
+                    sender.send("ssl-certificate.create", "pm", report);
+                }
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+                report = createReport(serviceMessage, null, e.getMessage());
+                report.delParam("success");
+                report.addParam("success", false);
                 sender.send("ssl-certificate.create", "pm", report);
             }
         } else {
@@ -108,6 +136,10 @@ public class SslCertificateAMQPController {
 
     private void handleCreateSslEventFromTE(ServiceMessage serviceMessage) {
         sender.send("ssl-certificate.create", "pm", serviceMessage);
+    }
+
+    private void handleDeleteSslEventFromTE(ServiceMessage serviceMessage) {
+        sender.send("ssl-certificate.delete", "pm", serviceMessage);
     }
 
     private ServiceMessage createReport(ServiceMessage serviceMessage, SSLCertificate sslCertificate, String errorMessage) {

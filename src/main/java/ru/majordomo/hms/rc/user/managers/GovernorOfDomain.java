@@ -281,7 +281,7 @@ public class GovernorOfDomain extends LordOfResources {
         }
 
         if (domain == null) {
-            throw new ResourceNotFoundException("Не удалось найти указанный домен");
+            throw new ResourceNotFoundException("Не удалось найти домен по указанным данным: " + keyValue.toString());
         }
 
         return construct(domain);

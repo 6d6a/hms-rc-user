@@ -68,7 +68,13 @@ public class GovernorOfSSLCertificate extends LordOfResources {
 
     @Override
     public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        return null;
+        String name = (String) serviceMessage.getParam("name");
+        SSLCertificate sslCertificate = repository.findByName(name);
+        if (sslCertificate == null) {
+            throw new ResourceNotFoundException();
+        }
+        sslCertificate.setSwitchedOn(true);
+        return sslCertificate;
     }
 
     public Resource update(Map<String, Object> params) throws ParameterValidateException, ResourceNotFoundException {
@@ -117,7 +123,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
 
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", sslCertificate.getName());
-            keyValue.put("accountId", sslCertificate.getAccountId());
+            keyValue.put("accountId", serviceMessage.getAccountId());
             Domain domain = (Domain) governorOfDomain.build(keyValue);
             domain.setSslCertificateId(sslCertificate.getId());
             governorOfDomain.validate(domain);
@@ -158,15 +164,14 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     @Override
     protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         SSLCertificate sslCertificate;
+        ObjectMapper mapper = new ObjectMapper();
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                sslCertificate = mapper.readValue((String) serviceMessage.getParam("sslCertificate"), SSLCertificate.class);
-            } catch (IOException e) {
-                throw new ClassCastException();
-            }
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("В поле sslCertificate должен быть валидный SSLCertificate");
+//            sslCertificate = (SSLCertificate) serviceMessage.getParam("sslCertificate");
+            LinkedHashMap<String, String> map = (LinkedHashMap<String, String>) serviceMessage.getParam("sslCertificate");
+            String json = mapper.writeValueAsString(map);
+            sslCertificate = mapper.readValue(json, SSLCertificate.class);
+        } catch (IOException e) {
+            throw new ParameterValidateException(e.getMessage());
         }
 
         return sslCertificate;
@@ -187,8 +192,8 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         Map<String, String> properties = new HashMap<>();
         properties.put("name", sslCertificate.getName());
 
-        List<Domain> foundDomains = (List<Domain>) governorOfDomain.build(properties);
-        if (foundDomains == null || foundDomains.isEmpty()) {
+        Domain domain = (Domain) governorOfDomain.build(properties);
+        if (domain == null) {
             throw new ParameterValidateException("Домен с указанным именем не найден");
         }
     }
