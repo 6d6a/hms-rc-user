@@ -16,4 +16,5 @@ public interface SSLCertificateRepository extends MongoRepository<SSLCertificate
     List<SSLCertificate> findByAccountId(String accountId);
     SSLCertificate findByIdAndAccountId(String resourceId, String accountId);
     SSLCertificate findByName(String name);
+    SSLCertificate findByNameAndAccountId(String name, String accountId);
 }

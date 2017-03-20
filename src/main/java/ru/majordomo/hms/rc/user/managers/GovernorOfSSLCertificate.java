@@ -209,6 +209,10 @@ public class GovernorOfSSLCertificate extends LordOfResources {
             certificate = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
+        if (hasNameAndAccountId(keyValue)) {
+            certificate = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+        }
+
         if (certificate == null) {
             throw new ResourceNotFoundException("Не найден SSL сертификат по данным: " + keyValue.toString());
         }
