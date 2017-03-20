@@ -258,7 +258,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         if (domain == null) {
             return null;
         }
-        WebSite webSite = webSiteRepository.findByDomainIds(domain.getId());
+        WebSite webSite = webSiteRepository.findByDomainIdsContains(domain.getId());
         if (webSite == null) {
             return null;
         }

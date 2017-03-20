@@ -415,7 +415,7 @@ public class GovernorOfWebSite extends LordOfResources {
         }
 
         for (String domainId: webSite.getDomainIds()) {
-            WebSite compare = repository.findByDomainIds(domainId);
+            WebSite compare = repository.findByDomainIdsContains(domainId);
             if (compare != null && !compare.getId().equals(webSite.getId())) {
                 throw new ParameterValidateException("Домен уже используется в другом веб-сайте");
             }
@@ -581,7 +581,7 @@ public class GovernorOfWebSite extends LordOfResources {
                 construct(website);
             }
         } else if (keyValue.get("domainId") != null) {
-            website = repository.findByDomainIds(keyValue.get("domainId"));
+            website = repository.findByDomainIdsContains(keyValue.get("domainId"));
             if (website == null) {
                 throw new ResourceNotFoundException();
             } else {
