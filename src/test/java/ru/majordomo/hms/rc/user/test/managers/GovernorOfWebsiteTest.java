@@ -35,9 +35,7 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceController
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
@@ -284,6 +282,15 @@ public class GovernorOfWebsiteTest {
     @Test(expected = ResourceNotFoundException.class)
     public void dropNonExistent() throws Exception {
         governor.drop(ObjectId.get().toString());
+    }
+
+    @Test
+    public void buildByDomainId() throws Exception {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("accountId", batchOfWebsites.get(0).getAccountId());
+        keyValue.put("domainId", batchOfWebsites.get(0).getDomainIds().get(0));
+        WebSite webSite = (WebSite) governor.build(keyValue);
+        System.out.println(webSite);
     }
 
     @After

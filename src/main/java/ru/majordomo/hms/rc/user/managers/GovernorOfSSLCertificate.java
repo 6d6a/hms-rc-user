@@ -192,6 +192,20 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         }
     }
 
+    public boolean exists(Map<String, String> keyValue) {
+        SSLCertificate certificate = null;
+
+        if (hasResourceIdAndAccountId(keyValue)) {
+            certificate = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
+        }
+
+        if (hasNameAndAccountId(keyValue)) {
+            certificate = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+        }
+
+        return certificate != null;
+    }
+
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         SSLCertificate sslCertificate = repository.findOne(resourceId);

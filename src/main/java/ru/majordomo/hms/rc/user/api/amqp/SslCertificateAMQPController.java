@@ -83,13 +83,14 @@ public class SslCertificateAMQPController {
             sender.send("ssl-certificate.create", "pm", report);
             return;
         }
-        String name = (String) serviceMessage.getParam("name");
-        String accountId = serviceMessage.getAccountId();
-        Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", name);
-        keyValue.put("accountId", accountId);
         try {
-            if (governor.build(keyValue) != null) {
+            String name = (String) serviceMessage.getParam("name");
+            String accountId = serviceMessage.getAccountId();
+            Map<String, String> keyValue = new HashMap<>();
+            keyValue.put("name", name);
+            keyValue.put("accountId", accountId);
+
+            if (governor.exists(keyValue)) {
                 SSLCertificate certificate = (SSLCertificate) governor.update(serviceMessage);
                 governor.validate(certificate);
                 governor.store(certificate);
