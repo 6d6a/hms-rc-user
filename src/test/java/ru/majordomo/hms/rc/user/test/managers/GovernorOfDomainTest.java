@@ -202,7 +202,7 @@ public class GovernorOfDomainTest {
     }
 
     @Test
-    public void build() throws Exception {
+    public void buildWithName() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", domains.get(0).getName());
         Domain domain = (Domain) governor.build(keyValue);
