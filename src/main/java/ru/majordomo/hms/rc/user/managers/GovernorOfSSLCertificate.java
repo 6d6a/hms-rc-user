@@ -159,8 +159,9 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         ObjectMapper mapper = new ObjectMapper();
         try {
 //            sslCertificate = (SSLCertificate) serviceMessage.getParam("sslCertificate");
-            LinkedHashMap<String, String> map = (LinkedHashMap<String, String>) serviceMessage.getParam("sslCertificate");
-            String json = mapper.writeValueAsString(map);
+//            LinkedHashMap<String, String> map = (LinkedHashMap<String, String>) serviceMessage.getParam("sslCertificate");
+//            String json = mapper.writeValueAsString(map);
+            String json = (String) serviceMessage.getParam("sslCertificate");
             sslCertificate = mapper.readValue(json, SSLCertificate.class);
         } catch (IOException e) {
             throw new ParameterValidateException(e.getMessage());
