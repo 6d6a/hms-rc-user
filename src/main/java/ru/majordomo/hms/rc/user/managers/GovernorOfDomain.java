@@ -278,6 +278,12 @@ public class GovernorOfDomain extends LordOfResources {
             domain = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
         } else if (keyValue.get("name") != null) {
             domain = repository.findByName(keyValue.get("name"));
+        } else if (keyValue.get("sslCertificateId") != null) {
+            if (keyValue.get("accountId") != null) {
+                domain = repository.findBySslCertificateIdAndAccountId(keyValue.get("sslCertificateId"), keyValue.get("accountId"));
+            } else {
+                domain = repository.findBySslCertificateId(keyValue.get("sslCertificateId"));
+            }
         }
 
         if (domain == null) {

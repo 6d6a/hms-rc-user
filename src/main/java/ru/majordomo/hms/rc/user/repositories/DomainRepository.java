@@ -12,6 +12,7 @@ public interface DomainRepository extends MongoRepository<Domain,String> {
     Domain findByIdAndAccountId(String domainId, String accountId);
     Domain findByNameAndAccountId(String name, String accountId);
     Domain findBySslCertificateId(String sslCertificateId);
+    Domain findBySslCertificateIdAndAccountId(String sslCertificateId, String accountId);
     Domain findByName(String name);
     List<Domain> findByRegSpecPaidTillBetween(LocalDate start, LocalDate end);
     List<Domain> findByPersonId(String personId);

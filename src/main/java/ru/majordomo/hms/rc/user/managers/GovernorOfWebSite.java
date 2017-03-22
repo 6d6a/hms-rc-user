@@ -415,7 +415,7 @@ public class GovernorOfWebSite extends LordOfResources {
         }
 
         for (String domainId: webSite.getDomainIds()) {
-            WebSite compare = repository.findByDomainIds(domainId);
+            WebSite compare = repository.findByDomainIdsContains(domainId);
             if (compare != null && !compare.getId().equals(webSite.getId())) {
                 throw new ParameterValidateException("Домен уже используется в другом веб-сайте");
             }
@@ -575,21 +575,19 @@ public class GovernorOfWebSite extends LordOfResources {
 
         if (hasResourceIdAndAccountId(keyValue)) {
             website = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
-            if (website == null) {
-                throw new ResourceNotFoundException("Сайт с ID:" + keyValue.get("resourceId") + " и account ID:" + keyValue.get("accountId") + " не найден");
-            } else {
-                construct(website);
-            }
         } else if (keyValue.get("domainId") != null) {
-            website = repository.findByDomainIds(keyValue.get("domainId"));
-            if (website == null) {
-                throw new ResourceNotFoundException();
+            if (keyValue.get("accountId") != null) {
+                website = repository.findByDomainIdsContainsAndAccountId(keyValue.get("domainId"), keyValue.get("accountId"));
             } else {
-                construct(website);
+                website = repository.findByDomainIdsContains(keyValue.get("domainId"));
             }
         }
 
-        return website;
+        if (website == null) {
+            throw new ResourceNotFoundException("Не найден WebSite по параметрам: " + keyValue.toString());
+        }
+
+        return construct(website);
     }
 
     @Override

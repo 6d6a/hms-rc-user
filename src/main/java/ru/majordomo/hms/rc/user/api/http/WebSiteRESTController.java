@@ -1,11 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,5 +51,16 @@ public class WebSiteRESTController {
     @RequestMapping(value = {"/{accountId}/website/count", "/{accountId}/website/count/"}, method = RequestMethod.GET)
     public Count countByAccountId(@PathVariable String accountId) {
         return governor.countByAccountId(accountId);
+    }
+
+    @RequestMapping(value = "/{accountId}/website/find", method = RequestMethod.GET)
+    public WebSite readOneWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
+        return (WebSite) governor.build(requestParams);
+    }
+
+    @RequestMapping(value = "/website/find", method = RequestMethod.GET)
+    public WebSite readOneWithParams(@RequestParam Map<String, String> requestParams) {
+        return (WebSite) governor.build(requestParams);
     }
 }

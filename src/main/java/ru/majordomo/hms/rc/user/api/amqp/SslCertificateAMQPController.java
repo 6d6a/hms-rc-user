@@ -83,13 +83,14 @@ public class SslCertificateAMQPController {
             sender.send("ssl-certificate.create", "pm", report);
             return;
         }
-        String name = (String) serviceMessage.getParam("name");
-        String accountId = serviceMessage.getAccountId();
-        Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", name);
-        keyValue.put("accountId", accountId);
         try {
-            if (governor.build(keyValue) != null) {
+            String name = (String) serviceMessage.getParam("name");
+            String accountId = serviceMessage.getAccountId();
+            Map<String, String> keyValue = new HashMap<>();
+            keyValue.put("name", name);
+            keyValue.put("accountId", accountId);
+
+            if (governor.exists(keyValue)) {
                 SSLCertificate certificate = (SSLCertificate) governor.update(serviceMessage);
                 governor.validate(certificate);
                 governor.store(certificate);
@@ -107,8 +108,8 @@ public class SslCertificateAMQPController {
             }
         } catch (Exception e) {
             ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
-            report.addParam("success", false);
             report.delParam("success");
+            report.addParam("success", false);
             sender.send("ssl-certificate.create", "pm", report);
         }
     }
@@ -146,8 +147,14 @@ public class SslCertificateAMQPController {
 
     private void handleDeleteSslEventFromPM(ServiceMessage serviceMessage) {
         String resourceId = (String) serviceMessage.getParam("resourceId");
-        governor.drop(resourceId);
-        SSLCertificate certificate = (SSLCertificate) governor.build(resourceId);
+        SSLCertificate certificate = new SSLCertificate();
+        try {
+            governor.drop(resourceId);
+            certificate = (SSLCertificate) governor.build(resourceId);
+        } catch (Exception e) {
+            ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
+            sender.send("ssl-certificate.delete", "pm", report);
+        }
         String teRoutingKey = governor.getTERoutingKey(certificate.getId());
 
         ServiceMessage report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));

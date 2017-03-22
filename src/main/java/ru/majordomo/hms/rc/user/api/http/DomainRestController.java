@@ -66,14 +66,25 @@ public class DomainRestController {
     }
 
     @RequestMapping(value = {"/domain/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllExpiring(@RequestParam Map<String, String> requestParams) {
+    public Collection<? extends Resource> readAllWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 
     @RequestMapping(value = {"{accountId}/domain/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllExpiringByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+    public Collection<? extends Resource> readAllWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
+    }
+
+    @RequestMapping(value = {"/domain/find"}, method = RequestMethod.GET)
+    public Domain readOneWithParams(@RequestParam Map<String, String> requestParams) {
+        return (Domain) governor.build(requestParams);
+    }
+
+    @RequestMapping(value = {"{accountId}/domain/find"}, method = RequestMethod.GET)
+    public Domain readOneWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
+        return (Domain) governor.build(requestParams);
     }
 
 }

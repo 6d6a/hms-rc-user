@@ -159,8 +159,9 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         ObjectMapper mapper = new ObjectMapper();
         try {
 //            sslCertificate = (SSLCertificate) serviceMessage.getParam("sslCertificate");
-            LinkedHashMap<String, String> map = (LinkedHashMap<String, String>) serviceMessage.getParam("sslCertificate");
-            String json = mapper.writeValueAsString(map);
+//            LinkedHashMap<String, String> map = (LinkedHashMap<String, String>) serviceMessage.getParam("sslCertificate");
+//            String json = mapper.writeValueAsString(map);
+            String json = (String) serviceMessage.getParam("sslCertificate");
             sslCertificate = mapper.readValue(json, SSLCertificate.class);
         } catch (IOException e) {
             throw new ParameterValidateException(e.getMessage());
@@ -192,6 +193,20 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         }
     }
 
+    public boolean exists(Map<String, String> keyValue) {
+        SSLCertificate certificate = null;
+
+        if (hasResourceIdAndAccountId(keyValue)) {
+            certificate = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
+        }
+
+        if (hasNameAndAccountId(keyValue)) {
+            certificate = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+        }
+
+        return certificate != null;
+    }
+
     @Override
     public Resource build(String resourceId) throws ResourceNotFoundException {
         SSLCertificate sslCertificate = repository.findOne(resourceId);
@@ -209,8 +224,12 @@ public class GovernorOfSSLCertificate extends LordOfResources {
             certificate = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
+        if (hasNameAndAccountId(keyValue)) {
+            certificate = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+        }
+
         if (certificate == null) {
-            throw new ResourceNotFoundException("Не найден SSL сертификат");
+            throw new ResourceNotFoundException("Не найден SSL сертификат по данным: " + keyValue.toString());
         }
 
         return certificate;
@@ -254,7 +273,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         if (domain == null) {
             return null;
         }
-        WebSite webSite = webSiteRepository.findByDomainIds(domain.getId());
+        WebSite webSite = webSiteRepository.findByDomainIdsContains(domain.getId());
         if (webSite == null) {
             return null;
         }
