@@ -196,7 +196,7 @@ public class GovernorOfUnixAccountTest {
     }
 
     @Test
-    public void tryStopSpamByUser() throws Exception {
+    public void sendmailBlock() throws Exception {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(unixAccounts.get(0).getAccountId());
@@ -204,6 +204,6 @@ public class GovernorOfUnixAccountTest {
         serviceMessage.addParam("sendmailAllowed", false);
         governor.update(serviceMessage);
         UnixAccount unixAccount = repository.findOne(unixAccounts.get(0).getId());
-        assertThat(unixAccount.getSendmailAllowed(), is(true));
+        assertThat(unixAccount.getSendmailAllowed(), is(false));
     }
 }

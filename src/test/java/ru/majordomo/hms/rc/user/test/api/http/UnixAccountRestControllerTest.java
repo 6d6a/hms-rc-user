@@ -193,14 +193,4 @@ public class UnixAccountRestControllerTest {
                 .andExpect(jsonPath("keyPair.publicKey").value(batchOfUnixAccount.get(0).getKeyPair().getPublicKey()));
     }
 
-    @Test
-    public void updateSendmailAllowed() throws Exception {
-        String json = "{\"sendmailAllowed\": false}";
-        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.patch("/" + resourceName + "/" + batchOfUnixAccount.get(0).getId())
-                .contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
-        mockMvc.perform(request).andExpect(status().isAccepted());
-        UnixAccount unixAccount = repository.findOne(batchOfUnixAccount.get(0).getId());
-        Assert.assertThat(unixAccount.getSendmailAllowed(), CoreMatchers.is(false));
-    }
-
 }
