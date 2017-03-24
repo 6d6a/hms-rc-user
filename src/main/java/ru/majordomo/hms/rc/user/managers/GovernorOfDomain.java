@@ -102,7 +102,8 @@ public class GovernorOfDomain extends LordOfResources {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
         }
 
-        governorOfDnsRecord.initDomain(domain);
+        if (domain.getParentDomainId() == null)
+            governorOfDnsRecord.initDomain(domain);
 
         return domain;
     }
@@ -123,35 +124,37 @@ public class GovernorOfDomain extends LordOfResources {
         keyValue.put("accountId", accountId);
 
         Domain domain = (Domain) build(keyValue);
-        try {
-            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
-                switch (entry.getKey().toString()) {
-                    case "autoRenew":
-                        domain.setAutoRenew((Boolean) entry.getValue());
-                        break;
-                    case "renew":
-                        if ((Boolean) entry.getValue()) {
-                            try {
-                                if (domain.getPersonId() == null) {
-                                    throw new ParameterValidateException("Отсутствует personId");
+        if (domain.getParentDomainId() != null) {
+            try {
+                for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                    switch (entry.getKey().toString()) {
+                        case "autoRenew":
+                            domain.setAutoRenew((Boolean) entry.getValue());
+                            break;
+                        case "renew":
+                            if ((Boolean) entry.getValue()) {
+                                try {
+                                    if (domain.getPersonId() == null) {
+                                        throw new ParameterValidateException("Отсутствует personId");
+                                    }
+                                    Person person = (Person) governorOfPerson.build(domain.getPersonId());
+                                    ResponseEntity responseEntity = registrar.renewDomain(person.getNicHandle(), domain.getName());
+                                    if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                                        throw new ParameterValidateException("Ошибка при продлении домена");
+                                    }
+                                    domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                                } catch (Exception e) {
+                                    throw new ParameterValidateException(e.getMessage());
                                 }
-                                Person person = (Person) governorOfPerson.build(domain.getPersonId());
-                                ResponseEntity responseEntity = registrar.renewDomain(person.getNicHandle(), domain.getName());
-                                if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
-                                    throw new ParameterValidateException("Ошибка при продлении домена");
-                                }
-                                domain.setRegSpec(registrar.getRegSpec(domain.getName()));
-                            } catch (Exception e) {
-                                throw new ParameterValidateException(e.getMessage());
                             }
-                        }
-                        break;
-                    default:
-                        break;
+                            break;
+                        default:
+                            break;
+                    }
                 }
+            } catch (ClassCastException e) {
+                throw new ParameterValidateException("Один из параметров указан неверно");
             }
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
         validate(domain);
@@ -164,6 +167,10 @@ public class GovernorOfDomain extends LordOfResources {
     public void preDelete(String resourceId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("domainId", resourceId);
+
+        if (repository.findByParentDomainId(resourceId).size() > 0) {
+            throw new ParameterValidateException("У домена есть поддомены");
+        }
 
         WebSite webSite;
         try {
@@ -208,6 +215,17 @@ public class GovernorOfDomain extends LordOfResources {
             } else {
                 throw new ParameterValidateException("Персона должна быть указана");
             }
+        } else if (serviceMessage.getParam("parentDomainId") != null) {
+            Domain parent = repository.findOne((String) serviceMessage.getParam("parentDomainId"));
+            if (parent == null) {
+                throw new ParameterValidateException("Не найден домен-родитель с id: " + serviceMessage.getParam("parentDomainId"));
+            }
+            domain.setPersonId(parent.getPersonId());
+            domain.setRegSpec(parent.getRegSpec());
+            domain.setAutoRenew(false);
+            domain.setSslCertificateId(null);
+            domain.setParentDomainId(parent.getId());
+            domain.setName(domain.getName() + '.' + parent.getName());
         }
         return domain;
     }
