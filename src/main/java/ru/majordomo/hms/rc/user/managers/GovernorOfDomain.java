@@ -220,8 +220,6 @@ public class GovernorOfDomain extends LordOfResources {
             if (parent == null) {
                 throw new ParameterValidateException("Не найден домен-родитель с id: " + serviceMessage.getParam("parentDomainId"));
             }
-            domain.setPersonId(parent.getPersonId());
-            domain.setRegSpec(parent.getRegSpec());
             domain.setAutoRenew(false);
             domain.setSslCertificateId(null);
             domain.setParentDomainId(parent.getId());
@@ -267,6 +265,14 @@ public class GovernorOfDomain extends LordOfResources {
             domain.setSslCertificate(sslCertificate);
         } else {
             domain.setSslCertificate(null);
+        }
+
+        if (domain.getParentDomainId() != null) {
+            Domain parent = repository.findOne(domain.getParentDomainId());
+            if (parent == null) {
+                throw new ParameterValidateException("Не найден домен-родитель с id: " + domain.getParentDomainId());
+            }
+            domain.setRegSpec(parent.getRegSpec());
         }
 
         Map<String, String> keyValue = new HashMap<>();
@@ -348,6 +354,22 @@ public class GovernorOfDomain extends LordOfResources {
             } catch (DateTimeParseException e) {
                 throw new ParameterValidateException("Одна из дат указана неверно");
             }
+        } else if (byAccountId && byPersonId) {
+            for (Domain domain : repository.findByPersonIdAndAccountId(keyValue.get("personId"), keyValue.get("accountId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
+        } else if (byAccountId && byParentDomainId) {
+            for (Domain domain : repository.findByParentDomainIdAndAccountId(keyValue.get("parentDomainId"), keyValue.get("accountId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
+        } else if (byPersonId) {
+            for (Domain domain : repository.findByPersonId(keyValue.get("personId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
+        } else if (byParentDomainId) {
+            for (Domain domain : repository.findByParentDomainId(keyValue.get("parentDomainId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
         } else if (byExpiringDates) {
             try {
                 LocalDate startDate = LocalDate.parse(keyValue.get("paidTillStart"));
@@ -357,18 +379,6 @@ public class GovernorOfDomain extends LordOfResources {
                 }
             } catch (DateTimeParseException e) {
                 throw new ParameterValidateException("Одна из дат указана неверно");
-            }
-        } else if (byPersonId) {
-            for (Domain domain : repository.findByPersonId(keyValue.get("personId"))) {
-                buildedDomains.add((Domain) construct(domain));
-            }
-        } else if (byAccountId && byParentDomainId) {
-            for (Domain domain : repository.findByParentDomainIdAndAccountId(keyValue.get("parentDomainId"), keyValue.get("accountId"))) {
-                buildedDomains.add((Domain) construct(domain));
-            }
-        } else if (byParentDomainId) {
-            for (Domain domain : repository.findByParentDomainId(keyValue.get("parentDomainId"))) {
-                buildedDomains.add((Domain) construct(domain));
             }
         } else if (byAccountId) {
             for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
