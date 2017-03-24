@@ -124,7 +124,7 @@ public class GovernorOfDomain extends LordOfResources {
         keyValue.put("accountId", accountId);
 
         Domain domain = (Domain) build(keyValue);
-        if (domain.getParentDomainId() != null) {
+        if (domain.getParentDomainId() == null) {
             try {
                 for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                     switch (entry.getKey().toString()) {
