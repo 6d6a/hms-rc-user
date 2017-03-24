@@ -18,4 +18,5 @@ public interface DomainRepository extends MongoRepository<Domain,String> {
     List<Domain> findByPersonId(String personId);
     List<Domain> findByAccountIdAndRegSpecPaidTillBetween(String accountId, LocalDate start, LocalDate end);
     List<Domain> findByParentDomainId(String parentDomainId);
+    List<Domain> findByParentDomainIdAndAccountId(String parentDomainId, String accountId);
 }

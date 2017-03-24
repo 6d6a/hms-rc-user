@@ -38,22 +38,6 @@ public class UnixAccountRESTController {
         return (UnixAccount) governor.build(keyValue);
     }
 
-    @RequestMapping(value = {"/unix-account/{unixAccountId}", "/unix-account/{unixAccountId}/"}, method = RequestMethod.PATCH)
-    public ResponseEntity updateUnixAccount(@PathVariable("unixAccountId") String unixAccountId, @RequestBody Map<String, Object> keyValue) {
-        try {
-            for (Map.Entry<String, Object> entry : keyValue.entrySet()) {
-                switch (entry.getKey()) {
-                    case "sendmailAllowed":
-                        governor.updateSendmailAllowed(unixAccountId, (Boolean) entry.getValue());
-                        break;
-                }
-            }
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
-        }
-        return new ResponseEntity(HttpStatus.ACCEPTED);
-    }
-
     @RequestMapping(value = {"/unix-account/","/unix-account"}, method = RequestMethod.GET)
     public Collection<? extends Resource> readAll() {
         return governor.buildAll();

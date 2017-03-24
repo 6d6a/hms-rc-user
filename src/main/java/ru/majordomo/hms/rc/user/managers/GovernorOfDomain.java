@@ -318,6 +318,7 @@ public class GovernorOfDomain extends LordOfResources {
         boolean byAccountId = false;
         boolean byExpiringDates = false;
         boolean byPersonId = false;
+        boolean byParentDomainId = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
@@ -331,6 +332,10 @@ public class GovernorOfDomain extends LordOfResources {
             if (entry.getKey().equals("personId")) {
                 byPersonId = true;
             }
+
+            if (entry.getKey().equals("parentDomainId")) {
+                byParentDomainId = true;
+            }
         }
 
         if (byAccountId && byExpiringDates) {
@@ -342,10 +347,6 @@ public class GovernorOfDomain extends LordOfResources {
                 }
             } catch (DateTimeParseException e) {
                 throw new ParameterValidateException("Одна из дат указана неверно");
-            }
-        } else if (byAccountId) {
-            for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedDomains.add((Domain) construct(domain));
             }
         } else if (byExpiringDates) {
             try {
@@ -359,6 +360,18 @@ public class GovernorOfDomain extends LordOfResources {
             }
         } else if (byPersonId) {
             for (Domain domain : repository.findByPersonId(keyValue.get("personId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
+        } else if (byAccountId && byParentDomainId) {
+            for (Domain domain : repository.findByParentDomainIdAndAccountId(keyValue.get("parentDomainId"), keyValue.get("accountId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
+        } else if (byParentDomainId) {
+            for (Domain domain : repository.findByParentDomainId(keyValue.get("parentDomainId"))) {
+                buildedDomains.add((Domain) construct(domain));
+            }
+        } else if (byAccountId) {
+            for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedDomains.add((Domain) construct(domain));
             }
         }
