@@ -14,6 +14,7 @@ public class MailboxForRedis {
     private String blackList;
     private String whiteList;
     private String redirectAddresses;
+    private Boolean mailFromAllowed;
     private Boolean antiSpamEnabled;
     private SpamFilterMood spamFilterMood;
     private SpamFilterAction spamFilterAction;
@@ -60,6 +61,10 @@ public class MailboxForRedis {
     public void setRedirectAddresses(String redirectAddresses) {
         this.redirectAddresses = redirectAddresses;
     }
+
+    public Boolean getMailFromAllowed() { return mailFromAllowed; }
+
+    public void setMailFromAllowed(Boolean mailFromAllowed) { this.mailFromAllowed = mailFromAllowed; }
 
     public Boolean getAntiSpamEnabled() {
         return antiSpamEnabled;

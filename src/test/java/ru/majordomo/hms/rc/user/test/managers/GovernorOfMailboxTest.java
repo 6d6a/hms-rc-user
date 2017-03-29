@@ -141,9 +141,11 @@ public class GovernorOfMailboxTest {
         assertNotNull(mailbox.getPasswordHash());
         assertThat(mailbox.getQuota(), is(250000L));
         assertThat(mailbox.getQuotaUsed(), is(0L));
+        assertThat(mailbox.getMailFromAllowed(), is(true));
         assertThat(mailbox.getAntiSpamEnabled(), is(false));
 
         MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
+        assertThat(redisMailbox.getMailFromAllowed(), is(mailbox.getMailFromAllowed()));
         assertThat(redisMailbox.getAntiSpamEnabled(), is(mailbox.getAntiSpamEnabled()));
         assertThat(redisMailbox.getWritable(), is(mailbox.getWritable()));
         assertThat(redisMailbox.getSpamFilterAction(), is(mailbox.getSpamFilterAction()));
@@ -285,6 +287,21 @@ public class GovernorOfMailboxTest {
         governor.update(serviceMessage);
 
         assertNull(redisRepository.findOne("*@" + ((Mailbox) governor.construct(mailbox)).getDomain().getName()));
+    }
+
+    @Test
+    public void updateSetMailFromAllowed() throws Exception {
+        ServiceMessage serviceMessage= ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
+        serviceMessage.delParam("name");
+        serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
+        serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
+        serviceMessage.addParam("mailFromAllowed", false);
+        governor.update(serviceMessage);
+        Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
+        assertThat(mailbox.getMailFromAllowed(), is(false));
+        MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
+        assertNotNull(redisMailbox);
+        assertThat(mailbox.getMailFromAllowed(), is(redisMailbox.getMailFromAllowed()));
     }
 
     @Test(expected = ResourceNotFoundException.class)
