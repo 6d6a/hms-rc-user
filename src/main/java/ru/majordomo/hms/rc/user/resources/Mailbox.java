@@ -19,6 +19,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private List<String> redirectAddresses = new ArrayList<>();
     private List<String> blackList = new ArrayList<>();
     private List<String> whiteList = new ArrayList<>();
+    private Boolean mailFromAllowed = true;
     private Boolean antiSpamEnabled = false;
     private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE_TO_SPAM_FOLDER;
     private SpamFilterMood spamFilterMood = SpamFilterMood.NEUTRAL;
@@ -102,6 +103,10 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     public void addToWhiteList(String emailAddress) {
         this.whiteList.add(emailAddress);
     }
+
+    public Boolean getMailFromAllowed() { return mailFromAllowed; }
+
+    public void setMailFromAllowed(Boolean mailFromAllowed) { this.mailFromAllowed = mailFromAllowed; }
 
     public Boolean getAntiSpamEnabled() {
         return antiSpamEnabled;

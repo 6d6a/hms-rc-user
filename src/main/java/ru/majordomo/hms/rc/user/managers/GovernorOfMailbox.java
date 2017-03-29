@@ -126,6 +126,9 @@ public class GovernorOfMailbox extends LordOfResources {
                     case "quota":
                         mailbox.setQuota(((Number) entry.getValue()).longValue());
                         break;
+                    case "mailFromAllowed":
+                        mailbox.setMailFromAllowed((Boolean) entry.getValue());
+                        break;
                     case "antiSpamEnabled":
                         mailbox.setAntiSpamEnabled((Boolean) entry.getValue());
                         break;
@@ -213,6 +216,7 @@ public class GovernorOfMailbox extends LordOfResources {
         List<String> blackList = new ArrayList<>();
         List<String> whiteList = new ArrayList<>();
         Long quota = null;
+        Boolean mailFromAllowed = true;
         Boolean antiSpamEnabled = false;
         SpamFilterMood spamFilterMood = null;
         SpamFilterAction spamFilterAction = null;
@@ -243,6 +247,10 @@ public class GovernorOfMailbox extends LordOfResources {
 
             if (serviceMessage.getParam("quota") != null) {
                 quota = ((Number) serviceMessage.getParam("quota")).longValue();
+            }
+
+            if (serviceMessage.getParam("mailFromAllowed") != null) {
+                mailFromAllowed = (Boolean) serviceMessage.getParam("mailFromAllowed");
             }
 
             if (serviceMessage.getParam("antiSpamEnabled") != null) {
@@ -318,6 +326,7 @@ public class GovernorOfMailbox extends LordOfResources {
         mailbox.setServerId(serverId);
         mailbox.setUid(uid);
         mailbox.setMailSpool(mailSpool);
+        mailbox.setMailFromAllowed(mailFromAllowed);
         mailbox.setAntiSpamEnabled(antiSpamEnabled);
         mailbox.setSpamFilterAction(spamFilterAction);
         mailbox.setSpamFilterMood(spamFilterMood);
@@ -487,6 +496,7 @@ public class GovernorOfMailbox extends LordOfResources {
         mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
         mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
         mailboxForRedis.setWritable(mailbox.getWritable());
+        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());

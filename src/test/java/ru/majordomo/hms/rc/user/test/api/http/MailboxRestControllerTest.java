@@ -129,6 +129,7 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("redirectAddresses").description("Список переадресаций с текущего почтового ящика"),
                                 fieldWithPath("blackList").description("Список адресов, почта с которых не должна доставляться"),
                                 fieldWithPath("whiteList").description("Список адресов, с которых почта должна доставляться в любом случае"),
+                                fieldWithPath("mailFromAllowed").description("Разрешено ли отправлять почту по SMTP"),
                                 fieldWithPath("antiSpamEnabled").description("Включен ли антиспам и антивирус"),
                                 fieldWithPath("serverId").description("ID сервера, на котором расположен ящик"),
                                 fieldWithPath("quota").description("Максимальный размер ящика. Назначается сервером, изменение невозможно"),
