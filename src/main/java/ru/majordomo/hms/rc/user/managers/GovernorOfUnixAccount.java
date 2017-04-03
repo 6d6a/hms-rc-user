@@ -118,6 +118,9 @@ public class GovernorOfUnixAccount extends LordOfResources {
                         }
                         unixAccount.setCrontab(cronTasks);
                         break;
+                    case "sendmailAllowed":
+                        unixAccount.setSendmailAllowed((Boolean) serviceMessage.getParam("sendmailAllowed"));
+                        break;
                     default:
                         break;
                 }
@@ -130,17 +133,6 @@ public class GovernorOfUnixAccount extends LordOfResources {
         store(unixAccount);
 
         return unixAccount;
-    }
-
-    public void updateSendmailAllowed(String unixAccountId, Boolean sendailAllowed) {
-        UnixAccount unixAccount = repository.findOne(unixAccountId);
-        if (unixAccount == null) {
-            throw new ResourceNotFoundException("Не найден UnixAccount с ID: " + unixAccountId);
-        } else {
-            unixAccount.setSendmailAllowed(sendailAllowed);
-        }
-        validate(unixAccount);
-        store(unixAccount);
     }
 
     public void updateQuota(String unixAccountId, Long quotaSize) {

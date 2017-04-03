@@ -22,6 +22,7 @@ public class Domain extends Resource {
     private List<DNSResourceRecord> dnsResourceRecords = new ArrayList<>();
     private String sslCertificateId;
     private Boolean autoRenew;
+    private String parentDomainId;
 
     @Override
     public void switchResource() {
@@ -98,6 +99,14 @@ public class Domain extends Resource {
 
     public void setAutoRenew(Boolean autoRenew) {
         this.autoRenew = autoRenew;
+    }
+
+    public String getParentDomainId() {
+        return parentDomainId;
+    }
+
+    public void setParentDomainId(String parentDomainId) {
+        this.parentDomainId = parentDomainId;
     }
 
     @Override
