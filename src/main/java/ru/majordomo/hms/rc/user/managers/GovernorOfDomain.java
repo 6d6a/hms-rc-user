@@ -223,7 +223,7 @@ public class GovernorOfDomain extends LordOfResources {
             domain.setAutoRenew(false);
             domain.setSslCertificateId(null);
             domain.setParentDomainId(parent.getId());
-            domain.setName(domain.getName() + '.' + parent.getName());
+            domain.setName(domain.getName() + "." + parent.getName());
         }
         return domain;
     }
@@ -425,7 +425,7 @@ public class GovernorOfDomain extends LordOfResources {
             InternetDomainName domain = InternetDomainName.from(domainName);
             String domainPublicPart = domain.publicSuffix().toString();
         } catch (Exception e) {
-            throw new ParameterValidateException("Некорректное имя домена");
+            throw new ParameterValidateException("Некорректное имя домена: " + domainName);
         }
     }
 }
