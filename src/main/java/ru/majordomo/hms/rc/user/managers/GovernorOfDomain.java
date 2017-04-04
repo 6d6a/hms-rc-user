@@ -168,8 +168,11 @@ public class GovernorOfDomain extends LordOfResources {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("domainId", resourceId);
 
-        if (repository.findByParentDomainId(resourceId).size() > 0) {
-            throw new ParameterValidateException("У домена есть поддомены");
+        List<Domain> subDomains = repository.findByParentDomainId(resourceId);
+        if (subDomains.size() > 0) {
+            for (Domain subDomain : subDomains) {
+                drop(subDomain.getId());
+            }
         }
 
         WebSite webSite;
@@ -193,7 +196,9 @@ public class GovernorOfDomain extends LordOfResources {
         }
 
         Domain domain = repository.findOne(resourceId);
-        governorOfDnsRecord.dropDomain(domain.getName());
+        if (domain.getParentDomainId() == null) {
+            governorOfDnsRecord.dropDomain(domain.getName());
+        }
     }
 
     @Override
@@ -220,6 +225,11 @@ public class GovernorOfDomain extends LordOfResources {
             if (parent == null) {
                 throw new ParameterValidateException("Не найден домен-родитель с id: " + serviceMessage.getParam("parentDomainId"));
             }
+
+            if (parent.getParentDomainId() != null) {
+                throw new ParameterValidateException("Домен-родитель не может быть поддоменом");
+            }
+
             domain.setAutoRenew(false);
             domain.setSslCertificateId(null);
             domain.setParentDomainId(parent.getId());
