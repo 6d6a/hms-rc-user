@@ -196,7 +196,7 @@ public class GovernorOfDomain extends LordOfResources {
         }
 
         Domain domain = repository.findOne(resourceId);
-        if (domain.getParentDomainId() != null) {
+        if (domain.getParentDomainId() == null) {
             governorOfDnsRecord.dropDomain(domain.getName());
         }
     }
