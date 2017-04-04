@@ -23,7 +23,7 @@ public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=mail-storage&state=active", consumes = "application/json;utf8")
     Server getActiveMailboxServer();
 
-    @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-id={serverId}&active-storage=true", consumes = "application/json;utf8")
+    @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/active-storage", consumes = "application/json;utf8")
     Storage getActiveMailboxStorageByServerId(@PathVariable("serverId") String serverId);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}", consumes = "application/json;utf8")
