@@ -6,10 +6,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import ru.majordomo.hms.rc.user.configurations.FeignConfig;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 
-@FeignClient("DOMAIN-REGISTRAR")
+@FeignClient(name = "DOMAIN-REGISTRAR", configuration = FeignConfig.class)
 public interface DomainRegistrarClient {
     @RequestMapping(value = "/person/{nicHandle}/domain/{domainName}", method = RequestMethod.POST)
     ResponseEntity registerDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName);

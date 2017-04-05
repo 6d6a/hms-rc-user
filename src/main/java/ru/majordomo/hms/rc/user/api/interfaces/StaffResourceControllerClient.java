@@ -11,8 +11,9 @@ import java.util.List;
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.staff.resources.Storage;
+import ru.majordomo.hms.rc.user.configurations.FeignConfig;
 
-@FeignClient("RC-STAFF")
+@FeignClient(name = "RC-STAFF", configuration = FeignConfig.class)
 public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=shared-hosting&state=active", consumes = "application/json;utf8")
     Server getActiveHostingServer();
