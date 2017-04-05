@@ -129,6 +129,9 @@ dependencies {
     testCompile('org.apache.qpid:qpid-broker:6.0.4')
     testCompile('com.h2database:h2')
     compile(group: 'com.mysql', name: 'management', version: '1.1.6') { exclude(module: 'jmxtools') }
+    compile('org.hibernate:hibernate-validator:5.4.1.Final')
+    compile('javax.el:javax.el-api:3.0.0')
+    compile('org.glassfish.web:javax.el:2.2.4')
 }
 
 dependencyManagement {

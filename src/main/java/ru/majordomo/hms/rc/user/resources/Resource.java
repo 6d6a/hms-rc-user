@@ -2,13 +2,23 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+
+import javax.validation.constraints.NotNull;
 
 public abstract class Resource {
     @Id
     private String id;
+
+    @NotNull(message = "Имя не может быть null")
+    @NotBlank(message = "Имя не может быть пустым")
     private String name;
+
+    @NotNull(message = "Аккаунт ID не может быть null")
+    @NotBlank(message = "Аккаунт ID не может быть пустым")
     private String accountId;
+
     Boolean switchedOn = true;
 
     public abstract void switchResource();

@@ -8,10 +8,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 @Document(collection = "databases")
 public class Database extends Resource implements Serviceable, Quotable {
     private String serviceId;
+
+    @NotNull(message = "Тип базы не указан")
     private DBType type;
+
     private Long quota;
     private Long quotaUsed;
     private Boolean writable;

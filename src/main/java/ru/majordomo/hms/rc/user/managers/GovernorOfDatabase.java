@@ -3,12 +3,19 @@ package ru.majordomo.hms.rc.user.managers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
@@ -31,6 +38,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     private GovernorOfDatabaseUser governorOfDatabaseUser;
     private GovernorOfResourceArchive governorOfResourceArchive;
     private String defaultServiceName;
+    private Validator validator;
 
     @Value("${default.database.service.name}")
     public void setDefaultServiceName(String defaultServiceName) {
@@ -60,6 +68,11 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     @Autowired
     public void setRepository(DatabaseRepository repository) {
         this.repository = repository;
+    }
+
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -184,16 +197,12 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
     @Override
     public void validate(Database database) throws ParameterValidateException {
-        if (database.getAccountId() == null || database.getAccountId().equals("")) {
-            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
-        }
+        Set<ConstraintViolation<Database>> constraintViolations = validator.validate(database);
 
-        if (database.getName().equals("") || database.getName() == null) {
-            throw new ParameterValidateException("Имя базы не может быть пустым");
-        }
+        System.out.println(constraintViolations);
 
-        if (database.getType() == null) {
-            throw new ParameterValidateException("Тип базы не указан");
+        if (!constraintViolations.isEmpty()) {
+            throw new ConstraintViolationException(constraintViolations);
         }
 
         if (database.getServiceId() != null && !database.getServiceId().equals("")) {
