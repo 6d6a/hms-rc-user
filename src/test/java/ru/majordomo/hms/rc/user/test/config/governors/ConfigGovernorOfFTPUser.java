@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
 
 @Configuration

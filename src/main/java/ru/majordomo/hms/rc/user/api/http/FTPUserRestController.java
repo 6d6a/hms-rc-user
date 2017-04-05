@@ -9,12 +9,7 @@ import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
-import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
-import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
-import ru.majordomo.hms.rc.user.resources.Mailbox;
-import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.Resource;
 
 @RestController
 public class FTPUserRestController {
@@ -28,17 +23,17 @@ public class FTPUserRestController {
 
     @RequestMapping(value = "/ftp-user/filter", method = RequestMethod.GET)
     public FTPUser filter(@RequestParam Map<String, String> requestParams) {
-        return (FTPUser) governor.build(requestParams);
+        return governor.build(requestParams);
     }
 
     @RequestMapping(value = "/{accountId}/ftp-user/filter", method = RequestMethod.GET)
     public FTPUser filter(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
-        return (FTPUser) governor.build(requestParams);
+        return governor.build(requestParams);
     }
 
     @RequestMapping(value = {"/ftp-user/{ftpUserId}", "/ftp-user/{ftpUserId}/"}, method = RequestMethod.GET)
     public FTPUser readOne(@PathVariable String ftpUserId) {
-        return (FTPUser) governor.build(ftpUserId);
+        return governor.build(ftpUserId);
     }
 
     @RequestMapping(value = {"{accountId}/ftp-user/{ftpUserId}", "{accountId}/ftp-user/{ftpUserId}/"}, method = RequestMethod.GET)
@@ -46,16 +41,16 @@ public class FTPUserRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", ftpUserId);
         keyValue.put("accountId", accountId);
-        return (FTPUser) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/ftp-user/","/ftp-user"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<FTPUser> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/{accountId}/ftp-user", "/{accountId}/ftp-user/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<FTPUser> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);

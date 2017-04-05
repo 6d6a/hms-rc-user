@@ -13,8 +13,6 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAOImpl;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
@@ -24,7 +22,6 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDomain;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.HashMap;
@@ -87,7 +84,7 @@ public class GovernorOfDomainTest {
         serviceMessage.addParam("name", "domain.com");
         serviceMessage.addParam("personId", domains.get(0).getPersonId());
         serviceMessage.addParam("register", true);
-        Domain domain = (Domain) governor.create(serviceMessage);
+        Domain domain = governor.create(serviceMessage);
         assertNotNull(domain);
         assertNotNull(domain.getRegSpec());
         assertThat(domain.getPersonId(), is(domains.get(0).getPersonId()));
@@ -100,7 +97,7 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("name", "domain.com");
         serviceMessage.addParam("register", false);
-        Domain domain = (Domain) governor.create(serviceMessage);
+        Domain domain = governor.create(serviceMessage);
         assertNotNull(domain);
         assertNull(domain.getPersonId());
         assertNull(domain.getRegSpec());
@@ -144,7 +141,7 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("resourceId", domains.get(0).getId());
         serviceMessage.addParam("autoRenew", true);
-        Domain domain = (Domain) governor.update(serviceMessage);
+        Domain domain = governor.update(serviceMessage);
         assertThat(domain.getAutoRenew(), is(true));
     }
 
@@ -156,7 +153,7 @@ public class GovernorOfDomainTest {
         serviceMessage.addParam("resourceId", domains.get(0).getId());
         serviceMessage.addParam("renew", true);
         RegSpec regSpec = domains.get(0).getRegSpec();
-        Domain domain = (Domain) governor.update(serviceMessage);
+        Domain domain = governor.update(serviceMessage);
         assertNotEquals(regSpec, domain.getRegSpec());
     }
 
@@ -165,7 +162,7 @@ public class GovernorOfDomainTest {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", domains.get(0).getName());
         keyValue.put("accountId", domains.get(0).getAccountId());
-        Domain domain = (Domain) governor.build(keyValue);
+        Domain domain = governor.build(keyValue);
         assertNotNull(domain);
         assertThat(domain.getName(), is(domains.get(0).getName()));
     }
@@ -205,7 +202,7 @@ public class GovernorOfDomainTest {
     public void buildWithName() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", domains.get(0).getName());
-        Domain domain = (Domain) governor.build(keyValue);
+        Domain domain = governor.build(keyValue);
         System.out.println(domain.getName());
     }
 }

@@ -32,7 +32,6 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
@@ -165,9 +164,7 @@ public class GovernorOfWebsiteTest {
         String domainId = domains.get(0).getId();
         domainIds.add(domainId);
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        for (UnixAccount unixAccount: unixAccounts) {
-            unixAccountRepository.save(unixAccount);
-        }
+        unixAccountRepository.save(unixAccounts);
         accountId = unixAccounts.get(0).getAccountId();
 
         batchOfWebsites = new ArrayList<>();
@@ -216,19 +213,19 @@ public class GovernorOfWebsiteTest {
 
         governor.update(serviceMessage);
 
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled());
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions));
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMbstringFuncOverload() == 4);
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAllowUrlFopen());
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMultiViews());
-        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getFollowSymLinks());
-        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAccessLogEnabled());
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAutoSubDomain());
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled(), "CgiEnabled must be true");
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMbstringFuncOverload() == 4, "MbstringFuncOverload==4 must be true");
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAllowUrlFopen(), "AllowUrlFopen must be true");
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMultiViews(), "MultiViews must be true");
+        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getFollowSymLinks(), "!FollowSymLinks must be true");
+        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAccessLogEnabled(), "!AccessLogEnabled must be true");
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAutoSubDomain(), "AutoSubDomain must be true");
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void updateNonExistentDomainIds() {
-        List<String> domainIdsLocal = Arrays.asList(ObjectId.get().toString());
+        List<String> domainIdsLocal = Collections.singletonList(ObjectId.get().toString());
         String accountIdLocal = batchOfWebsites.get(0).getAccountId();
 
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
@@ -265,8 +262,8 @@ public class GovernorOfWebsiteTest {
 
         governor.update(serviceMessage);
 
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled());
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions));
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled(), "CgiEnabled must be true");
+        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
     }
 
     @Test
@@ -275,8 +272,8 @@ public class GovernorOfWebsiteTest {
 
         governor.drop(resourceId);
 
-        Assert.isTrue(webSiteRepository.count() == 1);
-        Assert.isNull(webSiteRepository.findOne(resourceId));
+        Assert.isTrue(webSiteRepository.count() == 1, "webSiteRepository.count() == 1 must be true");
+        Assert.isNull(webSiteRepository.findOne(resourceId), "webSiteRepository.findOne(resourceId) must be null");
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -289,7 +286,7 @@ public class GovernorOfWebsiteTest {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", batchOfWebsites.get(0).getAccountId());
         keyValue.put("domainId", batchOfWebsites.get(0).getDomainIds().get(0));
-        WebSite webSite = (WebSite) governor.build(keyValue);
+        WebSite webSite = governor.build(keyValue);
         System.out.println(webSite);
     }
 

@@ -205,35 +205,35 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
-    public void validate(DatabaseUser resource) throws ParameterValidateException {
-        if (resource.getAccountId() == null || resource.getAccountId().equals("")) {
+    public void validate(DatabaseUser databaseUser) throws ParameterValidateException {
+        if (databaseUser.getAccountId() == null || databaseUser.getAccountId().equals("")) {
             throw new ParameterValidateException("AccountID не может быть пустым");
         }
 
-        if (resource.getName() == null) {
+        if (databaseUser.getName() == null) {
             throw new ParameterValidateException("Имя не может быть пустым");
         }
 
-        if (resource.getName().length() > 16) {
+        if (databaseUser.getName().length() > 16) {
             throw new ParameterValidateException("Имя не может быть длиннее 16 символов");
         }
 
-        if (resource.getPasswordHash() == null) {
+        if (databaseUser.getPasswordHash() == null) {
             throw new ParameterValidateException("Пароль не может быть пустым");
         }
 
-        if (resource.getSwitchedOn() == null) {
-            resource.setSwitchedOn(true);
+        if (databaseUser.getSwitchedOn() == null) {
+            databaseUser.setSwitchedOn(true);
         }
 
-        if (resource.getType() == null) {
+        if (databaseUser.getType() == null) {
             throw new ParameterValidateException("Тип не может быть пустым");
         }
 
-        if (resource.getDatabaseIds() != null && !resource.getDatabaseIds().isEmpty()) {
-            for (String databaseId : resource.getDatabaseIds()) {
+        if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
+            for (String databaseId : databaseUser.getDatabaseIds()) {
                 Map<String, String> keyValue = new HashMap<>();
-                keyValue.put("accountId", resource.getAccountId());
+                keyValue.put("accountId", databaseUser.getAccountId());
                 keyValue.put("resourceId", databaseId);
                 try {
                     governorOfDatabase.build(keyValue);
@@ -243,10 +243,10 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             }
         }
 
-        if (resource.getServiceId() != null && !resource.getServiceId().equals("")) {
-            Server server = staffRcClient.getServerByServiceId(resource.getServiceId());
+        if (databaseUser.getServiceId() != null && !databaseUser.getServiceId().equals("")) {
+            Server server = staffRcClient.getServerByServiceId(databaseUser.getServiceId());
             if (server == null) {
-                throw new ParameterValidateException("Не найден сервис с ID: " + resource.getServiceId());
+                throw new ParameterValidateException("Не найден сервис с ID: " + databaseUser.getServiceId());
             }
         } else {
             String serverId = staffRcClient.getActiveDatabaseServer().getId();
@@ -255,11 +255,11 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             if (databaseServices != null) {
                 for (Service service : databaseServices) {
                     if (service.getServiceType().getName().equals(this.defaultServiceName)) {
-                        resource.setServiceId(service.getId());
+                        databaseUser.setServiceId(service.getId());
                         break;
                     }
                 }
-                if (resource.getServiceId() == null || (resource.getServiceId().equals(""))) {
+                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
                     throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName +
                             " для сервера: " + serverId);
                 }
@@ -268,7 +268,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
-    protected DatabaseUser construct(DatabaseUser resource) throws NotImplementedException {
+    protected DatabaseUser construct(DatabaseUser databaseUser) throws NotImplementedException {
         throw new NotImplementedException();
     }
 
@@ -324,7 +324,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
-    public void store(DatabaseUser resource) {
-        repository.save(resource);
+    public void store(DatabaseUser databaseUser) {
+        repository.save(databaseUser);
     }
 }

@@ -25,7 +25,6 @@ import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigPersonRestController;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -36,7 +35,6 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -79,9 +77,7 @@ public class PersonRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfPersons = ResourceGenerator.generateBatchOfPerson();
-        for (Person person: batchOfPersons) {
-            repository.save(person);
-        }
+        repository.save(batchOfPersons);
     }
 
     @Test

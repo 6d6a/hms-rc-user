@@ -9,8 +9,6 @@ import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
-import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
 @RestController
@@ -25,7 +23,7 @@ public class WebSiteRESTController {
 
     @RequestMapping(value = {"/website/{websiteId}", "/website/{websiteId}/"}, method = RequestMethod.GET)
     public WebSite readOne(@PathVariable String websiteId) {
-        return (WebSite) governor.build(websiteId);
+        return governor.build(websiteId);
     }
 
     @RequestMapping(value = {"{accountId}/website/{websiteId}", "{accountId}/website/{websiteId}/"}, method = RequestMethod.GET)
@@ -33,16 +31,16 @@ public class WebSiteRESTController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", websiteId);
         keyValue.put("accountId", accountId);
-        return (WebSite) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/website/", "/website"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<WebSite> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/{accountId}/website", "/{accountId}/website/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<WebSite> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
@@ -56,11 +54,11 @@ public class WebSiteRESTController {
     @RequestMapping(value = "/{accountId}/website/find", method = RequestMethod.GET)
     public WebSite readOneWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
-        return (WebSite) governor.build(requestParams);
+        return governor.build(requestParams);
     }
 
     @RequestMapping(value = "/website/find", method = RequestMethod.GET)
     public WebSite readOneWithParams(@RequestParam Map<String, String> requestParams) {
-        return (WebSite) governor.build(requestParams);
+        return governor.build(requestParams);
     }
 }

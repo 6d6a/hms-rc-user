@@ -12,8 +12,6 @@ import java.util.Map;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.Resource;
 
 @RestController
 public class DomainRestController {
@@ -27,7 +25,7 @@ public class DomainRestController {
 
     @RequestMapping(value = {"/domain/{domainId}", "/domain/{domainId}/"}, method = RequestMethod.GET)
     public Domain readOne(@PathVariable String domainId) {
-        return (Domain) governor.build(domainId);
+        return governor.build(domainId);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/domain/{domain-name}/add-dns-record")
@@ -35,7 +33,7 @@ public class DomainRestController {
         try {
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", domainName);
-            Domain domain = (Domain) governor.build(keyValue);
+            Domain domain = governor.build(keyValue);
             domain.addDnsResourceRecord(record);
             governor.validate(domain);
             governor.store(domain);
@@ -50,41 +48,41 @@ public class DomainRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", domainId);
         keyValue.put("accountId", accountId);
-        return (Domain) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/domain/","/domain"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<Domain> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/{accountId}/domain", "/{accountId}/domain/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<Domain> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
     }
 
     @RequestMapping(value = {"/domain/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllWithParams(@RequestParam Map<String, String> requestParams) {
+    public Collection<Domain> readAllWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 
     @RequestMapping(value = {"{accountId}/domain/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+    public Collection<Domain> readAllWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
     @RequestMapping(value = {"/domain/find"}, method = RequestMethod.GET)
     public Domain readOneWithParams(@RequestParam Map<String, String> requestParams) {
-        return (Domain) governor.build(requestParams);
+        return governor.build(requestParams);
     }
 
     @RequestMapping(value = {"{accountId}/domain/find"}, method = RequestMethod.GET)
     public Domain readOneWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
-        return (Domain) governor.build(requestParams);
+        return governor.build(requestParams);
     }
 
 }

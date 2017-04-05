@@ -24,10 +24,10 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -72,14 +72,14 @@ public class GovernorOfUnixAccountTest {
     @Test
     public void create() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateServiceMessage();
-        UnixAccount unixAccount = (UnixAccount) governor.create(serviceMessage);
+        UnixAccount unixAccount = governor.create(serviceMessage);
         System.out.println(unixAccount.toString());
     }
 
     @Test
     public void createWithQuotaAsInt() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateQuotaIntServiceMessage();
-        UnixAccount unixAccount = (UnixAccount) governor.create(serviceMessage);
+        UnixAccount unixAccount = governor.create(serviceMessage);
         assertThat(unixAccount.getQuota(), is(10485760L));
     }
 
@@ -186,7 +186,7 @@ public class GovernorOfUnixAccountTest {
         CronTask cronTask = new CronTask();
         cronTask.setCommand("php ./index.php");
         cronTask.setExecTime("* 1 1 1 1");
-        serviceMessage.addParam("crontab", Arrays.asList(cronTask));
+        serviceMessage.addParam("crontab", Collections.singletonList(cronTask));
         SSHKeyPair keyPair = unixAccounts.get(0).getKeyPair();
         System.out.println(unixAccounts.get(0).getCrontab());
         governor.update(serviceMessage);

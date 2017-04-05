@@ -29,12 +29,9 @@ import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
-import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
-import ru.majordomo.hms.rc.user.test.config.amqp.ConfigAMQPControllers;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseRestController;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;

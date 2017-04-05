@@ -10,11 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
-import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
-import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.Resource;
 
 @RestController
 public class MailboxRestController {
@@ -28,7 +25,7 @@ public class MailboxRestController {
 
     @RequestMapping(value = {"/mailbox/{mailboxId}", "/mailbox/{mailboxId}/"}, method = RequestMethod.GET)
     public Mailbox readOne(@PathVariable String mailboxId) {
-        return (Mailbox) governor.build(mailboxId);
+        return governor.build(mailboxId);
     }
 
     @RequestMapping(value = {"{accountId}/mailbox/{mailboxId}", "{accountId}/mailbox/{mailboxId}/"}, method = RequestMethod.GET)
@@ -36,28 +33,28 @@ public class MailboxRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", mailboxId);
         keyValue.put("accountId", accountId);
-        return (Mailbox) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/mailbox/","/mailbox"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<Mailbox> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/{accountId}/mailbox", "/{accountId}/mailbox/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<Mailbox> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
     }
 
     @RequestMapping(value = {"/mailbox/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> filter(@RequestParam Map<String, String> keyValue) {
+    public Collection<Mailbox> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
     }
 
     @RequestMapping(value = {"/mailbox/{mailboxId}/quota-report"}, method = RequestMethod.POST)
-    public ResponseEntity<?> updateQuota(@PathVariable String mailboxId, @RequestBody QuotaReport report) {
+    public ResponseEntity<Void> updateQuota(@PathVariable String mailboxId, @RequestBody QuotaReport report) {
         try {
             governor.updateQuota(mailboxId, report.getQuotaUsed());
             return new ResponseEntity<>(HttpStatus.ACCEPTED);

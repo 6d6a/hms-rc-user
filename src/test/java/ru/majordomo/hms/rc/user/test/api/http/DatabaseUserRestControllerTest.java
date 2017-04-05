@@ -29,7 +29,6 @@ import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigDatabaseUserRestController;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;

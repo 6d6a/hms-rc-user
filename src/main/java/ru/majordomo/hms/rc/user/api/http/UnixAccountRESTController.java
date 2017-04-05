@@ -9,10 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @RestController
@@ -27,7 +25,7 @@ public class UnixAccountRESTController {
 
     @RequestMapping(value = {"/unix-account/{unixAccountId}", "/unix-account/{unixAccountId}/"}, method = RequestMethod.GET)
     public UnixAccount readOne(@PathVariable String unixAccountId) {
-        return (UnixAccount) governor.build(unixAccountId);
+        return governor.build(unixAccountId);
     }
 
     @RequestMapping(value = {"{accountId}/unix-account/{unixAccountId}", "{accountId}/unix-account/{unixAccountId}/"}, method = RequestMethod.GET)
@@ -35,21 +33,21 @@ public class UnixAccountRESTController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", unixAccountId);
         keyValue.put("accountId", accountId);
-        return (UnixAccount) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/unix-account/","/unix-account"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<UnixAccount> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/unix-account/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> filter(@RequestParam Map<String, String> keyValue) {
+    public Collection<UnixAccount> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
     }
 
     @RequestMapping(value = {"/unix-account/{unixAccountId}/quota-report"}, method = RequestMethod.POST)
-    public ResponseEntity<?> updateQuota(@PathVariable String unixAccountId, @RequestBody QuotaReport report) {
+    public ResponseEntity<Void> updateQuota(@PathVariable String unixAccountId, @RequestBody QuotaReport report) {
         try {
             governor.updateQuota(unixAccountId, report.getQuotaUsed());
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -60,7 +58,7 @@ public class UnixAccountRESTController {
     }
 
     @RequestMapping(value = {"/{accountId}/unix-account", "/{accountId}/unix-account/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<UnixAccount> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);

@@ -1,8 +1,7 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bson.types.ObjectId;
-import org.hamcrest.CoreMatchers;
+
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,6 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigUnixAccountRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;

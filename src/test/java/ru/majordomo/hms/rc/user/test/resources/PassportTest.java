@@ -1,9 +1,6 @@
 package ru.majordomo.hms.rc.user.test.resources;
 
-import org.bson.types.ObjectId;
 import org.junit.Test;
-
-import java.util.List;
 
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
@@ -12,7 +9,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class PassportTest extends Object {
+public class PassportTest {
     @Test
     public void setIssuedAsString() {
         Passport passport = new Passport();

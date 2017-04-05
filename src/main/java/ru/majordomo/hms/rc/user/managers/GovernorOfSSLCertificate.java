@@ -20,7 +20,7 @@ import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 
 @Service
-public class GovernorOfSSLCertificate extends LordOfResources {
+public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
     private SSLCertificateRepository repository;
     private GovernorOfDomain governorOfDomain;
@@ -67,7 +67,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public SSLCertificate update(ServiceMessage serviceMessage) throws ParameterValidateException {
         String name = (String) serviceMessage.getParam("name");
         SSLCertificate sslCertificate = repository.findByName(name);
         if (sslCertificate == null) {
@@ -77,7 +77,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         return sslCertificate;
     }
 
-    public Resource update(Map<String, Object> params) throws ParameterValidateException, ResourceNotFoundException {
+    public SSLCertificate update(Map<String, Object> params) throws ParameterValidateException, ResourceNotFoundException {
         String resourceId = (String) params.get("resourceId");
         if (resourceId == null || resourceId.equals("")) {
             throw new ParameterValidateException("Необходимо указать resourceId");
@@ -113,18 +113,18 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public SSLCertificate create(ServiceMessage serviceMessage) throws ParameterValidateException {
         SSLCertificate sslCertificate;
         try {
 
-            sslCertificate = (SSLCertificate) buildResourceFromServiceMessage(serviceMessage);
+            sslCertificate = buildResourceFromServiceMessage(serviceMessage);
             validate(sslCertificate);
             store(sslCertificate);
 
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", sslCertificate.getName());
             keyValue.put("accountId", serviceMessage.getAccountId());
-            Domain domain = (Domain) governorOfDomain.build(keyValue);
+            Domain domain = governorOfDomain.build(keyValue);
             domain.setSslCertificateId(sslCertificate.getId());
             governorOfDomain.validate(domain);
             governorOfDomain.store(domain);
@@ -154,7 +154,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected SSLCertificate buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         SSLCertificate sslCertificate;
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -173,13 +173,12 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws ParameterValidateException {
+    protected SSLCertificate construct(SSLCertificate sslCertificate) throws ParameterValidateException {
         throw new NotImplementedException();
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        SSLCertificate sslCertificate = (SSLCertificate) resource;
+    public void validate(SSLCertificate sslCertificate) throws ParameterValidateException {
         if (sslCertificate.getName() == null || sslCertificate.getName().equals("")) {
             throw new ParameterValidateException("Имя домена должно быть указано");
         }
@@ -187,7 +186,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
         Map<String, String> properties = new HashMap<>();
         properties.put("name", sslCertificate.getName());
 
-        Domain domain = (Domain) governorOfDomain.build(properties);
+        Domain domain = governorOfDomain.build(properties);
         if (domain == null) {
             throw new ParameterValidateException("Домен с указанным именем не найден");
         }
@@ -208,7 +207,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public SSLCertificate build(String resourceId) throws ResourceNotFoundException {
         SSLCertificate sslCertificate = repository.findOne(resourceId);
         if (sslCertificate == null) {
             throw new ResourceNotFoundException("SSLCertificate с ID: " + resourceId + " не найден");
@@ -217,7 +216,7 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public SSLCertificate build(Map<String, String> keyValue) throws ResourceNotFoundException {
         SSLCertificate certificate = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -236,12 +235,12 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<SSLCertificate> buildAll() {
         return repository.findAll();
     }
 
     @Override
-    public List<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public List<SSLCertificate> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<SSLCertificate> buildedCertificates = new ArrayList<>();
 
         boolean byAccountId = false;
@@ -260,12 +259,12 @@ public class GovernorOfSSLCertificate extends LordOfResources {
     }
 
     @Override
-    public void store(Resource resource) {
-        repository.save((SSLCertificate) resource);
+    public void store(SSLCertificate sslCertificate) {
+        repository.save(sslCertificate);
     }
 
     public String getTERoutingKey(String sslCertificateId) throws ParameterValidateException {
-        SSLCertificate sslCertificate = (SSLCertificate) build(sslCertificateId);
+        SSLCertificate sslCertificate = build(sslCertificateId);
         if (sslCertificate == null) {
             return null;
         }

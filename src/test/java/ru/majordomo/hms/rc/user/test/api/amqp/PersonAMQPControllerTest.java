@@ -9,14 +9,11 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collections;
-import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -86,7 +83,7 @@ public class PersonAMQPControllerTest {
         rabbitAdmin.declareExchange(exchange);
         rabbitAdmin.declareBinding(new Binding(queue.getName(), Binding.DestinationType.QUEUE,
                 exchange.getName(), routingKey,
-                Collections.<String, Object>emptyMap()));
+                Collections.emptyMap()));
 
     }
 
@@ -99,7 +96,7 @@ public class PersonAMQPControllerTest {
         rabbitAdmin.declareExchange(exchange);
         rabbitAdmin.declareBinding(new Binding(queue.getName(), Binding.DestinationType.QUEUE,
                 exchange.getName(), routingKey,
-                Collections.<String, Object>emptyMap()));
+                Collections.emptyMap()));
     }
 
     @Test

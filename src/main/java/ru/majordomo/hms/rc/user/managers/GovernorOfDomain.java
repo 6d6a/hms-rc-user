@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
@@ -137,7 +136,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                     if (domain.getPersonId() == null) {
                                         throw new ParameterValidateException("Отсутствует personId");
                                     }
-                                    Person person = (Person) governorOfPerson.build(domain.getPersonId());
+                                    Person person = governorOfPerson.build(domain.getPersonId());
                                     ResponseEntity responseEntity = registrar.renewDomain(person.getNicHandle(), domain.getName());
                                     if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
                                         throw new ParameterValidateException("Ошибка при продлении домена");
@@ -177,7 +176,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
         WebSite webSite;
         try {
-            webSite = (WebSite) governorOfWebSite.build(keyValue);
+            webSite = governorOfWebSite.build(keyValue);
             if (webSite != null) {
                 throw new ParameterValidateException("Домен используется в вебсайте с ID " + webSite.getId());
             }
@@ -214,7 +213,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
             if (serviceMessage.getParam("personId") != null) {
                 String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
-                Person domainPerson = (Person) governorOfPerson.build(domainPersonId);
+                Person domainPerson = governorOfPerson.build(domainPersonId);
                 domain.setPerson(domainPerson);
                 governorOfPerson.validate(domainPerson);
             } else {
@@ -239,56 +238,56 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    public void validate(Domain resource) throws ParameterValidateException {
-        if (resource.getName() == null || resource.getName().equals("")) {
+    public void validate(Domain domain) throws ParameterValidateException {
+        if (domain.getName() == null || domain.getName().equals("")) {
             throw new ParameterValidateException("Имя домена не может быть пустым");
         }
-        validateDomainName(resource.getName());
+        validateDomainName(domain.getName());
 
-        Person domainPerson = resource.getPerson();
+        Person domainPerson = domain.getPerson();
         if (domainPerson != null) {
             governorOfPerson.validate(domainPerson);
         }
 
-        if (resource.getAutoRenew() == null) {
-            resource.setAutoRenew(false);
+        if (domain.getAutoRenew() == null) {
+            domain.setAutoRenew(false);
         }
 
-        SSLCertificate sslCertificate = resource.getSslCertificate();
+        SSLCertificate sslCertificate = domain.getSslCertificate();
         if (sslCertificate != null) {
             governorOfSSLCertificate.validate(sslCertificate);
         }
     }
 
     @Override
-    protected Domain construct(Domain resource) throws ParameterValidateException {
+    protected Domain construct(Domain domain) throws ParameterValidateException {
 
-        if (resource.getPersonId() != null) {
-            Person domainPerson = (Person) governorOfPerson.build(resource.getPersonId());
-            resource.setPerson(domainPerson);
+        if (domain.getPersonId() != null) {
+            Person domainPerson = governorOfPerson.build(domain.getPersonId());
+            domain.setPerson(domainPerson);
         }
 
-        if (resource.getSslCertificateId() != null) {
-            SSLCertificate sslCertificate = (SSLCertificate) governorOfSSLCertificate.build(resource.getSslCertificateId());
-            resource.setSslCertificate(sslCertificate);
+        if (domain.getSslCertificateId() != null) {
+            SSLCertificate sslCertificate = governorOfSSLCertificate.build(domain.getSslCertificateId());
+            domain.setSslCertificate(sslCertificate);
         } else {
-            resource.setSslCertificate(null);
+            domain.setSslCertificate(null);
         }
 
-        if (resource.getParentDomainId() != null) {
-            Domain parent = repository.findOne(resource.getParentDomainId());
+        if (domain.getParentDomainId() != null) {
+            Domain parent = repository.findOne(domain.getParentDomainId());
             if (parent == null) {
-                throw new ParameterValidateException("Не найден домен-родитель с id: " + resource.getParentDomainId());
+                throw new ParameterValidateException("Не найден домен-родитель с id: " + domain.getParentDomainId());
             }
-            resource.setRegSpec(parent.getRegSpec());
+            domain.setRegSpec(parent.getRegSpec());
         }
 
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", resource.getName());
-        keyValue.put("accountId", resource.getAccountId());
-        resource.setDnsResourceRecords((List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue));
+        keyValue.put("name", domain.getName());
+        keyValue.put("accountId", domain.getAccountId());
+        domain.setDnsResourceRecords((List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue));
 
-        return resource;
+        return domain;
     }
 
     @Override
@@ -423,8 +422,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    public void store(Domain resource) {
-        repository.save(resource);
+    public void store(Domain domain) {
+        repository.save(domain);
     }
 
     private void validateDomainName(String domainName) throws ParameterValidateException {

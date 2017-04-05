@@ -18,12 +18,11 @@ import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
 @Service
-public class GovernorOfPerson extends LordOfResources {
+public class GovernorOfPerson extends LordOfResources<Person> {
     private PersonRepository repository;
     private Cleaner cleaner;
     private DomainRegistrarClient domainRegistrarClient;
@@ -50,10 +49,10 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Person create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Person person;
         try {
-            person = (Person) buildResourceFromServiceMessage(serviceMessage);
+            person = buildResourceFromServiceMessage(serviceMessage);
             validate(person);
 
             try {
@@ -74,8 +73,8 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        String resourceId = null;
+    public Person update(ServiceMessage serviceMessage) throws ParameterValidateException {
+        String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
@@ -88,7 +87,7 @@ public class GovernorOfPerson extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        Person person = (Person) build(keyValue);
+        Person person = build(keyValue);
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {
@@ -165,7 +164,7 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected Person buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
 
         String actionId = serviceMessage.getActionIdentity();
         String operationId = serviceMessage.getOperationIdentity();
@@ -214,8 +213,7 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        Person person = (Person) resource;
+    public void validate(Person person) throws ParameterValidateException {
         if (person.getAccountId() == null || person.getAccountId().equals("")) {
             throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
@@ -257,12 +255,12 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws NotImplementedException {
+    protected Person construct(Person person) throws NotImplementedException {
         throw new NotImplementedException();
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public Person build(String resourceId) throws ResourceNotFoundException {
         Person person = repository.findOne(resourceId);
         if (person == null) {
             throw new ParameterValidateException("Person с ID:" + resourceId + " не найдена");
@@ -272,7 +270,7 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Person build(Map<String, String> keyValue) throws ResourceNotFoundException {
         Person person = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -283,14 +281,15 @@ public class GovernorOfPerson extends LordOfResources {
         }
 
         if (person == null) {
-            throw new ResourceNotFoundException("Не найдена персона с ID: " + keyValue.get("resourceId") + " для аккаунта с AccountID: " + keyValue.get("accountId"));
+            throw new ResourceNotFoundException("Не найдена персона с ID: " + keyValue.get("resourceId")
+                    + " для аккаунта с AccountID: " + keyValue.get("accountId"));
         }
 
         return person;
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<Person> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Person> buildedPersons = new ArrayList<>();
 
         boolean byAccountId = false;
@@ -310,13 +309,12 @@ public class GovernorOfPerson extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<Person> buildAll() {
         return repository.findAll();
     }
 
     @Override
-    public void store(Resource resource) {
-        Person person = (Person) resource;
+    public void store(Person person) {
         repository.save(person);
     }
 

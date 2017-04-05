@@ -4,14 +4,11 @@ import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.majordomo.hms.rc.staff.resources.Server;
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.ResourceArchiveRepository;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchiveType;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
@@ -25,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class GovernorOfResourceArchive extends LordOfResources {
+public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> {
     private ResourceArchiveRepository repository;
     private GovernorOfWebSite governorOfWebSite;
     private GovernorOfDatabase governorOfDatabase;
@@ -59,10 +56,10 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public ResourceArchive create(ServiceMessage serviceMessage) throws ParameterValidateException {
         ResourceArchive resourceArchive;
         try {
-            resourceArchive = (ResourceArchive) buildResourceFromServiceMessage(serviceMessage);
+            resourceArchive = buildResourceFromServiceMessage(serviceMessage);
             validate(resourceArchive);
             store(resourceArchive);
         } catch (ClassCastException e) {
@@ -73,7 +70,7 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
+    public ResourceArchive update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
         throw new NotImplementedException();
     }
 
@@ -100,7 +97,7 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected ResourceArchive buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         ResourceArchive archive = new ResourceArchive();
         LordOfResources.setResourceParams(archive, serviceMessage, cleaner);
         String resourceId;
@@ -150,8 +147,7 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        ResourceArchive archive = (ResourceArchive) resource;
+    public void validate(ResourceArchive archive) throws ParameterValidateException {
         if (archive.getAccountId() == null || archive.getAccountId().equals("")) {
             throw new ParameterValidateException("Необходимо указать accountId");
         }
@@ -164,8 +160,7 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws ParameterValidateException {
-        ResourceArchive archive = (ResourceArchive) resource;
+    protected ResourceArchive construct(ResourceArchive archive) throws ParameterValidateException {
         if (archive.getResourceId() == null) {
             throw new ParameterValidateException("Не указан resourceId");
         }
@@ -188,7 +183,7 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public ResourceArchive build(String resourceId) throws ResourceNotFoundException {
         if (resourceId == null) {
             throw new ParameterValidateException("Не указан resourceId");
         }
@@ -200,7 +195,7 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public ResourceArchive build(Map<String, String> keyValue) throws ResourceNotFoundException {
         ResourceArchive archive = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -215,12 +210,12 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<ResourceArchive> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<ResourceArchive> archives = new ArrayList<>();
 
         if (keyValue.get("accountId") != null && !keyValue.get("accountId").equals("")) {
             for (ResourceArchive archive : repository.findByAccountId(keyValue.get("accountId"))) {
-                archives.add((ResourceArchive) construct(archive));
+                archives.add(construct(archive));
             }
         }
 
@@ -228,12 +223,12 @@ public class GovernorOfResourceArchive extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<ResourceArchive> buildAll() {
         return repository.findAll();
     }
 
     @Override
-    public void store(Resource resource) {
-        repository.save((ResourceArchive) resource);
+    public void store(ResourceArchive archive) {
+        repository.save(archive);
     }
 }

@@ -13,7 +13,6 @@ import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Database;
-import ru.majordomo.hms.rc.user.resources.Resource;
 
 @RestController
 public class DatabaseRestController {
@@ -26,18 +25,18 @@ public class DatabaseRestController {
     }
 
     @RequestMapping(value = {"/{accountId}/database/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountIdAndDatabaseUserId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+    public Collection<Database> readAllByAccountIdAndDatabaseUserId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 
     @RequestMapping(value = {"/database/filter"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByDatabaseUserId(@RequestParam Map<String, String> requestParams) {
+    public Collection<Database> readAllByDatabaseUserId(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 
     @RequestMapping(value = {"/database/{databaseId}", "/database/{databaseId}/"}, method = RequestMethod.GET)
     public Database readOne(@PathVariable String databaseId) {
-        return (Database) governor.build(databaseId);
+        return governor.build(databaseId);
     }
 
     @RequestMapping(value = {"{accountId}/database/{databaseId}", "{accountId}/database/{databaseId}/"}, method = RequestMethod.GET)
@@ -45,16 +44,16 @@ public class DatabaseRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", databaseId);
         keyValue.put("accountId", accountId);
-        return (Database) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/database/","/database"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<Database> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/{accountId}/database", "/{accountId}/database/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<Database> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
@@ -66,7 +65,7 @@ public class DatabaseRestController {
     }
 
     @RequestMapping(value = {"/database/{databaseId}/quota-report"}, method = RequestMethod.POST)
-    public ResponseEntity<?> updateQuota(@PathVariable String databaseId, @RequestBody QuotaReport report) {
+    public ResponseEntity<Void> updateQuota(@PathVariable String databaseId, @RequestBody QuotaReport report) {
         try {
             governor.updateQuota(databaseId, report.getQuotaUsed());
             return new ResponseEntity<>(HttpStatus.ACCEPTED);

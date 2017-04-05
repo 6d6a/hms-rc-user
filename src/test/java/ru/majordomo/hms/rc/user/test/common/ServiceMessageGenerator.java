@@ -5,18 +5,12 @@ import org.bson.types.ObjectId;
 import java.util.*;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.resources.DBType;
-import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 
-import static ru.majordomo.hms.rc.user.resources.DBType.*;
-
 public class ServiceMessageGenerator {
     public ServiceMessage generateWebsiteCreateMessage() {
-        ServiceMessage serviceMessage = new ServiceMessage();
-//        serviceMessage.addParam("");
-        return serviceMessage;
+        return new ServiceMessage();
     }
 
     public static ServiceMessage generatePersonCreateServiceMessage() {
@@ -27,8 +21,8 @@ public class ServiceMessageGenerator {
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("name", "Климов Никита Анатольевич");
-        serviceMessage.addParam("phoneNumbers", Arrays.asList("+79052033565"));
-        serviceMessage.addParam("emailAddresses", Arrays.asList("nikita@klimov.us"));
+        serviceMessage.addParam("phoneNumbers", Collections.singletonList("+79052033565"));
+        serviceMessage.addParam("emailAddresses", Collections.singletonList("nikita@klimov.us"));
         serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));
         serviceMessage.addParam("legalEntity", person.getLegalEntity());
         serviceMessage.addParam("country", person.getCountry());
@@ -53,8 +47,8 @@ public class ServiceMessageGenerator {
     public static ServiceMessage generatePersonCreateBadServiceMessage() {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.addParam("name", "asdf srgkerj asdkfj");
-        serviceMessage.addParam("emailAddresses", Arrays.asList("zaborshikov@majordomo.ru"));
-        serviceMessage.addParam("phoneNumbers", Arrays.asList("+79522150325"));
+        serviceMessage.addParam("emailAddresses", Collections.singletonList("zaborshikov@majordomo.ru"));
+        serviceMessage.addParam("phoneNumbers", Collections.singletonList("+79522150325"));
         Map<String, String> passport = new HashMap<>();
         passport.put("number", "1234567890");
         passport.put("issuedDate", "2008-03-25");
@@ -83,7 +77,7 @@ public class ServiceMessageGenerator {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("serverId", ObjectId.get().toString());
-        serviceMessage.addParam("quota", (int) 10485760);
+        serviceMessage.addParam("quota", 10485760);
 
         return serviceMessage;
     }
@@ -93,7 +87,7 @@ public class ServiceMessageGenerator {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("serverId", ObjectId.get().toString());
-        serviceMessage.addParam("quota", (String) "");
+        serviceMessage.addParam("quota", "");
 
         return serviceMessage;
     }

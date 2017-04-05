@@ -1,7 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import com.mysql.management.util.NotImplementedException;
-import com.mysql.management.util.Str;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -9,7 +9,6 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.*;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 
 import java.io.UnsupportedEncodingException;
@@ -129,26 +128,26 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public void validate(DNSResourceRecord resource) throws ParameterValidateException {
-        if (resource.getName() == null || resource.getName().equals("")) {
+    public void validate(DNSResourceRecord record) throws ParameterValidateException {
+        if (record.getName() == null || record.getName().equals("")) {
             throw new ParameterValidateException("Имя домена должно быть указано");
         }
-        if (!resource.getOwnerName().endsWith(resource.getName())) {
+        if (!record.getOwnerName().endsWith(record.getName())) {
             throw new ParameterValidateException("Запись должна кончаться именем домена");
         }
-        if (resource.getRrType() == null) {
+        if (record.getRrType() == null) {
             throw new ParameterValidateException("Тип записи должен быть указан");
         }
-        if (resource.getTtl() == null) {
-            resource.setTtl(3600L);
+        if (record.getTtl() == null) {
+            record.setTtl(3600L);
         }
-        DNSResourceRecordType type = resource.getRrType();
+        DNSResourceRecordType type = record.getRrType();
         switch (type) {
             case A:
-                resource.setPrio(null);
+                record.setPrio(null);
                 break;
             case MX:
-                if (resource.getPrio() == null) resource.setPrio(10L);
+                if (record.getPrio() == null) record.setPrio(10L);
                 break;
             case AAAA:
                 break;
@@ -164,10 +163,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    protected DNSResourceRecord construct(DNSResourceRecord resource) throws ParameterValidateException {
-        resource.setRrClass(DNSResourceRecordClass.IN);
-        resource.setName(dnsResourceRecordDAO.getDomainNameByRecordId(resource.getRecordId()));
-        return resource;
+    protected DNSResourceRecord construct(DNSResourceRecord record) throws ParameterValidateException {
+        record.setRrClass(DNSResourceRecordClass.IN);
+        record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getRecordId()));
+        return record;
     }
 
     private List<DNSResourceRecord> constructByDomain(List<DNSResourceRecord> records) throws ParameterValidateException {
@@ -226,8 +225,8 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public void store(DNSResourceRecord resource) {
-        dnsResourceRecordDAO.save(resource);
+    public void store(DNSResourceRecord record) {
+        dnsResourceRecordDAO.save(record);
     }
 
     public void initDomain(Domain domain) {

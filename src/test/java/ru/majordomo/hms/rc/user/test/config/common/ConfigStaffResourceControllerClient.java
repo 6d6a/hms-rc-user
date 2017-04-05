@@ -14,6 +14,7 @@ import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -52,7 +53,7 @@ public class ConfigStaffResourceControllerClient {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
                 server.setName("web100500");
-                server.setServiceIds(Arrays.asList(mockedServiceId));
+                server.setServiceIds(Collections.singletonList(mockedServiceId));
                 return server;
             }
 
@@ -60,7 +61,7 @@ public class ConfigStaffResourceControllerClient {
             public Server getActiveDatabaseServer() {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
-                server.setServiceIds(Arrays.asList(mockedDBServiceId));
+                server.setServiceIds(Collections.singletonList(mockedDBServiceId));
                 return server;
             }
 
@@ -81,7 +82,7 @@ public class ConfigStaffResourceControllerClient {
             public Server getServerById(@PathVariable("serverId") String serverId) {
                 Server server = new Server();
                 server.setId(serverId);
-                server.setServiceIds(Arrays.asList(mockedServiceId));
+                server.setServiceIds(Collections.singletonList(mockedServiceId));
                 server.setName("web100500");
                 if (serverId.equals(mockedMailboxServer.getId())) {
                     return mockedMailboxServer;
@@ -94,7 +95,7 @@ public class ConfigStaffResourceControllerClient {
                 Server server = null;
                 if (serviceId.equals(mockedDBServiceId)) {
                     server = new Server();
-                    server.setServiceIds(Arrays.asList(serviceId));
+                    server.setServiceIds(Collections.singletonList(serviceId));
                     server.setName("web100500");
                     server.setId(ObjectId.get().toString());
                 }

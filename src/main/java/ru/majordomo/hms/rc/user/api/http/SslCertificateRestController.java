@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 import java.util.Collection;
@@ -25,7 +24,7 @@ public class SslCertificateRestController {
 
     @RequestMapping(value = {"/ssl-certificate/{sslCertificateId}", "/ssl-certificate/{sslCertificateId}/"}, method = RequestMethod.GET)
     public SSLCertificate readOne(@PathVariable String sslCertificateId) {
-        return (SSLCertificate) governor.build(sslCertificateId);
+        return governor.build(sslCertificateId);
     }
 
     @RequestMapping(value = {"{accountId}/ssl-certificate/{sslCertificateId}", "{accountId}/ssl-certificate/{sslCertificateId}/"}, method = RequestMethod.GET)
@@ -33,16 +32,16 @@ public class SslCertificateRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", sslCertificateId);
         keyValue.put("accountId", accountId);
-        return (SSLCertificate) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/ssl-certificate/","/ssl-certificate"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<SSLCertificate> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/{accountId}/ssl-certificate", "/{accountId}/ssl-certificate/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<SSLCertificate> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);

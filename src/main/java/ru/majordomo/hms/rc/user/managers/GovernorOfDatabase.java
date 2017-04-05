@@ -183,23 +183,23 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
-    public void validate(Database resource) throws ParameterValidateException {
-        if (resource.getAccountId() == null || resource.getAccountId().equals("")) {
+    public void validate(Database database) throws ParameterValidateException {
+        if (database.getAccountId() == null || database.getAccountId().equals("")) {
             throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
 
-        if (resource.getName().equals("") || resource.getName() == null) {
+        if (database.getName().equals("") || database.getName() == null) {
             throw new ParameterValidateException("Имя базы не может быть пустым");
         }
 
-        if (resource.getType() == null) {
+        if (database.getType() == null) {
             throw new ParameterValidateException("Тип базы не указан");
         }
 
-        if (resource.getServiceId() != null && !resource.getServiceId().equals("")) {
-            Server server = staffRcClient.getServerByServiceId(resource.getServiceId());
+        if (database.getServiceId() != null && !database.getServiceId().equals("")) {
+            Server server = staffRcClient.getServerByServiceId(database.getServiceId());
             if (server == null) {
-                throw new ParameterValidateException("Не найден сервис с ID: " + resource.getServiceId());
+                throw new ParameterValidateException("Не найден сервис с ID: " + database.getServiceId());
             }
         } else {
             String serverId = staffRcClient.getActiveDatabaseServer().getId();
@@ -208,19 +208,19 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
             if (databaseServices != null) {
                 for (ru.majordomo.hms.rc.staff.resources.Service service : databaseServices) {
                     if (service.getServiceType().getName().equals(this.defaultServiceName)) {
-                        resource.setServiceId(service.getId());
+                        database.setServiceId(service.getId());
                         break;
                     }
                 }
-                if (resource.getServiceId() == null || (resource.getServiceId().equals(""))) {
+                if (database.getServiceId() == null || (database.getServiceId().equals(""))) {
                     throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName +
                             " для сервера: " + serverId);
                 }
             }
         }
 
-        DBType dbType = resource.getType();
-        for (DatabaseUser databaseUser : resource.getDatabaseUsers()) {
+        DBType dbType = database.getType();
+        for (DatabaseUser databaseUser : database.getDatabaseUsers()) {
             DBType userType = databaseUser.getType();
             if (dbType != userType) {
                 throw new ParameterValidateException("Тип базы данных: " + dbType +
@@ -229,12 +229,12 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
             }
         }
 
-        if (resource.getSwitchedOn() == null) {
-            resource.setSwitchedOn(true);
+        if (database.getSwitchedOn() == null) {
+            database.setSwitchedOn(true);
         }
 
-        if (resource.getWritable() == null) {
-            resource.setWritable(true);
+        if (database.getWritable() == null) {
+            database.setWritable(true);
         }
     }
 
@@ -243,13 +243,13 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
-    protected Database construct(Database resource) {
+    protected Database construct(Database database) {
         List<DatabaseUser> databaseUsers = new ArrayList<>();
-        for (String databaseUserId : resource.getDatabaseUserIds()) {
-            databaseUsers.add((DatabaseUser) governorOfDatabaseUser.build(databaseUserId));
+        for (String databaseUserId : database.getDatabaseUserIds()) {
+            databaseUsers.add(governorOfDatabaseUser.build(databaseUserId));
         }
-        resource.setDatabaseUsers(databaseUsers);
-        return resource;
+        database.setDatabaseUsers(databaseUsers);
+        return database;
     }
 
     @Override
@@ -327,8 +327,8 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
-    public void store(Database resource) {
-        repository.save(resource);
+    public void store(Database database) {
+        repository.save(database);
     }
 
     public Count countByAccountId(String accountId) {

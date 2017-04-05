@@ -17,14 +17,13 @@ import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.CronTask;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Component
-public class GovernorOfUnixAccount extends LordOfResources {
+public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
     public final int MIN_UID = 2000;
     public final int MAX_UID = 65535;
@@ -61,12 +60,12 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public UnixAccount create(ServiceMessage serviceMessage) throws ParameterValidateException {
         UnixAccount unixAccount;
 
         try {
 
-            unixAccount = (UnixAccount) buildResourceFromServiceMessage(serviceMessage);
+            unixAccount = buildResourceFromServiceMessage(serviceMessage);
             validate(unixAccount);
             store(unixAccount);
 
@@ -78,8 +77,8 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        String resourceId = null;
+    public UnixAccount update(ServiceMessage serviceMessage) throws ParameterValidateException {
+        String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
@@ -92,7 +91,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        UnixAccount unixAccount = (UnixAccount) build(keyValue);
+        UnixAccount unixAccount = build(keyValue);
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {
@@ -170,7 +169,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected UnixAccount buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         UnixAccount unixAccount = new UnixAccount();
         LordOfResources.setResourceParams(unixAccount, serviceMessage, cleaner);
 
@@ -255,8 +254,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        UnixAccount unixAccount = (UnixAccount) resource;
+    public void validate(UnixAccount unixAccount) throws ParameterValidateException {
         if (unixAccount.getName() == null || unixAccount.getName().equals("")) {
             throw new ParameterValidateException("Имя unixAccount'а не может быть пустым");
         }
@@ -285,12 +283,12 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws NotImplementedException {
+    protected UnixAccount construct(UnixAccount unixAccount) throws NotImplementedException {
         throw new NotImplementedException();
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public UnixAccount build(String resourceId) throws ResourceNotFoundException {
         UnixAccount unixAccount = repository.findOne(resourceId);
         if (unixAccount == null) {
             throw new ResourceNotFoundException("Не найден UnixAccount с ID: " + resourceId);
@@ -299,7 +297,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public UnixAccount build(Map<String, String> keyValue) throws ResourceNotFoundException {
         UnixAccount unixAccount = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -314,7 +312,7 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<UnixAccount> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<UnixAccount> buildedUnixAccounts = new ArrayList<>();
 
         boolean byAccountId = false;
@@ -339,13 +337,12 @@ public class GovernorOfUnixAccount extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<UnixAccount> buildAll() {
         return repository.findAll();
     }
 
     @Override
-    public void store(Resource resource) {
-        UnixAccount unixAccount = (UnixAccount) resource;
+    public void store(UnixAccount unixAccount) {
         repository.save(unixAccount);
     }
 
