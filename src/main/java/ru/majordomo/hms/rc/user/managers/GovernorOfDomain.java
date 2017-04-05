@@ -20,7 +20,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
 @Service
-public class GovernorOfDomain extends LordOfResources {
+public class GovernorOfDomain extends LordOfResources<Domain> {
 
     private Cleaner cleaner;
     private DomainRepository repository;
@@ -73,7 +73,7 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Domain create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Domain domain;
         try {
             Boolean needRegister = null;
@@ -81,7 +81,7 @@ public class GovernorOfDomain extends LordOfResources {
                 needRegister = (Boolean) serviceMessage.getParam("register");
             }
 
-            domain = (Domain) buildResourceFromServiceMessage(serviceMessage);
+            domain = buildResourceFromServiceMessage(serviceMessage);
             validate(domain);
 
             if (repository.findByName(domain.getName()) != null) {
@@ -109,8 +109,8 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
-        String resourceId = null;
+    public Domain update(ServiceMessage serviceMessage) throws ParameterValidateException {
+        String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
@@ -123,7 +123,7 @@ public class GovernorOfDomain extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        Domain domain = (Domain) build(keyValue);
+        Domain domain = build(keyValue);
         if (domain.getParentDomainId() == null) {
             try {
                 for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
@@ -187,10 +187,10 @@ public class GovernorOfDomain extends LordOfResources {
 
         List<Mailbox> mailboxes = (List<Mailbox>) governorOfMailbox.buildAll(keyValue);
         if (mailboxes.size() > 0) {
-            String message = "На домене имеются почтовые ящики: ";
+            StringBuilder message = new StringBuilder("На домене имеются почтовые ящики: ");
 
             for (Mailbox mailbox : mailboxes) {
-                message += mailbox.getFullName() + ", ";
+                message.append(mailbox.getFullName()).append(", ");
             }
             throw new ParameterValidateException(message.substring(0, message.length() - 2));
         }
@@ -208,7 +208,7 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected Domain buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         LordOfResources.setResourceParams(domain, serviceMessage, cleaner);
         if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
@@ -239,62 +239,60 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        Domain domain = (Domain) resource;
-        if (domain.getName() == null || domain.getName().equals("")) {
+    public void validate(Domain resource) throws ParameterValidateException {
+        if (resource.getName() == null || resource.getName().equals("")) {
             throw new ParameterValidateException("Имя домена не может быть пустым");
         }
-        validateDomainName(domain.getName());
+        validateDomainName(resource.getName());
 
-        Person domainPerson = domain.getPerson();
+        Person domainPerson = resource.getPerson();
         if (domainPerson != null) {
             governorOfPerson.validate(domainPerson);
         }
 
-        if (domain.getAutoRenew() == null) {
-            domain.setAutoRenew(false);
+        if (resource.getAutoRenew() == null) {
+            resource.setAutoRenew(false);
         }
 
-        SSLCertificate sslCertificate = domain.getSslCertificate();
+        SSLCertificate sslCertificate = resource.getSslCertificate();
         if (sslCertificate != null) {
             governorOfSSLCertificate.validate(sslCertificate);
         }
     }
 
     @Override
-    protected Resource construct(Resource resource) throws ParameterValidateException {
-        Domain domain = (Domain) resource;
+    protected Domain construct(Domain resource) throws ParameterValidateException {
 
-        if (domain.getPersonId() != null) {
-            Person domainPerson = (Person) governorOfPerson.build(domain.getPersonId());
-            domain.setPerson(domainPerson);
+        if (resource.getPersonId() != null) {
+            Person domainPerson = (Person) governorOfPerson.build(resource.getPersonId());
+            resource.setPerson(domainPerson);
         }
 
-        if (domain.getSslCertificateId() != null) {
-            SSLCertificate sslCertificate = (SSLCertificate) governorOfSSLCertificate.build(domain.getSslCertificateId());
-            domain.setSslCertificate(sslCertificate);
+        if (resource.getSslCertificateId() != null) {
+            SSLCertificate sslCertificate = (SSLCertificate) governorOfSSLCertificate.build(resource.getSslCertificateId());
+            resource.setSslCertificate(sslCertificate);
         } else {
-            domain.setSslCertificate(null);
+            resource.setSslCertificate(null);
         }
 
-        if (domain.getParentDomainId() != null) {
-            Domain parent = repository.findOne(domain.getParentDomainId());
+        if (resource.getParentDomainId() != null) {
+            Domain parent = repository.findOne(resource.getParentDomainId());
             if (parent == null) {
-                throw new ParameterValidateException("Не найден домен-родитель с id: " + domain.getParentDomainId());
+                throw new ParameterValidateException("Не найден домен-родитель с id: " + resource.getParentDomainId());
             }
-            domain.setRegSpec(parent.getRegSpec());
+            resource.setRegSpec(parent.getRegSpec());
         }
 
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", domain.getName());
-        keyValue.put("accountId", domain.getAccountId());
-        domain.setDnsResourceRecords((List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue));
+        keyValue.put("name", resource.getName());
+        keyValue.put("accountId", resource.getAccountId());
+        resource.setDnsResourceRecords((List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue));
 
-        return domain;
+        return resource;
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public Domain build(String resourceId) throws ResourceNotFoundException {
         Domain domain = repository.findOne(resourceId);
         if (domain == null) {
             throw new ResourceNotFoundException("Domain с ID:" + resourceId + " не найден");
@@ -303,7 +301,7 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Domain build(Map<String, String> keyValue) throws ResourceNotFoundException {
         Domain domain = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -328,7 +326,7 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<Domain> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Domain> buildedDomains = new ArrayList<>();
 
         boolean byAccountId = false;
@@ -359,40 +357,40 @@ public class GovernorOfDomain extends LordOfResources {
                 LocalDate startDate = LocalDate.parse(keyValue.get("paidTillStart"));
                 LocalDate endDate = LocalDate.parse(keyValue.get("paidTillEnd"));
                 for (Domain domain : repository.findByAccountIdAndRegSpecPaidTillBetween(keyValue.get("accountId"), startDate, endDate)) {
-                    buildedDomains.add((Domain) construct(domain));
+                    buildedDomains.add(construct(domain));
                 }
             } catch (DateTimeParseException e) {
                 throw new ParameterValidateException("Одна из дат указана неверно");
             }
         } else if (byAccountId && byPersonId) {
             for (Domain domain : repository.findByPersonIdAndAccountId(keyValue.get("personId"), keyValue.get("accountId"))) {
-                buildedDomains.add((Domain) construct(domain));
+                buildedDomains.add(construct(domain));
             }
         } else if (byAccountId && byParentDomainId) {
             for (Domain domain : repository.findByParentDomainIdAndAccountId(keyValue.get("parentDomainId"), keyValue.get("accountId"))) {
-                buildedDomains.add((Domain) construct(domain));
+                buildedDomains.add(construct(domain));
             }
         } else if (byPersonId) {
             for (Domain domain : repository.findByPersonId(keyValue.get("personId"))) {
-                buildedDomains.add((Domain) construct(domain));
+                buildedDomains.add(construct(domain));
             }
         } else if (byParentDomainId) {
             for (Domain domain : repository.findByParentDomainId(keyValue.get("parentDomainId"))) {
-                buildedDomains.add((Domain) construct(domain));
+                buildedDomains.add(construct(domain));
             }
         } else if (byExpiringDates) {
             try {
                 LocalDate startDate = LocalDate.parse(keyValue.get("paidTillStart"));
                 LocalDate endDate = LocalDate.parse(keyValue.get("paidTillEnd"));
                 for (Domain domain : repository.findByRegSpecPaidTillBetween(startDate, endDate)) {
-                    buildedDomains.add((Domain) construct(domain));
+                    buildedDomains.add(construct(domain));
                 }
             } catch (DateTimeParseException e) {
                 throw new ParameterValidateException("Одна из дат указана неверно");
             }
         } else if (byAccountId) {
             for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedDomains.add((Domain) construct(domain));
+                buildedDomains.add(construct(domain));
             }
         }
 
@@ -416,18 +414,17 @@ public class GovernorOfDomain extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<Domain> buildAll() {
         List<Domain> buildedDomains = new ArrayList<>();
         for (Domain domain : repository.findAll()) {
-            buildedDomains.add((Domain) construct(domain));
+            buildedDomains.add(construct(domain));
         }
         return buildedDomains;
     }
 
     @Override
-    public void store(Resource resource) {
-        Domain domain = (Domain) resource;
-        repository.save(domain);
+    public void store(Domain resource) {
+        repository.save(resource);
     }
 
     private void validateDomainName(String domainName) throws ParameterValidateException {

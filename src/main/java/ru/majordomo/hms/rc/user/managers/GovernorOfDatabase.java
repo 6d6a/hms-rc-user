@@ -4,23 +4,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.resources.DBType;
-import ru.majordomo.hms.rc.user.resources.DatabaseUser;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
+import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
+import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
 @Service
-public class GovernorOfDatabase extends LordOfResources {
+public class GovernorOfDatabase extends LordOfResources<Database> {
 
     private DatabaseRepository repository;
     private Cleaner cleaner;
@@ -60,11 +63,11 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Database create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Database database;
         try {
 
-            database = (Database) buildResourceFromServiceMessage(serviceMessage);
+            database = buildResourceFromServiceMessage(serviceMessage);
             validate(database);
             store(database);
 
@@ -76,7 +79,7 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Database update(ServiceMessage serviceMessage) throws ParameterValidateException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -88,7 +91,7 @@ public class GovernorOfDatabase extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        Database database = (Database) build(keyValue);
+        Database database = build(keyValue);
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {
@@ -138,7 +141,7 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected Database buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Database database = new Database();
         String serviceId = null;
         DBType type = null;
@@ -162,7 +165,7 @@ public class GovernorOfDatabase extends LordOfResources {
             }
         }
 
-        List<String> databaseUserIds = null;
+        List<String> databaseUserIds;
         if (serviceMessage.getParam("databaseUserIds") != null) {
             databaseUserIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("databaseUserIds"));
 
@@ -180,25 +183,23 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        Database database = (Database) resource;
-
-        if (database.getAccountId() == null || database.getAccountId().equals("")) {
+    public void validate(Database resource) throws ParameterValidateException {
+        if (resource.getAccountId() == null || resource.getAccountId().equals("")) {
             throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
 
-        if (database.getName().equals("") || database.getName() == null) {
+        if (resource.getName().equals("") || resource.getName() == null) {
             throw new ParameterValidateException("Имя базы не может быть пустым");
         }
 
-        if (database.getType() == null) {
+        if (resource.getType() == null) {
             throw new ParameterValidateException("Тип базы не указан");
         }
 
-        if (database.getServiceId() != null && !database.getServiceId().equals("")) {
-            Server server = staffRcClient.getServerByServiceId(database.getServiceId());
+        if (resource.getServiceId() != null && !resource.getServiceId().equals("")) {
+            Server server = staffRcClient.getServerByServiceId(resource.getServiceId());
             if (server == null) {
-                throw new ParameterValidateException("Не найден сервис с ID: " + database.getServiceId());
+                throw new ParameterValidateException("Не найден сервис с ID: " + resource.getServiceId());
             }
         } else {
             String serverId = staffRcClient.getActiveDatabaseServer().getId();
@@ -207,19 +208,19 @@ public class GovernorOfDatabase extends LordOfResources {
             if (databaseServices != null) {
                 for (ru.majordomo.hms.rc.staff.resources.Service service : databaseServices) {
                     if (service.getServiceType().getName().equals(this.defaultServiceName)) {
-                        database.setServiceId(service.getId());
+                        resource.setServiceId(service.getId());
                         break;
                     }
                 }
-                if (database.getServiceId() == null || (database.getServiceId().equals(""))) {
+                if (resource.getServiceId() == null || (resource.getServiceId().equals(""))) {
                     throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName +
                             " для сервера: " + serverId);
                 }
             }
         }
 
-        DBType dbType = database.getType();
-        for (DatabaseUser databaseUser: database.getDatabaseUsers()) {
+        DBType dbType = resource.getType();
+        for (DatabaseUser databaseUser : resource.getDatabaseUsers()) {
             DBType userType = databaseUser.getType();
             if (dbType != userType) {
                 throw new ParameterValidateException("Тип базы данных: " + dbType +
@@ -228,12 +229,12 @@ public class GovernorOfDatabase extends LordOfResources {
             }
         }
 
-        if (database.getSwitchedOn() == null) {
-            database.setSwitchedOn(true);
+        if (resource.getSwitchedOn() == null) {
+            resource.setSwitchedOn(true);
         }
 
-        if (database.getWritable() == null) {
-            database.setWritable(true);
+        if (resource.getWritable() == null) {
+            resource.setWritable(true);
         }
     }
 
@@ -242,18 +243,17 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) {
-        Database database = (Database) resource;
+    protected Database construct(Database resource) {
         List<DatabaseUser> databaseUsers = new ArrayList<>();
-        for ( String databaseUserId : database.getDatabaseUserIds()) {
+        for (String databaseUserId : resource.getDatabaseUserIds()) {
             databaseUsers.add((DatabaseUser) governorOfDatabaseUser.build(databaseUserId));
         }
-        database.setDatabaseUsers(databaseUsers);
-        return database;
+        resource.setDatabaseUsers(databaseUsers);
+        return resource;
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public Database build(String resourceId) throws ResourceNotFoundException {
         Database database = repository.findOne(resourceId);
         if (database == null) {
             throw new ResourceNotFoundException("Database с ID:" + resourceId + " не найдена");
@@ -262,7 +262,7 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Database build(Map<String, String> keyValue) throws ResourceNotFoundException {
 
         Database database = null;
 
@@ -278,7 +278,7 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<Database> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
 
         List<Database> buildedDatabases = new ArrayList<>();
 
@@ -300,15 +300,15 @@ public class GovernorOfDatabase extends LordOfResources {
 
         if (byDatabaseUserId) {
             for (Database database : repository.findByDatabaseUserIdsContaining(keyValue.get("databaseUserId"))) {
-                buildedDatabases.add((Database) construct(database));
+                buildedDatabases.add(construct(database));
             }
         } else if (byAccountId) {
             for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedDatabases.add((Database) construct(database));
+                buildedDatabases.add(construct(database));
             }
         } else if (byServiceId) {
             for (Database database : repository.findByServiceId(keyValue.get("serviceId"))) {
-                buildedDatabases.add((Database) construct(database));
+                buildedDatabases.add(construct(database));
             }
         }
 
@@ -316,20 +316,19 @@ public class GovernorOfDatabase extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<Database> buildAll() {
         List<Database> buildedDatabases = new ArrayList<>();
 
         for (Database database : repository.findAll()) {
-            buildedDatabases.add((Database) construct(database));
+            buildedDatabases.add(construct(database));
         }
 
         return buildedDatabases;
     }
 
     @Override
-    public void store(Resource resource) {
-        Database database = (Database) resource;
-        repository.save(database);
+    public void store(Database resource) {
+        repository.save(resource);
     }
 
     public Count countByAccountId(String accountId) {

@@ -13,31 +13,31 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
-public abstract class LordOfResources {
+public abstract class LordOfResources<T extends Resource> {
     protected Logger logger = LoggerFactory.getLogger(LordOfResources.class);
-    public abstract Resource create(ServiceMessage serviceMessage) throws ParameterValidateException;
+    public abstract T create(ServiceMessage serviceMessage) throws ParameterValidateException;
 
-    public abstract Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException;
+    public abstract T update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException;
 
     public abstract void preDelete(String resourceId);
 
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
 
-    protected abstract Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
+    protected abstract T buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
 
-    public abstract void validate(Resource resource) throws ParameterValidateException;
+    public abstract void validate(T resource) throws ParameterValidateException;
 
-    protected abstract Resource construct(Resource resource) throws ParameterValidateException;
+    protected abstract T construct(T resource) throws ParameterValidateException;
 
-    public abstract Resource build(String resourceId) throws ResourceNotFoundException;
+    public abstract T build(String resourceId) throws ResourceNotFoundException;
 
-    public abstract Resource build(Map<String, String> keyValue) throws ResourceNotFoundException;
+    public abstract T build(Map<String, String> keyValue) throws ResourceNotFoundException;
 
-    public abstract Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException;
+    public abstract Collection<T> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException;
 
-    public abstract Collection<? extends Resource> buildAll();
+    public abstract Collection<T> buildAll();
 
-    public abstract void store(Resource resource);
+    public abstract void store(T resource);
 
     protected Boolean hasResourceIdAndAccountId(Map<String, String> keyValue) {
 
