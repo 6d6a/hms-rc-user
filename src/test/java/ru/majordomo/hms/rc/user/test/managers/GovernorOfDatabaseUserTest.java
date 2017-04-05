@@ -23,10 +23,7 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import java.util.*;
 
@@ -85,10 +82,10 @@ public class GovernorOfDatabaseUserTest {
         databaseRepository.save(databases);
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         serviceMessage.setAccountId(databases.get(0).getAccountId());
-        serviceMessage.addParam("databaseIds", Arrays.asList(databases.get(0).getId()));
+        serviceMessage.addParam("databaseIds", Collections.singletonList(databases.get(0).getId()));
         System.out.println(databases);
         System.out.println(serviceMessage);
-        DatabaseUser databaseUser = (DatabaseUser) governor.create(serviceMessage);
+        DatabaseUser databaseUser = governor.create(serviceMessage);
         assertThat(databaseRepository.findOne(databases.get(0).getId()).getDatabaseUserIds(), hasItem(databaseUser.getId()));
     }
 
@@ -156,7 +153,7 @@ public class GovernorOfDatabaseUserTest {
         serviceMessage.setAccountId(databaseUsers.get(0).getAccountId());
         String oldPasswordHash = databaseUsers.get(0).getPasswordHash();
         serviceMessage.addParam("password", "87654321");
-        DatabaseUser databaseUser = (DatabaseUser) governor.update(serviceMessage);
+        DatabaseUser databaseUser = governor.update(serviceMessage);
         assertThat(repository.findOne(databaseUser.getId()).getPasswordHash(), not(oldPasswordHash));
     }
 

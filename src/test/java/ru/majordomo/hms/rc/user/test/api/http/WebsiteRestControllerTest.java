@@ -18,6 +18,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.resources.CharSet;
@@ -37,7 +38,6 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigWebsiteRestController;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -48,7 +48,6 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -188,7 +187,7 @@ public class WebsiteRestControllerTest {
             domainRepository.save(domain);
             unixAccountRepository.save(unixAccount);
             webSite.setUnixAccountId(unixAccount.getId());
-            webSite.setDomainIds(Arrays.asList(domain.getId()));
+            webSite.setDomainIds(Collections.singletonList(domain.getId()));
 
         }
 

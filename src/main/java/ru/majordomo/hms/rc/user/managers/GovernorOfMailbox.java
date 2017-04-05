@@ -2,7 +2,7 @@ package ru.majordomo.hms.rc.user.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysql.management.util.Str;
+
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +24,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
 @Service
-public class GovernorOfMailbox extends LordOfResources {
+public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private MailboxRepository repository;
     private MailboxRedisRepository redisRepository;
     private GovernorOfDomain governorOfDomain;
@@ -79,10 +79,10 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Mailbox create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Mailbox mailbox;
         try {
-            mailbox = (Mailbox) buildResourceFromServiceMessage(serviceMessage);
+            mailbox = buildResourceFromServiceMessage(serviceMessage);
             validate(mailbox);
             store(mailbox);
             syncWithRedis(mailbox);
@@ -93,7 +93,7 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage)
+    public Mailbox update(ServiceMessage serviceMessage)
             throws ParameterValidateException, UnsupportedEncodingException {
         String resourceId = null;
 
@@ -106,7 +106,7 @@ public class GovernorOfMailbox extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        Mailbox mailbox = (Mailbox) build(keyValue);
+        Mailbox mailbox = build(keyValue);
 
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
@@ -192,7 +192,7 @@ public class GovernorOfMailbox extends LordOfResources {
 
     @Override
     public void preDelete(String resourceId) {
-        Mailbox mailbox = (Mailbox) build(resourceId);
+        Mailbox mailbox = build(resourceId);
         dropFromRedis(mailbox);
     }
 
@@ -207,7 +207,7 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage)
+    protected Mailbox buildResourceFromServiceMessage(ServiceMessage serviceMessage)
             throws ClassCastException {
         Mailbox mailbox = new Mailbox();
         LordOfResources.setResourceParams(mailbox, serviceMessage, cleaner);
@@ -289,7 +289,7 @@ public class GovernorOfMailbox extends LordOfResources {
         Integer uid = unixAccounts.get(0).getUid();
 
         keyValue.put("resourceId", domainId);
-        mailbox.setDomain((Domain) governorOfDomain.build(keyValue));
+        mailbox.setDomain(governorOfDomain.build(keyValue));
 
         if (!hasUniqueAddress(mailbox)) {
             throw new ParameterValidateException("Почтовый ящик уже существует");
@@ -360,8 +360,7 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        Mailbox mailbox = (Mailbox) resource;
+    public void validate(Mailbox mailbox) throws ParameterValidateException {
         if (mailbox.getName() == null || mailbox.getName().equals("")) {
             throw new ParameterValidateException("Имя ящика не может быть пустым");
         }
@@ -404,15 +403,14 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    public Resource construct(Resource resource) throws ParameterValidateException {
-        Mailbox mailbox = (Mailbox) resource;
-        Domain domain = (Domain) governorOfDomain.build(mailbox.getDomainId());
+    public Mailbox construct(Mailbox mailbox) throws ParameterValidateException {
+        Domain domain = governorOfDomain.build(mailbox.getDomainId());
         mailbox.setDomain(domain);
         return mailbox;
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public Mailbox build(String resourceId) throws ResourceNotFoundException {
         Mailbox mailbox = repository.findOne(resourceId);
         if (mailbox == null) {
             throw new ResourceNotFoundException("Mailbox с ID:" + resourceId + " не найден");
@@ -421,7 +419,7 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Mailbox build(Map<String, String> keyValue) throws ResourceNotFoundException {
         Mailbox mailbox = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -436,7 +434,7 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<Mailbox> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Mailbox> buildedMailboxes = new ArrayList<>();
 
         boolean byAccountId = false;
@@ -457,15 +455,15 @@ public class GovernorOfMailbox extends LordOfResources {
 
         if (byAccountId) {
             for (Mailbox mailbox : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedMailboxes.add((Mailbox) construct(mailbox));
+                buildedMailboxes.add(construct(mailbox));
             }
         } else if (byServerId) {
             for (Mailbox mailbox : repository.findByServerId(keyValue.get("serverId"))) {
-                buildedMailboxes.add((Mailbox) construct(mailbox));
+                buildedMailboxes.add(construct(mailbox));
             }
         } else if (byDomainId) {
             for (Mailbox mailbox : repository.findByDomainId(keyValue.get("domainId"))) {
-                buildedMailboxes.add((Mailbox) construct(mailbox));
+                buildedMailboxes.add(construct(mailbox));
             }
         }
 
@@ -473,17 +471,16 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<Mailbox> buildAll() {
         List<Mailbox> mailboxes = new ArrayList<>();
         for (Mailbox mailbox: repository.findAll()) {
-            mailboxes.add((Mailbox) construct(mailbox));
+            mailboxes.add(construct(mailbox));
         }
         return mailboxes;
     }
 
     @Override
-    public void store(Resource resource) {
-        Mailbox mailbox = (Mailbox) resource;
+    public void store(Mailbox mailbox) {
         repository.save(mailbox);
     }
 
@@ -541,7 +538,7 @@ public class GovernorOfMailbox extends LordOfResources {
 
     private void setAggregatorInRedis(Mailbox mailbox) {
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        mailboxForRedis.setName("*@" + ((Mailbox)construct(mailbox)).getDomain().getName());
+        mailboxForRedis.setName("*@" + (construct(mailbox)).getDomain().getName());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
         mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
         mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
@@ -557,7 +554,7 @@ public class GovernorOfMailbox extends LordOfResources {
     }
 
     private void dropAggregatorInRedis(Mailbox mailbox) {
-        redisRepository.delete("*@" + ((Mailbox)construct(mailbox)).getDomain().getName());
+        redisRepository.delete("*@" + (construct(mailbox)).getDomain().getName());
     }
 
     public void updateQuota(String mailboxId, Long quotaSize) {

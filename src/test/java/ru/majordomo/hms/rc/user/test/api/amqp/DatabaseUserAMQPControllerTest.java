@@ -21,11 +21,8 @@ import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.BrokerManager;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigAMQPControllers;
-import ru.majordomo.hms.rc.user.test.config.amqp.ConfigDatabaseUserAMQPControllerTest;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.Collections;
@@ -134,8 +131,8 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.addParam("serviceId", "583300c5a94c541d14d58c85");
         sender.send("database-user.create", "rc.user", serviceMessage, "pm");
         Message message = rabbitTemplate.receive("te.web100500", 3000);
-        Assert.notNull(message);
-        Assert.notNull(message.getBody());
+        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message.getBody(), "The message body must not be null");
     }
 
     @Test
@@ -144,8 +141,8 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
         sender.send("database-user.create", "rc.user", serviceMessage, "te");
         Message message = rabbitTemplate.receive("pm-create", 1000);
-        Assert.notNull(message);
-        Assert.notNull(message.getBody());
+        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message.getBody(), "The message body must not be null");
     }
 
     @Test
@@ -155,8 +152,8 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.setAccountId(databaseUserList.get(0).getAccountId());
         sender.send("database-user.update", "rc.user", serviceMessage, "pm");
         Message message = rabbitTemplate.receive("te.web100500", 1000);
-        Assert.notNull(message);
-        Assert.notNull(message.getBody());
+        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message.getBody(), "The message body must not be null");
     }
 
     @Test
@@ -165,8 +162,8 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
         sender.send("database-user.update", "rc.user", serviceMessage, "te");
         Message message = rabbitTemplate.receive("pm-update", 1000);
-        Assert.notNull(message);
-        Assert.notNull(message.getBody());
+        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message.getBody(), "The message body must not be null");
     }
 
     @Test
@@ -176,8 +173,8 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.setAccountId(databaseUserList.get(0).getAccountId());
         sender.send("database-user.delete", "rc.user", serviceMessage, "pm");
         Message message = rabbitTemplate.receive("te.web100500", 1000);
-        Assert.notNull(message);
-        Assert.notNull(message.getBody());
+        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message.getBody(), "The message body must not be null");
     }
 
     @Test
@@ -186,7 +183,7 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
         sender.send("database-user.delete", "rc.user", serviceMessage, "te");
         Message message = rabbitTemplate.receive("pm-delete", 1000);
-        Assert.notNull(message);
-        Assert.notNull(message.getBody());
+        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message.getBody(), "The message body must not be null");
     }
 }

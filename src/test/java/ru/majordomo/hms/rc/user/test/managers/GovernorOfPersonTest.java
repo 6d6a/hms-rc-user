@@ -21,7 +21,6 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfPerson;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
@@ -98,7 +97,7 @@ public class GovernorOfPersonTest {
     public void createWithoutBadEmail() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
         serviceMessage.delParam("emailAddresses");
-        serviceMessage.addParam("emailAddresses", Arrays.asList("not_email_address"));
+        serviceMessage.addParam("emailAddresses", Collections.singletonList("not_email_address"));
         governor.create(serviceMessage);
     }
 
@@ -106,7 +105,7 @@ public class GovernorOfPersonTest {
     public void createWithoutBadPhoneNumber() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
         serviceMessage.delParam("phoneNumbers");
-        serviceMessage.addParam("phoneNumbers", Arrays.asList("not_phone_number"));
+        serviceMessage.addParam("phoneNumbers", Collections.singletonList("not_phone_number"));
         governor.create(serviceMessage);
     }
 
@@ -131,7 +130,7 @@ public class GovernorOfPersonTest {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", persons.get(1).getAccountId());
         keyValue.put("resourceId", persons.get(0).getId());
-        Person person = (Person) governor.build(keyValue);
+        Person person = governor.build(keyValue);
         assertNotNull(person);
     }
 

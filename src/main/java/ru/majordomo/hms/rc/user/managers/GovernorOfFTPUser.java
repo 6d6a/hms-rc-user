@@ -13,11 +13,10 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
-public class GovernorOfFTPUser extends LordOfResources {
+public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
 
     private Cleaner cleaner;
     private FTPUserRepository repository;
@@ -39,10 +38,10 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public FTPUser create(ServiceMessage serviceMessage) throws ParameterValidateException {
         FTPUser ftpUser;
         try {
-            ftpUser = (FTPUser) buildResourceFromServiceMessage(serviceMessage);
+            ftpUser = buildResourceFromServiceMessage(serviceMessage);
             validate(ftpUser);
             store(ftpUser);
         } catch (ClassCastException | UnsupportedEncodingException e) {
@@ -53,9 +52,9 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage)
+    public FTPUser update(ServiceMessage serviceMessage)
             throws ParameterValidateException, UnsupportedEncodingException {
-        String resourceId = null;
+        String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
@@ -68,7 +67,7 @@ public class GovernorOfFTPUser extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        FTPUser ftpUser = (FTPUser) build(keyValue);
+        FTPUser ftpUser = build(keyValue);
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {
@@ -127,7 +126,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
+    protected FTPUser buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
         FTPUser ftpUser = new FTPUser();
         LordOfResources.setResourceParams(ftpUser, serviceMessage, cleaner);
 
@@ -173,8 +172,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        FTPUser ftpUser = (FTPUser) resource;
+    public void validate(FTPUser ftpUser) throws ParameterValidateException {
         if (ftpUser.getName() == null) {
             throw new ParameterValidateException("Имя FTP пользователя не может быть пустым");
         }
@@ -199,15 +197,14 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws ResourceNotFoundException {
-        FTPUser ftpUser = (FTPUser) resource;
-        UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(ftpUser.getUnixAccountId());
+    protected FTPUser construct(FTPUser ftpUser) throws ResourceNotFoundException {
+        UnixAccount unixAccount = governorOfUnixAccount.build(ftpUser.getUnixAccountId());
         ftpUser.setUnixAccount(unixAccount);
         return ftpUser;
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public FTPUser build(String resourceId) throws ResourceNotFoundException {
         FTPUser ftpUser = repository.findOne(resourceId);
         if (ftpUser == null) {
             throw new ResourceNotFoundException("Пользователь FTP с ID:" + resourceId + " не найден");
@@ -217,7 +214,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public FTPUser build(Map<String, String> keyValue) throws ResourceNotFoundException {
         FTPUser ftpUser = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -234,7 +231,7 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ParameterValidateException {
+    public Collection<FTPUser> buildAll(Map<String, String> keyValue) throws ParameterValidateException {
         List<FTPUser> buildedFTPUsers = new ArrayList<>();
 
         boolean byAccountId = false;
@@ -251,11 +248,11 @@ public class GovernorOfFTPUser extends LordOfResources {
 
         if (byAccountId) {
             for (FTPUser ftpUser : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedFTPUsers.add((FTPUser) construct(ftpUser));
+                buildedFTPUsers.add(construct(ftpUser));
             }
         } else if (byUnixAccountId) {
             for (FTPUser ftpUser : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
-                buildedFTPUsers.add((FTPUser) construct(ftpUser));
+                buildedFTPUsers.add(construct(ftpUser));
             }
         }
 
@@ -263,17 +260,16 @@ public class GovernorOfFTPUser extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<FTPUser> buildAll() {
         List<FTPUser> buildedFTPUsers = new ArrayList<>();
         for (FTPUser ftpUser: repository.findAll()) {
-            buildedFTPUsers.add((FTPUser) construct(ftpUser));
+            buildedFTPUsers.add(construct(ftpUser));
         }
         return buildedFTPUsers;
     }
 
     @Override
-    public void store(Resource resource) {
-        FTPUser ftpUser = (FTPUser) resource;
+    public void store(FTPUser ftpUser) {
         repository.save(ftpUser);
     }
 

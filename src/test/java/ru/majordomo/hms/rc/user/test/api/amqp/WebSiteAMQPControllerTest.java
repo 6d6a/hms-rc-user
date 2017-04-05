@@ -19,7 +19,6 @@ import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.BrokerManager;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigAMQPControllers;
-import ru.majordomo.hms.rc.user.test.config.amqp.ConfigWebSiteAMQPControllerTest;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;

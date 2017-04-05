@@ -10,8 +10,6 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAO;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
@@ -21,7 +19,6 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.HashMap;
@@ -162,7 +159,7 @@ public class GovernorOfDnsRecordTest {
         record.setData("78.108.87.68");
         governorOfDnsRecord.store(record);
 
-        DNSResourceRecord newRecord = (DNSResourceRecord) governorOfDnsRecord.build("2");
+        DNSResourceRecord newRecord = governorOfDnsRecord.build("2");
         assertThat(newRecord.getRecordId(), is(2L));
         assertThat(newRecord.getTtl(), is(300L));
         assertThat(newRecord.getData(), is("78.108.87.68"));
@@ -180,7 +177,7 @@ public class GovernorOfDnsRecordTest {
         serviceMessage.addParam("ttl", 3700L);
         governorOfDnsRecord.update(serviceMessage);
 
-        DNSResourceRecord record = (DNSResourceRecord) governorOfDnsRecord.build("2");
+        DNSResourceRecord record = governorOfDnsRecord.build("2");
         assertThat(record.getRecordId(), is(2L));
         assertThat(record.getName(), is("example.com"));
         assertThat(record.getOwnerName(), is("sub2.example.com"));

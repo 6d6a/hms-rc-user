@@ -25,8 +25,6 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfFTPUser;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
@@ -85,7 +83,7 @@ public class GovernorOfFTPUserTest {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", ftpUsers.get(0).getId());
         keyValue.put("accountId", ftpUsers.get(0).getAccountId());
-        FTPUser ftpUser = (FTPUser) governor.build(keyValue);
+        FTPUser ftpUser = governor.build(keyValue);
         Assert.assertEquals(ftpUser.getId(), ftpUsers.get(0).getId());
     }
 

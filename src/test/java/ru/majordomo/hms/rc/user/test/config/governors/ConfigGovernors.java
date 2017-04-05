@@ -3,10 +3,9 @@ package ru.majordomo.hms.rc.user.test.config.governors;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
+
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.managers.*;
-import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 
 public class ConfigGovernors {
     @Bean

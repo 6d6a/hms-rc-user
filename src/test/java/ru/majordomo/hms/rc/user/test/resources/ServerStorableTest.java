@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.test.resources;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import ru.majordomo.hms.rc.user.resources.Resource;

@@ -21,17 +21,16 @@ public class Cleaner {
     }
 
     public List<String> cleanListWithStrings(List<String> stringList) {
+        List<String> cleanedStringList = new ArrayList<>();
         if (stringList == null) {
-            return new ArrayList<>();
+            return cleanedStringList;
         }
-        for (int i = 0; i < stringList.size(); i++) {
-            String element = cleanString(stringList.get(i));
-            if (element == "") {
-                stringList.remove(i);
-            } else {
-                stringList.set(i,element);
+        for (String aStringList : stringList) {
+            String element = cleanString(aStringList);
+            if (!element.equals("")) {
+                cleanedStringList.add(element);
             }
         }
-        return stringList;
+        return cleanedStringList;
     }
 }

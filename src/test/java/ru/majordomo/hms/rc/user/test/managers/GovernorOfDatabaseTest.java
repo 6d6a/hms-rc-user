@@ -23,9 +23,7 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
-import ru.majordomo.hms.rc.user.test.config.rest.ConfigRestControllers;
 
 import java.util.*;
 
@@ -67,9 +65,7 @@ public class GovernorOfDatabaseTest {
     public void setUp() throws Exception {
         batchOfDatabases = ResourceGenerator.generateBatchOfDatabases();
         for (Database database : batchOfDatabases) {
-            for (DatabaseUser databaseUser : database.getDatabaseUsers()) {
-                databaseUserRepository.save(databaseUser);
-            }
+            databaseUserRepository.save(database.getDatabaseUsers());
             repository.save(database);
         }
     }
@@ -130,7 +126,7 @@ public class GovernorOfDatabaseTest {
 
     @Test
     public void build() throws Exception {
-        Database buildedDatabase = (Database) governor.build(batchOfDatabases.get(0).getId());
+        Database buildedDatabase = governor.build(batchOfDatabases.get(0).getId());
         assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
         assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabase.getName()));
         assertThat(buildedDatabase.getDatabaseUsers(), not(Collections.emptyList()));
@@ -147,7 +143,7 @@ public class GovernorOfDatabaseTest {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", batchOfDatabases.get(0).getId());
         keyValue.put("accountId", batchOfDatabases.get(0).getAccountId());
-        Database buildedDatabaseByDatabaseId = (Database) governor.build(keyValue);
+        Database buildedDatabaseByDatabaseId = governor.build(keyValue);
         assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
         assertThat(batchOfDatabases.get(0).getName(), is(buildedDatabaseByDatabaseId.getName()));
         assertThat(buildedDatabaseByDatabaseId.getDatabaseUsers(), not(Collections.emptyList()));

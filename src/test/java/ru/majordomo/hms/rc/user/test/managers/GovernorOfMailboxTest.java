@@ -25,17 +25,16 @@ import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfMailbox;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 
@@ -144,7 +143,7 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getMailFromAllowed(), is(true));
         assertThat(mailbox.getAntiSpamEnabled(), is(false));
 
-        MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
+        MailboxForRedis redisMailbox = redisRepository.findOne(governor.construct(mailbox).getFullName());
         assertThat(redisMailbox.getMailFromAllowed(), is(mailbox.getMailFromAllowed()));
         assertThat(redisMailbox.getAntiSpamEnabled(), is(mailbox.getAntiSpamEnabled()));
         assertThat(redisMailbox.getWritable(), is(mailbox.getWritable()));
@@ -189,22 +188,22 @@ public class GovernorOfMailboxTest {
     public void createFull() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
-        serviceMessage.addParam("blackList", Arrays.asList("ololo@bad.ru"));
-        serviceMessage.addParam("whiteList", Arrays.asList("ololo@good.ru"));
-        serviceMessage.addParam("redirectAddresses", Arrays.asList("ololo@redirect.ru"));
+        serviceMessage.addParam("blackList", Collections.singletonList("ololo@bad.ru"));
+        serviceMessage.addParam("whiteList", Collections.singletonList("ololo@good.ru"));
+        serviceMessage.addParam("redirectAddresses", Collections.singletonList("ololo@redirect.ru"));
         serviceMessage.addParam("quota", 200L);
         serviceMessage.addParam("spamFilterMood", "NEUTRAL");
         serviceMessage.addParam("spamFilterAction", "MOVE_TO_SPAM_FOLDER");
         governor.create(serviceMessage);
 
-        Mailbox mailbox = (Mailbox) governor.construct(repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId()));
+        Mailbox mailbox = governor.construct(repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId()));
         assertNotNull(mailbox);
         assertNotNull(mailbox.getPasswordHash());
         assertThat(mailbox.getQuota(), is(200L));
         assertThat(mailbox.getQuotaUsed(), is(0L));
-        assertThat(mailbox.getWhiteList(), is(Arrays.asList("ololo@good.ru")));
-        assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru")));
-        assertThat(mailbox.getRedirectAddresses(), is(Arrays.asList("ololo@redirect.ru")));
+        assertThat(mailbox.getWhiteList(), is(Collections.singletonList("ololo@good.ru")));
+        assertThat(mailbox.getBlackList(), is(Collections.singletonList("ololo@bad.ru")));
+        assertThat(mailbox.getRedirectAddresses(), is(Collections.singletonList("ololo@redirect.ru")));
         assertThat(mailbox.getSpamFilterMood(), is(SpamFilterMood.NEUTRAL));
         assertThat(mailbox.getSpamFilterAction(), is(SpamFilterAction.MOVE_TO_SPAM_FOLDER));
     }
@@ -232,9 +231,9 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("quota", 500000L);
-        serviceMessage.addParam("blackList", Arrays.asList("ololo@bad.ru"));
-        serviceMessage.addParam("whiteList", Arrays.asList("ololo@good.ru"));
-        serviceMessage.addParam("redirectAddresses", Arrays.asList("ololo@redirect.ru"));
+        serviceMessage.addParam("blackList", Collections.singletonList("ololo@bad.ru"));
+        serviceMessage.addParam("whiteList", Collections.singletonList("ololo@good.ru"));
+        serviceMessage.addParam("redirectAddresses", Collections.singletonList("ololo@redirect.ru"));
         governor.update(serviceMessage);
 
         Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
@@ -242,12 +241,12 @@ public class GovernorOfMailboxTest {
         assertNotNull(mailbox.getPasswordHash());
         assertThat(mailbox.getQuota(), is(500000L));
         assertThat(mailbox.getQuotaUsed(), is(0L));
-        assertThat(mailbox.getWhiteList(), is(Arrays.asList("ololo@good.ru")));
-        assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru")));
-        assertThat(mailbox.getRedirectAddresses(), is(Arrays.asList("ololo@redirect.ru")));
+        assertThat(mailbox.getWhiteList(), is(Collections.singletonList("ololo@good.ru")));
+        assertThat(mailbox.getBlackList(), is(Collections.singletonList("ololo@bad.ru")));
+        assertThat(mailbox.getRedirectAddresses(), is(Collections.singletonList("ololo@redirect.ru")));
         assertThat(mailbox.getPasswordHash(), not(mailboxes.get(0).getPasswordHash()));
 
-        MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
+        MailboxForRedis redisMailbox = redisRepository.findOne(governor.construct(mailbox).getFullName());
         assertNotNull(redisMailbox);
         assertThat(mailbox.getAntiSpamEnabled(), is(redisMailbox.getAntiSpamEnabled()));
         assertThat(String.join(":", mailbox.getWhiteList()), is(redisMailbox.getWhiteList()));
@@ -272,7 +271,7 @@ public class GovernorOfMailboxTest {
         Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
         assertThat(mailbox.getIsAggregator(), is(true));
 
-        MailboxForRedis redisMailbox = redisRepository.findOne("*@" + ((Mailbox) governor.construct(mailbox)).getDomain().getName());
+        MailboxForRedis redisMailbox = redisRepository.findOne("*@" + governor.construct(mailbox).getDomain().getName());
         assertNotNull(redisMailbox);
         assertThat(mailbox.getAntiSpamEnabled(), is(redisMailbox.getAntiSpamEnabled()));
         assertThat(String.join(":", mailbox.getWhiteList()), is(redisMailbox.getWhiteList()));
@@ -286,7 +285,7 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("isAggregator", false);
         governor.update(serviceMessage);
 
-        assertNull(redisRepository.findOne("*@" + ((Mailbox) governor.construct(mailbox)).getDomain().getName()));
+        assertNull(redisRepository.findOne("*@" + governor.construct(mailbox).getDomain().getName()));
     }
 
     @Test
@@ -299,7 +298,7 @@ public class GovernorOfMailboxTest {
         governor.update(serviceMessage);
         Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
         assertThat(mailbox.getMailFromAllowed(), is(false));
-        MailboxForRedis redisMailbox = redisRepository.findOne(((Mailbox) governor.construct(mailbox)).getFullName());
+        MailboxForRedis redisMailbox = redisRepository.findOne(governor.construct(mailbox).getFullName());
         assertNotNull(redisMailbox);
         assertThat(mailbox.getMailFromAllowed(), is(redisMailbox.getMailFromAllowed()));
     }

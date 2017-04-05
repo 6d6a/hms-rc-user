@@ -11,30 +11,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.Assert;
+
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
-import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.repositories.*;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
-import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfDatabase;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfResourceArchive;
-import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernorOfWebsite;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
@@ -180,9 +171,7 @@ public class GovernorOfResourceArchiveTest {
         String domainId = domains.get(0).getId();
         domainIds.add(domainId);
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        for (UnixAccount unixAccount: unixAccounts) {
-            unixAccountRepository.save(unixAccount);
-        }
+        unixAccountRepository.save(unixAccounts);
         accountId = unixAccounts.get(0).getAccountId();
 
         batchOfWebsites = new ArrayList<>();
@@ -195,9 +184,7 @@ public class GovernorOfResourceArchiveTest {
 
         batchOfDatabases = ResourceGenerator.generateBatchOfDatabases();
         for (Database database: batchOfDatabases) {
-            for (DatabaseUser databaseUser : database.getDatabaseUsers()) {
-                databaseUserRepository.save(databaseUser);
-            }
+            databaseUserRepository.save(database.getDatabaseUsers());
             databaseRepository.save(database);
         }
     }
@@ -210,9 +197,9 @@ public class GovernorOfResourceArchiveTest {
         serviceMessage.setAccountId(batchOfWebsites.get(0).getAccountId());
         serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("resourceType", "WEBSITE");
-        ResourceArchive createdArchive = (ResourceArchive) governor.create(serviceMessage);
+        ResourceArchive createdArchive = governor.create(serviceMessage);
 
-        ResourceArchive archive = (ResourceArchive) governor.build(createdArchive.getId());
+        ResourceArchive archive = governor.build(createdArchive.getId());
         assertNotNull(archive.getFileLink());
         assertNotNull(archive.getResource());
         assertThat(archive.getResourceType(), is(ResourceArchiveType.WEBSITE));
@@ -227,9 +214,9 @@ public class GovernorOfResourceArchiveTest {
         serviceMessage.setAccountId(batchOfDatabases.get(0).getAccountId());
         serviceMessage.addParam("resourceId", batchOfDatabases.get(0).getId());
         serviceMessage.addParam("resourceType", "DATABASE");
-        ResourceArchive createdArchive = (ResourceArchive) governor.create(serviceMessage);
+        ResourceArchive createdArchive = governor.create(serviceMessage);
 
-        ResourceArchive archive = (ResourceArchive) governor.build(createdArchive.getId());
+        ResourceArchive archive = governor.build(createdArchive.getId());
         assertNotNull(archive.getFileLink());
         assertNotNull(archive.getResource());
         assertThat(archive.getResourceType(), is(ResourceArchiveType.DATABASE));

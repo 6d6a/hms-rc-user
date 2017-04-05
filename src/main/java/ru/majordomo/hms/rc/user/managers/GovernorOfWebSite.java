@@ -10,7 +10,6 @@ import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.resources.CharSet;
@@ -21,7 +20,7 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
 @Component
-public class GovernorOfWebSite extends LordOfResources {
+public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
     private WebSiteRepository repository;
     private GovernorOfDomain governorOfDomain;
@@ -181,10 +180,10 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public WebSite create(ServiceMessage serviceMessage) throws ParameterValidateException {
         WebSite webSite;
         try {
-            webSite = (WebSite) buildResourceFromServiceMessage(serviceMessage);
+            webSite = buildResourceFromServiceMessage(serviceMessage);
             validate(webSite);
             store(webSite);
         } catch (ClassCastException e) {
@@ -195,7 +194,7 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public WebSite update(ServiceMessage serviceMessage) throws ParameterValidateException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -207,7 +206,7 @@ public class GovernorOfWebSite extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        WebSite website = (WebSite) build(keyValue);
+        WebSite website = build(keyValue);
 
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
@@ -218,7 +217,7 @@ public class GovernorOfWebSite extends LordOfResources {
                     case "domainIds":
                         website.setDomainIds(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         for (String domainId : website.getDomainIds()) {
-                            Domain domain = (Domain) governorOfDomain.build(domainId);
+                            Domain domain = governorOfDomain.build(domainId);
                             website.addDomain(domain);
                         }
                         break;
@@ -321,7 +320,7 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected WebSite buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         WebSite webSite = new WebSite();
 
         LordOfResources.setResourceParams(webSite, serviceMessage, cleaner);
@@ -332,7 +331,7 @@ public class GovernorOfWebSite extends LordOfResources {
                 domainIds = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("domainIds"));
             }
             for (String domainId : domainIds) {
-                Domain domain = (Domain) governorOfDomain.build(domainId);
+                Domain domain = governorOfDomain.build(domainId);
                 webSite.addDomain(domain);
             }
 
@@ -403,9 +402,7 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        WebSite webSite = (WebSite) resource;
-
+    public void validate(WebSite webSite) throws ParameterValidateException {
         if (webSite.getAccountId() == null || webSite.getAccountId().equals("")) {
             throw new ParameterValidateException("Аккаунт ID не может быть пустым");
         }
@@ -443,7 +440,7 @@ public class GovernorOfWebSite extends LordOfResources {
             }
             webSite.setUnixAccount(unixAccounts.get(0));
         } else {
-            webSite.setUnixAccount((UnixAccount) governorOfUnixAccount.build(webSite.getUnixAccountId()));
+            webSite.setUnixAccount(governorOfUnixAccount.build(webSite.getUnixAccountId()));
         }
 
         List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerIdAndServiceType(webSite.getUnixAccount().getServerId());
@@ -455,7 +452,8 @@ public class GovernorOfWebSite extends LordOfResources {
                 }
             }
             if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
-                throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName + " для сервера: " + webSite.getUnixAccount().getServerId());
+                throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName
+                        + " для сервера: " + webSite.getUnixAccount().getServerId());
             }
         } else {
             Boolean isServiceForServerExist = false;
@@ -466,7 +464,8 @@ public class GovernorOfWebSite extends LordOfResources {
                 }
             }
             if (!isServiceForServerExist) {
-                throw new ParameterValidateException("Указанный ServiceId: " + webSite.getServiceId() + " не найден для сервера: " + webSite.getUnixAccount().getServerId());
+                throw new ParameterValidateException("Указанный ServiceId: " + webSite.getServiceId()
+                        + " не найден для сервера: " + webSite.getUnixAccount().getServerId());
             }
         }
 
@@ -547,21 +546,20 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws ParameterValidateException {
-        WebSite webSite = (WebSite) resource;
+    protected WebSite construct(WebSite webSite) throws ParameterValidateException {
         for (String domainId : webSite.getDomainIds()) {
-            Domain domain = (Domain) governorOfDomain.build(domainId);
+            Domain domain = governorOfDomain.build(domainId);
             webSite.addDomain(domain);
         }
         String unixAccountId = webSite.getUnixAccountId();
-        UnixAccount unixAccount = (UnixAccount) governorOfUnixAccount.build(unixAccountId);
+        UnixAccount unixAccount = governorOfUnixAccount.build(unixAccountId);
         webSite.setUnixAccount(unixAccount);
 
         return webSite;
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public WebSite build(String resourceId) throws ResourceNotFoundException {
         WebSite webSite = repository.findOne(resourceId);
         if (webSite == null) {
             throw new ResourceNotFoundException("Сайт с ID " + resourceId + "не найден");
@@ -570,7 +568,7 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public WebSite build(Map<String, String> keyValue) throws ResourceNotFoundException {
         WebSite website = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -591,7 +589,7 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<WebSite> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<WebSite> buildedWebSites = new ArrayList<>();
 
         boolean byAccountId = false;
@@ -608,11 +606,11 @@ public class GovernorOfWebSite extends LordOfResources {
 
         if (byAccountId) {
             for (WebSite webSite : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedWebSites.add((WebSite) construct(webSite));
+                buildedWebSites.add(construct(webSite));
             }
         } else if (byUnixAccountId) {
             for (WebSite webSite : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
-                buildedWebSites.add((WebSite) construct(webSite));
+                buildedWebSites.add(construct(webSite));
             }
         }
 
@@ -620,19 +618,18 @@ public class GovernorOfWebSite extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<WebSite> buildAll() {
         List<WebSite> buildedWebSites = new ArrayList<>();
 
         for (WebSite webSite : repository.findAll()) {
-            buildedWebSites.add((WebSite) construct(webSite));
+            buildedWebSites.add(construct(webSite));
         }
 
         return buildedWebSites;
     }
 
     @Override
-    public void store(Resource resource) {
-        WebSite webSite = (WebSite) resource;
+    public void store(WebSite webSite) {
         repository.save(webSite);
     }
 

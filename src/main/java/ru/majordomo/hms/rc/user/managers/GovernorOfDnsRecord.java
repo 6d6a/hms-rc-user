@@ -1,7 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import com.mysql.management.util.NotImplementedException;
-import com.mysql.management.util.Str;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -9,14 +9,13 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.*;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSDomainDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 @Service
-public class GovernorOfDnsRecord extends LordOfResources {
+public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
     private Cleaner cleaner;
     private GovernorOfDomain governorOfDomain;
@@ -39,8 +38,8 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
-        DNSResourceRecord record = (DNSResourceRecord) buildResourceFromServiceMessage(serviceMessage);
+    public DNSResourceRecord create(ServiceMessage serviceMessage) throws ParameterValidateException {
+        DNSResourceRecord record = buildResourceFromServiceMessage(serviceMessage);
         validate(record);
         store(record);
 
@@ -48,7 +47,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
+    public DNSResourceRecord update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
         if (serviceMessage.getParam("resourceId") == null) {
             throw new ParameterValidateException("Необходимо указать resourceId");
         }
@@ -92,7 +91,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    protected DNSResourceRecord buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         DNSResourceRecord record = new DNSResourceRecord();
         return setRecordParams(serviceMessage, record);
     }
@@ -129,8 +128,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        DNSResourceRecord record = (DNSResourceRecord) resource;
+    public void validate(DNSResourceRecord record) throws ParameterValidateException {
         if (record.getName() == null || record.getName().equals("")) {
             throw new ParameterValidateException("Имя домена должно быть указано");
         }
@@ -165,11 +163,10 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws ParameterValidateException {
-        DNSResourceRecord record = (DNSResourceRecord) resource;
+    protected DNSResourceRecord construct(DNSResourceRecord record) throws ParameterValidateException {
         record.setRrClass(DNSResourceRecordClass.IN);
         record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getRecordId()));
-        return resource;
+        return record;
     }
 
     private List<DNSResourceRecord> constructByDomain(List<DNSResourceRecord> records) throws ParameterValidateException {
@@ -185,7 +182,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
+    public DNSResourceRecord build(String resourceId) throws ResourceNotFoundException {
         Long recordId;
         try {
             recordId = Long.parseLong(resourceId);
@@ -197,7 +194,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public DNSResourceRecord build(Map<String, String> keyValue) throws ResourceNotFoundException {
         if (keyValue.get("resourceId") == null) {
             throw new ResourceNotFoundException("Должен быть указан resourceId");
         }
@@ -212,7 +209,7 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<DNSResourceRecord> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<DNSResourceRecord> records = new ArrayList<>();
 
         if (hasNameAndAccountId(keyValue)) {
@@ -223,13 +220,13 @@ public class GovernorOfDnsRecord extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<DNSResourceRecord> buildAll() {
         throw new NotImplementedException();
     }
 
     @Override
-    public void store(Resource resource) {
-        dnsResourceRecordDAO.save((DNSResourceRecord) resource);
+    public void store(DNSResourceRecord record) {
+        dnsResourceRecordDAO.save(record);
     }
 
     public void initDomain(Domain domain) {

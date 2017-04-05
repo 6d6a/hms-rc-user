@@ -19,10 +19,9 @@ import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
-import ru.majordomo.hms.rc.user.resources.Resource;
 
 @Component
-public class GovernorOfDatabaseUser extends LordOfResources {
+public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     private Cleaner cleaner;
     private DatabaseUserRepository repository;
     private GovernorOfDatabase governorOfDatabase;
@@ -56,16 +55,16 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    public Resource create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public DatabaseUser create(ServiceMessage serviceMessage) throws ParameterValidateException {
         DatabaseUser databaseUser;
         try {
-            databaseUser = (DatabaseUser) buildResourceFromServiceMessage(serviceMessage);
+            databaseUser = buildResourceFromServiceMessage(serviceMessage);
             validate(databaseUser);
             store(databaseUser);
 
             if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
                 for (String databaseId : databaseUser.getDatabaseIds()) {
-                    Database database = (Database) governorOfDatabase.build(databaseId);
+                    Database database = governorOfDatabase.build(databaseId);
                     database.addDatabaseUserId(databaseUser.getId());
                     governorOfDatabase.validate(database);
                     governorOfDatabase.store(database);
@@ -79,7 +78,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    public Resource update(ServiceMessage serviceMessage)
+    public DatabaseUser update(ServiceMessage serviceMessage)
             throws ParameterValidateException, UnsupportedEncodingException {
         String resourceId = null;
 
@@ -92,7 +91,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
-        DatabaseUser databaseUser = (DatabaseUser) build(keyValue);
+        DatabaseUser databaseUser = build(keyValue);
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {
@@ -139,7 +138,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    protected Resource buildResourceFromServiceMessage(ServiceMessage serviceMessage)
+    protected DatabaseUser buildResourceFromServiceMessage(ServiceMessage serviceMessage)
             throws ClassCastException, UnsupportedEncodingException {
         DatabaseUser databaseUser = new DatabaseUser();
         LordOfResources.setResourceParams(databaseUser, serviceMessage, cleaner);
@@ -206,9 +205,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    public void validate(Resource resource) throws ParameterValidateException {
-        DatabaseUser databaseUser = (DatabaseUser) resource;
-
+    public void validate(DatabaseUser databaseUser) throws ParameterValidateException {
         if (databaseUser.getAccountId() == null || databaseUser.getAccountId().equals("")) {
             throw new ParameterValidateException("AccountID не может быть пустым");
         }
@@ -271,13 +268,13 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    protected Resource construct(Resource resource) throws NotImplementedException {
+    protected DatabaseUser construct(DatabaseUser databaseUser) throws NotImplementedException {
         throw new NotImplementedException();
     }
 
     @Override
-    public Resource build(String resourceId) throws ResourceNotFoundException {
-        Resource resource = repository.findOne(resourceId);
+    public DatabaseUser build(String resourceId) throws ResourceNotFoundException {
+        DatabaseUser resource = repository.findOne(resourceId);
         if (resource != null) {
             return resource;
         } else {
@@ -286,7 +283,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    public Resource build(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public DatabaseUser build(Map<String, String> keyValue) throws ResourceNotFoundException {
         DatabaseUser databaseUser = null;
 
         if (hasResourceIdAndAccountId(keyValue)) {
@@ -302,7 +299,7 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
+    public Collection<DatabaseUser> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
 
         List<DatabaseUser> buildedDatabasesUsers = new ArrayList<>();
 
@@ -322,13 +319,12 @@ public class GovernorOfDatabaseUser extends LordOfResources {
     }
 
     @Override
-    public Collection<? extends Resource> buildAll() {
+    public Collection<DatabaseUser> buildAll() {
         return repository.findAll();
     }
 
     @Override
-    public void store(Resource resource) {
-        DatabaseUser databaseUser = (DatabaseUser) resource;
+    public void store(DatabaseUser databaseUser) {
         repository.save(databaseUser);
     }
 }

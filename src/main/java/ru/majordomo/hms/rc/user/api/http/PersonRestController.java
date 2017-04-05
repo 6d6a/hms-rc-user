@@ -9,7 +9,6 @@ import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.Resource;
 
 @RestController
 public class PersonRestController {
@@ -23,7 +22,7 @@ public class PersonRestController {
 
     @RequestMapping(value = {"/person/{personId}", "/person/{personId}/"}, method = RequestMethod.GET)
     public Person readOne(@PathVariable String personId) {
-        return (Person) governor.build(personId);
+        return governor.build(personId);
     }
 
     @RequestMapping(value = {"{accountId}/person/{personId}", "{accountId}/person/{personId}/"}, method = RequestMethod.GET)
@@ -31,16 +30,16 @@ public class PersonRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", personId);
         keyValue.put("accountId", accountId);
-        return (Person) governor.build(keyValue);
+        return governor.build(keyValue);
     }
 
     @RequestMapping(value = {"/person/","/person"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAll() {
+    public Collection<Person> readAll() {
         return governor.buildAll();
     }
 
     @RequestMapping(value = {"/{accountId}/person", "/{accountId}/person/"}, method = RequestMethod.GET)
-    public Collection<? extends Resource> readAllByAccountId(@PathVariable String accountId) {
+    public Collection<Person> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);

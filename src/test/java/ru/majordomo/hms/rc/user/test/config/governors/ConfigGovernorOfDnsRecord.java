@@ -12,7 +12,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
-import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 
 @Configuration
 @EnableMongoRepositories("ru.majordomo.hms.rc.user.repositories")
