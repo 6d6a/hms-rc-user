@@ -34,6 +34,8 @@ public class DomainRestController {
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", domainName);
             Domain domain = governor.build(keyValue);
+            if (domain.getParentDomainId() != null)
+                domain = governor.build(domain.getParentDomainId());
             domain.addDnsResourceRecord(record);
             governor.validate(domain);
             governor.store(domain);
