@@ -2,21 +2,58 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 
-import javax.validation.constraints.NotNull;
+import ru.majordomo.hms.rc.user.validation.DomainName;
+import ru.majordomo.hms.rc.user.validation.ObjectId;
+import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
+import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
+import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
+import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.validation.group.FTPUserChecks;
+import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
+import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
+import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
 
 public abstract class Resource {
     @Id
     private String id;
 
-    @NotNull(message = "Имя не может быть null")
-    @NotBlank(message = "Имя не может быть пустым")
+    @NotBlank(message = "Имя не может быть пустым",
+              groups =
+                      {
+                              DatabaseChecks.class,
+                              DatabaseUserChecks.class,
+                              DnsRecordChecks.class,
+                              DomainChecks.class,
+                              FTPUserChecks.class,
+                              MailboxChecks.class,
+                              PersonChecks.class,
+                              SSLCertificateChecks.class,
+                              UnixAccountChecks.class
+                      })
+    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = DatabaseUserChecks.class)
+    @DomainName(groups = DomainChecks.class)
+    @ObjectId(value = Domain.class, fieldName = "name", groups = SSLCertificateChecks.class, message = "Домен с указанным именем не найден")
     private String name;
 
-    @NotNull(message = "Аккаунт ID не может быть null")
-    @NotBlank(message = "Аккаунт ID не может быть пустым")
+    @NotBlank(message = "Аккаунт ID не может быть пустым",
+              groups =
+                      {
+                              DatabaseChecks.class,
+                              DatabaseUserChecks.class,
+                              DomainChecks.class,
+                              FTPUserChecks.class,
+                              MailboxChecks.class,
+                              PersonChecks.class,
+                              ResourceArchiveChecks.class,
+                              SSLCertificateChecks.class,
+                              UnixAccountChecks.class
+                      })
     private String accountId;
 
     Boolean switchedOn = true;

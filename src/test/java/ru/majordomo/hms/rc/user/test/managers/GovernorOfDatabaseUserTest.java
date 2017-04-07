@@ -28,6 +28,8 @@ import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
 
+import javax.validation.ConstraintViolationException;
+
 import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,7 +51,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
         },
         webEnvironment = NONE,
         properties = {
-                "default.database.service.name:DATABASE_MYSQL"
+                "default.database.service.name=DATABASE_MYSQL"
         }
 )
 public class GovernorOfDatabaseUserTest {
@@ -91,13 +93,13 @@ public class GovernorOfDatabaseUserTest {
         assertThat(databaseRepository.findOne(databases.get(0).getId()).getDatabaseUserIds(), hasItem(databaseUser.getId()));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutAccountId() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateWithoutAccountIdServiceMessage();
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithBadServiceId() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         serviceMessage.addParam("serviceId", ObjectId.get().toString());
@@ -162,6 +164,6 @@ public class GovernorOfDatabaseUserTest {
     @After
     public void deleteAll() throws Exception {
         repository.deleteAll();
+        databaseRepository.deleteAll();
     }
-
 }

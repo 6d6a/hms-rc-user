@@ -10,8 +10,14 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import ru.majordomo.hms.rc.user.validation.ObjectIdCollection;
+import ru.majordomo.hms.rc.user.validation.ServiceId;
+import ru.majordomo.hms.rc.user.validation.ValidDatabase;
+
 @Document(collection = "databases")
+@ValidDatabase
 public class Database extends Resource implements Serviceable, Quotable {
+    @ServiceId(ServiceTypeCategory.DATABASE)
     private String serviceId;
 
     @NotNull(message = "Тип базы не указан")
@@ -19,9 +25,12 @@ public class Database extends Resource implements Serviceable, Quotable {
 
     private Long quota;
     private Long quotaUsed;
-    private Boolean writable;
+    private Boolean writable = true;
+
     @Transient
     private List<DatabaseUser> databaseUsers = new ArrayList<>();
+
+    @ObjectIdCollection(DatabaseUser.class)
     private List<String> databaseUserIds = new ArrayList<>();
 
     public List<DatabaseUser> getDatabaseUsers() {

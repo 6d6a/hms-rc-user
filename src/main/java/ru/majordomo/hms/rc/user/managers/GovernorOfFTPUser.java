@@ -6,14 +6,21 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
+import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.validation.group.FTPUserChecks;
 
 @Service
 public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
@@ -21,6 +28,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     private Cleaner cleaner;
     private FTPUserRepository repository;
     private GovernorOfUnixAccount governorOfUnixAccount;
+    private Validator validator;
 
     @Autowired
     public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
@@ -37,18 +45,9 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         this.repository = repository;
     }
 
-    @Override
-    public FTPUser create(ServiceMessage serviceMessage) throws ParameterValidateException {
-        FTPUser ftpUser;
-        try {
-            ftpUser = buildResourceFromServiceMessage(serviceMessage);
-            validate(ftpUser);
-            store(ftpUser);
-        } catch (ClassCastException | UnsupportedEncodingException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно" + e.getMessage());
-        }
-
-        return ftpUser;
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -105,10 +104,6 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         return ftpUser;
     }
 
-    private Boolean hasUniqueName(String name) {
-        return (repository.findOneByName(name) == null);
-    }
-
     @Override
     public void preDelete(String resourceId) {
 
@@ -128,7 +123,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     @Override
     protected FTPUser buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
         FTPUser ftpUser = new FTPUser();
-        LordOfResources.setResourceParams(ftpUser, serviceMessage, cleaner);
+        setResourceParams(ftpUser, serviceMessage, cleaner);
 
         String plainPassword = "";
         String homeDir = null;
@@ -155,10 +150,6 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
-        if (!hasUniqueName(ftpUser.getName())) {
-            throw new ParameterValidateException("Имя пользователя существует в системе");
-        }
-
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
         ftpUser.setHomeDir(homeDir);
         ftpUser.setUnixAccountId(unixAccountId);
@@ -173,26 +164,11 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
 
     @Override
     public void validate(FTPUser ftpUser) throws ParameterValidateException {
-        if (ftpUser.getName() == null) {
-            throw new ParameterValidateException("Имя FTP пользователя не может быть пустым");
-        }
+        Set<ConstraintViolation<FTPUser>> constraintViolations = validator.validate(ftpUser, FTPUserChecks.class);
 
-        if (ftpUser.getPasswordHash() == null || ftpUser.getPasswordHash().equals("")) {
-            throw new ParameterValidateException("Пароль FTP пользователя не может быть пустым");
-        }
-
-        if (ftpUser.getUnixAccountId() == null) {
-            throw new ParameterValidateException("Параметр unixAccount не может быть пустым");
-        }
-
-        try {
-            governorOfUnixAccount.build(ftpUser.getUnixAccountId());
-        } catch (ResourceNotFoundException e) {
-            throw new ParameterValidateException("Не найден UnixAccount с ID: " + ftpUser.getUnixAccountId());
-        }
-
-        if (ftpUser.getHomeDir() == null) {
-            ftpUser.setHomeDir("");
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 

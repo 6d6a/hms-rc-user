@@ -50,7 +50,7 @@ import static org.hamcrest.CoreMatchers.not;
         },
         webEnvironment = NONE,
         properties = {
-                "default.database.service.name:DATABASE_MYSQL"
+                "default.database.service.name=DATABASE_MYSQL"
         }
 )
 public class GovernorOfDatabaseTest {
@@ -125,6 +125,13 @@ public class GovernorOfDatabaseTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.delParam("type");
         serviceMessage.addParam("type", "WRONGDBTYPE");
+        governor.create(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void createWithSameName() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
+        governor.create(serviceMessage);
         governor.create(serviceMessage);
     }
 

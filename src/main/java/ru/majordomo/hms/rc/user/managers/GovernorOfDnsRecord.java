@@ -10,16 +10,22 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
+import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
+import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 
 @Service
 public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
     private Cleaner cleaner;
     private GovernorOfDomain governorOfDomain;
-
+    private Validator validator;
     private DNSResourceRecordDAOImpl dnsResourceRecordDAO;
 
     @Autowired
@@ -35,6 +41,11 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Autowired
     public void setDnsResourceRecordDAO(DNSResourceRecordDAOImpl dnsResourceRecordDAO) {
         this.dnsResourceRecordDAO = dnsResourceRecordDAO;
+    }
+
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -128,19 +139,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public void validate(DNSResourceRecord record) throws ParameterValidateException {
-        if (record.getName() == null || record.getName().equals("")) {
-            throw new ParameterValidateException("Имя домена должно быть указано");
-        }
-        if (!record.getOwnerName().endsWith(record.getName())) {
-            throw new ParameterValidateException("Запись должна кончаться именем домена");
-        }
-        if (record.getRrType() == null) {
-            throw new ParameterValidateException("Тип записи должен быть указан");
-        }
-        if (record.getTtl() == null) {
-            record.setTtl(3600L);
-        }
+    public void preValidate(DNSResourceRecord record) {
         DNSResourceRecordType type = record.getRrType();
         switch (type) {
             case A:
@@ -154,6 +153,17 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             default:
                 break;
         }
+    }
+
+    @Override
+    public void validate(DNSResourceRecord record) throws ParameterValidateException {
+        Set<ConstraintViolation<DNSResourceRecord>> constraintViolations = validator.validate(record, DnsRecordChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+
 //        Map<String, String> keyValue = new HashMap<>();
 //        keyValue.put("name", record.getName());
 //        keyValue.put("accountId", record.getAccountId());
@@ -198,13 +208,9 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         if (keyValue.get("resourceId") == null) {
             throw new ResourceNotFoundException("Должен быть указан resourceId");
         }
-        Long recordId;
-        try {
-            recordId = Long.parseLong(keyValue.get("resourceId"));
-        } catch (NumberFormatException e) {
-            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
-        }
-        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
+
+        DNSResourceRecord record = build(keyValue.get("resourceId"));
+
         return construct(record);
     }
 

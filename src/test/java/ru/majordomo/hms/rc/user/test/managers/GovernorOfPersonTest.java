@@ -26,6 +26,8 @@ import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
 
+import javax.validation.ConstraintViolationException;
+
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
@@ -74,37 +76,37 @@ public class GovernorOfPersonTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutAccountId() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
         serviceMessage.setAccountId(null);
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutName() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
         serviceMessage.delParam("name");
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutEmail() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
         serviceMessage.delParam("emailAddresses");
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
-    public void createWithoutBadEmail() throws Exception {
+    @Test(expected = ConstraintViolationException.class)
+    public void createWithBadEmail() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
         serviceMessage.delParam("emailAddresses");
         serviceMessage.addParam("emailAddresses", Collections.singletonList("not_email_address"));
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
-    public void createWithoutBadPhoneNumber() throws Exception {
+    @Test(expected = ConstraintViolationException.class)
+    public void createWithBadPhoneNumber() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
         serviceMessage.delParam("phoneNumbers");
         serviceMessage.addParam("phoneNumbers", Collections.singletonList("not_phone_number"));

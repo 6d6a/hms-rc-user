@@ -7,17 +7,33 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import javax.validation.constraints.NotNull;
+
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
+import ru.majordomo.hms.rc.user.validation.ObjectIdCollection;
+import ru.majordomo.hms.rc.user.validation.ServiceId;
+import ru.majordomo.hms.rc.user.validation.ValidDatabaseUser;
 
 @Document(collection = "databaseUsers")
+@ValidDatabaseUser
 public class DatabaseUser extends Resource implements Serviceable, Securable {
+    @NotBlank(message = "Пароль не может быть пустым")
     private String passwordHash;
+
+    @NotNull(message = "Тип не может быть пустым")
     private DBType type;
+
+    @ServiceId(ServiceTypeCategory.DATABASE)
     private String serviceId;
+
     private List<Long> allowedIPAddresses;
+
     @Transient
     private List<String> databaseIds;
 

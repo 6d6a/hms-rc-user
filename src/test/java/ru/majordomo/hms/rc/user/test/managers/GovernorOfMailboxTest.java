@@ -32,6 +32,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.validation.ConstraintViolationException;
+
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -54,9 +56,9 @@ import static org.hamcrest.CoreMatchers.not;
         },
         webEnvironment = NONE,
         properties = {
-                "default.redis.host:127.0.0.1",
-                "default.mailbox.spamfilter.mood:NEUTRAL",
-                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER"
+                "default.redis.host=127.0.0.1",
+                "default.mailbox.spamfilter.mood=NEUTRAL",
+                "default.mailbox.spamfilter.action=MOVE_TO_SPAM_FOLDER"
         }
 )
 public class GovernorOfMailboxTest {
@@ -153,7 +155,7 @@ public class GovernorOfMailboxTest {
         assertThat(redisMailbox.getSpamFilterMood(), is(mailbox.getSpamFilterMood()));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithDuplicateAddress() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
@@ -162,7 +164,7 @@ public class GovernorOfMailboxTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutPassword() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
@@ -170,7 +172,7 @@ public class GovernorOfMailboxTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithBadQuota() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());

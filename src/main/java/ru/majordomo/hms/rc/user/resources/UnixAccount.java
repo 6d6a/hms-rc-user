@@ -1,5 +1,8 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.Range;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -7,16 +10,40 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.AssertFalse;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 
 @Document(collection = "unixAccounts")
 public class UnixAccount extends Resource implements ServerStorable, Quotable, Securable {
+    @Transient
+    public static final int MIN_UID = 2000;
+    @Transient
+    public static final int MAX_UID = 65535;
+
     @Indexed
+    @NotNull(message = "Uid не может быть равным null")
+    @Range(min = MIN_UID, max = MAX_UID)
     private Integer uid;
+
+    @NotBlank(message = "homedir не может быть пустым")
+    //TODO Доделать
+//    @Pattern(regexp = "^/home$|^/home/$|^/$", message = "homedir не может быть /home или /")
     private String homeDir;
+
     private String serverId;
+
+    @Min(value = 0L, message = "Квота не может иметь отрицательное значение")
+    @NotNull(message = "Квота не может быть равной null")
     private Long quota;
+
+    @Min(value = 0L, message = "Использованная квота не может иметь отрицательное значение")
+    @NotNull(message = "Использованная квота не может быть равной null")
     private Long quotaUsed;
+
     private Boolean writable;
     private Boolean sendmailAllowed;
     private String passwordHash;

@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -22,6 +26,7 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
 
 @Service
 public class GovernorOfMailbox extends LordOfResources<Mailbox> {
@@ -34,6 +39,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     private SpamFilterAction defaultSpamFilterAction;
     private SpamFilterMood defaultSpamFilterMood;
+
+    private Validator validator;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -78,11 +85,17 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         this.redisRepository = redisRepository;
     }
 
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+
     @Override
     public Mailbox create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Mailbox mailbox;
         try {
             mailbox = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(mailbox);
             validate(mailbox);
             store(mailbox);
             syncWithRedis(mailbox);
@@ -167,6 +180,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
+        preValidate(mailbox);
         validate(mailbox);
         store(mailbox);
 
@@ -210,7 +224,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     protected Mailbox buildResourceFromServiceMessage(ServiceMessage serviceMessage)
             throws ClassCastException {
         Mailbox mailbox = new Mailbox();
-        LordOfResources.setResourceParams(mailbox, serviceMessage, cleaner);
+        setResourceParams(mailbox, serviceMessage, cleaner);
         String plainPassword = null;
         List<String> redirectAddresses = new ArrayList<>();
         List<String> blackList = new ArrayList<>();
@@ -291,10 +305,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         keyValue.put("resourceId", domainId);
         mailbox.setDomain(governorOfDomain.build(keyValue));
 
-        if (!hasUniqueAddress(mailbox)) {
-            throw new ParameterValidateException("Почтовый ящик уже существует");
-        }
-
         try {
             mailbox.setPasswordHashByPlainPassword(plainPassword);
         } catch (UnsupportedEncodingException e) {
@@ -338,10 +348,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         return repository.findByDomainIdAndIsAggregator(domainId, true) != null;
     }
 
-    private Boolean hasUniqueAddress(Mailbox mailbox) {
-        return (repository.findByNameAndDomainId(mailbox.getName(), mailbox.getDomainId()) == null);
-    }
-
     private String findMailStorageServer(String domainId) {
         List<Mailbox> mailboxes = repository.findByDomainId(domainId);
         String serverId;
@@ -360,17 +366,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
-    public void validate(Mailbox mailbox) throws ParameterValidateException {
-        if (mailbox.getName() == null || mailbox.getName().equals("")) {
-            throw new ParameterValidateException("Имя ящика не может быть пустым");
-        }
-
-        if (mailbox.getPasswordHash() == null || mailbox.getPasswordHash().equals("")) {
-            throw new ParameterValidateException("Не указан пароль для почтового ящика");
-        }
-
-        if (mailbox.getDomain() == null) {
-            throw new ParameterValidateException("Для ящика должен быть указан домен");
+    public void preValidate(Mailbox mailbox) {
+        if (mailbox.getQuota() == null) {
+            mailbox.setQuota(250000L);
         }
 
         if (mailbox.getSpamFilterAction() == null) {
@@ -380,25 +378,15 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         if (mailbox.getSpamFilterMood() == null) {
             mailbox.setSpamFilterMood(defaultSpamFilterMood);
         }
+    }
 
-        if (mailbox.getQuota() == null) {
-            mailbox.setQuota(250000L);
-        }
+    @Override
+    public void validate(Mailbox mailbox) throws ParameterValidateException {
+        Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxChecks.class);
 
-        if (mailbox.getQuotaUsed() == null) {
-            mailbox.setQuotaUsed(0L);
-        }
-
-        if (mailbox.getQuota() < 0L) {
-            throw new ParameterValidateException("Квота не может иметь отрицательное значение");
-        }
-
-        if (mailbox.getQuotaUsed() < 0L) {
-            throw new ParameterValidateException("Использованная квота не может иметь отрицательное значение");
-        }
-
-        if (mailbox.getUid() == null) {
-            throw new ParameterValidateException("Использованная квота не может иметь отрицательное значение");
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 

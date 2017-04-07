@@ -1,13 +1,20 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import javax.validation.constraints.NotNull;
+
+import ru.majordomo.hms.rc.user.validation.ValidDnsRecord;
+
+@ValidDnsRecord
 public class DNSResourceRecord extends Resource {
     private Long domainId;
     private Long recordId;
     private String ownerName;
-    private Long ttl;
+    private Long ttl = 3600L;
     private String data;
     private Long prio;
     private DNSResourceRecordClass rrClass;
+
+    @NotNull(message = "Тип записи должен быть указан")
     private DNSResourceRecordType rrType;
 
     public Long getDomainId() {

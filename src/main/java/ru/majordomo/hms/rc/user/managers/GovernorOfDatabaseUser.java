@@ -2,15 +2,15 @@ package ru.majordomo.hms.rc.user.managers;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-import ru.majordomo.hms.rc.staff.resources.Server;
-import ru.majordomo.hms.rc.staff.resources.Service;
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
@@ -19,20 +19,14 @@ import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
+import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
 
 @Component
 public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     private Cleaner cleaner;
     private DatabaseUserRepository repository;
     private GovernorOfDatabase governorOfDatabase;
-
-    private StaffResourceControllerClient staffRcClient;
-    private String defaultServiceName;
-
-    @Value("${default.database.service.name}")
-    public void setDefaultServiceName(String defaultServiceName) {
-        this.defaultServiceName = defaultServiceName;
-    }
+    private Validator validator;
 
     @Autowired
     public void setRepository(DatabaseUserRepository repository) {
@@ -50,8 +44,8 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Autowired
-    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
-        this.staffRcClient = staffRcClient;
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -141,7 +135,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     protected DatabaseUser buildResourceFromServiceMessage(ServiceMessage serviceMessage)
             throws ClassCastException, UnsupportedEncodingException {
         DatabaseUser databaseUser = new DatabaseUser();
-        LordOfResources.setResourceParams(databaseUser, serviceMessage, cleaner);
+        setResourceParams(databaseUser, serviceMessage, cleaner);
         String password = null;
         DBType userType = null;
         String serviceId = null;
@@ -178,10 +172,6 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
-        if (!hasUniqueName(databaseUser.getName())) {
-            throw new ParameterValidateException("Имя должно быть уникальным");
-        }
-
         databaseUser.setDatabaseIds(databaseIds);
         databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
@@ -200,70 +190,13 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         return databaseUser;
     }
 
-    private Boolean hasUniqueName(String name) {
-        return (repository.findByName(name) == null);
-    }
-
     @Override
     public void validate(DatabaseUser databaseUser) throws ParameterValidateException {
-        if (databaseUser.getAccountId() == null || databaseUser.getAccountId().equals("")) {
-            throw new ParameterValidateException("AccountID не может быть пустым");
-        }
+        Set<ConstraintViolation<DatabaseUser>> constraintViolations = validator.validate(databaseUser, DatabaseUserChecks.class);
 
-        if (databaseUser.getName() == null) {
-            throw new ParameterValidateException("Имя не может быть пустым");
-        }
-
-        if (databaseUser.getName().length() > 16) {
-            throw new ParameterValidateException("Имя не может быть длиннее 16 символов");
-        }
-
-        if (databaseUser.getPasswordHash() == null) {
-            throw new ParameterValidateException("Пароль не может быть пустым");
-        }
-
-        if (databaseUser.getSwitchedOn() == null) {
-            databaseUser.setSwitchedOn(true);
-        }
-
-        if (databaseUser.getType() == null) {
-            throw new ParameterValidateException("Тип не может быть пустым");
-        }
-
-        if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
-            for (String databaseId : databaseUser.getDatabaseIds()) {
-                Map<String, String> keyValue = new HashMap<>();
-                keyValue.put("accountId", databaseUser.getAccountId());
-                keyValue.put("resourceId", databaseId);
-                try {
-                    governorOfDatabase.build(keyValue);
-                } catch (ResourceNotFoundException e) {
-                    throw new ParameterValidateException("Не найдена база данных с ID: " + databaseId);
-                }
-            }
-        }
-
-        if (databaseUser.getServiceId() != null && !databaseUser.getServiceId().equals("")) {
-            Server server = staffRcClient.getServerByServiceId(databaseUser.getServiceId());
-            if (server == null) {
-                throw new ParameterValidateException("Не найден сервис с ID: " + databaseUser.getServiceId());
-            }
-        } else {
-            String serverId = staffRcClient.getActiveDatabaseServer().getId();
-
-            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerIdAndServiceType(serverId);
-            if (databaseServices != null) {
-                for (Service service : databaseServices) {
-                    if (service.getServiceType().getName().equals(this.defaultServiceName)) {
-                        databaseUser.setServiceId(service.getId());
-                        break;
-                    }
-                }
-                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
-                    throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName +
-                            " для сервера: " + serverId);
-                }
-            }
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 

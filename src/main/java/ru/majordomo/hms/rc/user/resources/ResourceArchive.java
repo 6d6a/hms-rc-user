@@ -7,10 +7,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
+import javax.validation.constraints.NotNull;
+
 @Document(collection = "resourceArchives")
 public class ResourceArchive extends Resource implements Serviceable {
+    @NotNull(message = "Необходимо указать тип ресурса")
     private ResourceArchiveType resourceType;
+
+    @NotNull(message = "Необходимо указать id ресурса")
     private String resourceId;
+
     @Transient
     private Resource resource;
     private String fileLink;

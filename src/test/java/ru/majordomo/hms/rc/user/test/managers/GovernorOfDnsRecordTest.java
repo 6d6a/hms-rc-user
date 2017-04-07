@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.ConstraintViolationException;
+
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -98,7 +100,7 @@ public class GovernorOfDnsRecordTest {
         assertThat(recordsAfter.size(), is(recordsBefore.size() + 1));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createBad() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "example.com");
@@ -116,7 +118,7 @@ public class GovernorOfDnsRecordTest {
         governorOfDnsRecord.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutType() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "example.com");

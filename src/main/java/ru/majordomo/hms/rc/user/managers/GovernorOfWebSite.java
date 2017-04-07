@@ -180,20 +180,6 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     @Override
-    public WebSite create(ServiceMessage serviceMessage) throws ParameterValidateException {
-        WebSite webSite;
-        try {
-            webSite = buildResourceFromServiceMessage(serviceMessage);
-            validate(webSite);
-            store(webSite);
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
-        }
-
-        return webSite;
-    }
-
-    @Override
     public WebSite update(ServiceMessage serviceMessage) throws ParameterValidateException {
         String resourceId = null;
 
@@ -323,7 +309,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     protected WebSite buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         WebSite webSite = new WebSite();
 
-        LordOfResources.setResourceParams(webSite, serviceMessage, cleaner);
+        setResourceParams(webSite, serviceMessage, cleaner);
 
         try {
             List<String> domainIds = new ArrayList<>();

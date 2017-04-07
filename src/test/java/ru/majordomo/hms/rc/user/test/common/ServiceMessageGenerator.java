@@ -154,6 +154,7 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.addParam("name", "databaseUser1");
         serviceMessage.addParam("password", "12345678");
         serviceMessage.addParam("type", "MYSQL");
 

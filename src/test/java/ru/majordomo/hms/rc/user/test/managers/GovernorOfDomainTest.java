@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.ConstraintViolationException;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotEquals;
@@ -115,7 +117,7 @@ public class GovernorOfDomainTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutName() throws Exception {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(domains.get(0).getAccountId());
@@ -125,7 +127,7 @@ public class GovernorOfDomainTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithNameExists() throws Exception {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(domains.get(0).getAccountId());
@@ -169,7 +171,7 @@ public class GovernorOfDomainTest {
         assertThat(domain.getName(), is(domains.get(0).getName()));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithBadName() throws Exception {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(domains.get(0).getAccountId());
