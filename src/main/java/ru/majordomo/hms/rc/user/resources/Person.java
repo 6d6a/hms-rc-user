@@ -1,15 +1,26 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.validation.Valid;
+
+import ru.majordomo.hms.rc.user.validation.ValidEmail;
+import ru.majordomo.hms.rc.user.validation.ValidPhone;
+
 @Document(collection = "persons")
 public class Person extends Resource {
-    private List<String> phoneNumbers = new ArrayList<>();
-    private List<String> emailAddresses = new ArrayList<>();
+    @Valid
+    private List<@ValidPhone String> phoneNumbers = new ArrayList<>();
+
+    @NotEmpty(message = "Должен быть указан хотя бы 1 email адрес")
+    @Valid
+    private List<@ValidEmail String> emailAddresses = new ArrayList<>();
+
     private Passport passport;
     private LegalEntity legalEntity;
     private String country;

@@ -12,10 +12,24 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 public abstract class LordOfResources<T extends Resource> {
     protected Logger logger = LoggerFactory.getLogger(LordOfResources.class);
-    public abstract T create(ServiceMessage serviceMessage) throws ParameterValidateException;
+    public T create(ServiceMessage serviceMessage) throws ParameterValidateException {
+        T resource;
+
+        try {
+            resource = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(resource);
+            validate(resource);
+            store(resource);
+        } catch (ClassCastException | UnsupportedEncodingException e) {
+            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
+        }
+
+        return resource;
+    }
 
     public abstract T update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException;
 
@@ -26,6 +40,8 @@ public abstract class LordOfResources<T extends Resource> {
     protected abstract T buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
 
     public abstract void validate(T resource) throws ParameterValidateException;
+
+    public void preValidate(T resource) {}
 
     protected abstract T construct(T resource) throws ParameterValidateException;
 
@@ -73,9 +89,11 @@ public abstract class LordOfResources<T extends Resource> {
         return (byAccountId && byName);
     }
 
-    public static void setResourceParams(Resource resource,
-                                         ServiceMessage serviceMessage,
-                                         Cleaner cleaner) throws ClassCastException {
+    public void setResourceParams(
+            T resource,
+            ServiceMessage serviceMessage,
+            Cleaner cleaner
+    ) throws ClassCastException {
         String id = cleaner.cleanString((String) serviceMessage.getParam("id"));
         String accountId = cleaner.cleanString(serviceMessage.getAccountId());
         String name = cleaner.cleanString((String) serviceMessage.getParam("name"));
@@ -91,8 +109,24 @@ public abstract class LordOfResources<T extends Resource> {
 
         resource.setName(name);
         resource.setSwitchedOn(switchedOn);
-
     }
 
-
+//    public void preValidateServiceId(Serviceable serviceable) {
+//        if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
+//            String serverId = staffRcClient.getActiveDatabaseServer().getId();
+//            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerId(serverId);
+//            if (databaseServices != null) {
+//                for (Service service : databaseServices) {
+//                    if (service.getServiceTemplate().getServiceType().getName().equals(this.defaultServiceName)) {
+//                        databaseUser.setServiceId(service.getId());
+//                        break;
+//                    }
+//                }
+//                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
+//                    logger.error("Не найдено serviceType: " + this.defaultServiceName
+//                            + " для сервера: " + serverId);
+//                }
+//            }
+//        }
+//    }
 }

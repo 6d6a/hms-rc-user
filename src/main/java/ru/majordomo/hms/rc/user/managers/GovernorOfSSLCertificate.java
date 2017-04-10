@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -18,6 +22,8 @@ import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.*;
+import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
+import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
 
 @Service
 public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
@@ -28,7 +34,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     private WebSiteRepository webSiteRepository;
     private StaffResourceControllerClient staffRcClient;
     private Cleaner cleaner;
-
+    private Validator validator;
     private String applicationName;
 
     @Value("${spring.application.name}")
@@ -64,6 +70,11 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     @Autowired
     public void setGovernorOfDomain(GovernorOfDomain governorOfDomain) {
         this.governorOfDomain = governorOfDomain;
+    }
+
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -179,17 +190,21 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
     @Override
     public void validate(SSLCertificate sslCertificate) throws ParameterValidateException {
-        if (sslCertificate.getName() == null || sslCertificate.getName().equals("")) {
-            throw new ParameterValidateException("Имя домена должно быть указано");
+        Set<ConstraintViolation<SSLCertificate>> constraintViolations = validator.validate(sslCertificate, SSLCertificateChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
 
-        Map<String, String> properties = new HashMap<>();
-        properties.put("name", sslCertificate.getName());
-
-        Domain domain = governorOfDomain.build(properties);
-        if (domain == null) {
-            throw new ParameterValidateException("Домен с указанным именем не найден");
-        }
+//
+//        Map<String, String> properties = new HashMap<>();
+//        properties.put("name", sslCertificate.getName());
+//
+//        Domain domain = governorOfDomain.build(properties);
+//        if (domain == null) {
+//            throw new ParameterValidateException("Домен с указанным именем не найден");
+//        }
     }
 
     public boolean exists(Map<String, String> keyValue) {

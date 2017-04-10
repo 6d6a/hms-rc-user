@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
@@ -21,6 +25,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
+import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
 
 @Component
 public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
@@ -33,6 +38,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private GovernorOfWebSite governorOfWebSite;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
+    private Validator validator;
 
     @Autowired
     public void setRepository(UnixAccountRepository repository) {
@@ -59,21 +65,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         this.staffRcClient = staffRcClient;
     }
 
-    @Override
-    public UnixAccount create(ServiceMessage serviceMessage) throws ParameterValidateException {
-        UnixAccount unixAccount;
-
-        try {
-
-            unixAccount = buildResourceFromServiceMessage(serviceMessage);
-            validate(unixAccount);
-            store(unixAccount);
-
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
-        }
-
-        return unixAccount;
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -128,6 +122,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
+        preValidate(unixAccount);
         validate(unixAccount);
         store(unixAccount);
 
@@ -171,7 +166,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     @Override
     protected UnixAccount buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         UnixAccount unixAccount = new UnixAccount();
-        LordOfResources.setResourceParams(unixAccount, serviceMessage, cleaner);
+        setResourceParams(unixAccount, serviceMessage, cleaner);
 
         if (unixAccount.getSwitchedOn() == null) {
             unixAccount.setSwitchedOn(true);
@@ -254,31 +249,19 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     @Override
-    public void validate(UnixAccount unixAccount) throws ParameterValidateException {
-        if (unixAccount.getName() == null || unixAccount.getName().equals("")) {
-            throw new ParameterValidateException("Имя unixAccount'а не может быть пустым");
-        }
-        if (unixAccount.getUid() == null || !isUidValid(unixAccount.getUid())) {
-            throw new ParameterValidateException("UID unixAccount'а не может быть пустым");
-        }
-        if (unixAccount.getAccountId() == null || unixAccount.getAccountId().equals("")) {
-            throw new ParameterValidateException("accountId не может быть пустым");
-        }
-        if (unixAccount.getHomeDir() == null || unixAccount.getHomeDir().equals("")) {
-            throw new ParameterValidateException("homedir не может быть пустым");
-        }
-        if (unixAccount.getQuota() == null || unixAccount.getQuota() <= 0) {
-            throw new ParameterValidateException("Квота должна быть числом, большим 0");
-        }
-
-        if (unixAccount.getHomeDir().equals("/home") ||
-                unixAccount.getHomeDir().equals("/home/") ||
-                unixAccount.getHomeDir().equals("/")) {
-            throw new ParameterValidateException("homedir не может быть /home или /");
-        }
-
+    public void preValidate(UnixAccount unixAccount) {
         if (unixAccount.getSendmailAllowed() == null) {
             unixAccount.setSendmailAllowed(true);
+        }
+    }
+
+    @Override
+    public void validate(UnixAccount unixAccount) throws ParameterValidateException {
+        Set<ConstraintViolation<UnixAccount>> constraintViolations = validator.validate(unixAccount, UnixAccountChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 

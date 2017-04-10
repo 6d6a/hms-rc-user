@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.staff.resources.ServiceTemplate;
 import ru.majordomo.hms.rc.staff.resources.ServiceType;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.resources.ServiceTypeCategory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,7 +95,7 @@ public class ConfigStaffResourceControllerClient {
             @Override
             public Server getServerByServiceId(@PathVariable("serviceId") String serviceId) {
                 Server server = null;
-                if (serviceId.equals(mockedDBServiceId)) {
+                if (serviceId.equals(mockedDBServiceId) || serviceId.equals(mockedServiceId)) {
                     server = new Server();
                     server.setServiceIds(Collections.singletonList(serviceId));
                     server.setName("web100500");
@@ -103,7 +105,7 @@ public class ConfigStaffResourceControllerClient {
             }
 
             @Override
-            public List<Service> getWebsiteServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId) {
+            public List<Service> getWebsiteServicesByServerId(@PathVariable("serverId") String serverId) {
                 List<Service> services = new ArrayList<>();
 
                 Service service = new Service();
@@ -111,7 +113,11 @@ public class ConfigStaffResourceControllerClient {
 
                 ServiceType serviceType = new ServiceType();
                 serviceType.setName("WEBSITE_APACHE2_PHP56_DEFAULT");
-                service.setServiceType(serviceType);
+
+                ServiceTemplate serviceTemplate = new ServiceTemplate();
+                serviceTemplate.setServiceType(serviceType);
+
+                service.setServiceTemplate(serviceTemplate);
 
                 services.add(service);
 
@@ -119,7 +125,7 @@ public class ConfigStaffResourceControllerClient {
             }
 
             @Override
-            public List<Service> getDatabaseServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId) {
+            public List<Service> getDatabaseServicesByServerId(@PathVariable("serverId") String serverId) {
                 List<Service> services = new ArrayList<>();
 
                 Service service = new Service();
@@ -127,11 +133,20 @@ public class ConfigStaffResourceControllerClient {
 
                 ServiceType serviceType = new ServiceType();
                 serviceType.setName("DATABASE_MYSQL");
-                service.setServiceType(serviceType);
+
+                ServiceTemplate serviceTemplate = new ServiceTemplate();
+                serviceTemplate.setServiceType(serviceType);
+
+                service.setServiceTemplate(serviceTemplate);
 
                 services.add(service);
 
                 return services;
+            }
+
+            @Override
+            public List<Service> getServicesByServerIdAndServiceType(String serverId, ServiceTypeCategory serviceType) {
+                return null;
             }
         };
     }

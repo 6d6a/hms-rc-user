@@ -23,11 +23,14 @@ import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.ValidationConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
+
+import javax.validation.ConstraintViolationException;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
@@ -45,6 +48,7 @@ import static org.hamcrest.CoreMatchers.anything;
                 FongoConfig.class,
                 RedisConfig.class,
                 DatabaseConfig.class,
+                ValidationConfig.class,
 
                 ConfigGovernors.class
         },
@@ -125,14 +129,14 @@ public class GovernorOfFTPUserTest {
         assertThat(ftpUsers.get(0).getAllowedIpsAsCollectionOfString(), is(Arrays.asList("3.3.3.3", "4.4.4.4")));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutUnixAccountId() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutHomeDir() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
@@ -140,7 +144,7 @@ public class GovernorOfFTPUserTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutPassword() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
@@ -148,7 +152,7 @@ public class GovernorOfFTPUserTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutName() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
@@ -156,7 +160,7 @@ public class GovernorOfFTPUserTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithExistedName() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());

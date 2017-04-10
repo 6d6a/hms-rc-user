@@ -21,11 +21,14 @@ import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.ValidationConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import java.util.*;
+
+import javax.validation.ConstraintViolationException;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
@@ -41,12 +44,13 @@ import static org.hamcrest.CoreMatchers.not;
                 FongoConfig.class,
                 RedisConfig.class,
                 DatabaseConfig.class,
+                ValidationConfig.class,
 
                 ConfigGovernors.class
         },
         webEnvironment = NONE,
         properties = {
-                "default.database.service.name:DATABASE_MYSQL"
+                "default.database.serviceName=DATABASE_MYSQL"
         }
 )
 public class GovernorOfDatabaseTest {
@@ -108,7 +112,7 @@ public class GovernorOfDatabaseTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutAccountId() throws Exception {
         String emptyString = "";
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
@@ -116,11 +120,18 @@ public class GovernorOfDatabaseTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithWrongDBtype() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.delParam("type");
         serviceMessage.addParam("type", "WRONGDBTYPE");
+        governor.create(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void createWithSameName() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
+        governor.create(serviceMessage);
         governor.create(serviceMessage);
     }
 

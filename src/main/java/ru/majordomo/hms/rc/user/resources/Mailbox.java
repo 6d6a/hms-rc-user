@@ -2,20 +2,41 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
+import ru.majordomo.hms.rc.user.validation.ObjectId;
+import ru.majordomo.hms.rc.user.validation.ValidMailbox;
+import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
+
 @Document(collection = "mailboxes")
+@ValidMailbox
 public class Mailbox extends Resource implements ServerStorable, Quotable, Securable {
     @Transient
+    @Valid
+    @ConvertGroup(from = MailboxChecks.class, to = Default.class)
+    @NotNull(message = "Для ящика должен быть указан домен")
     private Domain domain;
+
+    @NotBlank(message = "Для ящика должен быть указан id домена")
+    @ObjectId(Domain.class)
     private String domainId;
+
+    @NotBlank(message = "Не указан пароль для почтового ящика")
     private String passwordHash;
+
     private List<String> redirectAddresses = new ArrayList<>();
     private List<String> blackList = new ArrayList<>();
     private List<String> whiteList = new ArrayList<>();
@@ -24,11 +45,20 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE_TO_SPAM_FOLDER;
     private SpamFilterMood spamFilterMood = SpamFilterMood.NEUTRAL;
     private String serverId;
-    private Long quota;
-    private Long quotaUsed;
+
+    @Min(value = 0L, message = "Квота не может иметь отрицательное значение")
+    @NotNull(message = "Квота не может быть равной null")
+    private Long quota = 250000L;
+
+    @Min(value = 0L, message = "Использованная квота не может иметь отрицательное значение")
+    @NotNull(message = "Использованная квота не может быть равной null")
+    private Long quotaUsed = 0L;
+
     private Boolean writable;
     private Boolean isAggregator;
     private String mailSpool;
+
+    @NotNull(message = "Uid не может быть равным null")
     private Integer uid;
 
     @Override

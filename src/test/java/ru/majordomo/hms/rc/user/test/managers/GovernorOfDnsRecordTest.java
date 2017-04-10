@@ -17,6 +17,7 @@ import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.ValidationConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
@@ -24,6 +25,8 @@ import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.ConstraintViolationException;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
@@ -38,6 +41,7 @@ import static org.hamcrest.CoreMatchers.is;
                 FongoConfig.class,
                 RedisConfig.class,
                 DatabaseConfig.class,
+                ValidationConfig.class,
 
                 ConfigGovernors.class
         },
@@ -96,7 +100,7 @@ public class GovernorOfDnsRecordTest {
         assertThat(recordsAfter.size(), is(recordsBefore.size() + 1));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createBad() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "example.com");
@@ -114,7 +118,7 @@ public class GovernorOfDnsRecordTest {
         governorOfDnsRecord.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutType() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "example.com");

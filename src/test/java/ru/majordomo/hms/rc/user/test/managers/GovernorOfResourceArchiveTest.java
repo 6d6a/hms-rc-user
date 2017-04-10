@@ -21,6 +21,7 @@ import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.ValidationConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
@@ -43,32 +44,33 @@ import static org.hamcrest.CoreMatchers.is;
                 FongoConfig.class,
                 RedisConfig.class,
                 DatabaseConfig.class,
+                ValidationConfig.class,
 
                 ConfigGovernors.class
         },
         webEnvironment = NONE,
         properties = {
-                "default.website.service.name:WEBSITE_APACHE2_PHP56_DEFAULT",
-                "default.website.documet.root.pattern:/www",
-                "default.website.charset:UTF8",
-                "default.website.ssi.enabled:true",
-                "default.website.ssi.file.extensions:shtml,shtm",
-                "default.website.cgi.enabled:false",
-                "default.website.cgi.file.extensions:cgi,pl",
-                "default.website.script.aliace:cgi-bin",
-                "default.website.ddos.protection:true",
-                "default.website.auto.sub.domain:false",
-                "default.website.access.by.old.http.version:false",
-                "default.website.static.file.extensions:avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
-                "default.website.index.file.list:index.php,index.html,index.htm",
-                "default.website.custom.user.conf:",
-                "default.website.access.log.enabled:true",
-                "default.website.error.log.enabled:true",
-                "default.website.allow.url.fopen:false",
-                "default.website.mbstring.func.overload:0",
-                "default.website.follow.sym.links:true",
-                "default.website.multi.views:false",
-                "default.archive.hostname:archive.majordomo.ru"
+                "default.website.serviceName=WEBSITE_APACHE2_PHP56_DEFAULT",
+                "default.website.documentRootPattern=/www",
+                "default.website.charset=UTF8",
+                "default.website.ssi.enabled=true",
+                "default.website.ssi.fileExtensions=shtml,shtm",
+                "default.website.cgi.enabled=false",
+                "default.website.cgi.fileExtensions=cgi,pl",
+                "default.website.scriptAlias=cgi-bin",
+                "default.website.ddosProtection=true",
+                "default.website.autoSubDomain=false",
+                "default.website.accessByOldHttpVersion=false",
+                "default.website.static.fileExtensions=avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
+                "default.website.indexFileList=index.php,index.html,index.htm",
+                "default.website.customUserConf=",
+                "default.website.accessLogEnabled=true",
+                "default.website.errorLogEnabled=true",
+                "default.website.allowUrlFopen=false",
+                "default.website.mbstringFuncOverload=0",
+                "default.website.followSymLinks=true",
+                "default.website.multiViews=false",
+                "default.archive.hostname=archive.majordomo.ru"
         }
 )
 public class GovernorOfResourceArchiveTest {
@@ -91,10 +93,10 @@ public class GovernorOfResourceArchiveTest {
     @Autowired
     StaffResourceControllerClient staffResourceControllerClient;
 
-    @Value("${default.website.service.name}")
+    @Value("${default.website.serviceName}")
     private String defaultServiceName;
 
-    @Value("${default.website.documet.root.pattern}")
+    @Value("${default.website.documentRootPattern}")
     private String defaultWebsiteDocumetRootPattern;
 
     @Value("${default.website.charset}")
@@ -103,52 +105,52 @@ public class GovernorOfResourceArchiveTest {
     @Value("${default.website.ssi.enabled}")
     private Boolean defaultWebsiteSsiEnabled;
 
-    @Value("${default.website.ssi.file.extensions}")
+    @Value("${default.website.ssi.fileExtensions}")
     private List<String> defaultWebsiteSsiFileExtensions;
 
     @Value("${default.website.cgi.enabled}")
     private Boolean defaultWebsiteCgiEnabled;
 
-    @Value("${default.website.cgi.file.extensions}")
+    @Value("${default.website.cgi.fileExtensions}")
     private List<String> defaultWebsiteCgiFileExtensions;
 
-    @Value("${default.website.script.aliace}")
+    @Value("${default.website.scriptAlias}")
     private String defaultWebsiteScriptAliace;
 
-    @Value("${default.website.ddos.protection}")
+    @Value("${default.website.ddosProtection}")
     private Boolean defaultWebsiteDdosProtection;
 
-    @Value("${default.website.auto.sub.domain}")
+    @Value("${default.website.autoSubDomain}")
     private Boolean defaultWebsiteAutoSubDomain;
 
-    @Value("${default.website.access.by.old.http.version}")
+    @Value("${default.website.accessByOldHttpVersion}")
     private Boolean defaultWebsiteAccessByOldHttpVersion;
 
-    @Value("${default.website.static.file.extensions}")
+    @Value("${default.website.static.fileExtensions}")
     private List<String> defaultWebsiteStaticFileExtensions;
 
-    @Value("${default.website.index.file.list}")
+    @Value("${default.website.indexFileList}")
     private List<String> defaultWebsiteIndexFileList;
 
-    @Value("${default.website.custom.user.conf}")
+    @Value("${default.website.customUserConf}")
     private String defaultWebsiteCustomUserConf;
 
-    @Value("${default.website.access.log.enabled}")
+    @Value("${default.website.accessLogEnabled}")
     private Boolean defaultAccessLogEnabled;
 
-    @Value("${default.website.error.log.enabled}")
+    @Value("${default.website.errorLogEnabled}")
     private Boolean defaultErrorLogEnabled;
 
-    @Value("${default.website.allow.url.fopen}")
+    @Value("${default.website.allowUrlFopen}")
     private Boolean defaultAllowUrlFopen;
 
-    @Value("${default.website.mbstring.func.overload}")
+    @Value("${default.website.mbstringFuncOverload}")
     private Boolean defaultMbstringFuncOverload;
 
-    @Value("${default.website.follow.sym.links}")
+    @Value("${default.website.followSymLinks}")
     private Boolean defaultFollowSymLinks;
 
-    @Value("${default.website.multi.views}")
+    @Value("${default.website.multiViews}")
     private Boolean defaultMultiViews;
 
     @Value("${default.archive.hostname}")

@@ -6,6 +6,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
@@ -18,6 +22,7 @@ import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
+import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
 
 @Component
 public class GovernorOfWebSite extends LordOfResources<WebSite> {
@@ -48,13 +53,14 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     private Boolean defaultMultiViews;
     private Integer defaultMbstringFuncOverload;
     private Boolean defaultAllowUrlFopen;
+    private Validator validator;
 
-    @Value("${default.website.service.name}")
+    @Value("${default.website.serviceName}")
     public void setDefaultServiceName(String defaultServiceName) {
         this.defaultServiceName = defaultServiceName;
     }
 
-    @Value("${default.website.documet.root.pattern}")
+    @Value("${default.website.documentRootPattern}")
     public void setDefaultWebsiteDocumetRootPattern(String defaultWebsiteDocumetRootPattern) {
         this.defaultWebsiteDocumetRootPattern = defaultWebsiteDocumetRootPattern;
     }
@@ -69,7 +75,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         this.defaultWebsiteSsiEnabled = defaultWebsiteSsiEnabled;
     }
 
-    @Value("${default.website.ssi.file.extensions}")
+    @Value("${default.website.ssi.fileExtensions}")
     public void setDefaultWebsiteSsiFileExtensions(String[] defaultWebsiteSsiFileExtensions) {
         this.defaultWebsiteSsiFileExtensions = defaultWebsiteSsiFileExtensions;
     }
@@ -79,72 +85,72 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         this.defaultWebsiteCgiEnabled = defaultWebsiteCgiEnabled;
     }
 
-    @Value("${default.website.cgi.file.extensions}")
+    @Value("${default.website.cgi.fileExtensions}")
     public void setDefaultWebsiteCgiFileExtensions(String[] defaultWebsiteCgiFileExtensions) {
         this.defaultWebsiteCgiFileExtensions = defaultWebsiteCgiFileExtensions;
     }
 
-    @Value("${default.website.script.aliace}")
+    @Value("${default.website.scriptAlias}")
     public void setDefaultWebsiteScriptAliace(String defaultWebsiteScriptAliace) {
         this.defaultWebsiteScriptAliace = defaultWebsiteScriptAliace;
     }
 
-    @Value("${default.website.ddos.protection}")
+    @Value("${default.website.ddosProtection}")
     public void setDefaultWebsiteDdosProtection(Boolean defaultWebsiteDdosProtection) {
         this.defaultWebsiteDdosProtection = defaultWebsiteDdosProtection;
     }
 
-    @Value("${default.website.auto.sub.domain}")
+    @Value("${default.website.autoSubDomain}")
     public void setDefaultWebsiteAutoSubDomain(Boolean defaultWebsiteAutoSubDomain) {
         this.defaultWebsiteAutoSubDomain = defaultWebsiteAutoSubDomain;
     }
 
-    @Value("${default.website.access.by.old.http.version}")
+    @Value("${default.website.accessByOldHttpVersion}")
     public void setDefaultWebsiteAccessByOldHttpVersion(Boolean defaultWebsiteAccessByOldHttpVersion) {
         this.defaultWebsiteAccessByOldHttpVersion = defaultWebsiteAccessByOldHttpVersion;
     }
 
-    @Value("${default.website.static.file.extensions}")
+    @Value("${default.website.static.fileExtensions}")
     public void setDefaultWebsiteStaticFileExtensions(String[] defaultWebsiteStaticFileExtensions) {
         this.defaultWebsiteStaticFileExtensions = defaultWebsiteStaticFileExtensions;
     }
 
-    @Value("${default.website.index.file.list}")
+    @Value("${default.website.indexFileList}")
     public void setDefaultWebsiteIndexFileList(String[] defaultWebsiteIndexFileList) {
         this.defaultWebsiteIndexFileList = defaultWebsiteIndexFileList;
     }
 
-    @Value("${default.website.custom.user.conf}")
+    @Value("${default.website.customUserConf}")
     public void setDefaultWebsiteCustomUserConf(String defaultWebsiteCustomUserConf) {
         this.defaultWebsiteCustomUserConf = defaultWebsiteCustomUserConf;
     }
 
-    @Value("${default.website.access.log.enabled}")
+    @Value("${default.website.accessLogEnabled}")
     public void setDefaultAccessLogEnabled(Boolean defaultAccessLogEnabled) {
         this.defaultAccessLogEnabled = defaultAccessLogEnabled;
     }
 
-    @Value("${default.website.error.log.enabled}")
+    @Value("${default.website.errorLogEnabled}")
     public void setDefaultErrorLogEnabled(Boolean defaultErrorLogEnabled) {
         this.defaultErrorLogEnabled = defaultErrorLogEnabled;
     }
 
-    @Value("${default.website.mbstring.func.overload}")
+    @Value("${default.website.mbstringFuncOverload}")
     public void setDefaultMbstringFuncOverload(Integer defaultMbstringFuncOverload) {
         this.defaultMbstringFuncOverload = defaultMbstringFuncOverload;
     }
 
-    @Value("${default.website.allow.url.fopen}")
+    @Value("${default.website.allowUrlFopen}")
     public void setDefaultAllowUrlFopen(Boolean defaultAllowUrlFopen) {
         this.defaultAllowUrlFopen = defaultAllowUrlFopen;
     }
 
-    @Value("${default.website.follow.sym.links}")
+    @Value("${default.website.followSymLinks}")
     public void setDefaultFollowSymLinks(Boolean defaultFollowSymLinks) {
         this.defaultFollowSymLinks = defaultFollowSymLinks;
     }
 
-    @Value("${default.website.multi.views}")
+    @Value("${default.website.multiViews}")
     public void setDefaultMultiViews(Boolean defaultMultiViews) {
         this.defaultMultiViews = defaultMultiViews;
     }
@@ -179,18 +185,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         this.cleaner = cleaner;
     }
 
-    @Override
-    public WebSite create(ServiceMessage serviceMessage) throws ParameterValidateException {
-        WebSite webSite;
-        try {
-            webSite = buildResourceFromServiceMessage(serviceMessage);
-            validate(webSite);
-            store(webSite);
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
-        }
-
-        return webSite;
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -298,6 +295,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
+        preValidate(website);
         validate(website);
         store(website);
 
@@ -323,7 +321,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     protected WebSite buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         WebSite webSite = new WebSite();
 
-        LordOfResources.setResourceParams(webSite, serviceMessage, cleaner);
+        setResourceParams(webSite, serviceMessage, cleaner);
 
         try {
             List<String> domainIds = new ArrayList<>();
@@ -402,23 +400,8 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     @Override
-    public void validate(WebSite webSite) throws ParameterValidateException {
-        if (webSite.getAccountId() == null || webSite.getAccountId().equals("")) {
-            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
-        }
-
-        if (webSite.getDomains().isEmpty()) {
-            throw new ParameterValidateException("Должен присутствовать хотя бы один домен");
-        }
-
-        for (String domainId: webSite.getDomainIds()) {
-            WebSite compare = repository.findByDomainIdsContains(domainId);
-            if (compare != null && !compare.getId().equals(webSite.getId())) {
-                throw new ParameterValidateException("Домен уже используется в другом веб-сайте");
-            }
-        }
-
-        if (webSite.getName() == null || webSite.getName().equals("")) {
+    public void preValidate(WebSite webSite) {
+        if ((webSite.getName() == null || webSite.getName().equals("")) && !webSite.getDomains().isEmpty()) {
             webSite.setName(webSite.getDomains().get(0).getName());
         }
 
@@ -426,10 +409,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setSwitchedOn(true);
         }
 
-        if (webSite.getDocumentRoot() == null || webSite.getDocumentRoot().equals("")) {
+        if ((webSite.getDocumentRoot() == null || webSite.getDocumentRoot().equals("")) && !webSite.getDomains().isEmpty()) {
             webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + defaultWebsiteDocumetRootPattern);
         }
-
 
         if (webSite.getUnixAccountId() == null || webSite.getUnixAccountId().equals("")) {
             Map<String, String> keyValue = new HashMap<>();
@@ -443,32 +425,19 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setUnixAccount(governorOfUnixAccount.build(webSite.getUnixAccountId()));
         }
 
-        List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerIdAndServiceType(webSite.getUnixAccount().getServerId());
         if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
+            List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerId(webSite.getUnixAccount().getServerId());
             for (Service service : websiteServices) {
-                if (service.getServiceType().getName().equals(this.defaultServiceName)) {
+                if (service.getServiceTemplate().getServiceType().getName().equals(this.defaultServiceName)) {
                     webSite.setServiceId(service.getId());
                     break;
                 }
             }
             if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
-                throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName
+                logger.error("Не найдено serviceType: " + this.defaultServiceName
                         + " для сервера: " + webSite.getUnixAccount().getServerId());
             }
-        } else {
-            Boolean isServiceForServerExist = false;
-            for (Service service : websiteServices) {
-                if (service.getId().equals(webSite.getServiceId())) {
-                    isServiceForServerExist = true;
-                    break;
-                }
-            }
-            if (!isServiceForServerExist) {
-                throw new ParameterValidateException("Указанный ServiceId: " + webSite.getServiceId()
-                        + " не найден для сервера: " + webSite.getUnixAccount().getServerId());
-            }
         }
-
 
         if (webSite.getCharSet() == null) {
             CharSet charSet = CharSet.valueOf(defaultWebsiteCharset);
@@ -542,7 +511,16 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         if (webSite.getMultiViews() == null) {
             webSite.setMultiViews(defaultMultiViews);
         }
+    }
 
+    @Override
+    public void validate(WebSite webSite) throws ParameterValidateException {
+        Set<ConstraintViolation<WebSite>> constraintViolations = validator.validate(webSite, WebSiteChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.error(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
     }
 
     @Override
