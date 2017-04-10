@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.configurations.FeignConfig;
+import ru.majordomo.hms.rc.user.resources.ServiceTypeCategory;
 
 @FeignClient(name = "RC-STAFF", configuration = FeignConfig.class)
 public interface StaffResourceControllerClient {
@@ -34,8 +35,11 @@ public interface StaffResourceControllerClient {
     Server getServerByServiceId(@PathVariable("serviceId") String serviceId);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type=WEBSITE")
-    List<Service> getWebsiteServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId);
+    List<Service> getWebsiteServicesByServerId(@PathVariable("serverId") String serverId);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type=DATABASE")
-    List<Service> getDatabaseServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId);
+    List<Service> getDatabaseServicesByServerId(@PathVariable("serverId") String serverId);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type={serviceType}")
+    List<Service> getServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId, @PathVariable("serviceType") ServiceTypeCategory serviceType);
 }

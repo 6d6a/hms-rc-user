@@ -260,7 +260,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         Set<ConstraintViolation<UnixAccount>> constraintViolations = validator.validate(unixAccount, UnixAccountChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.error(constraintViolations.toString());
+            logger.debug(constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

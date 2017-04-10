@@ -29,7 +29,8 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     @NotNull(message = "Тип не может быть пустым")
     private DBType type;
 
-    @ServiceId(ServiceTypeCategory.DATABASE)
+    @ServiceId
+    @NotNull(message = "serviceId не может быть пустым")
     private String serviceId;
 
     private List<Long> allowedIPAddresses;

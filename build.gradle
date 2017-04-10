@@ -116,7 +116,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.boot:spring-boot-starter-jetty")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.6")
-    compile("ru.majordomo.hms.rc.staff:resources:1.0.6.+")
+    compile("ru.majordomo.hms.rc.staff:resources:1.1.+")
     compile("dnsjava:dnsjava:2.1.7")
     compile("com.cronutils:cron-utils:5.0.1")
     compile("commons-validator:commons-validator:1.5.1")

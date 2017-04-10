@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 public abstract class LordOfResources<T extends Resource> {
     protected Logger logger = LoggerFactory.getLogger(LordOfResources.class);
@@ -109,4 +110,23 @@ public abstract class LordOfResources<T extends Resource> {
         resource.setName(name);
         resource.setSwitchedOn(switchedOn);
     }
+
+//    public void preValidateServiceId(Serviceable serviceable) {
+//        if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
+//            String serverId = staffRcClient.getActiveDatabaseServer().getId();
+//            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerId(serverId);
+//            if (databaseServices != null) {
+//                for (Service service : databaseServices) {
+//                    if (service.getServiceTemplate().getServiceType().getName().equals(this.defaultServiceName)) {
+//                        databaseUser.setServiceId(service.getId());
+//                        break;
+//                    }
+//                }
+//                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
+//                    logger.error("Не найдено serviceType: " + this.defaultServiceName
+//                            + " для сервера: " + serverId);
+//                }
+//            }
+//        }
+//    }
 }

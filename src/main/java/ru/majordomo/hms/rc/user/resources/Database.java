@@ -17,7 +17,8 @@ import ru.majordomo.hms.rc.user.validation.ValidDatabase;
 @Document(collection = "databases")
 @ValidDatabase
 public class Database extends Resource implements Serviceable, Quotable {
-    @ServiceId(ServiceTypeCategory.DATABASE)
+    @ServiceId
+    @NotNull(message = "serviceId не может быть пустым")
     private String serviceId;
 
     @NotNull(message = "Тип базы не указан")

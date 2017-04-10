@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.managers;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -11,6 +12,8 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
@@ -27,6 +30,18 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     private DatabaseUserRepository repository;
     private GovernorOfDatabase governorOfDatabase;
     private Validator validator;
+    private String defaultServiceName;
+    private StaffResourceControllerClient staffRcClient;
+
+    @Value("${default.database.serviceName}")
+    public void setDefaultServiceName(String defaultServiceName) {
+        this.defaultServiceName = defaultServiceName;
+    }
+
+    @Autowired
+    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
+        this.staffRcClient = staffRcClient;
+    }
 
     @Autowired
     public void setRepository(DatabaseUserRepository repository) {
@@ -53,6 +68,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         DatabaseUser databaseUser;
         try {
             databaseUser = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(databaseUser);
             validate(databaseUser);
             store(databaseUser);
 
@@ -60,6 +76,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                 for (String databaseId : databaseUser.getDatabaseIds()) {
                     Database database = governorOfDatabase.build(databaseId);
                     database.addDatabaseUserId(databaseUser.getId());
+                    governorOfDatabase.preValidate(database);
                     governorOfDatabase.validate(database);
                     governorOfDatabase.store(database);
                 }
@@ -110,6 +127,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
+        preValidate(databaseUser);
         validate(databaseUser);
         store(databaseUser);
 
@@ -188,6 +206,26 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
 
         return databaseUser;
+    }
+
+    @Override
+    public void preValidate(DatabaseUser databaseUser) {
+        if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
+            String serverId = staffRcClient.getActiveDatabaseServer().getId();
+            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerId(serverId);
+            if (databaseServices != null) {
+                for (Service service : databaseServices) {
+                    if (service.getServiceTemplate().getServiceType().getName().equals(this.defaultServiceName)) {
+                        databaseUser.setServiceId(service.getId());
+                        break;
+                    }
+                }
+                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
+                    logger.error("Не найдено serviceType: " + this.defaultServiceName
+                            + " для сервера: " + serverId);
+                }
+            }
+        }
     }
 
     @Override

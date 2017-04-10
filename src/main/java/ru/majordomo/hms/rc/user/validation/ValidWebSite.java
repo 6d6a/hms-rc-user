@@ -9,15 +9,14 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import ru.majordomo.hms.rc.user.resources.ServiceTypeCategory;
-import ru.majordomo.hms.rc.user.validation.validator.ServiceIdValidator;
+import ru.majordomo.hms.rc.user.validation.validator.WebSiteValidator;
 
 @Documented
-@Constraint(validatedBy = ServiceIdValidator.class)
-@Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
+@Constraint(validatedBy = WebSiteValidator.class)
+@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ServiceId {
-    String message() default "{ru.majordomo.hms.rc.user.validation.ServiceId.message}";
+public @interface ValidWebSite {
+    String message() default "{ru.majordomo.hms.rc.user.validation.ValidWebSite.message}";
 
     Class<?>[] groups() default {};
 

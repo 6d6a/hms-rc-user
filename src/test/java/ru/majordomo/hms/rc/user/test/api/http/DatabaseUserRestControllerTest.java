@@ -60,7 +60,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         },
         webEnvironment = RANDOM_PORT,
         properties = {
-                "default.database.service.name:DATABASE_MYSQL"
+                "default.database.serviceName=DATABASE_MYSQL"
         }
 )
 public class DatabaseUserRestControllerTest {
@@ -69,7 +69,7 @@ public class DatabaseUserRestControllerTest {
     private String resourceName = "database-user";
     private List<DatabaseUser> batchOfDatabaseUsers = new ArrayList<>();
 
-    @Value("${default.database.service.name}")
+    @Value("${default.database.serviceName}")
     private String defaultDatabaseService;
 
     @Rule

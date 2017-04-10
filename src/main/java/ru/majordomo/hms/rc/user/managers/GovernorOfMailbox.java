@@ -296,7 +296,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         keyValue.put("accountId", mailbox.getAccountId());
 
         List<UnixAccount> unixAccounts = (List<UnixAccount>) governorOfUnixAccount.buildAll(keyValue);
-        if (unixAccounts.equals(Collections.emptyList())) {
+        if (unixAccounts.isEmpty()) {
             throw new ParameterValidateException("Не найдено UnixAccount для AccountID: " + mailbox.getAccountId());
         }
 

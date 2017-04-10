@@ -18,6 +18,7 @@ import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
 import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
 import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
 import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
+import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
 
 public abstract class Resource {
     @Id
@@ -34,7 +35,8 @@ public abstract class Resource {
                               MailboxChecks.class,
                               PersonChecks.class,
                               SSLCertificateChecks.class,
-                              UnixAccountChecks.class
+                              UnixAccountChecks.class,
+                              WebSiteChecks.class
                       })
     @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = DatabaseUserChecks.class)
     @DomainName(groups = DomainChecks.class)
@@ -52,7 +54,8 @@ public abstract class Resource {
                               PersonChecks.class,
                               ResourceArchiveChecks.class,
                               SSLCertificateChecks.class,
-                              UnixAccountChecks.class
+                              UnixAccountChecks.class,
+                              WebSiteChecks.class
                       })
     private String accountId;
 
