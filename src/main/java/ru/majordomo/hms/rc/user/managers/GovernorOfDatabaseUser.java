@@ -259,15 +259,11 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         List<DatabaseUser> buildedDatabasesUsers = new ArrayList<>();
 
         if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
-            for (DatabaseUser databaseUser : repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"))) {
-                buildedDatabasesUsers.add(construct(databaseUser));
-            }
+            buildedDatabasesUsers.addAll(repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId")));
         } else if (keyValue.get("accountId") != null) {
             buildedDatabasesUsers = repository.findByAccountId(keyValue.get("accountId"));
         } else if (keyValue.get("serviceId") != null) {
-            for (DatabaseUser databaseUser : repository.findByServiceId(keyValue.get("serviceId"))) {
-                buildedDatabasesUsers.add(construct(databaseUser));
-            }
+            buildedDatabasesUsers.addAll(repository.findByServiceId(keyValue.get("serviceId")));
         }
 
         return buildedDatabasesUsers;
