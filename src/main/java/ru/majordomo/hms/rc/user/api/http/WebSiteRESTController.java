@@ -61,4 +61,15 @@ public class WebSiteRESTController {
     public WebSite readOneWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.build(requestParams);
     }
+
+    @RequestMapping(value = {"/{accountId}/website/filter"}, method = RequestMethod.GET)
+    public Collection<WebSite> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
+        return governor.buildAll(requestParams);
+    }
+
+    @RequestMapping(value = {"/website/filter"}, method = RequestMethod.GET)
+    public Collection<WebSite> filter(@RequestParam Map<String, String> requestParams) {
+        return governor.buildAll(requestParams);
+    }
 }

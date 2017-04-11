@@ -570,24 +570,20 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     public Collection<WebSite> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<WebSite> buildedWebSites = new ArrayList<>();
 
-        boolean byAccountId = false;
-        boolean byUnixAccountId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
+        if (keyValue.get("unixAccountId") != null) {
+            for (WebSite webSite : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
+                buildedWebSites.add(construct(webSite));
             }
-            if (entry.getKey().equals("unixAccountId")) {
-                byUnixAccountId = true;
+        } else if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
+            for (WebSite webSite : repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"))) {
+                buildedWebSites.add(construct(webSite));
             }
-        }
-
-        if (byAccountId) {
+        } else if (keyValue.get("accountId") != null) {
             for (WebSite webSite : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedWebSites.add(construct(webSite));
             }
-        } else if (byUnixAccountId) {
-            for (WebSite webSite : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
+        } else if (keyValue.get("serviceId") != null) {
+            for (WebSite webSite : repository.findByServiceId(keyValue.get("serviceId"))) {
                 buildedWebSites.add(construct(webSite));
             }
         }

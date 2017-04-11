@@ -13,5 +13,6 @@ public interface DatabaseRepository extends MongoRepository<Database, String> {
     Database findByName(String name);
     Long countByAccountId(String accountId);
     List<Database> findByServiceId(String serviceId);
+    List<Database> findByServiceIdAndAccountId(String serviceId, String accountId);
     List<Database> findByDatabaseUserIdsContaining(String databaseUserId);
 }

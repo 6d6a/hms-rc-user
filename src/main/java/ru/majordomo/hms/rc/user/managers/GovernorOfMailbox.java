@@ -425,31 +425,15 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     public Collection<Mailbox> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Mailbox> buildedMailboxes = new ArrayList<>();
 
-        boolean byAccountId = false;
-        boolean byServerId = false;
-        boolean byDomainId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("serverId")) {
-                byServerId = true;
-            }
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-            if (entry.getKey().equals("domainId")) {
-                byDomainId = true;
-            }
-        }
-
-        if (byAccountId) {
+        if (keyValue.get("accountId") != null) {
             for (Mailbox mailbox : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedMailboxes.add(construct(mailbox));
             }
-        } else if (byServerId) {
+        } else if (keyValue.get("serverId") != null) {
             for (Mailbox mailbox : repository.findByServerId(keyValue.get("serverId"))) {
                 buildedMailboxes.add(construct(mailbox));
             }
-        } else if (byDomainId) {
+        } else if (keyValue.get("domainId") != null) {
             for (Mailbox mailbox : repository.findByDomainId(keyValue.get("domainId"))) {
                 buildedMailboxes.add(construct(mailbox));
             }

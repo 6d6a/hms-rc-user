@@ -10,4 +10,6 @@ public interface DatabaseUserRepository extends MongoRepository<DatabaseUser, St
     List<DatabaseUser> findByAccountId(String accountId);
     DatabaseUser findByIdAndAccountId(String databaseUserId, String accountId);
     DatabaseUser findByName(String name);
+    List<DatabaseUser> findByServiceId(String serviceId);
+    List<DatabaseUser> findByServiceIdAndAccountId(String serviceId, String accountId);
 }
