@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
+import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
 @RestController
@@ -48,4 +50,14 @@ public class DatabaseUserRestController {
         return governor.buildAll(keyValue);
     }
 
+    @RequestMapping(value = {"/{accountId}/database-user/filter"}, method = RequestMethod.GET)
+    public Collection<DatabaseUser> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
+        return governor.buildAll(requestParams);
+    }
+
+    @RequestMapping(value = {"/database-user/filter"}, method = RequestMethod.GET)
+    public Collection<DatabaseUser> filter(@RequestParam Map<String, String> requestParams) {
+        return governor.buildAll(requestParams);
+    }
 }

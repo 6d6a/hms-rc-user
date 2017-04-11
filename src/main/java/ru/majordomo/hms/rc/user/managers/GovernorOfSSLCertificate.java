@@ -196,15 +196,6 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
             logger.debug(constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
-
-//
-//        Map<String, String> properties = new HashMap<>();
-//        properties.put("name", sslCertificate.getName());
-//
-//        Domain domain = governorOfDomain.build(properties);
-//        if (domain == null) {
-//            throw new ParameterValidateException("Домен с указанным именем не найден");
-//        }
     }
 
     public boolean exists(Map<String, String> keyValue) {
@@ -258,15 +249,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     public List<SSLCertificate> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<SSLCertificate> buildedCertificates = new ArrayList<>();
 
-        boolean byAccountId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId) {
+        if (keyValue.get("accountId") != null) {
             buildedCertificates = repository.findByAccountId(keyValue.get("accountId"));
         }
 

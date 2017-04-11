@@ -177,23 +177,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
     @Override
     public void preValidate(Database database) {
-        if (database.getServiceId() == null || (database.getServiceId().equals(""))) {
-            String serverId = staffRcClient.getActiveDatabaseServer().getId();
-            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerId(serverId);
-            if (databaseServices != null) {
-                for (Service service : databaseServices) {
-                    if (service.getServiceTemplate().getServiceType().getName().equals(this.defaultServiceName)) {
-                        database.setServiceId(service.getId());
-                        break;
-                    }
-                }
-                if (database.getServiceId() == null || (database.getServiceId().equals(""))) {
-                    logger.error("Не найдено serviceType: " + this.defaultServiceName
-                            + " для сервера: " + serverId);
-                }
-            }
-        }
-
+        preValidateDatabaseServiceId(database, staffRcClient, defaultServiceName);
     }
 
     @Override
@@ -243,34 +227,21 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
     @Override
     public Collection<Database> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
-
         List<Database> buildedDatabases = new ArrayList<>();
 
-        boolean byAccountId = false;
-        boolean byDatabaseUserId = false;
-        boolean byServiceId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-            if (entry.getKey().equals("databaseUserId")) {
-                byDatabaseUserId = true;
-            }
-            if (entry.getKey().equals("serviceId")) {
-                byServiceId = true;
-            }
-        }
-
-        if (byDatabaseUserId) {
+        if (keyValue.get("databaseUserId") != null) {
             for (Database database : repository.findByDatabaseUserIdsContaining(keyValue.get("databaseUserId"))) {
                 buildedDatabases.add(construct(database));
             }
-        } else if (byAccountId) {
+        } else if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
+            for (Database database : repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"))) {
+                buildedDatabases.add(construct(database));
+            }
+        } else if (keyValue.get("accountId") != null) {
             for (Database database : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedDatabases.add(construct(database));
             }
-        } else if (byServiceId) {
+        } else if (keyValue.get("serviceId") != null) {
             for (Database database : repository.findByServiceId(keyValue.get("serviceId"))) {
                 buildedDatabases.add(construct(database));
             }

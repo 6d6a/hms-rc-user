@@ -252,16 +252,6 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             logger.error(constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
-
-//        Person domainPerson = domain.getPerson();
-//        if (domainPerson != null) {
-//            governorOfPerson.validate(domainPerson);
-//        }
-//
-//        SSLCertificate sslCertificate = domain.getSslCertificate();
-//        if (sslCertificate != null) {
-//            governorOfSSLCertificate.validate(sslCertificate);
-//        }
     }
 
     @Override

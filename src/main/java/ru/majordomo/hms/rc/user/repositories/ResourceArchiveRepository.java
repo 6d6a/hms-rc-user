@@ -9,4 +9,6 @@ public interface ResourceArchiveRepository extends MongoRepository<ResourceArchi
     ResourceArchive findByResourceId(String resourceId);
     ResourceArchive findByIdAndAccountId(String resourceId, String accountId);
     List<ResourceArchive> findByAccountId(String accountId);
+    List<ResourceArchive> findByServiceId(String serviceId);
+    List<ResourceArchive> findByServiceIdAndAccountId(String serviceId, String accountId);
 }

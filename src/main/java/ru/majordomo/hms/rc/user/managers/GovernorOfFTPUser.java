@@ -210,23 +210,11 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     public Collection<FTPUser> buildAll(Map<String, String> keyValue) throws ParameterValidateException {
         List<FTPUser> buildedFTPUsers = new ArrayList<>();
 
-        boolean byAccountId = false;
-        boolean byUnixAccountId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-            if (entry.getKey().equals("unixAccountId")) {
-                byUnixAccountId = true;
-            }
-        }
-
-        if (byAccountId) {
+        if (keyValue.get("accountId") != null) {
             for (FTPUser ftpUser : repository.findByAccountId(keyValue.get("accountId"))) {
                 buildedFTPUsers.add(construct(ftpUser));
             }
-        } else if (byUnixAccountId) {
+        } else if (keyValue.get("unixAccountId") != null) {
             for (FTPUser ftpUser : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
                 buildedFTPUsers.add(construct(ftpUser));
             }

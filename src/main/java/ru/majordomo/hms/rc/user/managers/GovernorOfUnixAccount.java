@@ -298,21 +298,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     public Collection<UnixAccount> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<UnixAccount> buildedUnixAccounts = new ArrayList<>();
 
-        boolean byAccountId = false;
-        boolean byServerId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-            if (entry.getKey().equals("serverId")) {
-                byServerId = true;
-            }
-        }
-
-        if (byAccountId) {
+        if (keyValue.get("accountId") != null) {
             buildedUnixAccounts = repository.findByAccountId(keyValue.get("accountId"));
-        } else if (byServerId) {
+        } else if (keyValue.get("serverId") != null) {
             buildedUnixAccounts = repository.findByServerId(keyValue.get("serverId"));
         }
 

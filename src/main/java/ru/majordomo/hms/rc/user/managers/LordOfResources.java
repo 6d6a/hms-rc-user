@@ -5,8 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -111,22 +114,23 @@ public abstract class LordOfResources<T extends Resource> {
         resource.setSwitchedOn(switchedOn);
     }
 
-//    public void preValidateServiceId(Serviceable serviceable) {
-//        if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
-//            String serverId = staffRcClient.getActiveDatabaseServer().getId();
-//            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerId(serverId);
-//            if (databaseServices != null) {
-//                for (Service service : databaseServices) {
-//                    if (service.getServiceTemplate().getServiceType().getName().equals(this.defaultServiceName)) {
-//                        databaseUser.setServiceId(service.getId());
-//                        break;
-//                    }
-//                }
-//                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
-//                    logger.error("Не найдено serviceType: " + this.defaultServiceName
-//                            + " для сервера: " + serverId);
-//                }
-//            }
-//        }
-//    }
+    void preValidateDatabaseServiceId(Serviceable serviceable, StaffResourceControllerClient staffRcClient, String defaultServiceName) {
+        if (serviceable.getServiceId() == null || (serviceable.getServiceId().equals(""))) {
+            String serverId = staffRcClient.getActiveDatabaseServer().getId();
+            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerId(serverId);
+            if (databaseServices != null) {
+                for (Service service : databaseServices) {
+                    if (service.getServiceTemplate().getServiceType().getName().equals(defaultServiceName)) {
+                        serviceable.setServiceId(service.getId());
+                        break;
+                    }
+                }
+                if (serviceable.getServiceId() == null || (serviceable.getServiceId().equals(""))) {
+                    logger.error("Не найдено serviceType: " + defaultServiceName
+                            + " для сервера: " + serverId);
+                }
+            }
+        }
+
+    }
 }

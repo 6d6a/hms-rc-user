@@ -207,8 +207,16 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     public Collection<ResourceArchive> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<ResourceArchive> archives = new ArrayList<>();
 
-        if (keyValue.get("accountId") != null && !keyValue.get("accountId").equals("")) {
+        if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
+            for (ResourceArchive archive : repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"))) {
+                archives.add(construct(archive));
+            }
+        } else if (keyValue.get("accountId") != null) {
             for (ResourceArchive archive : repository.findByAccountId(keyValue.get("accountId"))) {
+                archives.add(construct(archive));
+            }
+        } else if (keyValue.get("serviceId") != null) {
+            for (ResourceArchive archive : repository.findByServiceId(keyValue.get("serviceId"))) {
                 archives.add(construct(archive));
             }
         }
