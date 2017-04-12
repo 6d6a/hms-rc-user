@@ -37,7 +37,7 @@ public class DomainRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/domain/{domain-name}/add-dns-record")
-    public ResponseEntity addDnsRecord(@PathVariable("domain-name") String domainName, @RequestBody DNSResourceRecord record) {
+    public ResponseEntity<DNSResourceRecord> addDnsRecord(@PathVariable("domain-name") String domainName, @RequestBody DNSResourceRecord record) {
         try {
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", domainName);
@@ -48,6 +48,17 @@ public class DomainRestController {
             record.setName(domain.getName());
             governorOfDnsRecord.validate(record);
             governorOfDnsRecord.store(record);
+            return new ResponseEntity<>(record, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return new ResponseEntity<>(new DNSResourceRecord(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/domain/{domain-name}/delete-dns-record")
+    public ResponseEntity deleteDnsRecord(@PathVariable("domain-name") String domainName, @RequestBody DNSResourceRecord record) {
+        try {
+            governorOfDnsRecord.drop(record.getRecordId().toString());
             return new ResponseEntity(HttpStatus.ACCEPTED);
         } catch (Exception e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
