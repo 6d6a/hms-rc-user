@@ -16,7 +16,6 @@ import javax.validation.constraints.NotNull;
 
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.validation.ObjectIdCollection;
 import ru.majordomo.hms.rc.user.validation.ServiceId;
 import ru.majordomo.hms.rc.user.validation.ValidDatabaseUser;
 

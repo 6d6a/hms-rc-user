@@ -33,4 +33,22 @@ public class DatabaseConfig {
     public NamedParameterJdbcTemplate pdnsNamedParameterJdbcTemplate(@Qualifier("pdnsDataSource") DataSource pdnsDataSource) {
         return new NamedParameterJdbcTemplate(pdnsDataSource);
     }
+
+    @Bean(name = "billingDataSource")
+    @ConfigurationProperties(prefix="datasource.billing")
+    public DataSource billingDataSource() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "billingJdbcTemplate")
+    @Autowired
+    public JdbcTemplate billingJdbcTemplate(@Qualifier("billingDataSource") DataSource billingDataSource) {
+        return new JdbcTemplate(billingDataSource);
+    }
+
+    @Bean(name = "billingNamedParameterJdbcTemplate")
+    @Autowired
+    public NamedParameterJdbcTemplate billingNamedParameterJdbcTemplate(@Qualifier("billingDataSource") DataSource billingDataSource) {
+        return new NamedParameterJdbcTemplate(billingDataSource);
+    }
 }

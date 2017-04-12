@@ -46,6 +46,12 @@ public abstract class LordOfResources<T extends Resource> {
 
     public void preValidate(T resource) {}
 
+    public void validateAndStore(T resource) {
+        preValidate(resource);
+        validate(resource);
+        store(resource);
+    }
+
     protected abstract T construct(T resource) throws ParameterValidateException;
 
     public abstract T build(String resourceId) throws ResourceNotFoundException;
