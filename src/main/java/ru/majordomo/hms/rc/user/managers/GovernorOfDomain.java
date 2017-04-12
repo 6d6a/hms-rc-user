@@ -10,6 +10,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -17,6 +21,8 @@ import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
+import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
 
 @Service
 public class GovernorOfDomain extends LordOfResources<Domain> {
@@ -29,7 +35,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     private GovernorOfMailbox governorOfMailbox;
     private GovernorOfWebSite governorOfWebSite;
     private DomainRegistrarClient registrar;
-
+    private Validator validator;
 
     @Autowired
     public void setGovernorOfPerson(GovernorOfPerson governorOfPerson) {
@@ -71,6 +77,11 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         this.registrar = registrar;
     }
 
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+
     @Override
     public Domain create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Domain domain;
@@ -82,10 +93,6 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
             domain = buildResourceFromServiceMessage(serviceMessage);
             validate(domain);
-
-            if (repository.findByName(domain.getName()) != null) {
-                throw new ParameterValidateException("Домен " + domain.getName() + " уже присутствует в системе");
-            }
 
             if (needRegister != null && needRegister) {
                 try {
@@ -209,7 +216,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Override
     protected Domain buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
-        LordOfResources.setResourceParams(domain, serviceMessage, cleaner);
+        setResourceParams(domain, serviceMessage, cleaner);
         if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
             if (serviceMessage.getParam("personId") != null) {
                 String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
@@ -239,23 +246,11 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
     @Override
     public void validate(Domain domain) throws ParameterValidateException {
-        if (domain.getName() == null || domain.getName().equals("")) {
-            throw new ParameterValidateException("Имя домена не может быть пустым");
-        }
-        validateDomainName(domain.getName());
+        Set<ConstraintViolation<Domain>> constraintViolations = validator.validate(domain, DomainChecks.class);
 
-        Person domainPerson = domain.getPerson();
-        if (domainPerson != null) {
-            governorOfPerson.validate(domainPerson);
-        }
-
-        if (domain.getAutoRenew() == null) {
-            domain.setAutoRenew(false);
-        }
-
-        SSLCertificate sslCertificate = domain.getSslCertificate();
-        if (sslCertificate != null) {
-            governorOfSSLCertificate.validate(sslCertificate);
+        if (!constraintViolations.isEmpty()) {
+            logger.error(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 
@@ -424,14 +419,5 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Override
     public void store(Domain domain) {
         repository.save(domain);
-    }
-
-    private void validateDomainName(String domainName) throws ParameterValidateException {
-        try {
-            InternetDomainName domain = InternetDomainName.from(domainName);
-            String domainPublicPart = domain.publicSuffix().toString();
-        } catch (Exception e) {
-            throw new ParameterValidateException("Некорректное имя домена: " + domainName);
-        }
     }
 }

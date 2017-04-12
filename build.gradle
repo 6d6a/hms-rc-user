@@ -116,7 +116,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile("org.springframework.boot:spring-boot-starter-jetty")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.6")
-    compile("ru.majordomo.hms.rc.staff:resources:1.0.6.+")
+    compile("ru.majordomo.hms.rc.staff:resources:1.1.+")
     compile("dnsjava:dnsjava:2.1.7")
     compile("com.cronutils:cron-utils:5.0.1")
     compile("commons-validator:commons-validator:1.5.1")
@@ -129,6 +129,9 @@ dependencies {
     testCompile('org.apache.qpid:qpid-broker:6.0.4')
     testCompile('com.h2database:h2')
     compile(group: 'com.mysql', name: 'management', version: '1.1.6') { exclude(module: 'jmxtools') }
+    compile('org.hibernate:hibernate-validator:5.4.1.Final')
+    compile('javax.el:javax.el-api:3.0.0')
+    compile('org.glassfish.web:javax.el:2.2.4')
 }
 
 dependencyManagement {

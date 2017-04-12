@@ -18,6 +18,7 @@ import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.ValidationConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.amqp.BrokerManager;
 import ru.majordomo.hms.rc.user.test.config.amqp.ConfigAMQPControllers;
@@ -38,6 +39,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         FongoConfig.class,
         RedisConfig.class,
         DatabaseConfig.class,
+        ValidationConfig.class,
 
         ConfigAMQPControllers.class,
         AMQPBrokerConfig.class,

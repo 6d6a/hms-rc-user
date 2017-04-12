@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
@@ -45,5 +46,16 @@ public class ResourceArchiveRestController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
+    }
+
+    @RequestMapping(value = {"/{accountId}/resource-archive/filter"}, method = RequestMethod.GET)
+    public Collection<ResourceArchive> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
+        return governor.buildAll(requestParams);
+    }
+
+    @RequestMapping(value = {"/resource-archive/filter"}, method = RequestMethod.GET)
+    public Collection<ResourceArchive> filter(@RequestParam Map<String, String> requestParams) {
+        return governor.buildAll(requestParams);
     }
 }

@@ -1,18 +1,18 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import com.google.i18n.phonenumbers.NumberParseException;
-
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.common.PhoneNumberManager;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
@@ -20,6 +20,7 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
 
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {
@@ -27,6 +28,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     private Cleaner cleaner;
     private DomainRegistrarClient domainRegistrarClient;
     private GovernorOfDomain governorOfDomain;
+    private Validator validator;
 
     @Autowired
     public void setDomainRegistrarClient(DomainRegistrarClient domainRegistrarClient) {
@@ -48,11 +50,17 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         this.cleaner = cleaner;
     }
 
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+
     @Override
     public Person create(ServiceMessage serviceMessage) throws ParameterValidateException {
         Person person;
         try {
             person = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(person);
             validate(person);
 
             try {
@@ -130,6 +138,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
+        preValidate(person);
         validate(person);
 
         try {
@@ -173,7 +182,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             "Приступаю к построению ресурса, исходя из данных в ServiceMessage");
 
         Person person = new Person();
-        LordOfResources.setResourceParams(person, serviceMessage, cleaner);
+        setResourceParams(person, serviceMessage, cleaner);
         String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
         String postalAddress = cleaner.cleanString((String) serviceMessage.getParam("postalAddress"));
         List<String> phoneNumbers = new ArrayList<>();
@@ -213,44 +222,23 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     @Override
-    public void validate(Person person) throws ParameterValidateException {
-        if (person.getAccountId() == null || person.getAccountId().equals("")) {
-            throw new ParameterValidateException("Аккаунт ID не может быть пустым");
-        }
-
-        if (person.getName() == null || person.getName().equals("")) {
-            throw new ParameterValidateException("Имя персоны не может быть пустым");
-        }
-
+    public void preValidate(Person person) {
         if (person.getSwitchedOn() == null) {
             person.setSwitchedOn(true);
         }
 
-        if (person.getEmailAddresses() == null || person.getEmailAddresses().size() == 0) {
-            throw new ParameterValidateException("Должен быть указан хотя бы 1 email адрес");
-        }
-
-        EmailValidator validator = EmailValidator.getInstance(true, true); //allowLocal, allowTLD
-        for (String emailAddress: person.getEmailAddresses()) {
-            if (!validator.isValid(emailAddress)) {
-                throw new ParameterValidateException("Адрес " + emailAddress + " некорректен");
-            }
-        }
-
-        if (person.getPhoneNumbers() != null) {
-            for (String phoneNumber: person.getPhoneNumbers()) {
-                try {
-                    if(!PhoneNumberManager.phoneValid(phoneNumber)) {
-                        throw new ParameterValidateException("Номер: " + phoneNumber + " некорректен");
-                    }
-                } catch (NumberParseException e) {
-                    throw new ParameterValidateException("Номер: " + phoneNumber + " некорректен");
-                }
-            }
-        }
-
         if (person.getCountry() == null || person.getCountry().equals("")) {
             person.setCountry("RU");
+        }
+    }
+
+    @Override
+    public void validate(Person person) throws ParameterValidateException {
+        Set<ConstraintViolation<Person>> constraintViolations = validator.validate(person, PersonChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.error(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 
@@ -292,15 +280,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     public Collection<Person> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Person> buildedPersons = new ArrayList<>();
 
-        boolean byAccountId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId) {
+        if (keyValue.get("accountId") != null) {
             buildedPersons = repository.findByAccountId(keyValue.get("accountId"));
             buildedPersons.addAll(repository.findByLinkedAccountIds(keyValue.get("accountId")));
         }

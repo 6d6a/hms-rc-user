@@ -25,12 +25,13 @@ public class DatabaseRestController {
     }
 
     @RequestMapping(value = {"/{accountId}/database/filter"}, method = RequestMethod.GET)
-    public Collection<Database> readAllByAccountIdAndDatabaseUserId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+    public Collection<Database> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
     @RequestMapping(value = {"/database/filter"}, method = RequestMethod.GET)
-    public Collection<Database> readAllByDatabaseUserId(@RequestParam Map<String, String> requestParams) {
+    public Collection<Database> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 

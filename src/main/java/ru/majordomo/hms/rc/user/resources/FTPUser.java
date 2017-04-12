@@ -3,6 +3,8 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
 
 import java.io.UnsupportedEncodingException;
@@ -12,14 +14,23 @@ import java.util.List;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
+import ru.majordomo.hms.rc.user.validation.ObjectId;
+import ru.majordomo.hms.rc.user.validation.UniqueNameResource;
 
 @Document(collection = "ftpUsers")
+@UniqueNameResource(FTPUser.class)
 public class FTPUser extends Resource implements Securable {
+    @NotBlank(message = "Пароль FTP пользователя не может быть пустым")
     private String passwordHash;
-    private String homeDir;
+
+    private String homeDir = "";
     private List<Long> allowedIPAddresses;
+
     @Transient
     private UnixAccount unixAccount;
+
+    @NotBlank(message = "Параметр unixAccount не может быть пустым")
+    @ObjectId(value = UnixAccount.class, message = "Не найден UnixAccount с ID: ${validatedValue}")
     private String unixAccountId;
 
     @JsonIgnore

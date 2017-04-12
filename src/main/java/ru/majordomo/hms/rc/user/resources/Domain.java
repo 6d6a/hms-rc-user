@@ -8,20 +8,32 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
+
+import ru.majordomo.hms.rc.user.validation.UniqueNameResource;
+import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
+
 @Document(collection = "domains")
+@UniqueNameResource(Domain.class)
 public class Domain extends Resource {
 
     @Transient
+    @Valid
+    @ConvertGroup(from = DomainChecks.class, to = Default.class)
     private Person person;
 
     @Transient
+    @Valid
+    @ConvertGroup(from = DomainChecks.class, to = Default.class)
     private SSLCertificate sslCertificate;
 
     private String personId;
     private RegSpec regSpec;
     private List<DNSResourceRecord> dnsResourceRecords = new ArrayList<>();
     private String sslCertificateId;
-    private Boolean autoRenew;
+    private Boolean autoRenew = false;
     private String parentDomainId;
 
     @Override

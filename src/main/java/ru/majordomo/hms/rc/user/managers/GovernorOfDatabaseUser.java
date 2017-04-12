@@ -8,7 +8,10 @@ import org.springframework.stereotype.Component;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-import ru.majordomo.hms.rc.staff.resources.Server;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
+
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -19,19 +22,25 @@ import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
+import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
 
 @Component
 public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     private Cleaner cleaner;
     private DatabaseUserRepository repository;
     private GovernorOfDatabase governorOfDatabase;
-
-    private StaffResourceControllerClient staffRcClient;
+    private Validator validator;
     private String defaultServiceName;
+    private StaffResourceControllerClient staffRcClient;
 
-    @Value("${default.database.service.name}")
+    @Value("${default.database.serviceName}")
     public void setDefaultServiceName(String defaultServiceName) {
         this.defaultServiceName = defaultServiceName;
+    }
+
+    @Autowired
+    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
+        this.staffRcClient = staffRcClient;
     }
 
     @Autowired
@@ -50,8 +59,8 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Autowired
-    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
-        this.staffRcClient = staffRcClient;
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -59,6 +68,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         DatabaseUser databaseUser;
         try {
             databaseUser = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(databaseUser);
             validate(databaseUser);
             store(databaseUser);
 
@@ -66,6 +76,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                 for (String databaseId : databaseUser.getDatabaseIds()) {
                     Database database = governorOfDatabase.build(databaseId);
                     database.addDatabaseUserId(databaseUser.getId());
+                    governorOfDatabase.preValidate(database);
                     governorOfDatabase.validate(database);
                     governorOfDatabase.store(database);
                 }
@@ -116,6 +127,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
+        preValidate(databaseUser);
         validate(databaseUser);
         store(databaseUser);
 
@@ -141,7 +153,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     protected DatabaseUser buildResourceFromServiceMessage(ServiceMessage serviceMessage)
             throws ClassCastException, UnsupportedEncodingException {
         DatabaseUser databaseUser = new DatabaseUser();
-        LordOfResources.setResourceParams(databaseUser, serviceMessage, cleaner);
+        setResourceParams(databaseUser, serviceMessage, cleaner);
         String password = null;
         DBType userType = null;
         String serviceId = null;
@@ -178,10 +190,6 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
-        if (!hasUniqueName(databaseUser.getName())) {
-            throw new ParameterValidateException("Имя должно быть уникальным");
-        }
-
         databaseUser.setDatabaseIds(databaseIds);
         databaseUser.setServiceId(serviceId);
         databaseUser.setType(userType);
@@ -200,70 +208,18 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         return databaseUser;
     }
 
-    private Boolean hasUniqueName(String name) {
-        return (repository.findByName(name) == null);
+    @Override
+    public void preValidate(DatabaseUser databaseUser) {
+        preValidateDatabaseServiceId(databaseUser, staffRcClient, defaultServiceName);
     }
 
     @Override
     public void validate(DatabaseUser databaseUser) throws ParameterValidateException {
-        if (databaseUser.getAccountId() == null || databaseUser.getAccountId().equals("")) {
-            throw new ParameterValidateException("AccountID не может быть пустым");
-        }
+        Set<ConstraintViolation<DatabaseUser>> constraintViolations = validator.validate(databaseUser, DatabaseUserChecks.class);
 
-        if (databaseUser.getName() == null) {
-            throw new ParameterValidateException("Имя не может быть пустым");
-        }
-
-        if (databaseUser.getName().length() > 16) {
-            throw new ParameterValidateException("Имя не может быть длиннее 16 символов");
-        }
-
-        if (databaseUser.getPasswordHash() == null) {
-            throw new ParameterValidateException("Пароль не может быть пустым");
-        }
-
-        if (databaseUser.getSwitchedOn() == null) {
-            databaseUser.setSwitchedOn(true);
-        }
-
-        if (databaseUser.getType() == null) {
-            throw new ParameterValidateException("Тип не может быть пустым");
-        }
-
-        if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
-            for (String databaseId : databaseUser.getDatabaseIds()) {
-                Map<String, String> keyValue = new HashMap<>();
-                keyValue.put("accountId", databaseUser.getAccountId());
-                keyValue.put("resourceId", databaseId);
-                try {
-                    governorOfDatabase.build(keyValue);
-                } catch (ResourceNotFoundException e) {
-                    throw new ParameterValidateException("Не найдена база данных с ID: " + databaseId);
-                }
-            }
-        }
-
-        if (databaseUser.getServiceId() != null && !databaseUser.getServiceId().equals("")) {
-            Server server = staffRcClient.getServerByServiceId(databaseUser.getServiceId());
-            if (server == null) {
-                throw new ParameterValidateException("Не найден сервис с ID: " + databaseUser.getServiceId());
-            }
-        } else {
-            String serverId = staffRcClient.getActiveDatabaseServer().getId();
-
-            List<Service> databaseServices = staffRcClient.getDatabaseServicesByServerIdAndServiceType(serverId);
-            if (databaseServices != null) {
-                for (Service service : databaseServices) {
-                    if (service.getServiceType().getName().equals(this.defaultServiceName)) {
-                        databaseUser.setServiceId(service.getId());
-                        break;
-                    }
-                }
-                if (databaseUser.getServiceId() == null || (databaseUser.getServiceId().equals(""))) {
-                    throw new ParameterValidateException("Не найдено serviceType: " + this.defaultServiceName +
-                            " для сервера: " + serverId);
-                }
-            }
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 
@@ -300,19 +256,14 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
     @Override
     public Collection<DatabaseUser> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
-
         List<DatabaseUser> buildedDatabasesUsers = new ArrayList<>();
 
-        boolean byAccountId = false;
-
-        for (Map.Entry<String, String> entry : keyValue.entrySet()) {
-            if (entry.getKey().equals("accountId")) {
-                byAccountId = true;
-            }
-        }
-
-        if (byAccountId) {
+        if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
+            buildedDatabasesUsers.addAll(repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId")));
+        } else if (keyValue.get("accountId") != null) {
             buildedDatabasesUsers = repository.findByAccountId(keyValue.get("accountId"));
+        } else if (keyValue.get("serviceId") != null) {
+            buildedDatabasesUsers.addAll(repository.findByServiceId(keyValue.get("serviceId")));
         }
 
         return buildedDatabasesUsers;

@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.user.repositories.ResourceArchiveRepository;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchiveType;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
+import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -20,6 +21,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 
 @Service
 public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> {
@@ -27,7 +33,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     private GovernorOfWebSite governorOfWebSite;
     private GovernorOfDatabase governorOfDatabase;
     private String archiveHostname;
-    
+    private Validator validator;
     private Cleaner cleaner;
 
     @Autowired
@@ -50,23 +56,14 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
         this.cleaner = cleaner;
     }
 
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+
     @Value("${default.archive.hostname}")
     public void setArchiveHostname(String archiveHostname) {
         this.archiveHostname = archiveHostname;
-    }
-
-    @Override
-    public ResourceArchive create(ServiceMessage serviceMessage) throws ParameterValidateException {
-        ResourceArchive resourceArchive;
-        try {
-            resourceArchive = buildResourceFromServiceMessage(serviceMessage);
-            validate(resourceArchive);
-            store(resourceArchive);
-        } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
-        }
-
-        return resourceArchive;
     }
 
     @Override
@@ -99,7 +96,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     @Override
     protected ResourceArchive buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         ResourceArchive archive = new ResourceArchive();
-        LordOfResources.setResourceParams(archive, serviceMessage, cleaner);
+        setResourceParams(archive, serviceMessage, cleaner);
         String resourceId;
         ResourceArchiveType type = null;
 
@@ -148,14 +145,11 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
     @Override
     public void validate(ResourceArchive archive) throws ParameterValidateException {
-        if (archive.getAccountId() == null || archive.getAccountId().equals("")) {
-            throw new ParameterValidateException("Необходимо указать accountId");
-        }
-        if (archive.getResourceType() == null) {
-            throw new ParameterValidateException("Необходимо указать тип ресурса");
-        }
-        if (archive.getResourceId() == null || archive.getResourceId().equals("")) {
-            throw new ParameterValidateException("Необходимо указать id ресурса");
+        Set<ConstraintViolation<ResourceArchive>> constraintViolations = validator.validate(archive, ResourceArchiveChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug(constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
         }
     }
 
@@ -213,8 +207,16 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     public Collection<ResourceArchive> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<ResourceArchive> archives = new ArrayList<>();
 
-        if (keyValue.get("accountId") != null && !keyValue.get("accountId").equals("")) {
+        if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
+            for (ResourceArchive archive : repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"))) {
+                archives.add(construct(archive));
+            }
+        } else if (keyValue.get("accountId") != null) {
             for (ResourceArchive archive : repository.findByAccountId(keyValue.get("accountId"))) {
+                archives.add(construct(archive));
+            }
+        } else if (keyValue.get("serviceId") != null) {
+            for (ResourceArchive archive : repository.findByServiceId(keyValue.get("serviceId"))) {
                 archives.add(construct(archive));
             }
         }
