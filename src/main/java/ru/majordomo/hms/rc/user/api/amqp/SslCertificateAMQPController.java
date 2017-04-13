@@ -15,8 +15,11 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @EnableRabbit
 @Service
@@ -106,6 +109,15 @@ public class SslCertificateAMQPController {
             } else {
                 sender.send("ssl-certificate.create", "letsencrypt", serviceMessage, "rc");
             }
+        } catch (ConstraintViolationException e) {
+            String errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
+            logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                    " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                    " Создание ресурса SSLCertificate не удалось: " + errorMessage);
+            ServiceMessage report = createReport(serviceMessage, null, errorMessage);
+            report.delParam("success");
+            report.addParam("success", false);
+            sender.send("ssl-certificate.create", "pm", report);
         } catch (Exception e) {
             ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
             report.delParam("success");
@@ -128,6 +140,15 @@ public class SslCertificateAMQPController {
                 } else {
                     sender.send("ssl-certificate.create", "pm", report);
                 }
+            } catch (ConstraintViolationException e) {
+                String errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
+                logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                        " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                        " Создание ресурса SSLCertificate не удалось: " + errorMessage);
+                report = createReport(serviceMessage, null, errorMessage);
+                report.delParam("success");
+                report.addParam("success", false);
+                sender.send("ssl-certificate.create", "pm", report);
             } catch (Exception e) {
                 logger.error(e.getMessage());
                 report = createReport(serviceMessage, null, e.getMessage());
@@ -150,7 +171,16 @@ public class SslCertificateAMQPController {
         SSLCertificate certificate = new SSLCertificate();
         try {
             governor.drop(resourceId);
-            certificate = (SSLCertificate) governor.build(resourceId);
+            certificate = governor.build(resourceId);
+        } catch (ConstraintViolationException e) {
+            String errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
+            logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                    " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                    " Удаление ресурса SSLCertificate не удалось: " + errorMessage);
+            ServiceMessage report = createReport(serviceMessage, null, errorMessage);
+            report.delParam("success");
+            report.addParam("success", false);
+            sender.send("ssl-certificate.create", "pm", report);
         } catch (Exception e) {
             ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
             sender.send("ssl-certificate.delete", "pm", report);
