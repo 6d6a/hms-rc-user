@@ -38,7 +38,7 @@ public abstract class Resource {
                               UnixAccountChecks.class,
                               WebSiteChecks.class
                       })
-    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = DatabaseUserChecks.class)
+    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseChecks.class, DatabaseUserChecks.class})
     @DomainName(groups = DomainChecks.class)
     @ObjectId(value = Domain.class, fieldName = "name", groups = SSLCertificateChecks.class, message = "Домен с указанным именем не найден")
     private String name;

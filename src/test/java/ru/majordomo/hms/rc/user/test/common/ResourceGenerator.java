@@ -351,7 +351,7 @@ public class ResourceGenerator {
             webSite.setAccountId(accountId);
             webSite.setSwitchedOn(true);
             webSite.setUnixAccountId(unixAccountId);
-            webSite.setDomainIds(domainIds);
+            webSite.setDomainIds(Collections.singletonList(domainIds.get(i)));
             webSite.setCharSet(UTF8);
             webSite.setSsiEnabled(true);
             webSite.setSsiFileExtensions(Arrays.asList("shtml", "shtm"));

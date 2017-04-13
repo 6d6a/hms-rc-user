@@ -50,7 +50,7 @@ public class WebSiteValidator implements ConstraintValidator<ValidWebSite, WebSi
                 query = new Query(where("domainIds").in(webSite.getDomainIds()));
             }
 
-            isValid = !operations.exists(query, Mailbox.class);
+            isValid = !operations.exists(query, WebSite.class);
         } catch (RuntimeException e) {
             return false;
         }
