@@ -6,8 +6,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 
-import ru.majordomo.hms.rc.user.validation.DomainName;
-import ru.majordomo.hms.rc.user.validation.ObjectId;
+import ru.majordomo.hms.rc.user.validation.*;
 import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
 import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
 import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
@@ -19,6 +18,8 @@ import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
 import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
 import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
 import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
+
+import javax.validation.constraints.Pattern;
 
 public abstract class Resource {
     @Id
@@ -40,6 +41,10 @@ public abstract class Resource {
                       })
     @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseChecks.class, DatabaseUserChecks.class})
     @DomainName(groups = DomainChecks.class)
+    @ValidPersonName(groups = {PersonChecks.class})
+    @ValidDatabaseName(groups = {DatabaseChecks.class})
+    @ValidDatabaseUserName(groups = {DatabaseUserChecks.class})
+    @ValidFTPUser(groups = {FTPUserChecks.class})
     @ObjectId(value = Domain.class, fieldName = "name", groups = SSLCertificateChecks.class, message = "Домен с указанным именем не найден")
     private String name;
 
