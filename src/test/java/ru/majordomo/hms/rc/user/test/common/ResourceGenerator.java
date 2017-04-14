@@ -100,7 +100,7 @@ public class ResourceGenerator {
         for (int i = 2; i <= 4; i++) {
             Database database = new Database();
             database.setAccountId(ObjectId.get().toString());
-            database.setName("Тестовая база" + i);
+            database.setName("test_db_" + i);
             database.setSwitchedOn(true);
             if ((i % 2) == 0) {
                 database.setType(MYSQL);
