@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.validation.ObjectId;
+import ru.majordomo.hms.rc.user.validation.ValidAbsoluteFilePath;
+import ru.majordomo.hms.rc.user.validation.ValidEmail;
 import ru.majordomo.hms.rc.user.validation.ValidMailbox;
 import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
 import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
@@ -37,13 +39,23 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     @NotBlank(message = "Не указан пароль для почтового ящика")
     private String passwordHash;
 
-    private List<String> redirectAddresses = new ArrayList<>();
-    private List<String> blackList = new ArrayList<>();
-    private List<String> whiteList = new ArrayList<>();
+    @Valid
+    private List<@ValidEmail String> redirectAddresses = new ArrayList<>();
+
+    @Valid
+    private List<@ValidEmail String> blackList = new ArrayList<>();
+
+    @Valid
+    private List<@ValidEmail String> whiteList = new ArrayList<>();
+
     private Boolean mailFromAllowed = true;
+
     private Boolean antiSpamEnabled = false;
+
     private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE_TO_SPAM_FOLDER;
+
     private SpamFilterMood spamFilterMood = SpamFilterMood.NEUTRAL;
+
     private String serverId;
 
     @Min(value = 0L, message = "Квота не может иметь отрицательное значение")
@@ -55,7 +67,10 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private Long quotaUsed = 0L;
 
     private Boolean writable;
+
     private Boolean isAggregator;
+
+    @ValidAbsoluteFilePath
     private String mailSpool;
 
     @NotNull(message = "Uid не может быть равным null")

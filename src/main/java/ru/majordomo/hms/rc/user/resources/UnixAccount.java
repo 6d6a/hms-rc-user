@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import ru.majordomo.hms.rc.user.common.PasswordManager;
+import ru.majordomo.hms.rc.user.validation.ValidAbsoluteFilePath;
 import ru.majordomo.hms.rc.user.validation.ValidHomeDir;
 
 @Document(collection = "unixAccounts")
@@ -32,6 +33,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
 
     @NotBlank(message = "homedir не может быть пустым")
     @ValidHomeDir
+    @ValidAbsoluteFilePath
     private String homeDir;
 
     private String serverId;

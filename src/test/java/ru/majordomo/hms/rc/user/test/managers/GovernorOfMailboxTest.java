@@ -355,4 +355,13 @@ public class GovernorOfMailboxTest {
     public void dropNonExistent() throws Exception {
         governor.drop(ObjectId.get().toString());
     }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateName() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
+        serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+        serviceMessage.delParam("name");
+        serviceMessage.addParam("name", ".qwer");
+        governor.create(serviceMessage);
+    }
 }

@@ -169,9 +169,8 @@ public class GovernorOfResourceArchiveTest {
             Person person = domain.getPerson();
             personRepository.save(person);
             domainRepository.save(domain);
+            domainIds.add(domain.getId());
         }
-        String domainId = domains.get(0).getId();
-        domainIds.add(domainId);
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
         unixAccountRepository.save(unixAccounts);
         accountId = unixAccounts.get(0).getAccountId();

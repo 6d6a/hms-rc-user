@@ -223,9 +223,6 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         break;
                     case "documentRoot":
                         String documentRoot = cleaner.cleanString((String) entry.getValue());
-                        if (documentRoot.startsWith("/")) {
-                            documentRoot = documentRoot.substring(1);
-                        }
                         website.setDocumentRoot(documentRoot);
                         break;
                     case "charSet":
@@ -335,9 +332,6 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
             String applicationServiceId = cleaner.cleanString((String) serviceMessage.getParam("applicationServiceId"));
             String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
-            if (documentRoot.startsWith("/")) {
-                documentRoot = documentRoot.substring(1);
-            }
 
             String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
 

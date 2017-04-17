@@ -31,7 +31,6 @@ import java.util.List;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
         ConfigStaffResourceControllerClient.class,

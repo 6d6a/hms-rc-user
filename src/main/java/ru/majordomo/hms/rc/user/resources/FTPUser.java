@@ -16,6 +16,7 @@ import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.validation.ObjectId;
 import ru.majordomo.hms.rc.user.validation.UniqueNameResource;
+import ru.majordomo.hms.rc.user.validation.ValidRelativeFilePath;
 
 @Document(collection = "ftpUsers")
 @UniqueNameResource(FTPUser.class)
@@ -23,6 +24,7 @@ public class FTPUser extends Resource implements Securable {
     @NotBlank(message = "Пароль FTP пользователя не может быть пустым")
     private String passwordHash;
 
+    @ValidRelativeFilePath
     private String homeDir = "";
     private List<Long> allowedIPAddresses;
 

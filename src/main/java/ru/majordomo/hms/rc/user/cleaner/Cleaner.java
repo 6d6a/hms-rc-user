@@ -11,13 +11,7 @@ public class Cleaner {
         if (input == null) {
             return "";
         }
-        return input.trim()
-                .replace("\\","")
-                .replace("<","")
-                .replace(">","")
-                .replace("?","")
-                .replace("#","")
-                .replace("~","");
+        return input.trim();
     }
 
     public List<String> cleanListWithStrings(List<String> stringList) {

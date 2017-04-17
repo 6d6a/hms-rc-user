@@ -114,6 +114,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                     case "sendmailAllowed":
                         unixAccount.setSendmailAllowed((Boolean) serviceMessage.getParam("sendmailAllowed"));
                         break;
+                    case "switchedOn":
+                        unixAccount.setSwitchedOn((Boolean) entry.getValue());
+                        break;
+                    case "writable":
+                        unixAccount.setWritable((Boolean) entry.getValue());
+                        break;
                     default:
                         break;
                 }
