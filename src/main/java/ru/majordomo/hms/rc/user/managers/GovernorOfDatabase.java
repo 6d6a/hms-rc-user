@@ -97,6 +97,9 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
                     case "switchedOn":
                         database.setSwitchedOn((Boolean) entry.getValue());
                         break;
+                    case "writable":
+                        database.setWritable((Boolean) entry.getValue());
+                        break;
                     default:
                         break;
                 }

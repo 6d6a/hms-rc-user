@@ -19,8 +19,6 @@ import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
 import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
 import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
 
-import javax.validation.constraints.Pattern;
-
 public abstract class Resource {
     @Id
     private String id;
@@ -44,7 +42,8 @@ public abstract class Resource {
     @ValidPersonName(groups = {PersonChecks.class})
     @ValidDatabaseName(groups = {DatabaseChecks.class})
     @ValidDatabaseUserName(groups = {DatabaseUserChecks.class})
-    @ValidFTPUser(groups = {FTPUserChecks.class})
+    @ValidFTPUserName(groups = {FTPUserChecks.class})
+    @ValidMailboxName(groups = {MailboxChecks.class})
     @ObjectId(value = Domain.class, fieldName = "name", groups = SSLCertificateChecks.class, message = "Домен с указанным именем не найден")
     private String name;
 

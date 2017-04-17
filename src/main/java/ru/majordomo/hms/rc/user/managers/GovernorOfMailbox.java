@@ -145,9 +145,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                     case "antiSpamEnabled":
                         mailbox.setAntiSpamEnabled((Boolean) entry.getValue());
                         break;
-                    case "switchedOn":
-                        mailbox.setSwitchedOn((Boolean) entry.getValue());
-                        break;
                     case "isAggregator":
                         Boolean userValue = (Boolean) entry.getValue();
                         if (userValue) {
@@ -171,6 +168,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         } catch (IllegalArgumentException e) {
                             throw new ParameterValidateException("Недопустимый тип придирчивости");
                         }
+                        break;
+                    case "writable":
+                        mailbox.setWritable((Boolean) entry.getValue());
+                        break;
+                    case "switchedOn":
+                        mailbox.setSwitchedOn((Boolean) entry.getValue());
                         break;
                     default:
                         break;

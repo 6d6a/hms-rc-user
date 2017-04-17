@@ -9,9 +9,9 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-@Pattern(regexp = "[a-zA-Z0-9_]+", message = "Разрешены только символы латинского алфавита, цифры и символ '_'")
+@Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*", message = "Некорректное название почтового ящика")
 
-public @interface ValidFTPUser {
+public @interface ValidMailboxName {
     String message() default "{ru.majordomo.hms.rc.user.validation.FileExtensionPattern.message}";
 
     Class<?>[] groups() default { };

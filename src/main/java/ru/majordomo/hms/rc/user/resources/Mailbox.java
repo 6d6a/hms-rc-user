@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.validation.ObjectId;
+import ru.majordomo.hms.rc.user.validation.ValidAbsoluteFilePath;
 import ru.majordomo.hms.rc.user.validation.ValidEmail;
 import ru.majordomo.hms.rc.user.validation.ValidMailbox;
 import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
@@ -68,7 +69,8 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private Boolean writable;
 
     private Boolean isAggregator;
-    
+
+    @ValidAbsoluteFilePath
     private String mailSpool;
 
     @NotNull(message = "Uid не может быть равным null")
