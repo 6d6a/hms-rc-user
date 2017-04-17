@@ -9,10 +9,10 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-@Pattern(regexp = "[a-zA-Z0-9_]+", message = "Разрешены только символы латинского алфавита, цифры и символ '_'")
+@Pattern(regexp = "[a-zA-Z0-9_]+", message = "{ru.majordomo.hms.rc.user.validation.DatabaseName.message}")
 
 public @interface ValidDatabaseName {
-    String message() default "{ru.majordomo.hms.rc.user.validation.FileExtensionPattern.message}";
+    String message() default "{ru.majordomo.hms.rc.user.validation.DatabaseName.message}";
 
     Class<?>[] groups() default { };
 
