@@ -71,8 +71,7 @@ public class FTPUserDBImportService {
         ftpUser.setSwitchedOn(rs.getString("Status").equals("1"));
         ftpUser.setName(rs.getString("login"));
         ftpUser.setHomeDir(rs.getString("HomeDir"));
-        //TODO искать по UID аккаунт
-        ftpUser.setUnixAccountId(rs.getString("UID"));
+        ftpUser.setUnixAccountId("unixAccount_" + rs.getString("id"));
 
         String query = "SELECT fa.id, fa.acc_id, fa.remote_ip " +
                 "FROM ftp_access fa " +

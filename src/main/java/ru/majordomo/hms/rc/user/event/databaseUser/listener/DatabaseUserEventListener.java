@@ -33,7 +33,7 @@ public class DatabaseUserEventListener {
     public void onDatabaseUserCreateEvent(DatabaseUserCreateEvent event) {
         DatabaseUser databaseUser = event.getSource();
 
-        logger.debug("We got FTPUserCreateEvent");
+        logger.debug("We got DatabaseUserCreateEvent");
 
         try {
             governorOfDatabaseUser.validateAndStore(databaseUser);
@@ -47,7 +47,7 @@ public class DatabaseUserEventListener {
     public void onDatabaseUserImportEvent(DatabaseUserImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got FTPUserImportEvent");
+        logger.debug("We got SSLCertificateImportEvent");
 
         try {
             databaseUserDBImportService.pull(accountId);

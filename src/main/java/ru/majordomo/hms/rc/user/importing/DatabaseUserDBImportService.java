@@ -8,34 +8,39 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.event.databaseUser.DatabaseUserCreateEvent;
 import ru.majordomo.hms.rc.user.event.databaseUser.DatabaseUserImportEvent;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
-@Service
+@Component
 public class DatabaseUserDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DatabaseUserDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final DatabaseUserRepository databaseUserRepository;
+    private final StaffResourceControllerClient staffResourceControllerClient;
     private final ApplicationEventPublisher publisher;
 
     @Autowired
     public DatabaseUserDBImportService(
             @Qualifier("billingNamedParameterJdbcTemplate") NamedParameterJdbcTemplate namedParameterJdbcTemplate,
             DatabaseUserRepository databaseUserRepository,
+            StaffResourceControllerClient staffResourceControllerClient,
             ApplicationEventPublisher publisher
     ) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.databaseUserRepository = databaseUserRepository;
+        this.staffResourceControllerClient = staffResourceControllerClient;
         this.publisher = publisher;
     }
 
@@ -78,10 +83,17 @@ public class DatabaseUserDBImportService {
 
         DatabaseUser databaseUser = new DatabaseUser();
         databaseUser.setAccountId(rs.getString("id"));
-        //TODO Брать откуда-то со staff id Service-а
-        databaseUser.setServiceId("someId");
-        //TODO Доставать пароль
-        databaseUser.setPasswordHash("Жопа с этими паролями, они лежат прямо на DB-серверах");
+
+        //id of mdb4 = 'db_server_20'
+        String serverId = rs.getString("localdb").equals("1") ? "web_server_" + rs.getString("server_id") : "db_server_20";
+        List<Service> services = staffResourceControllerClient.getDatabaseServicesByServerId(serverId);
+
+        if(!services.isEmpty()) {
+            databaseUser.setServiceId(services.get(0).getId());
+        }
+
+        //TODO Доставать пароль (Пароли лежат прямо на DB-серверах)
+//        databaseUser.setPasswordHash("");
         databaseUser.setType(DBType.MYSQL);
         databaseUser.setSwitchedOn(true);
         databaseUser.setName(userName);

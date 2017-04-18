@@ -10,15 +10,24 @@ public class DBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DBImportService.class);
 
     private final DatabaseUserDBImportService databaseUserDBImportService;
+    private final DatabaseDBImportService databaseDBImportService;
     private final FTPUserDBImportService ftpUserDBImportService;
+    private final UnixAccountDBImportService unixAccountDBImportService;
+    private final SSLCertificateDBImportService sslCertificateDBImportService;
 
     @Autowired
     public DBImportService(
             DatabaseUserDBImportService databaseUserDBImportService,
-            FTPUserDBImportService ftpUserDBImportService
+            DatabaseDBImportService databaseDBImportService,
+            FTPUserDBImportService ftpUserDBImportService,
+            UnixAccountDBImportService unixAccountDBImportService,
+            SSLCertificateDBImportService sslCertificateDBImportService
     ) {
         this.databaseUserDBImportService = databaseUserDBImportService;
+        this.databaseDBImportService = databaseDBImportService;
         this.ftpUserDBImportService = ftpUserDBImportService;
+        this.unixAccountDBImportService = unixAccountDBImportService;
+        this.sslCertificateDBImportService = sslCertificateDBImportService;
     }
 
     public boolean seedDB() {
@@ -33,11 +42,20 @@ public class DBImportService {
     public boolean importToMongo() {
         boolean imported;
 
+        imported = unixAccountDBImportService.importToMongo();
+        logger.debug(imported ? "unixAccount db_imported" : "unixAccount db_not_imported");
+
         imported = databaseUserDBImportService.importToMongo();
         logger.debug(imported ? "databaseUser db_imported" : "databaseUser db_not_imported");
 
+        imported = databaseDBImportService.importToMongo();
+        logger.debug(imported ? "database db_imported" : "database db_not_imported");
+
         imported = ftpUserDBImportService.importToMongo();
         logger.debug(imported ? "ftpUser db_imported" : "ftpUser db_not_imported");
+
+        imported = sslCertificateDBImportService.importToMongo();
+        logger.debug(imported ? "sslCertificate db_imported" : "sslCertificate db_not_imported");
 
         return true;
     }
@@ -45,11 +63,20 @@ public class DBImportService {
     public boolean importToMongo(String accountId) {
         boolean imported;
 
-        imported = databaseUserDBImportService.importToMongo(accountId);
-        logger.debug(imported ? "databaseUser db_imported" : "databaseUser db_not_imported");
+//        imported = unixAccountDBImportService.importToMongo(accountId);
+//        logger.debug(imported ? "unixAccount db_imported" : "unixAccount db_not_imported");
 
-        imported = ftpUserDBImportService.importToMongo(accountId);
-        logger.debug(imported ? "ftpUser db_imported" : "ftpUser db_not_imported");
+//        imported = databaseUserDBImportService.importToMongo(accountId);
+//        logger.debug(imported ? "databaseUser db_imported" : "databaseUser db_not_imported");
+
+//        imported = databaseDBImportService.importToMongo(accountId);
+//        logger.debug(imported ? "database db_imported" : "database db_not_imported");
+
+//        imported = ftpUserDBImportService.importToMongo(accountId);
+//        logger.debug(imported ? "ftpUser db_imported" : "ftpUser db_not_imported");
+
+        imported = sslCertificateDBImportService.importToMongo(accountId);
+        logger.debug(imported ? "sslCertificate db_imported" : "sslCertificate db_not_imported");
 
         return true;
     }
