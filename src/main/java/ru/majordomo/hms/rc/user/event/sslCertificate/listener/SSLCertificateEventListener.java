@@ -36,7 +36,10 @@ public class SSLCertificateEventListener {
         logger.debug("We got SSLCertificateCreateEvent");
 
         try {
-            governorOfSSLCertificate.validateAndStore(sslCertificate);
+            //TODO лучше бы валидировать
+            //(если импортить предварительно не импортнув домены, то валидация не пройдет)
+            governorOfSSLCertificate.store(sslCertificate);
+//            governorOfSSLCertificate.validateAndStore(sslCertificate);
         } catch (Exception e) {
             e.printStackTrace();
         }

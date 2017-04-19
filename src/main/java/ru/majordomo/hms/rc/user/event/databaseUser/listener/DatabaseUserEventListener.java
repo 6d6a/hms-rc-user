@@ -47,7 +47,7 @@ public class DatabaseUserEventListener {
     public void onDatabaseUserImportEvent(DatabaseUserImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got SSLCertificateImportEvent");
+        logger.debug("We got DatabaseUserImportEvent");
 
         try {
             databaseUserDBImportService.pull(accountId);

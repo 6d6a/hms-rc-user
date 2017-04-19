@@ -27,7 +27,6 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateCreateEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateImportEvent;
 import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
-import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificateState;
 
