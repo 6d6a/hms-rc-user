@@ -15,6 +15,7 @@ public class DBImportService {
     private final UnixAccountDBImportService unixAccountDBImportService;
     private final SSLCertificateDBImportService sslCertificateDBImportService;
     private final DomainDBImportService domainDBImportService;
+    private final MailboxDBImportService mailboxDBImportService;
 
     @Autowired
     public DBImportService(
@@ -23,14 +24,15 @@ public class DBImportService {
             FTPUserDBImportService ftpUserDBImportService,
             UnixAccountDBImportService unixAccountDBImportService,
             SSLCertificateDBImportService sslCertificateDBImportService,
-            DomainDBImportService domainDBImportService
-    ) {
+            DomainDBImportService domainDBImportService,
+            MailboxDBImportService mailboxDBImportService) {
         this.databaseUserDBImportService = databaseUserDBImportService;
         this.databaseDBImportService = databaseDBImportService;
         this.ftpUserDBImportService = ftpUserDBImportService;
         this.unixAccountDBImportService = unixAccountDBImportService;
         this.sslCertificateDBImportService = sslCertificateDBImportService;
         this.domainDBImportService = domainDBImportService;
+        this.mailboxDBImportService = mailboxDBImportService;
     }
 
     public boolean seedDB() {
@@ -61,7 +63,10 @@ public class DBImportService {
         logger.debug(imported ? "sslCertificate db_imported" : "sslCertificate db_not_imported");
 
         imported = domainDBImportService.importToMongo();
-        logger.debug(imported ? "sslCertificate db_imported" : "sslCertificate db_not_imported");
+        logger.debug(imported ? "domain db_imported" : "domain db_not_imported");
+
+        imported = mailboxDBImportService.importToMongo();
+        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 
         return true;
     }
@@ -84,8 +89,11 @@ public class DBImportService {
 //        imported = sslCertificateDBImportService.importToMongo(accountId);
 //        logger.debug(imported ? "sslCertificate db_imported" : "sslCertificate db_not_imported");
 
-        imported = domainDBImportService.importToMongo(accountId);
-        logger.debug(imported ? "domain db_imported" : "domain db_not_imported");
+//        imported = domainDBImportService.importToMongo(accountId);
+//        logger.debug(imported ? "domain db_imported" : "domain db_not_imported");
+
+        imported = mailboxDBImportService.importToMongo(accountId);
+        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 
         return true;
     }

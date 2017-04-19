@@ -100,7 +100,7 @@ public class UnixAccountDBImportService {
         unixAccount.setWritable(rs.getString("status").equals("1"));
         unixAccount.setSwitchedOn(rs.getString("status").equals("1"));
         unixAccount.setName("u" + rs.getString("uid"));
-        unixAccount.setServerId("web_" + rs.getString("server_id"));
+        unixAccount.setServerId("web_server_" + rs.getString("server_id"));
 
         SSHKeyPair sshKeyPair = new SSHKeyPair();
         sshKeyPair.setPublicKey(rs.getString("pub_key"));
