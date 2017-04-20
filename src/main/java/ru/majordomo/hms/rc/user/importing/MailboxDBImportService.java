@@ -72,9 +72,9 @@ public class MailboxDBImportService {
     }
 
     public void pull(String accountId) {
-        String query = "SELECT a.id, a.uid, a.mailspool, a.popper, " +
+        String query = "SELECT a.id, a.uid, a.popper, " +
                 "p.username, p.password, p.filename, p.Domain_ID, p.trash, p.warned, p.blocked, p.quota, " +
-                "d.Domain_name, d.smtp, d.avp, " +
+                "d.Domain_name, d.smtp, d.avp, d.mailspool, " +
                 "ps.score, ps.action " +
                 "FROM POP3 p " +
                 "JOIN domain d ON d.Domain_ID = p.Domain_ID " +
@@ -103,7 +103,7 @@ public class MailboxDBImportService {
         mailbox.setPasswordHash(rs.getString("password"));
         mailbox.setQuota(rs.getLong("quota") * 1024);
         mailbox.setQuotaUsed(0L);
-        mailbox.setMailSpool(rs.getString("mailspool") + "/" + domainName);
+        mailbox.setMailSpool(rs.getString("mailspool"));
         mailbox.setServerId("mail_server_" + rs.getString("popper"));
         mailbox.setIsAggregator(name.equals("postmaster") && rs.getString("trash").equals("1"));
         mailbox.setMailFromAllowed(rs.getString("smtp").equals("1"));

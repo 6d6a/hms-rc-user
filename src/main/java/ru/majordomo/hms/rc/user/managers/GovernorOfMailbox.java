@@ -95,14 +95,19 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Mailbox mailbox;
         try {
             mailbox = buildResourceFromServiceMessage(serviceMessage);
-            preValidate(mailbox);
-            validate(mailbox);
-            store(mailbox);
-            syncWithRedis(mailbox);
+            validateAndStore(mailbox);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
         }
         return mailbox;
+    }
+
+    @Override
+    public void validateAndStore(Mailbox mailbox) {
+        preValidate(mailbox);
+        validate(mailbox);
+        store(mailbox);
+        syncWithRedis(mailbox);
     }
 
     @Override
@@ -180,16 +185,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
-        preValidate(mailbox);
-        validate(mailbox);
-        store(mailbox);
-
-        if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
-            setAggregatorInRedis(mailbox);
-        } else {
-            dropAggregatorInRedis(mailbox);
-        }
-        syncWithRedis(mailbox);
+        validateAndStore(mailbox);
 
         return mailbox;
     }
@@ -497,6 +493,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     public void syncWithRedis(Mailbox mailbox) {
+        if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
+            dropAggregatorInRedis(mailbox);
+            setAggregatorInRedis(mailbox);
+        }
+
         String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
         redisRepository.save(convertMailboxToMailboxForRedis(mailbox, serverName));
         saveUserData(mailbox, serverName);
