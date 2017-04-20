@@ -154,6 +154,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                 }
                             }
                             break;
+                        case "switchedOn":
+                            Boolean switchedOn = (Boolean) entry.getValue();
+                            governorOfDnsRecord.setZoneStatus(domain, switchedOn);
+                            break;
                         default:
                             break;
                     }
