@@ -30,10 +30,10 @@ public class UnixAccountEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onUnixAccountCreateEvent(UnixAccountCreateEvent event) {
+    public void onCreateEvent(UnixAccountCreateEvent event) {
         UnixAccount unixAccount = event.getSource();
 
-        logger.debug("We got UnixAccountCreateEvent");
+        logger.debug("We got CreateEvent");
 
         try {
             governorOfUnixAccount.validateAndStore(unixAccount);
@@ -44,10 +44,10 @@ public class UnixAccountEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onUnixAccountImportEvent(UnixAccountImportEvent event) {
+    public void onImportEvent(UnixAccountImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got UnixAccountImportEvent");
+        logger.debug("We got ImportEvent");
 
         try {
             unixAccountDBImportService.pull(accountId);

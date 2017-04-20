@@ -30,10 +30,10 @@ public class DatabaseUserEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onDatabaseUserCreateEvent(DatabaseUserCreateEvent event) {
+    public void onCreateEvent(DatabaseUserCreateEvent event) {
         DatabaseUser databaseUser = event.getSource();
 
-        logger.debug("We got DatabaseUserCreateEvent");
+        logger.debug("We got CreateEvent");
 
         try {
             governorOfDatabaseUser.validateAndStore(databaseUser);
@@ -44,10 +44,10 @@ public class DatabaseUserEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onDatabaseUserImportEvent(DatabaseUserImportEvent event) {
+    public void onImportEvent(DatabaseUserImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got DatabaseUserImportEvent");
+        logger.debug("We got ImportEvent");
 
         try {
             databaseUserDBImportService.pull(accountId);

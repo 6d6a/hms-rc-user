@@ -30,10 +30,10 @@ public class SSLCertificateEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onSSLCertificateCreateEvent(SSLCertificateCreateEvent event) {
+    public void onCreateEvent(SSLCertificateCreateEvent event) {
         SSLCertificate sslCertificate = event.getSource();
 
-        logger.debug("We got SSLCertificateCreateEvent");
+        logger.debug("We got CreateEvent");
 
         try {
             //TODO лучше бы валидировать
@@ -47,10 +47,10 @@ public class SSLCertificateEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onSSLCertificateImportEvent(SSLCertificateImportEvent event) {
+    public void onImportEvent(SSLCertificateImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got SSLCertificateImportEvent");
+        logger.debug("We got ImportEvent");
 
         try {
             sslCertificateDBImportService.pull(accountId);

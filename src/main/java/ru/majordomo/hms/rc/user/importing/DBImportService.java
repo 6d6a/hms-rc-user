@@ -16,6 +16,7 @@ public class DBImportService {
     private final SSLCertificateDBImportService sslCertificateDBImportService;
     private final DomainDBImportService domainDBImportService;
     private final MailboxDBImportService mailboxDBImportService;
+    private final WebSiteDBImportService webSiteDBImportService;
 
     @Autowired
     public DBImportService(
@@ -25,7 +26,9 @@ public class DBImportService {
             UnixAccountDBImportService unixAccountDBImportService,
             SSLCertificateDBImportService sslCertificateDBImportService,
             DomainDBImportService domainDBImportService,
-            MailboxDBImportService mailboxDBImportService) {
+            MailboxDBImportService mailboxDBImportService,
+            WebSiteDBImportService webSiteDBImportService
+    ) {
         this.databaseUserDBImportService = databaseUserDBImportService;
         this.databaseDBImportService = databaseDBImportService;
         this.ftpUserDBImportService = ftpUserDBImportService;
@@ -33,6 +36,7 @@ public class DBImportService {
         this.sslCertificateDBImportService = sslCertificateDBImportService;
         this.domainDBImportService = domainDBImportService;
         this.mailboxDBImportService = mailboxDBImportService;
+        this.webSiteDBImportService = webSiteDBImportService;
     }
 
     public boolean seedDB() {
@@ -68,6 +72,9 @@ public class DBImportService {
         imported = mailboxDBImportService.importToMongo();
         logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 
+        imported = webSiteDBImportService.importToMongo();
+        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
+
         return true;
     }
 
@@ -92,8 +99,11 @@ public class DBImportService {
 //        imported = domainDBImportService.importToMongo(accountId);
 //        logger.debug(imported ? "domain db_imported" : "domain db_not_imported");
 
-        imported = mailboxDBImportService.importToMongo(accountId);
-        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
+//        imported = mailboxDBImportService.importToMongo(accountId);
+//        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
+
+        imported = webSiteDBImportService.importToMongo(accountId);
+        logger.debug(imported ? "webSite db_imported" : "webSite db_not_imported");
 
         return true;
     }

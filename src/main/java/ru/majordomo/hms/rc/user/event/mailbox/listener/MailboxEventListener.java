@@ -30,10 +30,10 @@ public class MailboxEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onMailboxCreateEvent(MailboxCreateEvent event) {
+    public void onCreateEvent(MailboxCreateEvent event) {
         Mailbox mailbox = event.getSource();
 
-        logger.debug("We got MailboxCreateEvent");
+        logger.debug("We got CreateEvent");
 
         try {
             governorOfMailbox.validateAndStore(mailbox);
@@ -44,10 +44,10 @@ public class MailboxEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onMailboxImportEvent(MailboxImportEvent event) {
+    public void onImportEvent(MailboxImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got MailboxImportEvent");
+        logger.debug("We got ImportEvent");
 
         try {
             mailboxDBImportService.pull(accountId);

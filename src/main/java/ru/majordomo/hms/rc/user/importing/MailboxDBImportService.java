@@ -62,8 +62,9 @@ public class MailboxDBImportService {
 
     private void pull() {
         String query = "SELECT a.id " +
-                "FROM ssl_certificates sc " +
-                "JOIN account a ON sc.acc_id = a.id " +
+                "FROM POP3 p " +
+                "JOIN domain d ON d.Domain_ID = p.Domain_ID " +
+                "JOIN account a ON d.acc_id = a.id " +
                 "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {

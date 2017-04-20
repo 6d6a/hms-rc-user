@@ -34,10 +34,10 @@ public class DomainEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onDomainCreateEvent(DomainCreateEvent event) {
+    public void onCreateEvent(DomainCreateEvent event) {
         Domain domain = event.getSource();
 
-        logger.debug("We got DomainCreateEvent");
+        logger.debug("We got CreateEvent");
 
         try {
             governorOfDomain.validateAndStore(domain);
@@ -48,10 +48,10 @@ public class DomainEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onDatabaseUserImportEvent(DomainImportEvent event) {
+    public void onImportEvent(DomainImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got DomainImportEvent");
+        logger.debug("We got ImportEvent");
 
         try {
             domainDBImportService.pull(accountId);

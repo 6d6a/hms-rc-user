@@ -286,7 +286,7 @@ public class WebSite extends Resource implements Serviceable {
                 "id=" + this.getId() +
                 ", name=" + this.getName() +
                 ", unixAccount=" + unixAccount +
-                ", serverId='" + serviceId + '\'' +
+                ", serviceId='" + serviceId + '\'' +
                 ", documentRoot='" + documentRoot + '\'' +
                 ", domains=" + domains +
                 ", charSet=" + charSet +

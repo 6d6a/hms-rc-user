@@ -30,10 +30,10 @@ public class FTPUserEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onFTPUserCreateEvent(FTPUserCreateEvent event) {
+    public void onCreateEvent(FTPUserCreateEvent event) {
         FTPUser ftpUser = event.getSource();
 
-        logger.debug("We got FTPUserCreateEvent");
+        logger.debug("We got CreateEvent");
 
         try {
             governorOfFTPUser.validateAndStore(ftpUser);
@@ -44,10 +44,10 @@ public class FTPUserEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onFTPUserImportEvent(FTPUserImportEvent event) {
+    public void onImportEvent(FTPUserImportEvent event) {
         String accountId = event.getSource();
 
-        logger.debug("We got FTPUserImportEvent");
+        logger.debug("We got ImportEvent");
 
         try {
             ftpUserDBImportService.pull(accountId);
