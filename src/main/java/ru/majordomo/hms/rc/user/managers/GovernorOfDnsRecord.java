@@ -267,4 +267,8 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         record.setData("ns.majordomo.ru. support.majordomo.ru. 2004032900 3600 900 3600000 3600");
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
     }
+
+    void setZoneStatus(Domain domain, Boolean switchedOn) {
+        dnsResourceRecordDAO.switchByDomainName(domain.getName(), switchedOn);
+    }
 }

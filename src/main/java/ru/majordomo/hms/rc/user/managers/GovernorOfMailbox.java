@@ -173,7 +173,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         mailbox.setWritable((Boolean) entry.getValue());
                         break;
                     case "switchedOn":
-                        mailbox.setSwitchedOn((Boolean) entry.getValue());
+                        Boolean switchedOn = (Boolean) entry.getValue();
+                        mailbox.setSwitchedOn(switchedOn);
+                        mailbox.setWritable(switchedOn);
+                        mailbox.setMailFromAllowed(switchedOn);
                         break;
                     default:
                         break;
@@ -518,6 +521,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
         mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
         mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());

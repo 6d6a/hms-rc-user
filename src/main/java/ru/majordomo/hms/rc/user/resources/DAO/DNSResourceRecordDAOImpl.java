@@ -223,4 +223,17 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         String domainsQuery = "DELETE FROM domains WHERE id = :domainId";
         jdbcTemplate.update(domainsQuery, parameters);
     }
+
+    public void switchByDomainName(String domainName, Boolean switchedOn) {
+        int active = switchedOn ? 1 : 0;
+        Long domainId = getDomainIDByDomainName(domainName);
+        String query = "UPDATE records SET active = :active WHERE domain_id = :domainId";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("active", active);
+        parameters.addValue("domainId", domainId);
+        jdbcTemplate.update(query, parameters);
+
+        query = "UPDATE domains SET active = :active WHERE id = :domainId";
+        jdbcTemplate.update(query, parameters);
+    }
 }
