@@ -17,6 +17,7 @@ public class DBImportService {
     private final DomainDBImportService domainDBImportService;
     private final MailboxDBImportService mailboxDBImportService;
     private final WebSiteDBImportService webSiteDBImportService;
+    private final PersonDBImportService personDBImportService;
 
     @Autowired
     public DBImportService(
@@ -27,7 +28,8 @@ public class DBImportService {
             SSLCertificateDBImportService sslCertificateDBImportService,
             DomainDBImportService domainDBImportService,
             MailboxDBImportService mailboxDBImportService,
-            WebSiteDBImportService webSiteDBImportService
+            WebSiteDBImportService webSiteDBImportService,
+            PersonDBImportService personDBImportService
     ) {
         this.databaseUserDBImportService = databaseUserDBImportService;
         this.databaseDBImportService = databaseDBImportService;
@@ -37,6 +39,7 @@ public class DBImportService {
         this.domainDBImportService = domainDBImportService;
         this.mailboxDBImportService = mailboxDBImportService;
         this.webSiteDBImportService = webSiteDBImportService;
+        this.personDBImportService = personDBImportService;
     }
 
     public boolean seedDB() {
@@ -75,6 +78,9 @@ public class DBImportService {
         imported = webSiteDBImportService.importToMongo();
         logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 
+        imported = personDBImportService.importToMongo();
+        logger.debug(imported ? "person db_imported" : "person db_not_imported");
+
         return true;
     }
 
@@ -102,8 +108,11 @@ public class DBImportService {
 //        imported = mailboxDBImportService.importToMongo(accountId);
 //        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 
-        imported = webSiteDBImportService.importToMongo(accountId);
-        logger.debug(imported ? "webSite db_imported" : "webSite db_not_imported");
+//        imported = webSiteDBImportService.importToMongo(accountId);
+//        logger.debug(imported ? "webSite db_imported" : "webSite db_not_imported");
+
+        imported = personDBImportService.importToMongo(accountId);
+        logger.debug(imported ? "person db_imported" : "person db_not_imported");
 
         return true;
     }
