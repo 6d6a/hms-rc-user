@@ -28,7 +28,7 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 
 @Service
-public class PersonDBImportService {
+public class PersonDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(PersonDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -46,7 +46,7 @@ public class PersonDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id " +
                 "FROM client c " +
                 "JOIN account a USING(client_id) " +

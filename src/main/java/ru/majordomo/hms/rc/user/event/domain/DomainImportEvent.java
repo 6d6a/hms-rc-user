@@ -1,14 +1,9 @@
 package ru.majordomo.hms.rc.user.event.domain;
 
-import org.springframework.context.ApplicationEvent;
+import ru.majordomo.hms.rc.user.event.ResourceImportEvent;
 
-public class DomainImportEvent extends ApplicationEvent {
+public class DomainImportEvent extends ResourceImportEvent {
     public DomainImportEvent(String source) {
         super(source);
-    }
-
-    @Override
-    public String getSource() {
-        return (String) super.getSource();
     }
 }

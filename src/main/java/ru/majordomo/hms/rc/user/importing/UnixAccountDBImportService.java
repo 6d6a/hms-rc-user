@@ -25,7 +25,7 @@ import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
-public class UnixAccountDBImportService {
+public class UnixAccountDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(UnixAccountDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -43,7 +43,7 @@ public class UnixAccountDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id " +
                 "FROM account a " +
                 "JOIN servers s ON s.id = a.server_id " +

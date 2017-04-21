@@ -1,12 +1,11 @@
 package ru.majordomo.hms.rc.user.event.sslCertificate.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import ru.majordomo.hms.rc.user.event.ResourceEventListener;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateCreateEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateImportEvent;
 import ru.majordomo.hms.rc.user.importing.SSLCertificateDBImportService;
@@ -14,48 +13,24 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 @Component
-public class SSLCertificateEventListener {
-    private final static Logger logger = LoggerFactory.getLogger(SSLCertificateEventListener.class);
-
-    private final GovernorOfSSLCertificate governorOfSSLCertificate;
-    private final SSLCertificateDBImportService sslCertificateDBImportService;
-
+public class SSLCertificateEventListener extends ResourceEventListener<SSLCertificate> {
     @Autowired
     public SSLCertificateEventListener(
             GovernorOfSSLCertificate governorOfSSLCertificate,
             SSLCertificateDBImportService sslCertificateDBImportService) {
-        this.governorOfSSLCertificate = governorOfSSLCertificate;
-        this.sslCertificateDBImportService = sslCertificateDBImportService;
+        this.governor = governorOfSSLCertificate;
+        this.dbImportService = sslCertificateDBImportService;
     }
 
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void onCreateEvent(SSLCertificateCreateEvent event) {
-        SSLCertificate sslCertificate = event.getSource();
-
-        logger.debug("We got CreateEvent");
-
-        try {
-            //TODO лучше бы валидировать
-            //(если импортить предварительно не импортнув домены, то валидация не пройдет)
-            governorOfSSLCertificate.store(sslCertificate);
-//            governorOfSSLCertificate.validateAndStore(sslCertificate);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        processCreateEventNoValidation(event);
     }
 
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void onImportEvent(SSLCertificateImportEvent event) {
-        String accountId = event.getSource();
-
-        logger.debug("We got ImportEvent");
-
-        try {
-            sslCertificateDBImportService.pull(accountId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        processImportEvent(event);
     }
 }

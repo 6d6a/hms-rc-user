@@ -1,16 +1,10 @@
 package ru.majordomo.hms.rc.user.event.person;
 
-import org.springframework.context.ApplicationEvent;
-
+import ru.majordomo.hms.rc.user.event.ResourceCreateEvent;
 import ru.majordomo.hms.rc.user.resources.Person;
 
-public class PersonCreateEvent extends ApplicationEvent {
+public class PersonCreateEvent extends ResourceCreateEvent<Person> {
     public PersonCreateEvent(Person source) {
         super(source);
-    }
-
-    @Override
-    public Person getSource() {
-        return (Person) super.getSource();
     }
 }

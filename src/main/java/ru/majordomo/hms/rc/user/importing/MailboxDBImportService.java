@@ -28,7 +28,7 @@ import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
 import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
 
 @Service
-public class MailboxDBImportService {
+public class MailboxDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(MailboxDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -60,7 +60,7 @@ public class MailboxDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id " +
                 "FROM POP3 p " +
                 "JOIN domain d ON d.Domain_ID = p.Domain_ID " +

@@ -1,14 +1,9 @@
 package ru.majordomo.hms.rc.user.event.mailbox;
 
-import org.springframework.context.ApplicationEvent;
+import ru.majordomo.hms.rc.user.event.ResourceImportEvent;
 
-public class MailboxImportEvent extends ApplicationEvent {
+public class MailboxImportEvent extends ResourceImportEvent {
     public MailboxImportEvent(String source) {
         super(source);
-    }
-
-    @Override
-    public String getSource() {
-        return (String) super.getSource();
     }
 }

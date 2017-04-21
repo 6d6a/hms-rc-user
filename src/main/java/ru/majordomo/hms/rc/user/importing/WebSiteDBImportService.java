@@ -33,7 +33,7 @@ import ru.majordomo.hms.rc.user.resources.WebSite;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
 @Component
-public class WebSiteDBImportService {
+public class WebSiteDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(WebSiteDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -78,7 +78,7 @@ public class WebSiteDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id, v.ServerName " +
                 "FROM vhosts v " +
                 "LEFT JOIN domain d ON v.ServerName = d.Domain_name " +

@@ -1,14 +1,9 @@
 package ru.majordomo.hms.rc.user.event.ftpUser;
 
-import org.springframework.context.ApplicationEvent;
+import ru.majordomo.hms.rc.user.event.ResourceImportEvent;
 
-public class FTPUserImportEvent extends ApplicationEvent {
+public class FTPUserImportEvent extends ResourceImportEvent {
     public FTPUserImportEvent(String source) {
         super(source);
-    }
-
-    @Override
-    public String getSource() {
-        return (String) super.getSource();
     }
 }

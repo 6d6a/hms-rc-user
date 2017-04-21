@@ -1,14 +1,9 @@
 package ru.majordomo.hms.rc.user.event.databaseUser;
 
-import org.springframework.context.ApplicationEvent;
+import ru.majordomo.hms.rc.user.event.ResourceImportEvent;
 
-public class DatabaseUserImportEvent extends ApplicationEvent {
+public class DatabaseUserImportEvent extends ResourceImportEvent {
     public DatabaseUserImportEvent(String source) {
         super(source);
-    }
-
-    @Override
-    public String getSource() {
-        return (String) super.getSource();
     }
 }

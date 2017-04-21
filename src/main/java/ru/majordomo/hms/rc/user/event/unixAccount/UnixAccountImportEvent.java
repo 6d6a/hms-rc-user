@@ -1,14 +1,9 @@
 package ru.majordomo.hms.rc.user.event.unixAccount;
 
-import org.springframework.context.ApplicationEvent;
+import ru.majordomo.hms.rc.user.event.ResourceImportEvent;
 
-public class UnixAccountImportEvent extends ApplicationEvent {
+public class UnixAccountImportEvent extends ResourceImportEvent {
     public UnixAccountImportEvent(String source) {
         super(source);
-    }
-
-    @Override
-    public String getSource() {
-        return (String) super.getSource();
     }
 }

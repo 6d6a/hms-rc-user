@@ -26,7 +26,7 @@ import ru.majordomo.hms.rc.user.resources.RegSpec;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 @Service
-public class DomainDBImportService {
+public class DomainDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DomainDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -60,7 +60,7 @@ public class DomainDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT d.acc_id " +
                 "FROM domain d" +
                 "WHERE 1 " +

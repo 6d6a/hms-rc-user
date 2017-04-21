@@ -25,7 +25,7 @@ import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
 @Service
-public class DatabaseDBImportService {
+public class DatabaseDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DatabaseDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -49,7 +49,7 @@ public class DatabaseDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id, udb.uid, udb.db, udb.host " +
                 "FROM account a " +
                 "JOIN users_db udb USING(uid) " +

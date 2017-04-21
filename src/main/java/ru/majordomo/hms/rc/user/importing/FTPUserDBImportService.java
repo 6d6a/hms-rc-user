@@ -20,7 +20,7 @@ import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 
 @Service
-public class FTPUserDBImportService {
+public class FTPUserDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(FTPUserDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -38,7 +38,7 @@ public class FTPUserDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id, f.ID, f.Status, f.login,, f.password, f.UID, f.HomeDir " +
                 "FROM ftp f " +
                 "JOIN account a ON f.UID = a.uid " +

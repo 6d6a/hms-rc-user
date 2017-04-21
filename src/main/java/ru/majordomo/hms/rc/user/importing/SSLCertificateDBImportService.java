@@ -31,7 +31,7 @@ import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificateState;
 
 @Service
-public class SSLCertificateDBImportService {
+public class SSLCertificateDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(SSLCertificateDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -49,7 +49,7 @@ public class SSLCertificateDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id " +
                 "FROM ssl_certificates sc " +
                 "JOIN account a ON sc.acc_id = a.id " +

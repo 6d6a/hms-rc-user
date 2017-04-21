@@ -1,14 +1,9 @@
 package ru.majordomo.hms.rc.user.event.webSite;
 
-import org.springframework.context.ApplicationEvent;
+import ru.majordomo.hms.rc.user.event.ResourceImportEvent;
 
-public class WebSiteImportEvent extends ApplicationEvent {
+public class WebSiteImportEvent extends ResourceImportEvent {
     public WebSiteImportEvent(String source) {
         super(source);
-    }
-
-    @Override
-    public String getSource() {
-        return (String) super.getSource();
     }
 }

@@ -23,7 +23,7 @@ import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
 @Component
-public class DatabaseUserDBImportService {
+public class DatabaseUserDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DatabaseUserDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -44,7 +44,7 @@ public class DatabaseUserDBImportService {
         this.publisher = publisher;
     }
 
-    private void pull() {
+    public void pull() {
         String query = "SELECT a.id, a.name, a.plan_id, a.old_name, p.db, a.server_id, s.jail, s.localdb " +
                 "FROM account a " +
                 "JOIN servers s ON s.id = a.server_id " +
