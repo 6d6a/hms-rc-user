@@ -12,10 +12,8 @@ import ru.majordomo.hms.rc.staff.resources.ServiceType;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.resources.ServiceTypeCategory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -145,7 +143,7 @@ public class ConfigStaffResourceControllerClient {
             }
 
             @Override
-            public List<Service> getServicesByServerIdAndServiceType(String serverId, ServiceTypeCategory serviceType) {
+            public List<Service> getServicesByServerIdAndServiceType(String serverId, String serviceType) {
                 return null;
             }
         };
