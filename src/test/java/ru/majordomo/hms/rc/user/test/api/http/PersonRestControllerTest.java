@@ -136,6 +136,7 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity.bik").description("БИК банка"),
                                 fieldWithPath("legalEntity.correspondentAccount").description("Корреспондентский счет"),
                                 fieldWithPath("legalEntity.bankAccount").description("Рассчетный счет"),
+                                fieldWithPath("legalEntity.directorName").description("ФИО директора"),
                                 fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),

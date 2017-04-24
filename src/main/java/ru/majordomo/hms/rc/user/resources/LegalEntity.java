@@ -14,6 +14,7 @@ public class LegalEntity {
     private String bik;
     private String correspondentAccount;
     private String bankAccount;
+    private String directorName;
 
     public String getAddress() {
         return address;
@@ -95,6 +96,14 @@ public class LegalEntity {
         this.bankAccount = bankAccount;
     }
 
+    public String getDirectorName() {
+        return directorName;
+    }
+
+    public void setDirectorName(String directorName) {
+        this.directorName = directorName;
+    }
+
     @Override
     public String toString() {
         return "LegalEntity{" +
@@ -104,6 +113,7 @@ public class LegalEntity {
                 ", ogrn='" + ogrn + '\'' +
                 ", okvedCodes='" + okvedCodes + '\'' +
                 ", address='" + address + '\'' +
+                ", directorName='" + directorName + '\'' +
                 '}';
     }
 
