@@ -51,4 +51,22 @@ public class DatabaseConfig {
     public NamedParameterJdbcTemplate billingNamedParameterJdbcTemplate(@Qualifier("billingDataSource") DataSource billingDataSource) {
         return new NamedParameterJdbcTemplate(billingDataSource);
     }
+
+    @Bean(name = "registrantDataSource")
+    @ConfigurationProperties(prefix="datasource.registrant")
+    public DataSource registrantDataSource() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "registrantJdbcTemplate")
+    @Autowired
+    public JdbcTemplate registrantJdbcTemplate(@Qualifier("registrantDataSource") DataSource registrantDataSource) {
+        return new JdbcTemplate(registrantDataSource);
+    }
+
+    @Bean(name = "registrantNamedParameterJdbcTemplate")
+    @Autowired
+    public NamedParameterJdbcTemplate registrantNamedParameterJdbcTemplate(@Qualifier("registrantDataSource") DataSource registrantDataSource) {
+        return new NamedParameterJdbcTemplate(registrantDataSource);
+    }
 }

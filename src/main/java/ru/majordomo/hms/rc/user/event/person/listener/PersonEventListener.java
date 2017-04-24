@@ -25,7 +25,7 @@ public class PersonEventListener extends ResourceEventListener<Person> {
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void onCreateEvent(PersonCreateEvent event) {
-        processCreateEvent(event);
+        processCreateEventNoValidation(event);
     }
 
     @EventListener
