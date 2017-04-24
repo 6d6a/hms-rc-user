@@ -328,6 +328,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         legalEntity.setBik(legalEntityMap.get("bik"));
         legalEntity.setCorrespondentAccount(legalEntityMap.get("correspondentAccount"));
         legalEntity.setBankAccount(legalEntityMap.get("bankAccount"));
+        legalEntity.setDirectorName(legalEntityMap.get("directorName"));
         return legalEntity;
     }
 
