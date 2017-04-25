@@ -1,7 +1,6 @@
 package ru.majordomo.hms.rc.user.api.interfaces;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,7 +11,6 @@ import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.configurations.FeignConfig;
-import ru.majordomo.hms.rc.user.resources.ServiceTypeCategory;
 
 @FeignClient(name = "RC-STAFF", configuration = FeignConfig.class)
 public interface StaffResourceControllerClient {
@@ -41,5 +39,5 @@ public interface StaffResourceControllerClient {
     List<Service> getDatabaseServicesByServerId(@PathVariable("serverId") String serverId);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type={serviceType}")
-    List<Service> getServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId, @PathVariable("serviceType") ServiceTypeCategory serviceType);
+    List<Service> getServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId, @PathVariable("serviceType") String serviceType);
 }

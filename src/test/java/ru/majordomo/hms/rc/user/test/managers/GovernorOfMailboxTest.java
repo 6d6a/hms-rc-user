@@ -264,6 +264,7 @@ public class GovernorOfMailboxTest {
     }
 
     @Test
+    @Ignore
     public void updateSetAggregatorAndDropAggregator() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
         serviceMessage.delParam("name");

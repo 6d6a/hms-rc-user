@@ -193,7 +193,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         Set<ConstraintViolation<SSLCertificate>> constraintViolations = validator.validate(sslCertificate, SSLCertificateChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug(constraintViolations.toString());
+            logger.error(constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
