@@ -21,9 +21,9 @@ import ru.majordomo.hms.rc.user.validation.ValidHomeDir;
 @Document(collection = "unixAccounts")
 public class UnixAccount extends Resource implements ServerStorable, Quotable, Securable {
     @Transient
-    public static final int MIN_UID = 2000;
+    public static final int MIN_UID = 1000;
     @Transient
-    public static final int MAX_UID = 65535;
+    public static final int MAX_UID = 70000;
 
     @Indexed
     @NotNull(message = "Uid не может быть равным null")

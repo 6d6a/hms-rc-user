@@ -237,7 +237,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         Set<ConstraintViolation<Person>> constraintViolations = validator.validate(person, PersonChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.error(constraintViolations.toString());
+            logger.debug("person: " + person + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

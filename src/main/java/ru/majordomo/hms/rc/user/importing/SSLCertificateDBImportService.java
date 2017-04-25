@@ -53,6 +53,7 @@ public class SSLCertificateDBImportService implements ResourceDBImportService {
         String query = "SELECT a.id " +
                 "FROM ssl_certificates sc " +
                 "JOIN account a ON sc.acc_id = a.id " +
+                "GROUP BY a.id " +
                 "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {

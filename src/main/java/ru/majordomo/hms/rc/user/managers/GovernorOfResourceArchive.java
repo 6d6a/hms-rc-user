@@ -148,7 +148,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
         Set<ConstraintViolation<ResourceArchive>> constraintViolations = validator.validate(archive, ResourceArchiveChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug(constraintViolations.toString());
+            logger.debug("archive: " + archive + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

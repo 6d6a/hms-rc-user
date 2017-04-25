@@ -1,28 +1,15 @@
 package ru.majordomo.hms.rc.user.validation.validator;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import ru.majordomo.hms.rc.staff.resources.Service;
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.validation.ValidDatabase;
 
 public class DatabaseValidator implements ConstraintValidator<ValidDatabase, Database> {
-    private StaffResourceControllerClient staffRcClient;
-
-    @Autowired
-    public DatabaseValidator(
-            StaffResourceControllerClient staffRcClient
-    ) {
-        this.staffRcClient = staffRcClient;
-    }
 
     @Override
     public void initialize(ValidDatabase validBillingOperation) {
@@ -52,24 +39,6 @@ public class DatabaseValidator implements ConstraintValidator<ValidDatabase, Dat
             System.out.println(e.toString());
             isValid = false;
         }
-
-//        try {
-//            String serviceId = database.getServiceId();
-//
-//            if (serviceId != null && !serviceId.equals("")) {
-//                String serverId = staffRcClient.getActiveDatabaseServer().getId();
-//                List<Service> services = staffRcClient.getDatabaseServicesByServerId(serverId);
-//
-//                for (Service service : services) {
-//                    if (service.getId().equals(serviceId)) {
-//                        isValid = true;
-//                        break;
-//                    }
-//                }
-//            }
-//        } catch (RuntimeException e) {
-//            e.printStackTrace();
-//        }
 
         return isValid;
     }

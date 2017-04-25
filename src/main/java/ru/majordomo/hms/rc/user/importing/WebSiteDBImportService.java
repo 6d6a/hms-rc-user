@@ -83,6 +83,7 @@ public class WebSiteDBImportService implements ResourceDBImportService {
                 "FROM vhosts v " +
                 "LEFT JOIN domain d ON v.ServerName = d.Domain_name " +
                 "JOIN account a ON v.uid = a.uid " +
+                "GROUP BY a.id " +
                 "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {
@@ -188,6 +189,8 @@ public class WebSiteDBImportService implements ResourceDBImportService {
 
         if(!services.isEmpty()) {
             webSite.setServiceId(services.get(0).getId());
+        } else {
+            logger.error("getServicesByServerIdAndServiceType isEmpty for serverId: " + serverId + " and serviceType: " + serviceType);
         }
 
         Domain domain = domainRepository.findByNameAndAccountId(

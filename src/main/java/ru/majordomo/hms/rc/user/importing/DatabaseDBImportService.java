@@ -53,7 +53,8 @@ public class DatabaseDBImportService implements ResourceDBImportService {
         String query = "SELECT a.id, udb.uid, udb.db, udb.host " +
                 "FROM account a " +
                 "JOIN users_db udb USING(uid) " +
-                "ORDER BY id ASC";
+                "GROUP BY a.id " +
+                "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {
             publisher.publishEvent(new DatabaseImportEvent(resultSet.getString("id")));
@@ -83,19 +84,25 @@ public class DatabaseDBImportService implements ResourceDBImportService {
         database.setAccountId(rs.getString("id"));
 
         String serverHost = rs.getString("host");
-        String serverId;
+        String serverId, serviceId;
         if (!serverHost.contains("mdb")) {
-            serverId = "web_server_" + rs.getString("server_id");
+//            serverId = "web_server_" + rs.getString("server_id");
+            serviceId = rs.getString("server_id") + "_mysql_service";
         } else {
             //id of mdb4 = 'db_server_20'
-            serverId = "db_server_20";
+//            serverId = "db_server_20";
+            serviceId = "20_mysql_service";
         }
 
-        List<ru.majordomo.hms.rc.staff.resources.Service> services = staffResourceControllerClient.getDatabaseServicesByServerId(serverId);
+        database.setServiceId(serviceId);
 
-        if(!services.isEmpty()) {
-            database.setServiceId(services.get(0).getId());
-        }
+//        List<ru.majordomo.hms.rc.staff.resources.Service> services = staffResourceControllerClient.getDatabaseServicesByServerId(serverId);
+//
+//        if(!services.isEmpty()) {
+//            database.setServiceId(services.get(0).getId());
+//        } else {
+//            logger.error("getDatabaseServicesByServerId isEmpty for serverId: " + serverId);
+//        }
 
         database.setType(DBType.MYSQL);
         database.setSwitchedOn(true);

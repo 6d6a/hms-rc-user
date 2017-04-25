@@ -2,14 +2,11 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 
 import java.util.Locale;
-
-import static com.cronutils.model.CronType.UNIX;
 
 public class CronTask {
     private String execTime;
@@ -23,7 +20,14 @@ public class CronTask {
 
     public void setExecTime(String execTime) {
         CronDescriptor descriptor = CronDescriptor.instance(new Locale("ru"));
-        CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(UNIX);
+        CronDefinition cronDefinition = CronDefinitionBuilder.defineCron()
+                .withMinutes().and()
+                .withHours().and()
+                .withDayOfMonth().and()
+                .withMonth().and()
+                .withDayOfWeek().withValidRange(0,7).withMondayDoWValue(1).withIntMapping(0,7).and()
+                .enforceStrictRanges()
+                .instance();
         CronParser cronParser = new CronParser(cronDefinition);
         Cron cron = cronParser.parse(execTime);
 

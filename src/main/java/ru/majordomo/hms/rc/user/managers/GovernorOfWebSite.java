@@ -518,7 +518,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         Set<ConstraintViolation<WebSite>> constraintViolations = validator.validate(webSite, WebSiteChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.error(constraintViolations.toString());
+            logger.debug("webSite: " + webSite + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

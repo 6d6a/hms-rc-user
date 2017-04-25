@@ -65,6 +65,7 @@ public class MailboxDBImportService implements ResourceDBImportService {
                 "FROM POP3 p " +
                 "JOIN domain d ON d.Domain_ID = p.Domain_ID " +
                 "JOIN account a ON d.acc_id = a.id " +
+                "GROUP BY a.id " +
                 "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {

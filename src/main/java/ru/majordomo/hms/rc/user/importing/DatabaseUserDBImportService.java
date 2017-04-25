@@ -78,22 +78,29 @@ public class DatabaseUserDBImportService implements ResourceDBImportService {
         String oldName = rs.getString("old_name");
 
         if (!oldName.equals("")) {
-            userName = oldName.replaceAll("\\.", "").substring(0, 15);
+            userName = oldName.replaceAll("\\.", "");
+            userName = userName.substring(0, userName.length() > 15 ? 15 : userName.length());
         }
 
         DatabaseUser databaseUser = new DatabaseUser();
         databaseUser.setAccountId(rs.getString("id"));
 
         //id of mdb4 = 'db_server_20'
-        String serverId = rs.getString("localdb").equals("1") ? "web_server_" + rs.getString("server_id") : "db_server_20";
-        List<Service> services = staffResourceControllerClient.getDatabaseServicesByServerId(serverId);
+//        String serverId = rs.getString("localdb").equals("1") ? "web_server_" + rs.getString("server_id") : "db_server_20";
 
-        if(!services.isEmpty()) {
-            databaseUser.setServiceId(services.get(0).getId());
-        }
+        String serviceId = rs.getString("localdb").equals("1") ? rs.getString("server_id") + "_mysql_service" : "20_mysql_service";
+
+        databaseUser.setServiceId(serviceId);
+//        List<Service> services = staffResourceControllerClient.getDatabaseServicesByServerId(serverId);
+//
+//        if(!services.isEmpty()) {
+//            databaseUser.setServiceId(services.get(0).getId());
+//        } else {
+//            logger.error("getDatabaseServicesByServerId isEmpty for serverId: " + serverId);
+//        }
 
         //TODO Доставать пароль (Пароли лежат прямо на DB-серверах)
-//        databaseUser.setPasswordHash("");
+        databaseUser.setPasswordHash("someReallyHardToCrackPasswordHash1111!");
         databaseUser.setType(DBType.MYSQL);
         databaseUser.setSwitchedOn(true);
         databaseUser.setName(userName);

@@ -160,7 +160,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         Set<ConstraintViolation<DNSResourceRecord>> constraintViolations = validator.validate(record, DnsRecordChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug(constraintViolations.toString());
+            logger.debug("record: " + record + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
 

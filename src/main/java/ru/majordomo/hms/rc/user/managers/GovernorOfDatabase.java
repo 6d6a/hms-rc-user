@@ -185,7 +185,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
         Set<ConstraintViolation<Database>> constraintViolations = validator.validate(database, DatabaseChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug(constraintViolations.toString());
+            logger.debug("database: " + database + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

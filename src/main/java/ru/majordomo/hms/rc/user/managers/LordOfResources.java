@@ -18,7 +18,7 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 public abstract class LordOfResources<T extends Resource> {
-    protected Logger logger = LoggerFactory.getLogger(LordOfResources.class);
+    protected Logger logger = LoggerFactory.getLogger(getClass());
     public T create(ServiceMessage serviceMessage) throws ParameterValidateException {
         T resource;
 
