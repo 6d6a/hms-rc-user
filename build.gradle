@@ -87,7 +87,7 @@ jar {
 task resourceJar(type: Jar, dependsOn: compileJava) {
     baseName = 'resources'
     from sourceSets.main.output.classesDir
-    include 'ru/majordomo/hms/rc/user/resources/*'
+    include 'ru/majordomo/hms/rc/user/resources/**'
 }
 
 repositories {
