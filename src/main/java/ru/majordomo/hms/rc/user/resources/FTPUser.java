@@ -14,9 +14,9 @@ import java.util.List;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.validation.ObjectId;
-import ru.majordomo.hms.rc.user.validation.UniqueNameResource;
-import ru.majordomo.hms.rc.user.validation.ValidRelativeFilePath;
+import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
+import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
+import ru.majordomo.hms.rc.user.resources.validation.ValidRelativeFilePath;
 
 @Document(collection = "ftpUsers")
 @UniqueNameResource(FTPUser.class)

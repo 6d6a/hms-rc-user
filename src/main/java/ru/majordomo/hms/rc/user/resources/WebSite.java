@@ -13,9 +13,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
-import ru.majordomo.hms.rc.user.validation.*;
+import ru.majordomo.hms.rc.user.resources.validation.*;
 
 @Document(collection = "webSites")
 @ValidWebSite

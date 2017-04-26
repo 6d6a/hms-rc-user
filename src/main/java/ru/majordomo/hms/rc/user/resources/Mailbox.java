@@ -6,12 +6,11 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.validation.ObjectId;
-import ru.majordomo.hms.rc.user.validation.ValidAbsoluteFilePath;
-import ru.majordomo.hms.rc.user.validation.ValidEmail;
-import ru.majordomo.hms.rc.user.validation.ValidMailbox;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
-import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
+import ru.majordomo.hms.rc.user.resources.validation.ValidAbsoluteFilePath;
+import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
+import ru.majordomo.hms.rc.user.resources.validation.ValidMailbox;
+import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;

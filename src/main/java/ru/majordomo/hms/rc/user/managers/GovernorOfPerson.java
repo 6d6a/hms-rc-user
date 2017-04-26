@@ -20,7 +20,7 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {

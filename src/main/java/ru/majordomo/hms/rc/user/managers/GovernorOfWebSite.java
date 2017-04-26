@@ -22,7 +22,7 @@ import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
-import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 
 @Component
 public class GovernorOfWebSite extends LordOfResources<WebSite> {
