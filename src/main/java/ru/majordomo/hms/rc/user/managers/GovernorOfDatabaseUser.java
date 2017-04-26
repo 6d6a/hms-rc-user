@@ -12,7 +12,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
-import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -22,7 +21,7 @@ import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
 
 @Component
 public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {

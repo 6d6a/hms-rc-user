@@ -6,18 +6,18 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 
-import ru.majordomo.hms.rc.user.validation.*;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
-import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
-import ru.majordomo.hms.rc.user.validation.group.FTPUserChecks;
-import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
-import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
-import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
-import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
-import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
-import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
+import ru.majordomo.hms.rc.user.resources.validation.*;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 
 public abstract class Resource {
     @Id

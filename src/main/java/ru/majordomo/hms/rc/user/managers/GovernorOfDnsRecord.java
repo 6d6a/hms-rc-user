@@ -10,8 +10,7 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
-import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;

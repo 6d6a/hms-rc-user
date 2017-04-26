@@ -10,9 +10,9 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import ru.majordomo.hms.rc.user.validation.ObjectIdCollection;
-import ru.majordomo.hms.rc.user.validation.ServiceId;
-import ru.majordomo.hms.rc.user.validation.ValidDatabase;
+import ru.majordomo.hms.rc.user.resources.validation.ObjectIdCollection;
+import ru.majordomo.hms.rc.user.resources.validation.ServiceId;
+import ru.majordomo.hms.rc.user.resources.validation.ValidDatabase;
 
 @Document(collection = "databases")
 @ValidDatabase

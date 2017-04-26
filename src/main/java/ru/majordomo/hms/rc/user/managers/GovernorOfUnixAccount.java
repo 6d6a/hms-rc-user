@@ -25,7 +25,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
-import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
 
 @Component
 public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {

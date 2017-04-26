@@ -26,7 +26,7 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 
 @Service
 public class GovernorOfMailbox extends LordOfResources<Mailbox> {

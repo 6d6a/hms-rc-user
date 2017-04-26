@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import com.google.common.net.InternetDomainName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +20,7 @@ import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
 @Service
 public class GovernorOfDomain extends LordOfResources<Domain> {

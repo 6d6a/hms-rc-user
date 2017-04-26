@@ -20,7 +20,7 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {
@@ -102,6 +102,10 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         keyValue.put("accountId", accountId);
 
         Person person = build(keyValue);
+        if (person.getNicHandle() != null && !person.getNicHandle().equals("")) {
+            throw new ParameterValidateException("Данная персона синхронизирована с Регистратором, для изменения любых данных напишите, пожалуйста, письмо на domain@majordomo.ru");
+        }
+
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {

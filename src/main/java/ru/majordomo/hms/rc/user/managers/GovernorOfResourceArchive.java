@@ -12,7 +12,7 @@ import ru.majordomo.hms.rc.user.repositories.ResourceArchiveRepository;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchiveType;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
-import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;

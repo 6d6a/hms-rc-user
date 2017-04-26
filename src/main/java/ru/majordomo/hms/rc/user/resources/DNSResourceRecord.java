@@ -2,7 +2,7 @@ package ru.majordomo.hms.rc.user.resources;
 
 import javax.validation.constraints.NotNull;
 
-import ru.majordomo.hms.rc.user.validation.ValidDnsRecord;
+import ru.majordomo.hms.rc.user.resources.validation.ValidDnsRecord;
 
 @ValidDnsRecord
 public class DNSResourceRecord extends Resource {
