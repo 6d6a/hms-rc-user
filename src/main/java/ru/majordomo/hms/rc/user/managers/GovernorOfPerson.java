@@ -102,6 +102,10 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         keyValue.put("accountId", accountId);
 
         Person person = build(keyValue);
+        if (person.getNicHandle() != null && !person.getNicHandle().equals("")) {
+            throw new ParameterValidateException("Данная персона синхронизирована с Регистратором, для изменения любых данных напишите, пожалуйста, письмо на domain@majordomo.ru");
+        }
+
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {
