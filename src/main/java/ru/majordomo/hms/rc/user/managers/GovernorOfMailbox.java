@@ -541,6 +541,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Mailbox mailbox = repository.findOne(mailboxId);
         if (mailbox != null) {
             mailbox.setQuotaUsed(quotaSize);
+            if (mailbox.getQuotaUsed() > mailbox.getQuota()) {
+                mailbox.setWritable(false);
+            } else {
+                mailbox.setWritable(true);
+            }
         } else {
             throw new ResourceNotFoundException("Mailbox с ID: " + mailboxId + " не найден");
         }
