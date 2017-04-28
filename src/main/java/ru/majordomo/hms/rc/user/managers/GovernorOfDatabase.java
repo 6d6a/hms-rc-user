@@ -15,7 +15,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
-import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -27,6 +26,7 @@ import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
+import ru.majordomo.hms.rc.user.validation.group.DatabaseImportChecks;
 
 @Component
 public class GovernorOfDatabase extends LordOfResources<Database> {
@@ -186,6 +186,16 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
         if (!constraintViolations.isEmpty()) {
             logger.debug("database: " + database + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
+    public void validateImported(Database database) {
+        Set<ConstraintViolation<Database>> constraintViolations = validator.validate(database, DatabaseImportChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] database: " + database + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

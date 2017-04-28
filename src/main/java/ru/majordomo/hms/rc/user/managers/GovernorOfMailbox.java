@@ -387,6 +387,16 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
+    public void validateImported(Mailbox mailbox) {
+        Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
     public Mailbox construct(Mailbox mailbox) throws ParameterValidateException {
         Domain domain = governorOfDomain.build(mailbox.getDomainId());
         mailbox.setDomain(domain);

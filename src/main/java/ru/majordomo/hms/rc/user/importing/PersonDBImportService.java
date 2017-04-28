@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.importing;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.majordomo.hms.rc.user.common.PhoneNumberManager;
 import ru.majordomo.hms.rc.user.event.person.PersonCreateEvent;
 import ru.majordomo.hms.rc.user.event.person.PersonImportEvent;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -35,6 +37,7 @@ public class PersonDBImportService implements ResourceDBImportService {
     private NamedParameterJdbcTemplate registrantNamedParameterJdbcTemplate;
     private final PersonRepository personRepository;
     private final ApplicationEventPublisher publisher;
+    private final EmailValidator emailValidator = EmailValidator.getInstance(true, true); //allowLocal, allowTLD
 
     @Autowired
     public PersonDBImportService(
@@ -53,6 +56,7 @@ public class PersonDBImportService implements ResourceDBImportService {
         String query = "SELECT a.id " +
                 "FROM client c " +
                 "JOIN account a USING(client_id) " +
+                "GROUP BY a.id " +
                 "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {
@@ -62,12 +66,14 @@ public class PersonDBImportService implements ResourceDBImportService {
 
     public void pull(String accountId) {
         String query = "SELECT a.id, " +
-                "c.Client_ID, c.name, c.phone, c.phone2, c.email, c.email2, c.email3, " +
-                "c.passport, c.HB as birthdate, c.address as legal_address, c.address_post, c.inn, c.kpp, c.ogrn, c.okpo, c.okved, " +
+                "c.Client_ID, c.name as client_name, c.phone, c.phone2, c.email, c.email2, c.email3, " +
+                "c.passport, '' as passport_number, '' as passport_org, '' as passport_date, " +
+                "c.HB as birthdate, c.address as legal_address, c.address_post, c.inn, c.kpp, c.ogrn, c.okpo, c.okved, " +
                 "c.bank_rekv, c.bank_name, c.bill as bank_account, c.coor_bill as bank_account_loro, c.bik as bank_bik, c.face, c.company_name " +
                 "FROM client c " +
                 "JOIN account a USING(client_id) " +
-                "WHERE a.id = :accountId";
+                "WHERE a.id = :accountId " +
+                "GROUP BY a.id ";
         SqlParameterSource namedParameters1 = new MapSqlParameterSource("accountId", accountId);
 
         namedParameterJdbcTemplate.query(query,
@@ -80,36 +86,39 @@ public class PersonDBImportService implements ResourceDBImportService {
 
     private Person rowMap(ResultSet rs, int rowNum) throws SQLException {
         logger.debug("Found Person for id: " + rs.getString("id") +
-                " name: " + rs.getString("name"));
+                " name: " + rs.getString("client_name"));
 
         Person person = new Person();
         person.setId("person_" + rs.getString("Client_ID"));
         person.setAccountId(rs.getString("id"));
         person.setSwitchedOn(true);
-        person.setName(rs.getString("name"));
+        person.setName(!rs.getString("client_name").equals("") ?
+                rs.getString("client_name") :
+                "person_" + rs.getString("id") + "_" + rs.getString("Client_ID")
+        );
 
         String phone = rs.getString("phone");
-        if (phone != null && !phone.equals("")) {
+        if (phone != null && !phone.equals("") && PhoneNumberManager.phoneValid(phone)) {
             person.addPhoneNumber(phone);
         }
 
         phone = rs.getString("phone2");
-        if (phone != null && !phone.equals("")) {
+        if (phone != null && !phone.equals("") && PhoneNumberManager.phoneValid(phone)) {
             person.addPhoneNumber(phone);
         }
 
         String email = rs.getString("email");
-        if (email != null && !email.equals("")) {
+        if (email != null && !email.equals("") && emailValidator.isValid(email)) {
             person.addEmailAddress(email);
         }
 
         email = rs.getString("email2");
-        if (email != null && !email.equals("")) {
+        if (email != null && !email.equals("") && emailValidator.isValid(email)) {
             person.addEmailAddress(email);
         }
 
         email = rs.getString("email3");
-        if (email != null && !email.equals("")) {
+        if (email != null && !email.equals("") && emailValidator.isValid(email)) {
             person.addEmailAddress(email);
         }
 
@@ -183,7 +192,7 @@ public class PersonDBImportService implements ResourceDBImportService {
                             contactsTableName = "contacts_individuals_foreigns";
                             contactsColumns = "cc.country_id, cc.email, " +
                                     "CONCAT_WS(' ', cc.lastname, cc.firstname, cc.middlename) AS client_name, " +
-                                    "cc.birthdate, cc.document as passport, " +
+                                    "cc.birthdate, cc.document as passport, '' as passport_number, '' as passport_org, '' as passport_date, " +
                                     "'' as legal_address, " +
                                     "CONCAT_WS(', ', cc.postal_address_zip, cc.postal_address_city, cc.postal_address_street) AS postal_address, " +
                                     "cc.phone_1, cc.phone_2, cc.email_additional_1, cc.email_additional_2";
@@ -202,7 +211,7 @@ public class PersonDBImportService implements ResourceDBImportService {
                         case "company_foreign":
                             contactsTableName = "contacts_companies_foreigns";
                             contactsColumns = "cc.country_id, cc.email, cc.name AS client_name, " +
-                                    "'' as kpp, '' as ogrn, '' as okpo, '' as okved, " +
+                                    "'' as kpp, '' as ogrn, '' as okpo, '' as okved, '' as inn, " +
                                     "CONCAT_WS(' ', cc.director_lastname, cc.director_firstname, cc.director_middlename) AS director_name, " +
                                     "cc.legal_address_zip, cc.legal_address_city, cc.legal_address_street, " +
                                     "'' as legal_address, " +
@@ -222,13 +231,13 @@ public class PersonDBImportService implements ResourceDBImportService {
                                     "cc.phone_1, cc.phone_2, cc.email_additional_1, cc.email_additional_2";
                             break;
                         case "entrepreneur_foreign":
-                            contactsTableName = "contacts_entrepreneurs";
+                            contactsTableName = "contacts_entrepreneurs_foreigns";
                             contactsColumns = "cc.country_id, cc.email, " +
                                     "CONCAT_WS(' ', cc.lastname, cc.firstname, cc.middlename) AS client_name, " +
-                                    "'' as kpp, '' as ogrn, '' as okpo, '' as okved, " +
+                                    "'' as kpp, '' as ogrn, '' as okpo, '' as okved, '' as inn, " +
                                     "'' as bank_name, '' as bank_account, '' as bank_account_loro, '' as bank_bik, '' as bank_rekv, " +
                                     "'' as legal_address, " +
-                                    "cc.birthdate, cc.document as passport, " +
+                                    "cc.birthdate, cc.document as passport, '' as passport_number, '' as passport_org, '' as passport_date, " +
                                     "CONCAT_WS(', ', cc.postal_address_zip, cc.postal_address_city, cc.postal_address_street) AS postal_address, " +
                                     "cc.phone_1, cc.phone_2, cc.email_additional_1, cc.email_additional_2";
                             break;
@@ -245,27 +254,27 @@ public class PersonDBImportService implements ResourceDBImportService {
                                 person.setName(rs2.getString("client_name"));
 
                                 String phone = rs2.getString("phone_1");
-                                if (phone != null && !phone.equals("")) {
+                                if (phone != null && !phone.equals("") && PhoneNumberManager.phoneValid(phone)) {
                                     person.addPhoneNumber(phone);
                                 }
 
                                 phone = rs2.getString("phone_2");
-                                if (phone != null && !phone.equals("")) {
+                                if (phone != null && !phone.equals("") && PhoneNumberManager.phoneValid(phone)) {
                                     person.addPhoneNumber(phone);
                                 }
 
                                 String email = rs2.getString("email");
-                                if (email != null && !email.equals("")) {
+                                if (email != null && !email.equals("") && emailValidator.isValid(email)) {
                                     person.addEmailAddress(email);
                                 }
 
                                 email = rs2.getString("email_additional_1");
-                                if (email != null && !email.equals("")) {
+                                if (email != null && !email.equals("") && emailValidator.isValid(email)) {
                                     person.addEmailAddress(email);
                                 }
 
                                 email = rs2.getString("email_additional_2");
-                                if (email != null && !email.equals("")) {
+                                if (email != null && !email.equals("") && emailValidator.isValid(email)) {
                                     person.addEmailAddress(email);
                                 }
 
@@ -331,7 +340,7 @@ public class PersonDBImportService implements ResourceDBImportService {
 
         String passportFromDatabase = rs.getString("passport");
 
-        if (!passportFromDatabase.equals("")) {
+        if (passportFromDatabase != null && !passportFromDatabase.equals("")) {
             logger.debug("passportFromDatabase: " + passportFromDatabase);
 
             passportFromDatabase = passportFromDatabase.replaceAll("\r\n", " ");
@@ -359,7 +368,8 @@ public class PersonDBImportService implements ResourceDBImportService {
                     issuedDate = LocalDate.parse(m.group(1), dateTimeFormatter);
                     passport.setIssuedDate(issuedDate);
                 } catch (DateTimeParseException e) {
-                    e.printStackTrace();
+                    logger.error("can not parse issuedDate from passportFromDatabase: " + passportFromDatabase +
+                            " for name: " + rs.getString("client_name"));
                 }
                 passportFromDatabase = passportFromDatabase.replaceAll(m.group(1), "");
             }
@@ -374,7 +384,13 @@ public class PersonDBImportService implements ResourceDBImportService {
 
             passport.setIssuedOrg(passportFromDatabase);
 
-            String birthDate = rs.getString("birthdate");
+            String birthDate = null;
+            try {
+                birthDate = rs.getString("birthdate");
+            } catch (SQLException e) {
+                logger.error("can not get birthdate from rs for name: " + rs.getString("client_name"));
+            }
+
             if (birthDate != null && !birthDate.equals("0000-00-00")) {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate birthday;
@@ -382,13 +398,18 @@ public class PersonDBImportService implements ResourceDBImportService {
                     birthday = LocalDate.parse(birthDate, dateTimeFormatter);
                     passport.setBirthday(birthday);
                 } catch (DateTimeParseException e) {
-                    e.printStackTrace();
+                    logger.error("can not parse birthdate from rs for name: " + rs.getString("client_name"));
                 }
             }
         } else {
             String passportNumber = rs.getString("passport_number");
             String passportOrg = rs.getString("passport_org");
-            String passportDate = rs.getString("passport_date");
+            String passportDate = null;
+            try {
+                passportDate = rs.getString("passport_date");
+            } catch (SQLException e) {
+                logger.error("can not parse passport_date from rs for name: " + rs.getString("client_name"));
+            }
 
             logger.debug("passportNumber: " + passportNumber + " passportOrg: " + passportOrg + " passportDate: " + passportDate);
 
@@ -400,14 +421,14 @@ public class PersonDBImportService implements ResourceDBImportService {
                 passport.setIssuedOrg(passportOrg);
             }
 
-            if (passportDate != null && !passportDate.equals("0000-00-00")) {
+            if (passportDate != null && !passportDate.equals("") && !passportDate.equals("0000-00-00")) {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate issuedDate;
                 try {
                     issuedDate = LocalDate.parse(passportDate, dateTimeFormatter);
                     passport.setIssuedDate(issuedDate);
                 } catch (DateTimeParseException e) {
-                    e.printStackTrace();
+                    logger.error("can not parse issuedDate from " + passportDate + " for name: " + rs.getString("client_name"));
                 }
             }
         }

@@ -40,4 +40,7 @@ public interface StaffResourceControllerClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type={serviceType}")
     List<Service> getServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId, @PathVariable("serviceType") String serviceType);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/service")
+    List<Service> getServices();
 }

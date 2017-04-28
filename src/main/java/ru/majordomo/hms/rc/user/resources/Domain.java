@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -29,11 +30,18 @@ public class Domain extends Resource {
     @ConvertGroup(from = DomainChecks.class, to = Default.class)
     private SSLCertificate sslCertificate;
 
+    @Indexed
     private String personId;
+
     private RegSpec regSpec;
     private List<DNSResourceRecord> dnsResourceRecords = new ArrayList<>();
+
+    @Indexed
     private String sslCertificateId;
+
     private Boolean autoRenew = false;
+
+    @Indexed
     private String parentDomainId;
 
     @Override
@@ -124,13 +132,14 @@ public class Domain extends Resource {
     @Override
     public String toString() {
         return "Domain{" +
-                "id=" + getId() +
-                ", name=" + getId() +
-                ", switchedOn=" + getSwitchedOn() +
-                ", person=" + person +
-                ", personId='" + personId +
+                "person=" + person +
+                ", sslCertificate=" + sslCertificate +
+                ", personId='" + personId + '\'' +
                 ", regSpec=" + regSpec +
                 ", dnsResourceRecords=" + dnsResourceRecords +
-                '}';
+                ", sslCertificateId='" + sslCertificateId + '\'' +
+                ", autoRenew=" + autoRenew +
+                ", parentDomainId='" + parentDomainId + '\'' +
+                "} " + super.toString();
     }
 }

@@ -11,15 +11,16 @@ import javax.validation.Valid;
 
 import ru.majordomo.hms.rc.user.validation.ValidEmail;
 import ru.majordomo.hms.rc.user.validation.ValidPhone;
+import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
 
 @Document(collection = "persons")
 public class Person extends Resource {
     @Valid
-    private List<@ValidPhone String> phoneNumbers = new ArrayList<>();
+    private List<@ValidPhone(groups = PersonChecks.class) String> phoneNumbers = new ArrayList<>();
 
     @NotEmpty(message = "Должен быть указан хотя бы 1 email адрес")
     @Valid
-    private List<@ValidEmail String> emailAddresses = new ArrayList<>();
+    private List<@ValidEmail(groups = PersonChecks.class) String> emailAddresses = new ArrayList<>();
 
     private Passport passport;
     private LegalEntity legalEntity;

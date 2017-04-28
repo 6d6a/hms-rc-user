@@ -106,7 +106,8 @@ public class WebSiteDBImportService implements ResourceDBImportService {
                 "LEFT JOIN servers s ON CONCAT(s.name, '.majordomo.ru') = v.server " +
                 "LEFT JOIN nginx_conf nc ON nc.redir_to = v.vhname AND nc.server = v.server " +
                 "JOIN account a ON v.uid = a.uid " +
-                "WHERE a.id = :accountId";
+                "WHERE a.id = :accountId " +
+                "GROUP BY v.ServerName";
         SqlParameterSource namedParameters1 = new MapSqlParameterSource("accountId", accountId);
 
         namedParameterJdbcTemplate.query(query,
@@ -124,7 +125,7 @@ public class WebSiteDBImportService implements ResourceDBImportService {
         String accountId = rs.getString("id");
         String serverName = rs.getString("ServerName");
         String unicodeServerName = java.net.IDN.toUnicode(serverName);
-        logger.debug("Found Mailbox for id: " + accountId + " name: " + unicodeServerName);
+        logger.debug("Found WebSite for acc id: " + accountId + " name: " + unicodeServerName);
 
         WebSite webSite = new WebSite();
         webSite.setAccountId(accountId);
@@ -140,13 +141,17 @@ public class WebSiteDBImportService implements ResourceDBImportService {
         webSite.setErrorLogEnabled(true);
         webSite.setAccessByOldHttpVersion(rs.getString("unsecure_admin_panel_access").equals("Y"));
 
+        Pattern p;
+        Matcher m;
         //SSI
-        Pattern p = Pattern.compile("AddHandler\\s+server-parsed\\s+(.*)", CASE_INSENSITIVE);
-        Matcher m = p.matcher(rs.getString("apache_conf"));
-        webSite.setSsiEnabled(m.matches());
-        if (m.matches()) {
-            String[] ssiFileExtensions = m.group(1).split(" ");
-            webSite.setSsiFileExtensions(Arrays.asList(ssiFileExtensions));
+        if(rs.getString("apache_conf") != null) {
+            p = Pattern.compile("AddHandler\\s+server-parsed\\s+(.*)", CASE_INSENSITIVE);
+            m = p.matcher(rs.getString("apache_conf"));
+            webSite.setSsiEnabled(m.matches());
+            if (m.matches()) {
+                String[] ssiFileExtensions = m.group(1).split(" ");
+                webSite.setSsiFileExtensions(Arrays.asList(ssiFileExtensions));
+            }
         }
 
         //CGI
@@ -176,21 +181,26 @@ public class WebSiteDBImportService implements ResourceDBImportService {
         }
         webSite.setIndexFileList(indexFileList);
 
-        String serverId = "web_server_" + rs.getString("web_id");
-        String serviceType = "WEBSITE_APACHE2_" + rs.getString("flag").toUpperCase().replaceAll("-", "_");
-        serviceType = serviceType.matches("^.*[34560]$") ? serviceType + "_DEFAULT" : serviceType;
+        if (rs.getString("flag") != null) {
+            String serverId = "web_server_" + rs.getString("web_id");
+            String serviceType = "WEBSITE_APACHE2_" + rs.getString("flag").toUpperCase().replaceAll("-", "_");
+            serviceType = serviceType.matches("^.*[34560]$") ? serviceType + "_DEFAULT" : serviceType;
 
-        logger.debug("Searching for service: " + serverId + " , " + serviceType);
+            logger.debug("Searching for service: " + serverId + " , " + serviceType);
 
-        List<Service> services = staffResourceControllerClient.getServicesByServerIdAndServiceType(
-                serverId,
-                serviceType
-        );
+            //TODO попробовать ускорить
+            List<Service> services = staffResourceControllerClient.getServicesByServerIdAndServiceType(
+                    serverId,
+                    serviceType
+            );
 
-        if(!services.isEmpty()) {
-            webSite.setServiceId(services.get(0).getId());
+            if(!services.isEmpty()) {
+                webSite.setServiceId(services.get(0).getId());
+            } else {
+                logger.error("getServicesByServerIdAndServiceType isEmpty for serverId: " + serverId + " and serviceType: " + serviceType);
+            }
         } else {
-            logger.error("getServicesByServerIdAndServiceType isEmpty for serverId: " + serverId + " and serviceType: " + serviceType);
+            logger.error("rs.getString(\"flag\") == null for name: " + unicodeServerName + " and accountId: " + accountId);
         }
 
         Domain domain = domainRepository.findByNameAndAccountId(
@@ -200,6 +210,8 @@ public class WebSiteDBImportService implements ResourceDBImportService {
 
         if (domain != null) {
             webSite.addDomain(domain);
+        } else {
+            logger.error("findByNameAndAccountId domain not found by name: " + unicodeServerName + " and accountId: " + accountId);
         }
 
         //Алиасы

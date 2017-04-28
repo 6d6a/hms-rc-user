@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
@@ -18,18 +19,21 @@ import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.validation.ServiceId;
 import ru.majordomo.hms.rc.user.validation.ValidDatabaseUser;
+import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
 
 @Document(collection = "databaseUsers")
-@ValidDatabaseUser
+@ValidDatabaseUser(groups = DatabaseUserChecks.class)
 public class DatabaseUser extends Resource implements Serviceable, Securable {
     @NotBlank(message = "Пароль не может быть пустым")
     private String passwordHash;
 
     @NotNull(message = "Тип не может быть пустым")
+    @Indexed
     private DBType type;
 
-    @ServiceId
+    @ServiceId(groups = DatabaseUserChecks.class)
     @NotNull(message = "serviceId не может быть пустым")
+    @Indexed
     private String serviceId;
 
     private List<Long> allowedIPAddresses;
@@ -126,5 +130,16 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     @Override
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    @Override
+    public String toString() {
+        return "DatabaseUser{" +
+                "passwordHash='" + passwordHash + '\'' +
+                ", type=" + type +
+                ", serviceId='" + serviceId + '\'' +
+                ", allowedIPAddresses=" + allowedIPAddresses +
+                ", databaseIds=" + databaseIds +
+                "} " + super.toString();
     }
 }

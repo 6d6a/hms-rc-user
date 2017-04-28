@@ -173,6 +173,16 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     }
 
     @Override
+    public void validateImported(FTPUser ftpUser) {
+        Set<ConstraintViolation<FTPUser>> constraintViolations = validator.validate(ftpUser, FTPUserChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] ftpUser: " + ftpUser + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
     protected FTPUser construct(FTPUser ftpUser) throws ResourceNotFoundException {
         UnixAccount unixAccount = governorOfUnixAccount.build(ftpUser.getUnixAccountId());
         ftpUser.setUnixAccount(unixAccount);

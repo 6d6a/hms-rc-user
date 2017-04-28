@@ -21,6 +21,7 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.validation.group.PersonImportChecks;
 
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {
@@ -238,6 +239,16 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
         if (!constraintViolations.isEmpty()) {
             logger.debug("person: " + person + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
+    public void validateImported(Person person) {
+        Set<ConstraintViolation<Person>> constraintViolations = validator.validate(person, PersonImportChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] person: " + person + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

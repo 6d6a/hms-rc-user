@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -13,31 +14,35 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import ru.majordomo.hms.rc.user.validation.ObjectIdCollection;
 import ru.majordomo.hms.rc.user.validation.ServiceId;
 import ru.majordomo.hms.rc.user.validation.ValidWebSite;
+import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
 
 @Document(collection = "webSites")
 @ValidWebSite
 public class WebSite extends Resource implements Serviceable {
 
     @Transient
-    @NotNull(message = "unixAccount не может быть null")
     private UnixAccount unixAccount;
+
     @NotNull(message = "unixAccountId не может быть null")
+    @Indexed
     private String unixAccountId;
 
-    @ServiceId
+    @ServiceId(groups = WebSiteChecks.class)
     @NotNull(message = "serviceId не может быть null")
+    @Indexed
     private String serviceId;
 
     @NotBlank(message = "documentRoot не может быть пустым")
     private String documentRoot;
 
     @Transient
-    @NotEmpty(message = "Должен присутствовать хотя бы один домен")
     private List<Domain> domains = new ArrayList<>();
 
     @NotEmpty(message = "Должен присутствовать хотя бы один id домена")
+    @ObjectIdCollection(value = Domain.class)
     private List<String> domainIds = new ArrayList<>();
 
     @NotNull(message = "charSet не может быть null")

@@ -31,7 +31,7 @@ public class MailboxValidator implements ConstraintValidator<ValidMailbox, Mailb
             Query query;
 
             if (mailbox.getId() != null) {
-                query = new Query(where("id").nin(mailbox.getId()).and("name").is(mailbox.getName()).and("domainId").is(mailbox.getDomainId()));
+                query = new Query(where("_id").nin(mailbox.getId()).and("name").is(mailbox.getName()).and("domainId").is(mailbox.getDomainId()));
             } else {
                 query = new Query(where("name").is(mailbox.getName()).and("domainId").is(mailbox.getDomainId()));
             }

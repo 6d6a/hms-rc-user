@@ -25,7 +25,7 @@ public class SSLCertificateEventListener extends ResourceEventListener<SSLCertif
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void onCreateEvent(SSLCertificateCreateEvent event) {
-        processCreateEventNoValidation(event);
+        processCreateEvent(event);
     }
 
     @EventListener

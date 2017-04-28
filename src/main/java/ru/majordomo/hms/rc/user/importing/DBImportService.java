@@ -15,6 +15,7 @@ public class DBImportService {
     private final UnixAccountDBImportService unixAccountDBImportService;
     private final SSLCertificateDBImportService sslCertificateDBImportService;
     private final DomainDBImportService domainDBImportService;
+    private final DomainSubDomainDBImportService domainSubDomainDBImportService;
     private final MailboxDBImportService mailboxDBImportService;
     private final WebSiteDBImportService webSiteDBImportService;
     private final PersonDBImportService personDBImportService;
@@ -27,6 +28,7 @@ public class DBImportService {
             UnixAccountDBImportService unixAccountDBImportService,
             SSLCertificateDBImportService sslCertificateDBImportService,
             DomainDBImportService domainDBImportService,
+            DomainSubDomainDBImportService domainSubDomainDBImportService,
             MailboxDBImportService mailboxDBImportService,
             WebSiteDBImportService webSiteDBImportService,
             PersonDBImportService personDBImportService
@@ -37,6 +39,7 @@ public class DBImportService {
         this.unixAccountDBImportService = unixAccountDBImportService;
         this.sslCertificateDBImportService = sslCertificateDBImportService;
         this.domainDBImportService = domainDBImportService;
+        this.domainSubDomainDBImportService = domainSubDomainDBImportService;
         this.mailboxDBImportService = mailboxDBImportService;
         this.webSiteDBImportService = webSiteDBImportService;
         this.personDBImportService = personDBImportService;
@@ -60,8 +63,8 @@ public class DBImportService {
 //        imported = databaseUserDBImportService.importToMongo();
 //        logger.debug(imported ? "databaseUser db_imported" : "databaseUser db_not_imported");
 //
-        imported = databaseDBImportService.importToMongo();
-        logger.debug(imported ? "database db_imported" : "database db_not_imported");
+//        imported = databaseDBImportService.importToMongo();
+//        logger.debug(imported ? "database db_imported" : "database db_not_imported");
 //
 //        imported = ftpUserDBImportService.importToMongo();
 //        logger.debug(imported ? "ftpUser db_imported" : "ftpUser db_not_imported");
@@ -71,15 +74,18 @@ public class DBImportService {
 //
 //        imported = domainDBImportService.importToMongo();
 //        logger.debug(imported ? "domain db_imported" : "domain db_not_imported");
-//
+
+//        imported = domainSubDomainDBImportService.importToMongo();
+//        logger.debug(imported ? "domainSubDomain db_imported" : "domainSubDomain db_not_imported");
+
 //        imported = mailboxDBImportService.importToMongo();
 //        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 //
 //        imported = webSiteDBImportService.importToMongo();
 //        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 //
-//        imported = personDBImportService.importToMongo();
-//        logger.debug(imported ? "person db_imported" : "person db_not_imported");
+        imported = personDBImportService.importToMongo();
+        logger.debug(imported ? "person db_imported" : "person db_not_imported");
 
         return true;
     }
@@ -104,6 +110,9 @@ public class DBImportService {
 
         imported = domainDBImportService.importToMongo(accountId);
         logger.debug(imported ? "domain db_imported" : "domain db_not_imported");
+
+        imported = domainSubDomainDBImportService.importToMongo(accountId);
+        logger.debug(imported ? "domainSubDomain db_imported" : "domainSubDomain db_not_imported");
 
         imported = mailboxDBImportService.importToMongo(accountId);
         logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");

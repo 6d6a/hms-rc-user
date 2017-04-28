@@ -17,17 +17,7 @@ public abstract class ResourceEventListener<T extends Resource> {
         logger.debug("We got CreateEvent");
 
         try {
-            governor.validateAndStore(event.getSource());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    protected void processCreateEventNoValidation(ResourceCreateEvent<T> event) {
-        logger.debug("We got CreateEvent [NoValidation]");
-
-        try {
-            governor.store(event.getSource());
+            governor.validateAndStoreImported(event.getSource());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -266,6 +266,16 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     @Override
+    public void validateImported(UnixAccount unixAccount) {
+        Set<ConstraintViolation<UnixAccount>> constraintViolations = validator.validate(unixAccount, UnixAccountChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] unixAccount: " + unixAccount + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
     protected UnixAccount construct(UnixAccount unixAccount) throws NotImplementedException {
         throw new NotImplementedException();
     }

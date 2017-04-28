@@ -93,8 +93,12 @@ public class MailboxDBImportService implements ResourceDBImportService {
 
     private Mailbox rowMap(ResultSet rs, int rowNum) throws SQLException {
         String name = rs.getString("username");
+        name = java.net.IDN.toUnicode(name);
+
         String domainName = rs.getString("Domain_name");
-        logger.debug("Found Mailbox for id: " + rs.getString("id") + " name: " + name + " for domain: " + domainName);
+        domainName = java.net.IDN.toUnicode(domainName);
+
+        logger.debug("Found Mailbox for id: " + rs.getString("id") + " name: " + name + "@" + domainName);
 
         Mailbox mailbox = new Mailbox();
         mailbox.setAccountId(rs.getString("id"));
@@ -125,6 +129,8 @@ public class MailboxDBImportService implements ResourceDBImportService {
         if (domain != null) {
             mailbox.setDomainId(domain.getId());
             mailbox.setDomain(domain);
+        } else {
+            logger.error("not found domain for mailbox: " + name + "@" + domainName);
         }
 
         String query = "SELECT pa.from, pa.to, pa.Domain_name " +

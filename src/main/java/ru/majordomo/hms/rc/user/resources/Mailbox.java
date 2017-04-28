@@ -4,34 +4,28 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.validation.ObjectId;
 import ru.majordomo.hms.rc.user.validation.ValidMailbox;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
-import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.groups.ConvertGroup;
-import javax.validation.groups.Default;
 
 @Document(collection = "mailboxes")
 @ValidMailbox
 public class Mailbox extends Resource implements ServerStorable, Quotable, Securable {
     @Transient
-    @Valid
-    @ConvertGroup(from = MailboxChecks.class, to = Default.class)
-    @NotNull(message = "Для ящика должен быть указан домен")
     private Domain domain;
 
     @NotBlank(message = "Для ящика должен быть указан id домена")
     @ObjectId(Domain.class)
+    @Indexed
     private String domainId;
 
     @NotBlank(message = "Не указан пароль для почтового ящика")
@@ -44,6 +38,8 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private Boolean antiSpamEnabled = false;
     private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE_TO_SPAM_FOLDER;
     private SpamFilterMood spamFilterMood = SpamFilterMood.NEUTRAL;
+
+    @Indexed
     private String serverId;
 
     @Min(value = 0L, message = "Квота не может иметь отрицательное значение")
@@ -55,7 +51,10 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private Long quotaUsed = 0L;
 
     private Boolean writable;
+
+    @Indexed
     private Boolean isAggregator;
+
     private String mailSpool;
 
     @NotNull(message = "Uid не может быть равным null")
@@ -233,5 +232,28 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     public void setUid(Integer uid) {
         this.uid = uid;
+    }
+
+    @Override
+    public String toString() {
+        return "Mailbox{" +
+                "domain=" + domain +
+                ", domainId='" + domainId + '\'' +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", redirectAddresses=" + redirectAddresses +
+                ", blackList=" + blackList +
+                ", whiteList=" + whiteList +
+                ", mailFromAllowed=" + mailFromAllowed +
+                ", antiSpamEnabled=" + antiSpamEnabled +
+                ", spamFilterAction=" + spamFilterAction +
+                ", spamFilterMood=" + spamFilterMood +
+                ", serverId='" + serverId + '\'' +
+                ", quota=" + quota +
+                ", quotaUsed=" + quotaUsed +
+                ", writable=" + writable +
+                ", isAggregator=" + isAggregator +
+                ", mailSpool='" + mailSpool + '\'' +
+                ", uid=" + uid +
+                "} " + super.toString();
     }
 }

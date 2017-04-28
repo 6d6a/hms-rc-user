@@ -34,6 +34,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     @ValidHomeDir
     private String homeDir;
 
+    @Indexed
     private String serverId;
 
     @Min(value = 0L, message = "Квота не может иметь отрицательное значение")

@@ -32,7 +32,7 @@ public class DatabaseUserValidator implements ConstraintValidator<ValidDatabaseU
         try {
             if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
                 for (String databaseId : databaseUser.getDatabaseIds()) {
-                    Query query = new Query(where("id").is(databaseId).and("accountId").is(databaseUser.getAccountId()));
+                    Query query = new Query(where("_id").is(databaseId).and("accountId").is(databaseUser.getAccountId()));
 
                     if (!operations.exists(query, Database.class)) {
                         isValid = false;

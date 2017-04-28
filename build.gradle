@@ -118,7 +118,7 @@ dependencies {
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.6")
     compile("ru.majordomo.hms.rc.staff:resources:1.1.+")
     compile("dnsjava:dnsjava:2.1.7")
-    compile("com.cronutils:cron-utils:5.0.1")
+    compile("com.cronutils:cron-utils:5.0.5")
     compile("commons-validator:commons-validator:1.5.1")
     compile("com.googlecode.libphonenumber:libphonenumber:7.7.3")
     compile("com.jcraft:jsch:0.1.54")
@@ -132,6 +132,7 @@ dependencies {
     compile('org.hibernate:hibernate-validator:5.4.1.Final')
     compile('javax.el:javax.el-api:3.0.0')
     compile('org.glassfish.web:javax.el:2.2.4')
+    compile('com.google.guava:guava:21.0')
 }
 
 dependencyManagement {
