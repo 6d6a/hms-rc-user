@@ -94,7 +94,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
             if (needRegister != null && needRegister) {
                 Person person = governorOfPerson.build(domain.getPersonId());
-                if (person.getNicHandle() == null) {
+                if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
                     person = governorOfPerson.createPersonRegistrant(person);
                 }
                 try {
