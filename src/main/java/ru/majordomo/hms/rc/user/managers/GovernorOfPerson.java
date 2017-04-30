@@ -79,7 +79,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String nicHandle = location.substring(location.lastIndexOf('/') + 1);
             person.setNicHandle(nicHandle);
         } catch (Exception e) {
-            throw new ParameterValidateException("Не удалось создать персону в ООО \"Регистрант\"");
+            throw new ParameterValidateException("Данные о владельце домена указаны не полностью");
         }
         preValidate(person);
         validate(person);
