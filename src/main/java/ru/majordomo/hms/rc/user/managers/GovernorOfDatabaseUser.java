@@ -22,6 +22,7 @@ import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserImportChecks;
 
 @Component
 public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
@@ -217,7 +218,17 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         Set<ConstraintViolation<DatabaseUser>> constraintViolations = validator.validate(databaseUser, DatabaseUserChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug(constraintViolations.toString());
+            logger.debug("databaseUser: " + databaseUser + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
+    public void validateImported(DatabaseUser databaseUser) {
+        Set<ConstraintViolation<DatabaseUser>> constraintViolations = validator.validate(databaseUser, DatabaseUserImportChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] databaseUser: " + databaseUser + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

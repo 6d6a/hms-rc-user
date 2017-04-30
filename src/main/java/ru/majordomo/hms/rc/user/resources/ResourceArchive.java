@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -15,11 +16,14 @@ public class ResourceArchive extends Resource implements Serviceable {
     private ResourceArchiveType resourceType;
 
     @NotNull(message = "Необходимо указать id ресурса")
+    @Indexed
     private String resourceId;
 
     @Transient
     private Resource resource;
     private String fileLink;
+
+    @Indexed
     private String serviceId;
 
     @CreatedDate

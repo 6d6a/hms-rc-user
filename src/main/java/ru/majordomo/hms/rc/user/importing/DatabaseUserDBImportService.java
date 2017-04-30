@@ -14,8 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import ru.majordomo.hms.rc.staff.resources.Service;
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.event.databaseUser.DatabaseUserCreateEvent;
 import ru.majordomo.hms.rc.user.event.databaseUser.DatabaseUserImportEvent;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
@@ -28,19 +26,16 @@ public class DatabaseUserDBImportService implements ResourceDBImportService {
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final DatabaseUserRepository databaseUserRepository;
-    private final StaffResourceControllerClient staffResourceControllerClient;
     private final ApplicationEventPublisher publisher;
 
     @Autowired
     public DatabaseUserDBImportService(
             @Qualifier("billingNamedParameterJdbcTemplate") NamedParameterJdbcTemplate namedParameterJdbcTemplate,
             DatabaseUserRepository databaseUserRepository,
-            StaffResourceControllerClient staffResourceControllerClient,
             ApplicationEventPublisher publisher
     ) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.databaseUserRepository = databaseUserRepository;
-        this.staffResourceControllerClient = staffResourceControllerClient;
         this.publisher = publisher;
     }
 
@@ -78,22 +73,20 @@ public class DatabaseUserDBImportService implements ResourceDBImportService {
         String oldName = rs.getString("old_name");
 
         if (!oldName.equals("")) {
-            userName = oldName.replaceAll("\\.", "").substring(0, 15);
+            userName = oldName.replaceAll("\\.", "");
+            userName = userName.substring(0, userName.length() > 15 ? 15 : userName.length());
         }
 
         DatabaseUser databaseUser = new DatabaseUser();
         databaseUser.setAccountId(rs.getString("id"));
 
-        //id of mdb4 = 'db_server_20'
-        String serverId = rs.getString("localdb").equals("1") ? "web_server_" + rs.getString("server_id") : "db_server_20";
-        List<Service> services = staffResourceControllerClient.getDatabaseServicesByServerId(serverId);
+        //id of mdb4 mysql_service = '20_mysql_service'
+        String serviceId = rs.getString("localdb").equals("1") ? rs.getString("server_id") + "_mysql_service" : "20_mysql_service";
 
-        if(!services.isEmpty()) {
-            databaseUser.setServiceId(services.get(0).getId());
-        }
+        databaseUser.setServiceId(serviceId);
 
         //TODO Доставать пароль (Пароли лежат прямо на DB-серверах)
-//        databaseUser.setPasswordHash("");
+        databaseUser.setPasswordHash("someReallyHardToCrackPasswordHash1111!");
         databaseUser.setType(DBType.MYSQL);
         databaseUser.setSwitchedOn(true);
         databaseUser.setName(userName);

@@ -23,6 +23,7 @@ import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateImportChecks;
 
 @Service
 public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
@@ -192,7 +193,17 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         Set<ConstraintViolation<SSLCertificate>> constraintViolations = validator.validate(sslCertificate, SSLCertificateChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.error(constraintViolations.toString());
+            logger.debug("sslCertificate: " + sslCertificate + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
+    public void validateImported(SSLCertificate sslCertificate) {
+        Set<ConstraintViolation<SSLCertificate>> constraintViolations = validator.validate(sslCertificate, SSLCertificateImportChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] sslCertificate: " + sslCertificate + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

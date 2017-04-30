@@ -255,7 +255,17 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         Set<ConstraintViolation<Domain>> constraintViolations = validator.validate(domain, DomainChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.error(constraintViolations.toString());
+            logger.debug("domain: " + domain + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
+    public void validateImported(Domain domain) {
+        Set<ConstraintViolation<Domain>> constraintViolations = validator.validate(domain, DomainChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] domain: " + domain + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

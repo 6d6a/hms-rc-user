@@ -146,6 +146,11 @@ public class ConfigStaffResourceControllerClient {
             public List<Service> getServicesByServerIdAndServiceType(String serverId, String serviceType) {
                 return null;
             }
+
+            @Override
+            public List<Service> getServices() {
+                return null;
+            }
         };
     }
 

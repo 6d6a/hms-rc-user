@@ -5,19 +5,25 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import ru.majordomo.hms.rc.user.resources.validation.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
 public abstract class Resource {
     @Id
@@ -27,17 +33,22 @@ public abstract class Resource {
               groups =
                       {
                               DatabaseChecks.class,
+                              DatabaseImportChecks.class,
                               DatabaseUserChecks.class,
+                              DatabaseUserImportChecks.class,
                               DnsRecordChecks.class,
                               DomainChecks.class,
                               FTPUserChecks.class,
                               MailboxChecks.class,
                               PersonChecks.class,
+                              PersonImportChecks.class,
                               SSLCertificateChecks.class,
+                              SSLCertificateImportChecks.class,
                               UnixAccountChecks.class,
-                              WebSiteChecks.class
+                              WebSiteChecks.class,
+                              WebSiteImportChecks.class
                       })
-    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseChecks.class, DatabaseUserChecks.class})
+    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseChecks.class, DatabaseUserChecks.class, DatabaseUserImportChecks.class})
     @DomainName(groups = DomainChecks.class)
     @ValidPersonName(groups = {PersonChecks.class})
     @ValidDatabaseName(groups = {DatabaseChecks.class})
@@ -45,24 +56,32 @@ public abstract class Resource {
     @ValidFTPUserName(groups = {FTPUserChecks.class})
     @ValidMailboxName(groups = {MailboxChecks.class})
     @ObjectId(value = Domain.class, fieldName = "name", groups = SSLCertificateChecks.class, message = "Домен с указанным именем не найден")
+    @Indexed
     private String name;
 
     @NotBlank(message = "Аккаунт ID не может быть пустым",
               groups =
                       {
                               DatabaseChecks.class,
+                              DatabaseImportChecks.class,
                               DatabaseUserChecks.class,
+                              DatabaseUserImportChecks.class,
                               DomainChecks.class,
                               FTPUserChecks.class,
                               MailboxChecks.class,
                               PersonChecks.class,
+                              PersonImportChecks.class,
                               ResourceArchiveChecks.class,
                               SSLCertificateChecks.class,
+                              SSLCertificateImportChecks.class,
                               UnixAccountChecks.class,
-                              WebSiteChecks.class
+                              WebSiteChecks.class,
+                              WebSiteImportChecks.class
                       })
+    @Indexed
     private String accountId;
 
+    @Indexed
     Boolean switchedOn = true;
 
     public abstract void switchResource();

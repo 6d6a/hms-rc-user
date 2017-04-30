@@ -33,13 +33,14 @@ public class UniqueNameResourceValidator implements ConstraintValidator<UniqueNa
             Query query;
 
             if (resource.getId() != null) {
-                query = new Query(where("id").nin(resource.getId()).and("name").is(resource.getName()));
+                query = new Query(where("_id").nin(resource.getId()).and("name").is(resource.getName()));
             } else {
                 query = new Query(where("name").is(resource.getName()));
             }
 
             isValid = !operations.exists(query, this.objectModel);
         } catch (RuntimeException e) {
+            e.printStackTrace();
             return false;
         }
         return isValid;

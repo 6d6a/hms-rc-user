@@ -1,7 +1,5 @@
 package ru.majordomo.hms.rc.user.resources.validation.validator;
 
-import com.google.i18n.phonenumbers.NumberParseException;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
@@ -15,10 +13,6 @@ public class PhoneValidator implements ConstraintValidator<ValidPhone, String> {
 
     @Override
     public boolean isValid(final String phone, ConstraintValidatorContext constraintValidatorContext) {
-        try {
-            return PhoneNumberManager.phoneValid(phone);
-        } catch (NumberParseException e) {
-            return false;
-        }
+        return PhoneNumberManager.phoneValid(phone);
     }
 }

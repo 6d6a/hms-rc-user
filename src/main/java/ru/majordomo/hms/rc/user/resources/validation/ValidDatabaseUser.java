@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-import ru.majordomo.hms.rc.user.resources.Database;
+import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.validation.validator.DatabaseUserValidator;
 
 @Documented
 @Constraint(validatedBy = DatabaseUserValidator.class)
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@UniqueNameResource(Database.class)
+@UniqueNameResource(DatabaseUser.class)
 public @interface ValidDatabaseUser {
     String message() default "{ru.majordomo.hms.rc.user.resources.validation.ValidDatabaseUser.message}";
 

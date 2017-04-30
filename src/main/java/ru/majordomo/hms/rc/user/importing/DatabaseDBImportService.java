@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.event.database.DatabaseCreateEvent;
 import ru.majordomo.hms.rc.user.event.database.DatabaseImportEvent;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
@@ -31,7 +30,6 @@ public class DatabaseDBImportService implements ResourceDBImportService {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final DatabaseRepository databaseRepository;
     private final DatabaseUserRepository databaseUserRepository;
-    private final StaffResourceControllerClient staffResourceControllerClient;
     private final ApplicationEventPublisher publisher;
 
     @Autowired
@@ -39,13 +37,11 @@ public class DatabaseDBImportService implements ResourceDBImportService {
             @Qualifier("billingNamedParameterJdbcTemplate") NamedParameterJdbcTemplate namedParameterJdbcTemplate,
             DatabaseRepository databaseRepository,
             DatabaseUserRepository databaseUserRepository,
-            StaffResourceControllerClient staffResourceControllerClient,
             ApplicationEventPublisher publisher
     ) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.databaseRepository = databaseRepository;
         this.databaseUserRepository = databaseUserRepository;
-        this.staffResourceControllerClient = staffResourceControllerClient;
         this.publisher = publisher;
     }
 
@@ -53,7 +49,8 @@ public class DatabaseDBImportService implements ResourceDBImportService {
         String query = "SELECT a.id, udb.uid, udb.db, udb.host " +
                 "FROM account a " +
                 "JOIN users_db udb USING(uid) " +
-                "ORDER BY id ASC";
+                "GROUP BY a.id " +
+                "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {
             publisher.publishEvent(new DatabaseImportEvent(resultSet.getString("id")));
@@ -83,19 +80,15 @@ public class DatabaseDBImportService implements ResourceDBImportService {
         database.setAccountId(rs.getString("id"));
 
         String serverHost = rs.getString("host");
-        String serverId;
+        String serviceId;
         if (!serverHost.contains("mdb")) {
-            serverId = "web_server_" + rs.getString("server_id");
+            serviceId = rs.getString("server_id") + "_mysql_service";
         } else {
-            //id of mdb4 = 'db_server_20'
-            serverId = "db_server_20";
+            //id of mdb4
+            serviceId = "20_mysql_service";
         }
 
-        List<ru.majordomo.hms.rc.staff.resources.Service> services = staffResourceControllerClient.getDatabaseServicesByServerId(serverId);
-
-        if(!services.isEmpty()) {
-            database.setServiceId(services.get(0).getId());
-        }
+        database.setServiceId(serviceId);
 
         database.setType(DBType.MYSQL);
         database.setSwitchedOn(true);

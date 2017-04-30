@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
@@ -33,6 +34,7 @@ public class FTPUser extends Resource implements Securable {
 
     @NotBlank(message = "Параметр unixAccount не может быть пустым")
     @ObjectId(value = UnixAccount.class, message = "Не найден UnixAccount с ID: ${validatedValue}")
+    @Indexed
     private String unixAccountId;
 
     @JsonIgnore
@@ -115,4 +117,14 @@ public class FTPUser extends Resource implements Securable {
         this.homeDir = homeDir;
     }
 
+    @Override
+    public String toString() {
+        return "FTPUser{" +
+                "passwordHash='" + passwordHash + '\'' +
+                ", homeDir='" + homeDir + '\'' +
+                ", allowedIPAddresses=" + allowedIPAddresses +
+                ", unixAccount=" + unixAccount +
+                ", unixAccountId='" + unixAccountId + '\'' +
+                "} " + super.toString();
+    }
 }

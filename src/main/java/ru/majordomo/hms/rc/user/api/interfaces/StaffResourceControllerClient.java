@@ -17,7 +17,7 @@ public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=shared-hosting&state=active", consumes = "application/json;utf8")
     Server getActiveHostingServer();
 
-    @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=database-server&state=active", consumes = "application/json;utf8")
+    @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=mysql-database-server&state=active", consumes = "application/json;utf8")
     Server getActiveDatabaseServer();
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=mail-storage&state=active", consumes = "application/json;utf8")
@@ -40,4 +40,7 @@ public interface StaffResourceControllerClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type={serviceType}")
     List<Service> getServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId, @PathVariable("serviceType") String serviceType);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/service")
+    List<Service> getServices();
 }

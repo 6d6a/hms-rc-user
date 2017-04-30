@@ -387,7 +387,17 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug(constraintViolations.toString());
+            logger.debug("mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
+    public void validateImported(Mailbox mailbox) {
+        Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

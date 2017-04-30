@@ -16,7 +16,7 @@ import ru.majordomo.hms.rc.user.resources.validation.validator.DnsRecordValidato
 @Constraint(validatedBy = DnsRecordValidator.class)
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@UniqueNameResource(Database.class)
+//@UniqueNameResource(Database.class)
 public @interface ValidDnsRecord {
     String message() default "{ru.majordomo.hms.rc.user.resources.validation.ValidDnsRecord.message}";
 

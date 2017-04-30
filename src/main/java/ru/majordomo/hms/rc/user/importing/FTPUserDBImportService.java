@@ -39,9 +39,10 @@ public class FTPUserDBImportService implements ResourceDBImportService {
     }
 
     public void pull() {
-        String query = "SELECT a.id, f.ID, f.Status, f.login,, f.password, f.UID, f.HomeDir " +
+        String query = "SELECT a.id, f.ID, f.Status, f.login, f.password, f.UID, f.HomeDir " +
                 "FROM ftp f " +
                 "JOIN account a ON f.UID = a.uid " +
+                "GROUP BY a.id " +
                 "ORDER BY a.id ASC";
 
         namedParameterJdbcTemplate.query(query, resultSet -> {
@@ -50,7 +51,7 @@ public class FTPUserDBImportService implements ResourceDBImportService {
     }
 
     public void pull(String accountId) {
-        String query = "SELECT a.id, f.ID, f.Status, f.login,, f.password, f.UID, f.HomeDir " +
+        String query = "SELECT a.id, f.ID, f.Status, f.login, f.password, f.UID, f.HomeDir " +
                 "FROM ftp f " +
                 "JOIN account a ON f.UID = a.uid " +
                 "WHERE a.id = :accountId";
@@ -62,7 +63,7 @@ public class FTPUserDBImportService implements ResourceDBImportService {
         );
     }
 
-    private FTPUser rowMap(ResultSet rs) throws SQLException {
+    private FTPUser rowMap(ResultSet rs, int rowNum) throws SQLException {
         logger.debug("Found FTPUser for id: " + rs.getString("id") + " login: " + rs.getString("login"));
 
         FTPUser ftpUser = new FTPUser();

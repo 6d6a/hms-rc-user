@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -13,12 +14,14 @@ import javax.validation.constraints.NotNull;
 import ru.majordomo.hms.rc.user.resources.validation.ObjectIdCollection;
 import ru.majordomo.hms.rc.user.resources.validation.ServiceId;
 import ru.majordomo.hms.rc.user.resources.validation.ValidDatabase;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseChecks;
 
 @Document(collection = "databases")
-@ValidDatabase
+@ValidDatabase(groups = DatabaseChecks.class)
 public class Database extends Resource implements Serviceable, Quotable {
-    @ServiceId
+    @ServiceId(groups = DatabaseChecks.class)
     @NotNull(message = "serviceId не может быть пустым")
+    @Indexed
     private String serviceId;
 
     @NotNull(message = "Тип базы не указан")
@@ -31,7 +34,7 @@ public class Database extends Resource implements Serviceable, Quotable {
     @Transient
     private List<DatabaseUser> databaseUsers = new ArrayList<>();
 
-    @ObjectIdCollection(DatabaseUser.class)
+    @ObjectIdCollection(value = DatabaseUser.class, groups = DatabaseChecks.class)
     private List<String> databaseUserIds = new ArrayList<>();
 
     public List<DatabaseUser> getDatabaseUsers() {

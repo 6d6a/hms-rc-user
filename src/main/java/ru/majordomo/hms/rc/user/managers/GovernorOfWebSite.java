@@ -23,6 +23,7 @@ import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
 @Component
 public class GovernorOfWebSite extends LordOfResources<WebSite> {
@@ -512,7 +513,17 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         Set<ConstraintViolation<WebSite>> constraintViolations = validator.validate(webSite, WebSiteChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.error(constraintViolations.toString());
+            logger.debug("webSite: " + webSite + " constraintViolations: " + constraintViolations.toString());
+            throw new ConstraintViolationException(constraintViolations);
+        }
+    }
+
+    @Override
+    public void validateImported(WebSite webSite) {
+        Set<ConstraintViolation<WebSite>> constraintViolations = validator.validate(webSite, WebSiteImportChecks.class);
+
+        if (!constraintViolations.isEmpty()) {
+            logger.debug("[validateImported] webSite: " + webSite + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
