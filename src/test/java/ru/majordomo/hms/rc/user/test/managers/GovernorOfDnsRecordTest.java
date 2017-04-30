@@ -211,4 +211,19 @@ public class GovernorOfDnsRecordTest {
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(4L);
         assertThat(record.getRecordId(), is(4L));
     }
+
+    @Test
+    public void initDomainRF() throws Exception {
+        Domain domain = new Domain();
+        domain.setName("ололоевич.рф");
+        governorOfDnsRecord.initDomain(domain);
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", "ололоевич.рф");
+        keyValue.put("accountId", "0");
+        List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
+        assertThat(records.size(), is(4));
+        assertThat(records.get(0).getRrType(), is(DNSResourceRecordType.SOA));
+        System.out.println(dnsResourceRecordDAO.findOne(10L));
+    }
 }

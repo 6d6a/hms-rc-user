@@ -13,6 +13,7 @@ import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 
 import java.io.UnsupportedEncodingException;
+import java.net.IDN;
 import java.util.*;
 
 import javax.validation.ConstraintViolation;
@@ -109,10 +110,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     private DNSResourceRecord setRecordParams(ServiceMessage serviceMessage, DNSResourceRecord record) {
         try {
             if (serviceMessage.getParam("name") != null) {
-                record.setName(cleaner.cleanString((String) serviceMessage.getParam("name")));
+                record.setName(IDN.toASCII(cleaner.cleanString((String) serviceMessage.getParam("name"))));
             }
             if (serviceMessage.getParam("ownerName") != null) {
-                record.setOwnerName(cleaner.cleanString((String) serviceMessage.getParam("ownerName")));
+                record.setOwnerName(IDN.toASCII(cleaner.cleanString((String) serviceMessage.getParam("ownerName"))));
             }
             if (serviceMessage.getParam("data") != null) {
                 record.setData(cleaner.cleanString((String) serviceMessage.getParam("data")));
@@ -218,7 +219,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         List<DNSResourceRecord> records = new ArrayList<>();
 
         if (hasNameAndAccountId(keyValue)) {
-            records = dnsResourceRecordDAO.getByDomainName(keyValue.get("name"));
+            records = dnsResourceRecordDAO.getByDomainName(IDN.toASCII(keyValue.get("name")));
         }
 
         return constructByDomain(records);
@@ -235,14 +236,14 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     public void initDomain(Domain domain) {
-        String domainName = domain.getName();
+        String domainName = IDN.toASCII(domain.getName());
         dnsResourceRecordDAO.initDomain(domainName);
         addSoaRecord(domain);
         addNsRecords(domain);
     }
 
     public void addNsRecords(Domain domain) {
-        String domainName = domain.getName();
+        String domainName = IDN.toASCII(domain.getName());
 
         DNSResourceRecord record = new DNSResourceRecord();
         record.setRrType(DNSResourceRecordType.NS);
@@ -257,7 +258,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     public void addSoaRecord(Domain domain) {
-        String domainName = domain.getName();
+        String domainName = IDN.toASCII(domain.getName());
 
         DNSResourceRecord record = new DNSResourceRecord();
         record.setRrType(DNSResourceRecordType.SOA);
@@ -268,6 +269,6 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     void setZoneStatus(Domain domain, Boolean switchedOn) {
-        dnsResourceRecordDAO.switchByDomainName(domain.getName(), switchedOn);
+        dnsResourceRecordDAO.switchByDomainName(IDN.toASCII(domain.getName()), switchedOn);
     }
 }
