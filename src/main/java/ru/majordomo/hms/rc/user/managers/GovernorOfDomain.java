@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import com.google.common.net.InternetDomainName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +20,7 @@ import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
 @Service
 public class GovernorOfDomain extends LordOfResources<Domain> {
@@ -95,8 +93,12 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             validate(domain);
 
             if (needRegister != null && needRegister) {
+                Person person = governorOfPerson.build(domain.getPersonId());
+                if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
+                    person = governorOfPerson.createPersonRegistrant(person);
+                }
                 try {
-                    registrar.registerDomain(domain.getPerson().getNicHandle(), domain.getName());
+                    registrar.registerDomain(person.getNicHandle(), domain.getName());
                     domain.setRegSpec(registrar.getRegSpec(domain.getName()));
                 } catch (Exception e) {
                     throw new ParameterValidateException(e.getMessage());
@@ -153,6 +155,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                     throw new ParameterValidateException(e.getMessage());
                                 }
                             }
+                            break;
+                        case "switchedOn":
+                            Boolean switchedOn = (Boolean) entry.getValue();
+                            governorOfDnsRecord.setZoneStatus(domain, switchedOn);
                             break;
                         default:
                             break;

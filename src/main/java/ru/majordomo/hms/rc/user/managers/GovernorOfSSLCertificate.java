@@ -22,9 +22,8 @@ import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.*;
-import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
-import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
-import ru.majordomo.hms.rc.user.validation.group.SSLCertificateImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateImportChecks;
 
 @Service
 public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {

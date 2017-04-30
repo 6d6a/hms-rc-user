@@ -17,9 +17,9 @@ import javax.validation.constraints.NotNull;
 
 import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.validation.ServiceId;
-import ru.majordomo.hms.rc.user.validation.ValidDatabaseUser;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.ServiceId;
+import ru.majordomo.hms.rc.user.resources.validation.ValidDatabaseUser;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
 
 @Document(collection = "databaseUsers")
 @ValidDatabaseUser(groups = DatabaseUserChecks.class)

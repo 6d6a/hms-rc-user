@@ -2,14 +2,23 @@ package ru.majordomo.hms.rc.user.test.config.common;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.resources.DomainState;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 public class ConfigDomainRegistrarClient {
@@ -29,7 +38,9 @@ public class ConfigDomainRegistrarClient {
 
             @Override
             public ResponseEntity createPerson(@RequestBody Person person) {
-                return new ResponseEntity(HttpStatus.CREATED);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setLocation(URI.create("http://domain-registrar/person/RGS-000001"));
+                return new ResponseEntity(headers, HttpStatus.CREATED);
             }
 
             @Override

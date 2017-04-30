@@ -23,8 +23,8 @@ public class CleanerTest {
 
     @Test
     public void cleanString() throws Exception {
-        String result = cleaner.cleanString("nksdj?sr3#4vn/\\f349><>340~4");
-        assertThat(result, is("nksdjsr34vn/f3493404"));
+        String result = cleaner.cleanString("  nksdj?sr3#4vn/\\f349><>340~4\t\t");
+        assertThat(result, is("nksdj?sr3#4vn/\\f349><>340~4"));
     }
 
     @Test
@@ -36,10 +36,10 @@ public class CleanerTest {
     @Test
     public void cleanListWithStrings() throws Exception {
         List<String> input = new ArrayList<>();
-        input.add("nksdj?sr3#4vn/\\f349><>340~4");
-        input.add("alksfury*4j;&nfr? fjkserh~\\~<<<>afer~?@$/a3)");
+        input.add("  nksdj?sr3#4vn/\\f349><>340~4\t\t");
+        input.add("\t alksfury*4j;&nfr? fjkserh~\\~<<<>afer~?@$/a3) \t");
         List<String> result = cleaner.cleanListWithStrings(input);
-        assertThat(result, is(Arrays.asList("nksdjsr34vn/f3493404", "alksfury*4j;&nfr fjkserhafer@$/a3)")));
+        assertThat(result, is(Arrays.asList("nksdj?sr3#4vn/\\f349><>340~4", "alksfury*4j;&nfr? fjkserh~\\~<<<>afer~?@$/a3)")));
     }
 
     @Test

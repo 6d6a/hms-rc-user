@@ -40,7 +40,9 @@ public class RegSpec {
 
     @JsonGetter("created")
     public String getCreatedAsString() {
-        return created.toString();
+        if (created != null)
+            return created.toString();
+        return null;
     }
 
     public void setCreated(LocalDate created) {
@@ -58,7 +60,9 @@ public class RegSpec {
 
     @JsonGetter("paidTill")
     public String getPaidTillAsString() {
-        return paidTill.toString();
+        if (paidTill != null)
+            return paidTill.toString();
+        return null;
     }
 
     public void setPaidTill(LocalDate paidTill) {
@@ -76,7 +80,9 @@ public class RegSpec {
 
     @JsonGetter("freeDate")
     public String getFreeDateAsString() {
-        return freeDate.toString();
+        if (freeDate != null)
+            return freeDate.toString();
+        return null;
     }
 
     public void setFreeDate(LocalDate freeDate) {

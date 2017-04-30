@@ -7,24 +7,23 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
-import ru.majordomo.hms.rc.user.validation.DomainName;
-import ru.majordomo.hms.rc.user.validation.ObjectId;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseImportChecks;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseUserChecks;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseUserImportChecks;
-import ru.majordomo.hms.rc.user.validation.group.DnsRecordChecks;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
-import ru.majordomo.hms.rc.user.validation.group.FTPUserChecks;
-import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
-import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
-import ru.majordomo.hms.rc.user.validation.group.PersonImportChecks;
-import ru.majordomo.hms.rc.user.validation.group.ResourceArchiveChecks;
-import ru.majordomo.hms.rc.user.validation.group.SSLCertificateChecks;
-import ru.majordomo.hms.rc.user.validation.group.SSLCertificateImportChecks;
-import ru.majordomo.hms.rc.user.validation.group.UnixAccountChecks;
-import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
-import ru.majordomo.hms.rc.user.validation.group.WebSiteImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.*;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
 public abstract class Resource {
     @Id
@@ -49,8 +48,13 @@ public abstract class Resource {
                               WebSiteChecks.class,
                               WebSiteImportChecks.class
                       })
-    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseUserChecks.class, DatabaseUserImportChecks.class})
+    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseChecks.class, DatabaseUserChecks.class, DatabaseUserImportChecks.class})
     @DomainName(groups = DomainChecks.class)
+    @ValidPersonName(groups = {PersonChecks.class})
+    @ValidDatabaseName(groups = {DatabaseChecks.class})
+    @ValidDatabaseUserName(groups = {DatabaseUserChecks.class})
+    @ValidFTPUserName(groups = {FTPUserChecks.class})
+    @ValidMailboxName(groups = {MailboxChecks.class})
     @ObjectId(value = Domain.class, fieldName = "name", groups = SSLCertificateChecks.class, message = "Домен с указанным именем не найден")
     @Indexed
     private String name;

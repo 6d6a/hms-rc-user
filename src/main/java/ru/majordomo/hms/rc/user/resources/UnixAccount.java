@@ -10,13 +10,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.constraints.AssertFalse;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.validation.ValidHomeDir;
+import ru.majordomo.hms.rc.user.resources.validation.ValidAbsoluteFilePath;
+import ru.majordomo.hms.rc.user.resources.validation.ValidHomeDir;
 
 @Document(collection = "unixAccounts")
 public class UnixAccount extends Resource implements ServerStorable, Quotable, Securable {
@@ -32,6 +31,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
 
     @NotBlank(message = "homedir не может быть пустым")
     @ValidHomeDir
+    @ValidAbsoluteFilePath
     private String homeDir;
 
     @Indexed

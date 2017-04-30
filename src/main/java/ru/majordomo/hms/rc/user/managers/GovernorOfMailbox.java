@@ -26,7 +26,7 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 
 @Service
 public class GovernorOfMailbox extends LordOfResources<Mailbox> {
@@ -150,9 +150,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                     case "antiSpamEnabled":
                         mailbox.setAntiSpamEnabled((Boolean) entry.getValue());
                         break;
-                    case "switchedOn":
-                        mailbox.setSwitchedOn((Boolean) entry.getValue());
-                        break;
                     case "isAggregator":
                         Boolean userValue = (Boolean) entry.getValue();
                         if (userValue) {
@@ -176,6 +173,15 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         } catch (IllegalArgumentException e) {
                             throw new ParameterValidateException("Недопустимый тип придирчивости");
                         }
+                        break;
+                    case "writable":
+                        mailbox.setWritable((Boolean) entry.getValue());
+                        break;
+                    case "switchedOn":
+                        Boolean switchedOn = (Boolean) entry.getValue();
+                        mailbox.setSwitchedOn(switchedOn);
+                        mailbox.setWritable(switchedOn);
+                        mailbox.setMailFromAllowed(switchedOn);
                         break;
                     default:
                         break;
@@ -526,6 +532,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
         mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
         mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
@@ -544,6 +551,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Mailbox mailbox = repository.findOne(mailboxId);
         if (mailbox != null) {
             mailbox.setQuotaUsed(quotaSize);
+            if (mailbox.getQuotaUsed() > mailbox.getQuota()) {
+                mailbox.setWritable(false);
+            } else {
+                mailbox.setWritable(true);
+            }
         } else {
             throw new ResourceNotFoundException("Mailbox с ID: " + mailboxId + " не найден");
         }

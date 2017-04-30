@@ -6,7 +6,7 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import java.util.List;
 public interface DNSResourceRecordDAO {
     void update(DNSResourceRecord record);
-    void insert(DNSResourceRecord record);
+    Long insert(DNSResourceRecord record);
     void delete(DNSResourceRecord record);
     void delete(Long recordId);
     DNSResourceRecord findOne(Long recordId);

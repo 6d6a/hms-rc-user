@@ -13,8 +13,8 @@ import javax.validation.Valid;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
 
-import ru.majordomo.hms.rc.user.validation.UniqueNameResource;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
+import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
+import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
 @Document(collection = "domains")
 @UniqueNameResource(Domain.class)

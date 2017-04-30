@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
@@ -21,6 +22,9 @@ import ru.majordomo.hms.rc.user.managers.LordOfResources;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 @Component
 @EnableRabbit
@@ -76,6 +80,12 @@ class BaseAMQPController {
         try {
             resource = governor.create(serviceMessage);
             success = true;
+        } catch (ConstraintViolationException e) {
+            errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
+            logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                    " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                    " Создание ресурса " + resourceType + " не удалось: " + errorMessage);
+            success = false;
         } catch (Exception e) {
             logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
                     " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
@@ -129,6 +139,12 @@ class BaseAMQPController {
         try {
             resource = governor.update(serviceMessage);
             success = true;
+        } catch (ConstraintViolationException e) {
+            errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
+            logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                    " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                    " Обновление ресурса " + resourceType + " не удалось: " + errorMessage);
+            success = false;
         } catch (Exception e) {
             logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
                     " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +

@@ -25,8 +25,8 @@ import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseChecks;
-import ru.majordomo.hms.rc.user.validation.group.DatabaseImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseImportChecks;
 
 @Component
 public class GovernorOfDatabase extends LordOfResources<Database> {
@@ -96,6 +96,9 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
                         break;
                     case "switchedOn":
                         database.setSwitchedOn((Boolean) entry.getValue());
+                        break;
+                    case "writable":
+                        database.setWritable((Boolean) entry.getValue());
                         break;
                     default:
                         break;

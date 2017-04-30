@@ -12,12 +12,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import ru.majordomo.hms.rc.user.validation.ObjectIdCollection;
-import ru.majordomo.hms.rc.user.validation.ServiceId;
-import ru.majordomo.hms.rc.user.validation.ValidWebSite;
-import ru.majordomo.hms.rc.user.validation.group.WebSiteChecks;
+import ru.majordomo.hms.rc.user.resources.validation.*;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 
 @Document(collection = "webSites")
 @ValidWebSite
@@ -36,32 +35,54 @@ public class WebSite extends Resource implements Serviceable {
     private String serviceId;
 
     @NotBlank(message = "documentRoot не может быть пустым")
+    @ValidRelativeFilePath
     private String documentRoot;
 
     @Transient
     private List<Domain> domains = new ArrayList<>();
 
     @NotEmpty(message = "Должен присутствовать хотя бы один id домена")
-    @ObjectIdCollection(value = Domain.class)
+    @ObjectIdCollection(Domain.class)
     private List<String> domainIds = new ArrayList<>();
 
     @NotNull(message = "charSet не может быть null")
     private CharSet charSet;
+
     private Boolean ssiEnabled;
-    private List<String> ssiFileExtensions = new ArrayList<>();
+
+    @Valid
+    private List<@ValidFileExtension String> ssiFileExtensions = new ArrayList<>();
+
     private Boolean cgiEnabled;
-    private List<String> cgiFileExtensions = new ArrayList<>();
+
+    @Valid
+    private List<@ValidFileExtension String> cgiFileExtensions = new ArrayList<>();
+
+    @ValidRelativeFilePath
     private String scriptAlias;
+
     private Boolean ddosProtection;
+
     private Boolean autoSubDomain;
+
     private Boolean accessByOldHttpVersion;
-    private List<String> staticFileExtensions = new ArrayList<>();
+
+    @Valid
+    private List<@ValidFileExtension String> staticFileExtensions = new ArrayList<>();
+
     private String customUserConf;
-    private List<String> indexFileList = new ArrayList<>();
+
+    @Valid
+    private List<@ValidFileName String> indexFileList = new ArrayList<>();
+
     private Boolean accessLogEnabled;
+
     private Boolean errorLogEnabled;
+
     private Boolean followSymLinks;
+
     private Boolean multiViews;
+
     private Boolean allowUrlFopen;
 
     @Range(min = 0, max = 7, message = "mbstringFuncOverload должно быть между {min} и {max}")

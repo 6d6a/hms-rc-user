@@ -4,8 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
@@ -41,7 +44,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
     }
 
     @Override
-    public void insert(DNSResourceRecord record) {
+    public Long insert(DNSResourceRecord record) {
         String query = "insert into records (domain_id, prio, `type`, ttl, `name`, content) values (:domain_id, :prio, :type, :ttl, :name, :content)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("type", Types.VARCHAR);
@@ -51,13 +54,17 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         parameters.addValue("ttl", record.getTtl());
         parameters.addValue("name", record.getOwnerName());
         parameters.addValue("content", record.getData());
-        jdbcTemplate.update(query, parameters);
+
+        KeyHolder holder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(query, parameters, holder);
+        return holder.getKey().longValue();
     }
 
     public void save(DNSResourceRecord record) {
         record.setDomainId(getDomainIDByDomainName(record.getName()));
         if (record.getRecordId() == null) {
-            insert(record);
+            record.setRecordId(insert(record));
         } else {
             update(record);
         }
@@ -187,7 +194,12 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("domainName", domainName);
-        return jdbcTemplate.queryForObject(query, parameters, Long.class);
+        try {
+            return jdbcTemplate.queryForObject(query, parameters, Long.class);
+        } catch (Exception e) {
+            initDomain(domainName);
+            return jdbcTemplate.queryForObject(query, parameters, Long.class);
+        }
     }
 
     @Override
@@ -210,5 +222,18 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
         String domainsQuery = "DELETE FROM domains WHERE id = :domainId";
         jdbcTemplate.update(domainsQuery, parameters);
+    }
+
+    public void switchByDomainName(String domainName, Boolean switchedOn) {
+        int active = switchedOn ? 1 : 0;
+        Long domainId = getDomainIDByDomainName(domainName);
+        String query = "UPDATE records SET active = :active WHERE domain_id = :domainId";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("active", active);
+        parameters.addValue("domainId", domainId);
+        jdbcTemplate.update(query, parameters);
+
+        query = "UPDATE domains SET active = :active WHERE id = :domainId";
+        jdbcTemplate.update(query, parameters);
     }
 }

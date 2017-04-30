@@ -2,7 +2,7 @@ package ru.majordomo.hms.rc.user.resources;
 
 import javax.validation.constraints.NotNull;
 
-import ru.majordomo.hms.rc.user.validation.ValidDnsRecord;
+import ru.majordomo.hms.rc.user.resources.validation.ValidDnsRecord;
 
 @ValidDnsRecord
 public class DNSResourceRecord extends Resource {
@@ -89,8 +89,10 @@ public class DNSResourceRecord extends Resource {
     @Override
     public String toString() {
         return "DNSRecord for domain with id " + domainId + ":{" +
-                "id=" + recordId +
-                ", name='" + ownerName + '\'' +
+                "id=" + this.getId() +
+                ", recordId=" + recordId +
+                ", name='" + this.getName() + '\'' +
+                ", ownerName='" + ownerName + '\'' +
                 ", type=" + rrType +
                 ", content='" + data + '\'' +
                 ", ttl=" + ttl +

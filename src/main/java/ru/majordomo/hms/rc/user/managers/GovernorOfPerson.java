@@ -20,8 +20,8 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
-import ru.majordomo.hms.rc.user.validation.group.PersonImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
 
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {
@@ -64,20 +64,26 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             preValidate(person);
             validate(person);
 
-            try {
-                ResponseEntity responseEntity = domainRegistrarClient.createPerson(person);
-                String location = responseEntity.getHeaders().getLocation().getPath();
-                String nicHandle = location.substring(location.lastIndexOf('/') + 1);
-                person.setNicHandle(nicHandle);
-            } catch (Exception e) {
-                logger.error("Не удалось создать персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
-            }
-
             store(person);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
         }
 
+        return person;
+    }
+
+    Person createPersonRegistrant(Person person) {
+        try {
+            ResponseEntity responseEntity = domainRegistrarClient.createPerson(person);
+            String location = responseEntity.getHeaders().getLocation().getPath();
+            String nicHandle = location.substring(location.lastIndexOf('/') + 1);
+            person.setNicHandle(nicHandle);
+        } catch (Exception e) {
+            throw new ParameterValidateException("Не удалось создать персону в ООО \"Регистрант\"");
+        }
+        preValidate(person);
+        validate(person);
+        store(person);
         return person;
     }
 
@@ -97,6 +103,10 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         keyValue.put("accountId", accountId);
 
         Person person = build(keyValue);
+        if (person.getNicHandle() != null && !person.getNicHandle().equals("")) {
+            throw new ParameterValidateException("Данная персона синхронизирована с Регистратором, для изменения любых данных напишите, пожалуйста, письмо на domain@majordomo.ru");
+        }
+
         try {
             for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
                 switch (entry.getKey().toString()) {
@@ -142,11 +152,11 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         preValidate(person);
         validate(person);
 
-        try {
-            domainRegistrarClient.updatePerson(person.getNicHandle(), person);
-        } catch (Exception e) {
-            logger.error("Не удалось обновить персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
-        }
+//        try {
+//            domainRegistrarClient.updatePerson(person.getNicHandle(), person);
+//        } catch (Exception e) {
+//            logger.error("Не удалось обновить персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
+//        }
 
         store(person);
 
@@ -333,6 +343,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         legalEntity.setBik(legalEntityMap.get("bik"));
         legalEntity.setCorrespondentAccount(legalEntityMap.get("correspondentAccount"));
         legalEntity.setBankAccount(legalEntityMap.get("bankAccount"));
+        legalEntity.setDirectorName(legalEntityMap.get("directorName"));
         return legalEntity;
     }
 

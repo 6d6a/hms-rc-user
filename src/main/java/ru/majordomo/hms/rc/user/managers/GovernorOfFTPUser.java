@@ -16,11 +16,9 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
-import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
-import ru.majordomo.hms.rc.user.validation.group.DomainChecks;
-import ru.majordomo.hms.rc.user.validation.group.FTPUserChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
 
 @Service
 public class GovernorOfFTPUser extends LordOfResources<FTPUser> {

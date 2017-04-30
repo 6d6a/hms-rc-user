@@ -164,9 +164,8 @@ public class GovernorOfWebsiteTest {
             Person person = domain.getPerson();
             personRepository.save(person);
             domainRepository.save(domain);
+            domainIds.add(domain.getId());
         }
-        String domainId = domains.get(0).getId();
-        domainIds.add(domainId);
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
         unixAccountRepository.save(unixAccounts);
         accountId = unixAccounts.get(0).getAccountId();
@@ -182,8 +181,16 @@ public class GovernorOfWebsiteTest {
 
     @Test
     public void create() {
-        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, accountId);
-//        webSiteRepository.deleteAll();
+        List<Domain> domains = ResourceGenerator.generateBatchOfDomains();
+        List<String> localDomainIds = new ArrayList<>();
+        for (Domain domain: domains) {
+            Person p = domain.getPerson();
+            personRepository.save(p);
+            domainRepository.save(domain);
+            localDomainIds.add(domain.getId());
+        }
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(localDomainIds, accountId);
         governor.create(serviceMessage);
     }
 
@@ -215,7 +222,8 @@ public class GovernorOfWebsiteTest {
         serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("applicationServiceId", serviceId);
 
-        governor.update(serviceMessage);
+        WebSite webSite = governor.update(serviceMessage);
+        System.out.println(webSite.getCgiFileExtensions());
 
         Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled(), "CgiEnabled must be true");
         Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
@@ -294,11 +302,61 @@ public class GovernorOfWebsiteTest {
         System.out.println(webSite);
     }
 
+    @Test(expected = ConstraintViolationException.class)
+    public void validateScriptAlias() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("scriptAlias", "В%алера");
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateIndexFileList() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("indexFileList", Arrays.asList(".index.php", "index2.php"));
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateCgiFileExtensions() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("cgiFileExtensions", Arrays.asList("py", ".log"));
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateSsiFileExtensions() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("ssiFileExtensions", Arrays.asList("htm", "fer4#"));
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateDocumentRoot() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("documentRoot", "/home/u100800");
+
+        governor.update(serviceMessage);
+    }
+
     @After
     public void deleteAll() {
         domainRepository.deleteAll();
         personRepository.deleteAll();
         unixAccountRepository.deleteAll();
         webSiteRepository.deleteAll();
+    }
+
+    private ServiceMessage prepareWebsiteUpdateServiceMessage() throws Exception {
+        List<String> domainIdsLocal = batchOfWebsites.get(0).getDomainIds();
+        String accountIdLocal = batchOfWebsites.get(0).getAccountId();
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
+        serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
+
+        return serviceMessage;
     }
 }

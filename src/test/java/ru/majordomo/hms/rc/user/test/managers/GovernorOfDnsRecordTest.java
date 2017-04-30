@@ -22,6 +22,7 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -187,6 +188,22 @@ public class GovernorOfDnsRecordTest {
         assertThat(record.getOwnerName(), is("sub2.example.com"));
         assertThat(record.getData(), is("78.108.80.36"));
         assertThat(record.getTtl(), is(3700L));
+    }
+
+    @Test
+    public void switchOnOff() throws Exception {
+        dnsResourceRecordDAO.switchByDomainName("example.com", false);
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", "example.com");
+
+        Collection<DNSResourceRecord> records = governorOfDnsRecord.buildAll(keyValue);
+        records.stream().forEach(record -> assertThat(record.getSwitchedOn(), is(false)));
+
+        dnsResourceRecordDAO.switchByDomainName("example.com", true);
+
+        records = governorOfDnsRecord.buildAll(keyValue);
+        records.stream().forEach(record -> assertThat(record.getSwitchedOn(), is(true)));
     }
 
     @Test

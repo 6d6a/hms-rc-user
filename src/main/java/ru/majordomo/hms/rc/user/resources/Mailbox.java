@@ -7,13 +7,16 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.validation.ObjectId;
-import ru.majordomo.hms.rc.user.validation.ValidMailbox;
+import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
+import ru.majordomo.hms.rc.user.resources.validation.ValidAbsoluteFilePath;
+import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
+import ru.majordomo.hms.rc.user.resources.validation.ValidMailbox;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -31,12 +34,21 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     @NotBlank(message = "Не указан пароль для почтового ящика")
     private String passwordHash;
 
-    private List<String> redirectAddresses = new ArrayList<>();
-    private List<String> blackList = new ArrayList<>();
-    private List<String> whiteList = new ArrayList<>();
+    @Valid
+    private List<@ValidEmail String> redirectAddresses = new ArrayList<>();
+
+    @Valid
+    private List<@ValidEmail String> blackList = new ArrayList<>();
+
+    @Valid
+    private List<@ValidEmail String> whiteList = new ArrayList<>();
+
     private Boolean mailFromAllowed = true;
+
     private Boolean antiSpamEnabled = false;
+
     private SpamFilterAction spamFilterAction = SpamFilterAction.MOVE_TO_SPAM_FOLDER;
+
     private SpamFilterMood spamFilterMood = SpamFilterMood.NEUTRAL;
 
     @Indexed
@@ -55,6 +67,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     @Indexed
     private Boolean isAggregator;
 
+    @ValidAbsoluteFilePath
     private String mailSpool;
 
     @NotNull(message = "Uid не может быть равным null")

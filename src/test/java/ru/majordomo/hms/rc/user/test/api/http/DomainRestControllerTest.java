@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -19,6 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
@@ -79,6 +81,8 @@ public class DomainRestControllerTest {
     private DomainRepository repository;
     @Autowired
     private PersonRepository personRepository;
+    @Autowired
+    private GovernorOfDnsRecord governorOfDnsRecord;
 
     @Before
     public void setUp() {
@@ -91,6 +95,7 @@ public class DomainRestControllerTest {
             personRepository.save(domain.getPerson());
             domain.setPersonId(domain.getPerson().getId());
             repository.save(domain);
+//            governorOfDnsRecord.initDomain(domain);
         }
     }
 
@@ -158,18 +163,20 @@ public class DomainRestControllerTest {
         String domainName = batchOfDomains.get(0).getName();
 
         DNSResourceRecord dnsRecord = new DNSResourceRecord();
+        dnsRecord.setName(domainName);
         dnsRecord.setRrClass(DNSResourceRecordClass.IN);
         dnsRecord.setTtl(300L);
         dnsRecord.setRrType(DNSResourceRecordType.TXT);
-        dnsRecord.setOwnerName("test1." + batchOfDomains.get(0).getName());
+        dnsRecord.setOwnerName("test1." + domainName);
         dnsRecord.setData("some text");
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(dnsRecord);
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/domain/" + domainName + "/add-dns-record")
                 .contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
-        String response = mockMvc.perform(request).andReturn().getResponse().getContentAsString();
-        System.out.println(response);
+        String recordInJson = mockMvc.perform(request).andReturn().getResponse().getContentAsString();
+        DNSResourceRecord record = mapper.readValue(recordInJson, DNSResourceRecord.class);
+        System.out.println("Response: " + record);
     }
 
     @Test

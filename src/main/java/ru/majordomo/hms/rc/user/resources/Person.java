@@ -9,9 +9,9 @@ import java.util.Objects;
 
 import javax.validation.Valid;
 
-import ru.majordomo.hms.rc.user.validation.ValidEmail;
-import ru.majordomo.hms.rc.user.validation.ValidPhone;
-import ru.majordomo.hms.rc.user.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
+import ru.majordomo.hms.rc.user.resources.validation.ValidPhone;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 
 @Document(collection = "persons")
 public class Person extends Resource {
