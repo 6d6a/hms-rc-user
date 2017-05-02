@@ -25,7 +25,15 @@ public class MailboxEventListener extends ResourceEventListener<Mailbox> {
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void onCreateEvent(MailboxCreateEvent event) {
-        processCreateEvent(event);
+        logger.debug("We got CreateEvent");
+
+        Mailbox mailbox = event.getSource();
+        try {
+            governor.preValidate(mailbox);
+            governor.syncWithRedis(mailbox);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @EventListener

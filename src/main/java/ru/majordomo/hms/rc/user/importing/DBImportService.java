@@ -84,8 +84,8 @@ public class DBImportService {
 //        imported = webSiteDBImportService.importToMongo();
 //        logger.debug(imported ? "mailbox db_imported" : "mailbox db_not_imported");
 //
-        imported = personDBImportService.importToMongo();
-        logger.debug(imported ? "person db_imported" : "person db_not_imported");
+//        imported = personDBImportService.importToMongo();
+//        logger.debug(imported ? "person db_imported" : "person db_not_imported");
 
         return true;
     }

@@ -148,6 +148,7 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getAntiSpamEnabled(), is(false));
 
         MailboxForRedis redisMailbox = redisRepository.findOne(governor.construct(mailbox).getFullName());
+        assertNotNull(redisMailbox);
         assertThat(redisMailbox.getMailFromAllowed(), is(mailbox.getMailFromAllowed()));
         assertThat(redisMailbox.getAntiSpamEnabled(), is(mailbox.getAntiSpamEnabled()));
         assertThat(redisMailbox.getWritable(), is(mailbox.getWritable()));

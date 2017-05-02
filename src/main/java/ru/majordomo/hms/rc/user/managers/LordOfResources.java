@@ -60,6 +60,8 @@ public abstract class LordOfResources<T extends Resource> {
         store(resource);
     }
 
+    public void syncWithRedis(T resource) {}
+
     protected abstract T construct(T resource) throws ParameterValidateException;
 
     public abstract T build(String resourceId) throws ResourceNotFoundException;
