@@ -9,6 +9,7 @@ import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
 @RedisHash("mailboxes")
 public class MailboxForRedis {
     @Id
+    private String id;
     private String name;
     private String passwordHash;
     private String blackList;
@@ -21,6 +22,14 @@ public class MailboxForRedis {
     private Boolean writable;
     private String serverName;
     private String storageData;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

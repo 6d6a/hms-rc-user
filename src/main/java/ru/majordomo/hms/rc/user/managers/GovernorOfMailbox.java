@@ -471,6 +471,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private MailboxForRedis convertMailboxToMailboxForRedis(Mailbox mailbox, String serverName) {
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
         String uidAsString = mailbox.getUid().toString();
+        mailboxForRedis.setId(mailbox.getFullName());
         mailboxForRedis.setName(mailbox.getFullName());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
         mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
@@ -526,19 +527,22 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private void setAggregatorInRedis(Mailbox mailbox) {
+        String uidAsString = mailbox.getUid().toString();
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        mailboxForRedis.setName("*@" + (construct(mailbox)).getDomain().getName());
+        mailboxForRedis.setId("*@" + (construct(mailbox)).getDomain().getName());
+        mailboxForRedis.setName(mailbox.getFullName());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
         mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
         mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
         mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
-        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setWritable(mailbox.getWritable());
+        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
         mailboxForRedis.setServerName(serverName);
+        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
 
         redisRepository.save(mailboxForRedis);
     }
