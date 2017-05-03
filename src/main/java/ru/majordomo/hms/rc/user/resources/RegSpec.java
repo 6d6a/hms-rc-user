@@ -51,7 +51,9 @@ public class RegSpec {
 
     @JsonSetter("created")
     public void setCreatedAsString(String created) {
-        this.created = LocalDate.parse(created);
+        if (created != null) {
+            this.created = LocalDate.parse(created);
+        }
     }
 
     public LocalDate getPaidTill() {
@@ -71,7 +73,9 @@ public class RegSpec {
 
     @JsonSetter("paidTill")
     public void setPaidTillAsString(String paidTill) {
-        this.paidTill = LocalDate.parse(paidTill);
+        if (paidTill != null) {
+            this.paidTill = LocalDate.parse(paidTill);
+        }
     }
 
     public LocalDate getFreeDate() {
@@ -91,7 +95,9 @@ public class RegSpec {
 
     @JsonSetter("freeDate")
     public void setFreeDateAsString(String freeDate) {
-        this.freeDate = LocalDate.parse(freeDate);
+        if (freeDate != null) {
+            this.freeDate = LocalDate.parse(freeDate);
+        }
     }
 
     @Override
