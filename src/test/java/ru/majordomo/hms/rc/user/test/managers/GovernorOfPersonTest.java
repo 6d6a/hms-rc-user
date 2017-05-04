@@ -194,4 +194,13 @@ public class GovernorOfPersonTest {
         assertThat(gotPerson.getPassport(), is(governor.buildPassportFromMap(newPassport)));
         assertThat(gotPerson.getLegalEntity(), is(governor.buildLegalEntityFromMap(newLegalEntity)));
     }
+
+    @Test
+    public void validateName() {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateServiceMessage();
+        serviceMessage.delParam("name");
+        serviceMessage.addParam("name", "НОШ 'ВФЫВ' № 95, +! шк. «»/\"");
+        System.out.println(serviceMessage.toString());
+        governor.create(serviceMessage);
+    }
 }
