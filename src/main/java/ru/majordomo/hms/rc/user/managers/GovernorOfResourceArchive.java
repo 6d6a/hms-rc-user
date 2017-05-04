@@ -130,7 +130,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
         SecureRandom random = new SecureRandom();
         String filename = new BigInteger(260, random).toString(32);
-        String fileLink = "http://" + archiveHostname + "/" + filename;
+        String fileLink = "https://" + archiveHostname + "/" + filename;
         archive.setFileLink(fileLink);
 
         try {
