@@ -40,6 +40,8 @@ import java.util.*;
 import javax.validation.ConstraintViolationException;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -191,7 +193,8 @@ public class GovernorOfWebsiteTest {
         }
 
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(localDomainIds, accountId);
-        governor.create(serviceMessage);
+        WebSite webSite = governor.create(serviceMessage);
+        assertThat(webSite.getStaticFileExtensions().size(), is(18));
     }
 
     @Test(expected = ConstraintViolationException.class)

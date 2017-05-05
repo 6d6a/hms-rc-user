@@ -359,6 +359,8 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             List<String> staticFileExtensions = new ArrayList<>();
             if (serviceMessage.getParam("staticFileExtensions") != null) {
                 staticFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("staticFileExtensions"));
+            } else {
+                staticFileExtensions = Arrays.asList(defaultWebsiteStaticFileExtensions);
             }
             List<String> indexFileList = new ArrayList<>();
             if (serviceMessage.getParam("indexFileList") != null) {
