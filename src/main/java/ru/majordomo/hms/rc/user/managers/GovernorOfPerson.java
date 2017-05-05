@@ -337,7 +337,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         legalEntity.setOkpo(legalEntityMap.get("okpo"));
         legalEntity.setKpp(legalEntityMap.get("kpp"));
         legalEntity.setOgrn(legalEntityMap.get("ogrn"));
-        legalEntity.setOkvedCodes(legalEntityMap.get("okved"));
+        legalEntity.setOkvedCodes(legalEntityMap.get("okvedCodes"));
         legalEntity.setAddress(legalEntityMap.get("address"));
         legalEntity.setBankName(legalEntityMap.get("bankName"));
         legalEntity.setBik(legalEntityMap.get("bik"));
