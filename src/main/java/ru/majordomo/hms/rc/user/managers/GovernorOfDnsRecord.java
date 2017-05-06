@@ -240,6 +240,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         dnsResourceRecordDAO.initDomain(domainName);
         addSoaRecord(domain);
         addNsRecords(domain);
+        addDefaultARecords(domain);
     }
 
     public void addNsRecords(Domain domain) {
@@ -265,6 +266,20 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         record.setOwnerName(domainName);
         record.setTtl(3600L);
         record.setData("ns.majordomo.ru. support.majordomo.ru. 2004032900 3600 900 3600000 3600");
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+    }
+
+    public void addDefaultARecords(Domain domain) {
+        String domainName = IDN.toASCII(domain.getName());
+
+        DNSResourceRecord record = new DNSResourceRecord();
+        record.setRrType(DNSResourceRecordType.A);
+        record.setOwnerName(domainName);
+        record.setTtl(3600L);
+        //TODO Убрать этот квикфикс (получать IP с RC-STAFF)
+        record.setData("78.108.80.175");
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        record.setOwnerName("*." + domainName);
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
     }
 

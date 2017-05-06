@@ -76,7 +76,7 @@ public class GovernorOfDnsRecordTest {
         keyValue.put("name", "new-domain.ru");
         keyValue.put("accountId", "0");
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        assertThat(records.size(), is(4));
+        assertThat(records.size(), is(6));
         assertThat(records.get(0).getRrType(), is(DNSResourceRecordType.SOA));
     }
 
@@ -222,7 +222,7 @@ public class GovernorOfDnsRecordTest {
         keyValue.put("name", "ололоевич.рф");
         keyValue.put("accountId", "0");
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        assertThat(records.size(), is(4));
+        assertThat(records.size(), is(6));
         assertThat(records.get(0).getRrType(), is(DNSResourceRecordType.SOA));
         System.out.println(dnsResourceRecordDAO.findOne(10L));
     }
