@@ -128,15 +128,17 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                     case "passport":
                         Map<String, String> passportMap = (Map<String, String>) entry.getValue();
                         Passport passport = null;
-                        if (passportMap != null) {
+                        Boolean emptyPassport = isMapWithEmptyStrings(passportMap);
+                        if (passportMap != null && !emptyPassport) {
                             passport = buildPassportFromMap(passportMap);
                         }
                         person.setPassport(passport);
                         break;
                     case "legalEntity":
                         Map<String, String> legalEntityMap = (Map<String, String>) entry.getValue();
+                        Boolean emptyLegalEntity = isMapWithEmptyStrings(legalEntityMap);
                         LegalEntity legalEntity = null;
-                        if (legalEntityMap != null) {
+                        if (legalEntityMap != null && !emptyLegalEntity) {
                             legalEntity = buildLegalEntityFromMap(legalEntityMap);
                         }
                         person.setLegalEntity(legalEntity);
@@ -161,6 +163,16 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         store(person);
 
         return person;
+    }
+
+    private boolean isMapWithEmptyStrings(Map<String, String> map) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String value = entry.getValue();
+            if (value != null && !value.equals("")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
