@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -25,7 +27,7 @@ public class Person extends Resource {
     private Passport passport;
     private LegalEntity legalEntity;
     private String country;
-    private String postalAddress;
+    private Address postalAddress;
     private String nicHandle;
     private List<String> linkedAccountIds = new ArrayList<>();
 
@@ -37,12 +39,22 @@ public class Person extends Resource {
         this.nicHandle = nicHandle;
     }
 
-    public String getPostalAddress() {
+    public Address getPostalAddress() {
         return postalAddress;
     }
 
+    public void setPostalAddress(Address address) {
+        this.postalAddress = address;
+    }
+
+    @JsonGetter(value = "postalAddress")
+    public String getPostalAddressAsString() {
+        return this.postalAddress == null ? null : this.postalAddress.toString();
+    }
+
+    @JsonSetter(value = "postalAddress")
     public void setPostalAddress(String postalAddress) {
-        this.postalAddress = postalAddress;
+        this.postalAddress = new Address(postalAddress);
     }
 
     public String getCountry() {
