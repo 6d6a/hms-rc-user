@@ -23,23 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-public class DatabaseConfig extends AbstractMongoConfiguration{
-
-    private String mongoDatabaseName;
-    private String mongoUri;
-
-    @Value("${spring.data.mongodb.database}")
-    public void setMongoDatabaseName(String mongoDatabaseName) {
-        this.mongoDatabaseName = mongoDatabaseName;
-    }
-
-    @Value("${spring.data.mongodb.uri}")
-    public void setMongoUri(String mongoUri) {
-        this.mongoUri = mongoUri;
-    }
-
-
-
+public class DatabaseConfig {
     @Bean(name = "pdnsDataSource")
     @Primary
     @ConfigurationProperties(prefix = "spring.datasource")
@@ -93,23 +77,5 @@ public class DatabaseConfig extends AbstractMongoConfiguration{
     @Autowired
     public NamedParameterJdbcTemplate registrantNamedParameterJdbcTemplate(@Qualifier("registrantDataSource") DataSource registrantDataSource) {
         return new NamedParameterJdbcTemplate(registrantDataSource);
-    }
-
-    @Override
-    protected String getDatabaseName() {
-        return this.mongoDatabaseName;
-    }
-
-    @Override
-    public Mongo mongo() throws Exception {
-        return new MongoClient(this.mongoUri);
-    }
-
-    @Bean
-    @Override
-    public CustomConversions customConversions() {
-        List<Converter<?, ?>> converterList = new ArrayList<Converter<?, ?>>();
-        converterList.add(new PersonWriteConverter());
-        return new CustomConversions(converterList);
     }
 }
