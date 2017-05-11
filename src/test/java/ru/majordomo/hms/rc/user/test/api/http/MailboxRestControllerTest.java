@@ -122,6 +122,7 @@ public class MailboxRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Имя ящика без указания домена"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли ящик"),
                                 fieldWithPath("passwordHash").description("Хэш пароля"),

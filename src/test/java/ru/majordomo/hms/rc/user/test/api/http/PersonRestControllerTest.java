@@ -90,6 +90,7 @@ public class PersonRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли персона"),
                                 fieldWithPath("phoneNumbers").description("Список телефонных номеров"),
@@ -121,6 +122,7 @@ public class PersonRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли персона"),
                                 fieldWithPath("phoneNumbers").description("Список телефонных номеров"),

@@ -116,6 +116,7 @@ public class UnixAccountRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Имя UNIX account'а"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли аккаунт"),
                                 fieldWithPath("homeDir").description("Домашняя директория пользователя"),

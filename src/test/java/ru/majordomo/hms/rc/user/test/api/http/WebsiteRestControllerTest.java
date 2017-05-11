@@ -204,6 +204,7 @@ public class WebsiteRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Комментарий к сайту"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли сайт"),
                                 fieldWithPath("unixAccount").description("Аккаунт на сервере, под чьим UID'ом будет работать вебсервер"),

@@ -86,7 +86,6 @@ public abstract class Resource {
 
     public abstract void switchResource();
 
-    @JsonIgnore
     public String getAccountId() {
         return accountId;
     }

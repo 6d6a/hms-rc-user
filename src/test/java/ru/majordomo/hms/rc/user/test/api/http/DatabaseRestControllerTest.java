@@ -107,6 +107,7 @@ public class DatabaseRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Имя базы данных"),
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли база данных"),
                                 fieldWithPath("serviceId").description("ID сервиса, к которому привязана база данных"),

@@ -109,6 +109,7 @@ public class DomainRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("FQDN"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли домен"),
                                 fieldWithPath("person").description("Персона, на которую зарегистрирован домен"),
