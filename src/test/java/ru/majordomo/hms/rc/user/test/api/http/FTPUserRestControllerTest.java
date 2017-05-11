@@ -100,6 +100,7 @@ public class FTPUserRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("FQDN"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли домен"),
                                 fieldWithPath("homeDir").description("Домашняя директория FTP пользователя"),
@@ -125,6 +126,7 @@ public class FTPUserRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfFTPUsers.get(0).getName()))
+                .andExpect(jsonPath("$[0].accountId").value(accountId))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfFTPUsers.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("$[0].passwordHash").value(batchOfFTPUsers.get(0).getPasswordHash()))
                 .andExpect(jsonPath("$[0].homeDir").value(batchOfFTPUsers.get(0).getHomeDir()))
@@ -140,6 +142,7 @@ public class FTPUserRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("name").value(batchOfFTPUsers.get(0).getName()))
+                .andExpect(jsonPath("accountId").value(accountId))
                 .andExpect(jsonPath("switchedOn").value(batchOfFTPUsers.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("passwordHash").value(batchOfFTPUsers.get(0).getPasswordHash()))
                 .andExpect(jsonPath("homeDir").value(batchOfFTPUsers.get(0).getHomeDir()))

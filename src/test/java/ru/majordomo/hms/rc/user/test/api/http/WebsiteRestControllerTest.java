@@ -204,6 +204,7 @@ public class WebsiteRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Комментарий к сайту"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли сайт"),
                                 fieldWithPath("unixAccount").description("Аккаунт на сервере, под чьим UID'ом будет работать вебсервер"),
@@ -248,6 +249,7 @@ public class WebsiteRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfWebsites.get(0).getName()))
+                .andExpect(jsonPath("$[0].accountId").value(accountId))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfWebsites.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("$[0].unixAccount").isMap())
                 .andExpect(jsonPath("$[0].unixAccount.id").value(batchOfWebsites.get(0).getUnixAccount().getId()))
@@ -282,6 +284,7 @@ public class WebsiteRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("name").value(batchOfWebsites.get(0).getName()))
+                .andExpect(jsonPath("accountId").value(accountId))
                 .andExpect(jsonPath("switchedOn").value(batchOfWebsites.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("unixAccount").isMap())
                 .andExpect(jsonPath("unixAccount.id").value(batchOfWebsites.get(0).getUnixAccount().getId()))

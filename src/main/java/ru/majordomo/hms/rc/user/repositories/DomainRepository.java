@@ -22,4 +22,5 @@ public interface DomainRepository extends MongoRepository<Domain,String> {
     List<Domain> findByParentDomainIdAndAccountId(String parentDomainId, String accountId);
     List<Domain> findByAccountIdAndParentDomainIdNotNull(String accountId);
     List<Domain> findByParentDomainIdNotNull();
+    List<Domain> findByNameContains(String nameContains);
 }

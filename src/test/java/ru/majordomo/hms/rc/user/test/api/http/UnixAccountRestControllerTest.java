@@ -116,6 +116,7 @@ public class UnixAccountRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Имя UNIX account'а"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли аккаунт"),
                                 fieldWithPath("homeDir").description("Домашняя директория пользователя"),
@@ -147,6 +148,7 @@ public class UnixAccountRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfUnixAccount.get(0).getName()))
+                .andExpect(jsonPath("$[0].accountId").value(accountId))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfUnixAccount.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("$[0].homeDir").value(batchOfUnixAccount.get(0).getHomeDir()))
                 .andExpect(jsonPath("$[0].uid").value(batchOfUnixAccount.get(0).getUid()))
@@ -177,6 +179,7 @@ public class UnixAccountRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("name").value(batchOfUnixAccount.get(0).getName()))
+                .andExpect(jsonPath("accountId").value(accountId))
                 .andExpect(jsonPath("switchedOn").value(batchOfUnixAccount.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("homeDir").value(batchOfUnixAccount.get(0).getHomeDir()))
                 .andExpect(jsonPath("uid").value(batchOfUnixAccount.get(0).getUid()))

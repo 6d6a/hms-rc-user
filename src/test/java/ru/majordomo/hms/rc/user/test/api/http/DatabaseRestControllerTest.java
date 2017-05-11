@@ -107,6 +107,7 @@ public class DatabaseRestControllerTest {
                 .andDo(doc.document(
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
+                                fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Имя базы данных"),
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли база данных"),
                                 fieldWithPath("serviceId").description("ID сервиса, к которому привязана база данных"),
@@ -133,6 +134,7 @@ public class DatabaseRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfDatabases.get(0).getName()))
+                .andExpect(jsonPath("$[0].accountId").value(accountId))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfDatabases.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("$[0].serviceId").value(batchOfDatabases.get(0).getServiceId()))
                 .andExpect(jsonPath("$[0].type").value(batchOfDatabases.get(0).getType().toString()))
@@ -150,6 +152,7 @@ public class DatabaseRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("name").value(batchOfDatabases.get(0).getName()))
+                .andExpect(jsonPath("accountId").value(accountId))
                 .andExpect(jsonPath("switchedOn").value(batchOfDatabases.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("serviceId").value(batchOfDatabases.get(0).getServiceId()))
                 .andExpect(jsonPath("type").value(batchOfDatabases.get(0).getType().toString()))

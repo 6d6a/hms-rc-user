@@ -343,6 +343,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         boolean byExpiringDates = false;
         boolean byPersonId = false;
         boolean byParentDomainId = false;
+        boolean byNameContains = false;
 
         for (Map.Entry<String, String> entry : keyValue.entrySet()) {
             if (entry.getKey().equals("accountId")) {
@@ -359,6 +360,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
             if (entry.getKey().equals("parentDomainId")) {
                 byParentDomainId = true;
+            }
+
+            if (entry.getKey().equals("nameContains")) {
+                byNameContains = true;
             }
         }
 
@@ -400,6 +405,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             }
         } else if (byAccountId) {
             for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {
+                buildedDomains.add(construct(domain));
+            }
+        } else if (byNameContains) {
+            for (Domain domain : repository.findByNameContains(keyValue.get("nameContains"))) {
                 buildedDomains.add(construct(domain));
             }
         }
