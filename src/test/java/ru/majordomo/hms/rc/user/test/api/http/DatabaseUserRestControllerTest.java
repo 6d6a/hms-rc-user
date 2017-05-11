@@ -132,6 +132,7 @@ public class DatabaseUserRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$[0].name").value(batchOfDatabaseUsers.get(0).getName()))
+                .andExpect(jsonPath("$[0].accountId").value(accountId))
                 .andExpect(jsonPath("$[0].switchedOn").value(batchOfDatabaseUsers.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("$[0].passwordHash").value(batchOfDatabaseUsers.get(0).getPasswordHash()))
                 .andExpect(jsonPath("$[0].type").value(batchOfDatabaseUsers.get(0).getType().toString()));
@@ -145,6 +146,7 @@ public class DatabaseUserRestControllerTest {
         mockMvc.perform(request).andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("name").value(batchOfDatabaseUsers.get(0).getName()))
+                .andExpect(jsonPath("accountId").value(accountId))
                 .andExpect(jsonPath("switchedOn").value(batchOfDatabaseUsers.get(0).getSwitchedOn()))
                 .andExpect(jsonPath("passwordHash").value(batchOfDatabaseUsers.get(0).getPasswordHash()))
                 .andExpect(jsonPath("type").value(batchOfDatabaseUsers.get(0).getType().toString()));
