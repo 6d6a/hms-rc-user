@@ -335,8 +335,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         Passport passport = new Passport();
         passport.setNumber(passportMap.get("number"));
         passport.setIssuedOrg(passportMap.get("issuedOrg"));
-        passport.setIssuedDate(passportMap.get("issuedDate"));
-        passport.setBirthday(passportMap.get("birthday"));
+        if (passportMap.get("issuedDate") != null && !passportMap.get("issuedDate").equals("")) {
+            passport.setIssuedDate(passportMap.get("issuedDate"));
+        }
+        if (passportMap.get("birthday") != null && !passportMap.get("birthday").equals("")) {
+            passport.setBirthday(passportMap.get("birthday"));
+        }
         passport.setMainPage(passportMap.get("mainPage"));
         passport.setRegisterPage(passportMap.get("registerPage"));
         passport.setAddress(passportMap.get("address"));
