@@ -92,7 +92,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                 Iterator<JsonNode> errors = obj.get("errors").elements();
                 while (errors.hasNext()) {
                     JsonNode error = errors.next();
-                    errorCollector.append(error.get("code").textValue() + "\n");
+                    errorCollector.append(error.get("code").textValue()).append("\n");
                 }
                 errorMessage = errorCollector.toString();
             } catch (IOException ex) {
