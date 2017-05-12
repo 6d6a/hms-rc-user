@@ -83,9 +83,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             person.setNicHandle(nicHandle);
         } catch (Exception e) {
             String errorContent = e.getCause().getMessage().replaceAll(".*content:", "");
-            ObjectMapper mapper = new ObjectMapper();
             String errorMessage;
             try {
+                ObjectMapper mapper = new ObjectMapper();
                 StringBuilder errorCollector = new StringBuilder();
                 JsonNode obj = mapper.readTree(errorContent);
                 Iterator<JsonNode> errors = obj.get("errors").elements();
@@ -97,7 +97,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             } catch (IOException ex) {
                 errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
             }
-
+            logger.debug("Ошибка при создании персоны: " + errorMessage);
             throw new ParameterValidateException(errorMessage);
         }
         preValidate(person);
