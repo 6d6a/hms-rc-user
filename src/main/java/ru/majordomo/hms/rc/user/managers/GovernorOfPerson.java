@@ -82,6 +82,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String nicHandle = location.substring(location.lastIndexOf('/') + 1);
             person.setNicHandle(nicHandle);
         } catch (Exception e) {
+            logger.debug("Ошибка при создании персоны:" + e.getCause().toString());
             String errorContent = e.getCause().getMessage().replaceAll(".*content:", "");
             String errorMessage;
             try {
