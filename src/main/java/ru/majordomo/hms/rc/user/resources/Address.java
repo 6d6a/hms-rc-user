@@ -1,5 +1,8 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Address {
     private Long zip;
     private String street;
@@ -15,18 +18,34 @@ public class Address {
     }
 
     public Address(String address) {
-        if (address != null && ! address.isEmpty()) {
-            StringBuilder streetBuilder = new StringBuilder();
-            String[] addressParts = address.split(",");
-            this.zip = Long.valueOf(addressParts[0].trim());
-            this.city = addressParts[1].trim();
-            for (int i = 2; i < addressParts.length; i++) {
-                streetBuilder.append(addressParts[i].trim());
-                streetBuilder.append(", ");
+        if (address != null && !address.isEmpty()) {
+
+            this.zip = findPostalIndexInAddressString(address);
+            if (this.zip != null) {
+                address = address.replaceAll(this.zip + "\\s?,?\\s?", "");
             }
-            this.street = streetBuilder.toString().trim();
-            if (!this.street.isEmpty() && this.street.charAt(this.street.length()-1) == ',') {
-                this.street = this.street.substring(0, this.street.length()-1);
+
+            String[] addressParts = address.split(",");
+            if (addressParts.length < 2) {
+                addressParts = address.split(" ");
+            }
+
+            if (addressParts.length >= 2) {
+                StringBuilder streetBuilder = new StringBuilder();
+
+                this.city = addressParts[0].trim();
+
+                for (int i = 1; i < addressParts.length; i++) {
+                    streetBuilder.append(addressParts[i].trim());
+                    streetBuilder.append(", ");
+                }
+
+                this.street = streetBuilder.toString().trim();
+                if (!this.street.isEmpty() && this.street.charAt(this.street.length() - 1) == ',') {
+                    this.street = this.street.substring(0, this.street.length() - 1);
+                }
+            } else {
+                this.street = address;
             }
         }
     }
@@ -58,5 +77,13 @@ public class Address {
     @Override
     public String toString() {
         return this.zip + ", " + this.city + ", " + this.street;
+    }
+
+    public static Long findPostalIndexInAddressString(String address) {
+        String postalIndexPattern = "\\d{4,}";
+        Pattern pattern = Pattern.compile(postalIndexPattern);
+        Matcher matcher = pattern.matcher(address);
+
+        return matcher.find() ? Long.valueOf(matcher.group()) : null;
     }
 }
