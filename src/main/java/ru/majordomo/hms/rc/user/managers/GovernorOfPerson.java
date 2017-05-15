@@ -1,10 +1,14 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 import javax.validation.ConstraintViolation;
@@ -78,8 +82,26 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String location = responseEntity.getHeaders().getLocation().getPath();
             String nicHandle = location.substring(location.lastIndexOf('/') + 1);
             person.setNicHandle(nicHandle);
-        } catch (Exception e) {
-            throw new ParameterValidateException("Данные о владельце домена указаны не полностью");
+        } catch (FeignException e) {
+            String errorReason = e.getMessage();
+            logger.debug("Ошибка при создании персоны:" + errorReason);
+            String errorContent = errorReason.replaceAll(".*content:", "");
+            String errorMessage;
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                StringBuilder errorCollector = new StringBuilder();
+                JsonNode obj = mapper.readTree(errorContent);
+                Iterator<JsonNode> errors = obj.get("errors").elements();
+                while (errors.hasNext()) {
+                    JsonNode error = errors.next();
+                    errorCollector.append(error.get("code").textValue()).append("\n");
+                }
+                errorMessage = errorCollector.toString();
+            } catch (IOException ex) {
+                errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
+            }
+            logger.debug("Ошибка при создании персоны: " + errorMessage);
+            throw new ParameterValidateException(errorMessage);
         }
         preValidate(person);
         validate(person);
@@ -201,8 +223,8 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         String actionId = serviceMessage.getActionIdentity();
         String operationId = serviceMessage.getOperationIdentity();
         logger.debug("Action ID:" + actionId +
-            "Operation ID:" + operationId +
-            "Приступаю к построению ресурса, исходя из данных в ServiceMessage");
+                "Operation ID:" + operationId +
+                "Приступаю к построению ресурса, исходя из данных в ServiceMessage");
 
         Person person = new Person();
         setResourceParams(person, serviceMessage, cleaner);
