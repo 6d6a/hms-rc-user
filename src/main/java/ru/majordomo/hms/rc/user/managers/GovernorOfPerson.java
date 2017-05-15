@@ -83,8 +83,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String nicHandle = location.substring(location.lastIndexOf('/') + 1);
             person.setNicHandle(nicHandle);
         } catch (FeignException e) {
-            logger.debug("Ошибка при создании персоны:" + e.getCause().toString());
-            String errorContent = e.getCause().getMessage().replaceAll(".*content:", "");
+            String errorReason = e.getMessage();
+            logger.debug("Ошибка при создании персоны:" + errorReason);
+            String errorContent = errorReason.replaceAll(".*content:", "");
             String errorMessage;
             try {
                 ObjectMapper mapper = new ObjectMapper();
