@@ -147,6 +147,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                     case "postalAddress":
                         person.setPostalAddress(cleaner.cleanString((String) serviceMessage.getParam("postalAddress")));
                         break;
+                    case "nicHandle":
+                        person.setNicHandle(cleaner.cleanString((String) serviceMessage.getParam("nicHandle")));
+                        break;
                     case "passport":
                         Map<String, String> passportMap = (Map<String, String>) entry.getValue();
                         Passport passport = null;
