@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.managers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -81,7 +82,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String location = responseEntity.getHeaders().getLocation().getPath();
             String nicHandle = location.substring(location.lastIndexOf('/') + 1);
             person.setNicHandle(nicHandle);
-        } catch (Exception e) {
+        } catch (FeignException e) {
             logger.debug("Ошибка при создании персоны:" + e.getCause().toString());
             String errorContent = e.getCause().getMessage().replaceAll(".*content:", "");
             String errorMessage;
