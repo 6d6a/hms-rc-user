@@ -225,7 +225,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
     }
 
     public void switchByDomainName(String domainName, Boolean switchedOn) {
-        int active = switchedOn ? 1 : 0;
+        String active = switchedOn ? "1" : "0";
         Long domainId = getDomainIDByDomainName(domainName);
         String query = "UPDATE records SET active = :active WHERE domain_id = :domainId";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
