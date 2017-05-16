@@ -19,6 +19,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.resources.Address;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
@@ -145,7 +146,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                         person.setEmailAddresses(cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses")));
                         break;
                     case "postalAddress":
-                        person.setPostalAddress(cleaner.cleanString((String) serviceMessage.getParam("postalAddress")));
+                        Map<String, String> postalAddressMap = (Map<String,String>) entry.getValue();
+                        Address postalAddress = null;
+                        if (postalAddressMap != null) {
+                            postalAddress = buildAddressFromMap(postalAddressMap);
+                        }
+                        person.setPostalAddress(postalAddress);
                         break;
                     case "nicHandle":
                         person.setNicHandle(cleaner.cleanString((String) serviceMessage.getParam("nicHandle")));
@@ -232,7 +238,11 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         Person person = new Person();
         setResourceParams(person, serviceMessage, cleaner);
         String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
-        String postalAddress = cleaner.cleanString((String) serviceMessage.getParam("postalAddress"));
+        Map<String,String> postalAddressMap = (Map<String,String>) serviceMessage.getParam("address");
+        Address postalAddress = null;
+        if (postalAddressMap != null) {
+            postalAddress = buildAddressFromMap(postalAddressMap);
+        }
         List<String> phoneNumbers = new ArrayList<>();
         if (serviceMessage.getParam("phoneNumbers") != null) {
             phoneNumbers = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("phoneNumbers"));
@@ -386,6 +396,18 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         legalEntity.setBankAccount(legalEntityMap.get("bankAccount"));
         legalEntity.setDirectorName(legalEntityMap.get("directorName"));
         return legalEntity;
+    }
+
+    public Address buildAddressFromMap(Map<String,String> addressMap) {
+        Address address = new Address();
+        String zipAsString = addressMap.get("zip");
+        if (zipAsString != null && !zipAsString.isEmpty()) {
+            address.setZip(Long.valueOf(zipAsString));
+        }
+        address.setCity(addressMap.get("city"));
+        address.setStreet(addressMap.get("street"));
+
+        return address;
     }
 
 }
