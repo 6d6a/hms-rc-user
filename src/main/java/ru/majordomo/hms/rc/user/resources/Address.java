@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.google.common.base.Objects;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,7 +78,26 @@ public class Address {
 
     @Override
     public String toString() {
-        return this.zip + ", " + this.city + ", " + this.street;
+        return "Address{" +
+                "zip=" + zip +
+                ", street='" + street + '\'' +
+                ", city='" + city + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Address address = (Address) o;
+        return Objects.equal(zip, address.zip) &&
+                Objects.equal(street, address.street) &&
+                Objects.equal(city, address.city);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(zip, street, city);
     }
 
     public static Long findPostalIndexInAddressString(String address) {

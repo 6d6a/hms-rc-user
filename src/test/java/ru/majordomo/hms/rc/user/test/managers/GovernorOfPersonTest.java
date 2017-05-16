@@ -13,6 +13,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.resources.Address;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
@@ -29,6 +30,7 @@ import java.util.*;
 import javax.validation.ConstraintViolationException;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -163,11 +165,18 @@ public class GovernorOfPersonTest {
         List<String> newPhoneNumbers = Arrays.asList("+79501234567", "+79219876543");
         String newCountry = "NL";
         String newName = "Валера";
-        String newPostalAddress = "195000, Санкт-Петербург, улица Пушкина, дом Колотушкина";
+        Address newPostalAddress = new Address(195000L,"Санкт-Петербург", "улица Пушкина, дом Колотушкина");
+
+        Map<String,String> updatedPostalAddress = new HashMap<>();
+        updatedPostalAddress.put("zip", newPostalAddress.getZip().toString());
+        updatedPostalAddress.put("street", newPostalAddress.getStreet());
+        updatedPostalAddress.put("city", newPostalAddress.getCity());
+
         Map<String, String> newPassport = new HashMap<>();
         newPassport.put("address", "Очень странный дом на горе");
         newPassport.put("issuedOrg", "Google inc.");
         newPassport.put("number", "4545 454545");
+
         Map<String, String> newLegalEntity = new HashMap<>();
         newLegalEntity.put("address", "Hell");
         newLegalEntity.put("inn", "2323232323");
@@ -179,7 +188,7 @@ public class GovernorOfPersonTest {
         serviceMessage.addParam("country", newCountry);
         serviceMessage.addParam("emailAddresses", newEmailAddresses);
         serviceMessage.addParam("phoneNumbers", newPhoneNumbers);
-        serviceMessage.addParam("postalAddress", newPostalAddress);
+        serviceMessage.addParam("postalAddress", updatedPostalAddress);
         serviceMessage.addParam("passport", newPassport);
         serviceMessage.addParam("legalEntity", newLegalEntity);
 
@@ -190,7 +199,7 @@ public class GovernorOfPersonTest {
         assertThat(gotPerson.getCountry(), is(newCountry));
         assertThat(gotPerson.getEmailAddresses(), is(newEmailAddresses));
         assertThat(gotPerson.getPhoneNumbers(), is(newPhoneNumbers));
-        assertThat(gotPerson.getPostalAddressAsString(), is(newPostalAddress));
+        assertTrue(gotPerson.getPostalAddress().equals(newPostalAddress));
         assertThat(gotPerson.getPassport(), is(governor.buildPassportFromMap(newPassport)));
         assertThat(gotPerson.getLegalEntity(), is(governor.buildLegalEntityFromMap(newLegalEntity)));
     }
