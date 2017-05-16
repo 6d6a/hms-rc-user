@@ -163,7 +163,7 @@ public class GovernorOfPersonTest {
         List<String> newPhoneNumbers = Arrays.asList("+79501234567", "+79219876543");
         String newCountry = "NL";
         String newName = "Валера";
-        String newPostalAddress = "Улица Пушкина, дом Колотушкина";
+        String newPostalAddress = "195000, Санкт-Петербург, улица Пушкина, дом Колотушкина";
         Map<String, String> newPassport = new HashMap<>();
         newPassport.put("address", "Очень странный дом на горе");
         newPassport.put("issuedOrg", "Google inc.");
@@ -190,7 +190,7 @@ public class GovernorOfPersonTest {
         assertThat(gotPerson.getCountry(), is(newCountry));
         assertThat(gotPerson.getEmailAddresses(), is(newEmailAddresses));
         assertThat(gotPerson.getPhoneNumbers(), is(newPhoneNumbers));
-        assertThat(gotPerson.getPostalAddress(), is(newPostalAddress));
+        assertThat(gotPerson.getPostalAddressAsString(), is(newPostalAddress));
         assertThat(gotPerson.getPassport(), is(governor.buildPassportFromMap(newPassport)));
         assertThat(gotPerson.getLegalEntity(), is(governor.buildLegalEntityFromMap(newLegalEntity)));
     }
