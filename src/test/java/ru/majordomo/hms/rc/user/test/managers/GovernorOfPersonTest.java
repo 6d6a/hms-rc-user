@@ -193,7 +193,7 @@ public class GovernorOfPersonTest {
         serviceMessage.addParam("country", newCountry);
         serviceMessage.addParam("emailAddresses", newEmailAddresses);
         serviceMessage.addParam("phoneNumbers", newPhoneNumbers);
-        serviceMessage.addParam("postalAddress", objectMapper.writeValueAsString(newPostalAddress));
+        serviceMessage.addParam("postalAddress", objectMapper.convertValue(newPostalAddress, LinkedHashMap.class));
         serviceMessage.addParam("passport", newPassport);
         serviceMessage.addParam("legalEntity", newLegalEntity);
 
@@ -204,6 +204,8 @@ public class GovernorOfPersonTest {
         assertThat(gotPerson.getCountry(), is(newCountry));
         assertThat(gotPerson.getEmailAddresses(), is(newEmailAddresses));
         assertThat(gotPerson.getPhoneNumbers(), is(newPhoneNumbers));
+        System.out.println(gotPerson.getPostalAddress());
+        System.out.println(newPostalAddress);
         assertTrue(gotPerson.getPostalAddress().equals(newPostalAddress));
         assertThat(gotPerson.getPassport(), is(governor.buildPassportFromMap(newPassport)));
         assertThat(gotPerson.getLegalEntity(), is(governor.buildLegalEntityFromMap(newLegalEntity)));
