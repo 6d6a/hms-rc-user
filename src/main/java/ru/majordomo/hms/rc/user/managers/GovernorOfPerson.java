@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import feign.FeignException;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,8 +152,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                     case "postalAddress":
                         Object postalAddressData = entry.getValue();
                         if (postalAddressData != null) {
-                            Address postalAddress;
-                            postalAddress = mapper.readValue((String) postalAddressData, Address.class);
+                            Address postalAddress = mapper.convertValue(postalAddressData, Address.class);
                             person.setPostalAddress(postalAddress);
                         }
                         break;
@@ -183,12 +183,6 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         preValidate(person);
