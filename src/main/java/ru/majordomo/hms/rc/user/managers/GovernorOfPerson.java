@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
@@ -15,6 +17,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import org.springframework.validation.*;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
@@ -35,6 +38,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     private DomainRegistrarClient domainRegistrarClient;
     private GovernorOfDomain governorOfDomain;
     private Validator validator;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     public void setDomainRegistrarClient(DomainRegistrarClient domainRegistrarClient) {
@@ -89,7 +93,6 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String errorContent = errorReason.replaceAll(".*content:", "");
             String errorMessage;
             try {
-                ObjectMapper mapper = new ObjectMapper();
                 StringBuilder errorCollector = new StringBuilder();
                 JsonNode obj = mapper.readTree(errorContent);
                 Iterator<JsonNode> errors = obj.get("errors").elements();
@@ -146,12 +149,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                         person.setEmailAddresses(cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("emailAddresses")));
                         break;
                     case "postalAddress":
-                        Map<String, String> postalAddressMap = (Map<String,String>) entry.getValue();
-                        Address postalAddress = null;
-                        if (postalAddressMap != null) {
-                            postalAddress = buildAddressFromMap(postalAddressMap);
+                        Object postalAddressData = entry.getValue();
+                        if (postalAddressData != null) {
+                            Address postalAddress;
+                            postalAddress = mapper.readValue((String) postalAddressData, Address.class);
+                            person.setPostalAddress(postalAddress);
                         }
-                        person.setPostalAddress(postalAddress);
                         break;
                     case "nicHandle":
                         person.setNicHandle(cleaner.cleanString((String) serviceMessage.getParam("nicHandle")));
@@ -180,6 +183,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             }
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         preValidate(person);
@@ -400,14 +409,11 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
     public Address buildAddressFromMap(Map<String,String> addressMap) {
         Address address = new Address();
-        String zipAsString = addressMap.get("zip");
-        if (zipAsString != null && !zipAsString.isEmpty()) {
-            address.setZip(Long.valueOf(zipAsString));
-        }
+        Long zip = Long.valueOf(addressMap.get("zip"));
+        address.setZip(Long.valueOf(zip));
         address.setCity(addressMap.get("city"));
         address.setStreet(addressMap.get("street"));
 
         return address;
     }
-
 }
