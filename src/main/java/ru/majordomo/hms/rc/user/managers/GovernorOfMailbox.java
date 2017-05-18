@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.net.IDN;
 import java.util.*;
 
 import javax.validation.ConstraintViolation;
@@ -471,12 +472,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private MailboxForRedis convertMailboxToMailboxForRedis(Mailbox mailbox, String serverName) {
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
         String uidAsString = mailbox.getUid().toString();
-        mailboxForRedis.setId(mailbox.getFullName());
-        mailboxForRedis.setName(mailbox.getFullName());
+        mailboxForRedis.setId(mailbox.getFullNameInPunycode());
+        mailboxForRedis.setName(mailbox.getFullNameInPunycode());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
-        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
-        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
-        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackListInPunycode()));
+        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteListInPunycode()));
+        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddressesInPunycode()));
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
@@ -529,12 +530,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private void setAggregatorInRedis(Mailbox mailbox) {
         String uidAsString = mailbox.getUid().toString();
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        mailboxForRedis.setId("*@" + (construct(mailbox)).getDomain().getName());
-        mailboxForRedis.setName(mailbox.getFullName());
+        mailboxForRedis.setId("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
+        mailboxForRedis.setName(mailbox.getFullNameInPunycode());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
-        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
-        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
-        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackListInPunycode()));
+        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteListInPunycode()));
+        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddressesInPunycode()));
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
