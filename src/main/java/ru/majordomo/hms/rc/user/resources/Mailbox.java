@@ -175,7 +175,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         for (String whiteElem : whiteList) {
             whiteListInPunycode.add(whiteElem.split("@")[0] + "@" + IDN.toASCII(whiteElem.split("@")[1]));
         }
-        return whiteListInPunycode
+        return whiteListInPunycode;
     }
 
     public void setWhiteList(List<String> whiteList) {
