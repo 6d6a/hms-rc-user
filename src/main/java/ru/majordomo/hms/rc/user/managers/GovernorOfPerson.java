@@ -162,17 +162,15 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                     case "passport":
                         Map<String, String> passportMap = (Map<String, String>) entry.getValue();
                         Passport passport = null;
-                        Boolean emptyPassport = isMapWithEmptyStrings(passportMap);
-                        if (passportMap != null && !emptyPassport) {
+                        if (passportMap != null && !isMapWithEmptyStrings(passportMap)) {
                             passport = buildPassportFromMap(passportMap);
                         }
                         person.setPassport(passport);
                         break;
                     case "legalEntity":
                         Map<String, String> legalEntityMap = (Map<String, String>) entry.getValue();
-                        Boolean emptyLegalEntity = isMapWithEmptyStrings(legalEntityMap);
                         LegalEntity legalEntity = null;
-                        if (legalEntityMap != null && !emptyLegalEntity) {
+                        if (legalEntityMap != null && !isMapWithEmptyStrings(legalEntityMap)) {
                             legalEntity = buildLegalEntityFromMap(legalEntityMap);
                         }
                         person.setLegalEntity(legalEntity);
