@@ -484,7 +484,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
+        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
 
         return mailboxForRedis;
     }
@@ -494,8 +494,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Map<String, String> userData = new HashMap<>();
         userData.put("uid", uidAsString);
         userData.put("gid", uidAsString);
-        userData.put("mail", "maildir:" + mailbox.getMailSpool() + "/" + mailbox.getName());
-        userData.put("home", mailbox.getMailSpool() + "/" + mailbox.getName());
+        userData.put("mail", "maildir:" + mailbox.getMailSpoolInPunycode() + "/" + mailbox.getName());
+        userData.put("home", mailbox.getMailSpoolInPunycode() + "/" + mailbox.getName());
         userData.put("host", serverName);
         userData.put("proxy_maybe", "y");
         userData.put("password", mailbox.getPasswordHash());
@@ -543,7 +543,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
         mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
+        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
 
         redisRepository.save(mailboxForRedis);
     }

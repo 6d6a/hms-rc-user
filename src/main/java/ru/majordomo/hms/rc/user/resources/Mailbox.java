@@ -130,6 +130,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         return redirectAddresses;
     }
 
+    @JsonIgnore
     public List<String> getRedirectAddressesInPunycode() {
         List<String> redirectInPunycode = new ArrayList<>();
         for (String redirectElem : redirectAddresses) {
@@ -150,6 +151,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         return blackList;
     }
 
+    @JsonIgnore
     public List<String> getBlackListInPunycode() {
         List<String> blackListInPunycode = new ArrayList<>();
         for (String blackElem : blackList) {
@@ -170,6 +172,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         return whiteList;
     }
 
+    @JsonIgnore
     public List<String> getWhiteListInPunycode() {
         List<String> whiteListInPunycode = new ArrayList<>();
         for (String whiteElem : whiteList) {
@@ -271,6 +274,17 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     public String getMailSpool() {
         return mailSpool;
+    }
+
+    @JsonIgnore
+    public String getMailSpoolInPunycode() {
+
+        String[] labels = mailSpool.split("/");
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = java.net.IDN.toASCII(labels[i]);
+        }
+        String mailSpoolinPunycode = String.join("/", labels);
+        return String.join("/", mailSpoolinPunycode);
     }
 
     public void setMailSpool(String mailSpool) {
