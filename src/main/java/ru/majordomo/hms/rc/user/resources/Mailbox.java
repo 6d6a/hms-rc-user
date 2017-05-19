@@ -128,7 +128,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     public List<String> getRedirectAddressesInPunycode() {
         List<String> redirectInPunycode = new ArrayList<>();
         for (String redirectElem : redirectAddresses) {
-            redirectInPunycode.add(redirectElem.split("@")[0] + "@" + IDN.toASCII(redirectElem.split("@")[1]));
+            redirectInPunycode.add(IDN.toASCII(redirectElem.split("@")[0]) + "@" + IDN.toASCII(redirectElem.split("@")[1]));
         }
         return redirectInPunycode;
     }
@@ -149,7 +149,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     public List<String> getBlackListInPunycode() {
         List<String> blackListInPunycode = new ArrayList<>();
         for (String blackElem : blackList) {
-            blackListInPunycode.add(blackElem.split("@")[0] + "@" + IDN.toASCII(blackElem.split("@")[1]));
+            blackListInPunycode.add(IDN.toASCII(blackElem.split("@")[0]) + "@" + IDN.toASCII(blackElem.split("@")[1]));
         }
         return blackListInPunycode;
     }
@@ -170,7 +170,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     public List<String> getWhiteListInPunycode() {
         List<String> whiteListInPunycode = new ArrayList<>();
         for (String whiteElem : whiteList) {
-            whiteListInPunycode.add(whiteElem.split("@")[0] + "@" + IDN.toASCII(whiteElem.split("@")[1]));
+            whiteListInPunycode.add(IDN.toASCII(whiteElem.split("@")[0]) + "@" + IDN.toASCII(whiteElem.split("@")[1]));
         }
         return whiteListInPunycode;
     }
