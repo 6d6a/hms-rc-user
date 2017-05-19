@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.net.IDN;
 import java.util.*;
 
 import javax.validation.ConstraintViolation;
@@ -471,19 +472,19 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private MailboxForRedis convertMailboxToMailboxForRedis(Mailbox mailbox, String serverName) {
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
         String uidAsString = mailbox.getUid().toString();
-        mailboxForRedis.setId(mailbox.getFullName());
-        mailboxForRedis.setName(mailbox.getFullName());
+        mailboxForRedis.setId(mailbox.getFullNameInPunycode());
+        mailboxForRedis.setName(mailbox.getFullNameInPunycode());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
-        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
-        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
-        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackListInPunycode()));
+        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteListInPunycode()));
+        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddressesInPunycode()));
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
+        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
 
         return mailboxForRedis;
     }
@@ -493,8 +494,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Map<String, String> userData = new HashMap<>();
         userData.put("uid", uidAsString);
         userData.put("gid", uidAsString);
-        userData.put("mail", "maildir:" + mailbox.getMailSpool() + "/" + mailbox.getName());
-        userData.put("home", mailbox.getMailSpool() + "/" + mailbox.getName());
+        userData.put("mail", "maildir:" + mailbox.getMailSpoolInPunycode() + "/" + mailbox.getName());
+        userData.put("home", mailbox.getMailSpoolInPunycode() + "/" + mailbox.getName());
         userData.put("host", serverName);
         userData.put("proxy_maybe", "y");
         userData.put("password", mailbox.getPasswordHash());
@@ -505,7 +506,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         } catch (JsonProcessingException e) {
             logger.error("Mailbox userData не записана в Redis!");
         }
-        String key = "mailboxUserData:" + mailbox.getFullName();
+        String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.boundValueOps(key).set(data);
     }
 
@@ -521,20 +522,20 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private void dropFromRedis(Mailbox mailbox) {
-        redisRepository.delete(mailbox.getFullName());
-        String key = "mailboxUserData:" + mailbox.getFullName();
+        redisRepository.delete(mailbox.getFullNameInPunycode());
+        String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.delete(key);
     }
 
     private void setAggregatorInRedis(Mailbox mailbox) {
         String uidAsString = mailbox.getUid().toString();
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        mailboxForRedis.setId("*@" + (construct(mailbox)).getDomain().getName());
-        mailboxForRedis.setName(mailbox.getFullName());
+        mailboxForRedis.setId("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
+        mailboxForRedis.setName(mailbox.getFullNameInPunycode());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
-        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
-        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
-        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
+        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackListInPunycode()));
+        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteListInPunycode()));
+        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddressesInPunycode()));
         mailboxForRedis.setWritable(mailbox.getWritable());
         mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
@@ -542,13 +543,13 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
         mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
+        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
 
         redisRepository.save(mailboxForRedis);
     }
 
     private void dropAggregatorInRedis(Mailbox mailbox) {
-        redisRepository.delete("*@" + (construct(mailbox)).getDomain().getName());
+        redisRepository.delete("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
     }
 
     public void updateQuota(String mailboxId, Long quotaSize) {

@@ -13,6 +13,7 @@ import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
 import ru.majordomo.hms.rc.user.resources.validation.ValidMailbox;
 
 import java.io.UnsupportedEncodingException;
+import java.net.IDN;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,6 +97,15 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         }
     }
 
+    @JsonIgnore
+    public String getFullNameInPunycode() {
+        if (domain != null) {
+            return getName() + '@' + java.net.IDN.toASCII(domain.getName());
+        } else {
+            return null;
+        }
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -114,6 +124,15 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         return redirectAddresses;
     }
 
+    @JsonIgnore
+    public List<String> getRedirectAddressesInPunycode() {
+        List<String> redirectInPunycode = new ArrayList<>();
+        for (String redirectElem : redirectAddresses) {
+            redirectInPunycode.add(IDN.toASCII(redirectElem.split("@")[0]) + "@" + IDN.toASCII(redirectElem.split("@")[1]));
+        }
+        return redirectInPunycode;
+    }
+
     public void setRedirectAddresses(List<String> redirectAddresses) {
         this.redirectAddresses = redirectAddresses;
     }
@@ -126,6 +145,15 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         return blackList;
     }
 
+    @JsonIgnore
+    public List<String> getBlackListInPunycode() {
+        List<String> blackListInPunycode = new ArrayList<>();
+        for (String blackElem : blackList) {
+            blackListInPunycode.add(IDN.toASCII(blackElem.split("@")[0]) + "@" + IDN.toASCII(blackElem.split("@")[1]));
+        }
+        return blackListInPunycode;
+    }
+
     public void setBlackList(List<String> blackList) {
         this.blackList = blackList;
     }
@@ -136,6 +164,15 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     public List<String> getWhiteList() {
         return whiteList;
+    }
+
+    @JsonIgnore
+    public List<String> getWhiteListInPunycode() {
+        List<String> whiteListInPunycode = new ArrayList<>();
+        for (String whiteElem : whiteList) {
+            whiteListInPunycode.add(IDN.toASCII(whiteElem.split("@")[0]) + "@" + IDN.toASCII(whiteElem.split("@")[1]));
+        }
+        return whiteListInPunycode;
     }
 
     public void setWhiteList(List<String> whiteList) {
@@ -189,9 +226,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     }
 
     @Override
-    public Long getQuota() {
-        return quota;
-    }
+    public Long getQuota() { return quota; }
 
     @Override
     public void setQuotaUsed(Long quotaUsed) {
@@ -233,6 +268,17 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     public String getMailSpool() {
         return mailSpool;
+    }
+
+    @JsonIgnore
+    public String getMailSpoolInPunycode() {
+
+        String[] labels = mailSpool.split("/");
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = java.net.IDN.toASCII(labels[i]);
+        }
+        String mailSpoolinPunycode = String.join("/", labels);
+        return String.join("/", mailSpoolinPunycode);
     }
 
     public void setMailSpool(String mailSpool) {
