@@ -506,7 +506,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         } catch (JsonProcessingException e) {
             logger.error("Mailbox userData не записана в Redis!");
         }
-        String key = "mailboxUserData:" + mailbox.getFullName();
+        String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.boundValueOps(key).set(data);
     }
 
