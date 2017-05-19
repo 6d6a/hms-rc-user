@@ -100,13 +100,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     @JsonIgnore
     public String getFullNameInPunycode() {
         if (domain != null) {
-            String url = domain.getName();
-            String[] labels = url.split("\\.");
-            for (int i = 0; i < labels.length; i++) {
-                labels[i] = java.net.IDN.toASCII(labels[i]);
-            }
-            String punycodeDomain = String.join(".", labels);
-            return getName() + '@' + punycodeDomain;
+            return getName() + '@' + java.net.IDN.toASCII(domain.getName());
         } else {
             return null;
         }
