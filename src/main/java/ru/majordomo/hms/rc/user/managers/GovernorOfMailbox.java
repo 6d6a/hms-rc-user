@@ -522,8 +522,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private void dropFromRedis(Mailbox mailbox) {
-        redisRepository.delete(mailbox.getFullName());
-        String key = "mailboxUserData:" + mailbox.getFullName();
+        redisRepository.delete(mailbox.getFullNameInPunycode());
+        String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.delete(key);
     }
 
@@ -549,7 +549,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private void dropAggregatorInRedis(Mailbox mailbox) {
-        redisRepository.delete("*@" + (construct(mailbox)).getDomain().getName());
+        redisRepository.delete("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
     }
 
     public void updateQuota(String mailboxId, Long quotaSize) {
