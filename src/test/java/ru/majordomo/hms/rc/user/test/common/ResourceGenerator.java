@@ -11,19 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
-import ru.majordomo.hms.rc.user.resources.CronTask;
-import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
-import ru.majordomo.hms.rc.user.resources.Database;
-import ru.majordomo.hms.rc.user.resources.DatabaseUser;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.FTPUser;
-import ru.majordomo.hms.rc.user.resources.LegalEntity;
-import ru.majordomo.hms.rc.user.resources.Mailbox;
-import ru.majordomo.hms.rc.user.resources.Passport;
-import ru.majordomo.hms.rc.user.resources.Person;
-import ru.majordomo.hms.rc.user.resources.RegSpec;
-import ru.majordomo.hms.rc.user.resources.UnixAccount;
-import ru.majordomo.hms.rc.user.resources.WebSite;
+import ru.majordomo.hms.rc.user.resources.*;
 
 import static ru.majordomo.hms.rc.user.resources.CharSet.UTF8;
 import static ru.majordomo.hms.rc.user.resources.DBType.MYSQL;
@@ -46,6 +34,7 @@ public class ResourceGenerator {
         parovozov.addEmailAddress("parovozov@gmail.com");
         parovozov.addPhoneNumber("+79110000911");
         parovozov.addPhoneNumber("+79110000001");
+        parovozov.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
 
         Passport passport = generatePassport();
         parovozov.setPassport(passport);
@@ -59,6 +48,7 @@ public class ResourceGenerator {
         hosting.addEmailAddress("info@majordomo.ru");
         hosting.addPhoneNumber("+78123353545");
         hosting.addPhoneNumber("+74957272278");
+        hosting.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
 
         LegalEntity hostingInfo = generateLegalEntity();
 
