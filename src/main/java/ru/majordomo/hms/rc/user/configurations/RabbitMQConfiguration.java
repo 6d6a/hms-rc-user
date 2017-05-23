@@ -3,10 +3,12 @@ package ru.majordomo.hms.rc.user.configurations;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
 import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +63,15 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
     public void configureRabbitListeners(
             RabbitListenerEndpointRegistrar registrar) {
         registrar.setMessageHandlerMethodFactory(myHandlerMethodFactory());
+        registrar.setContainerFactory(rabbitListenerContainerFactory());
+    }
+
+    @Bean
+    public RabbitListenerContainerFactory rabbitListenerContainerFactory() {
+        SimpleRabbitListenerContainerFactory containerFactory = new SimpleRabbitListenerContainerFactory();
+        containerFactory.setConcurrentConsumers(10);
+        containerFactory.setConnectionFactory(connectionFactory());
+        return containerFactory;
     }
 
     @Bean
@@ -74,6 +85,8 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
     public MappingJackson2MessageConverter mappingJackson2MessageConverter() {
         return new MappingJackson2MessageConverter();
     }
+
+
 
     @Bean
     RetryOperationsInterceptor interceptor() {

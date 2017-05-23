@@ -74,7 +74,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     public void dropByResourceId(String resourceId) {
         ResourceArchive archive = repository.findByResourceId(resourceId);
         if (archive != null) {
-            repository.delete(resourceId);
+            repository.delete(archive);
         }
     }
 
