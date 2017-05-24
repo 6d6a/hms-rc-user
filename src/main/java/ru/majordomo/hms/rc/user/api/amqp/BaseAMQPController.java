@@ -122,7 +122,7 @@ class BaseAMQPController {
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
-        if (!successEvent) {
+        if (!successEvent && resource != null) {
             governor.drop(resource.getId());
         }
 
