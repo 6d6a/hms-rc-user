@@ -241,6 +241,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         addSoaRecord(domain);
         addNsRecords(domain);
         addDefaultARecords(domain);
+        addMailRecords(domain);
     }
 
     public void addNsRecords(Domain domain) {
@@ -281,6 +282,35 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
         record.setOwnerName("*." + domainName);
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
+    }
+
+    public void addMailRecords(Domain domain) {
+        String domainName = IDN.toASCII(domain.getName());
+
+        DNSResourceRecord mxRecord = new DNSResourceRecord();
+        mxRecord.setRrType(DNSResourceRecordType.MX);
+        mxRecord.setRrClass(DNSResourceRecordClass.IN);
+        mxRecord.setTtl(3600L);
+        mxRecord.setOwnerName(domainName);
+        mxRecord.setData("mmxs.majordomo.ru");
+        mxRecord.setPrio(10L);
+        dnsResourceRecordDAO.insertByDomainName(domainName, mxRecord);
+
+        DNSResourceRecord cnameRecord = new DNSResourceRecord();
+        cnameRecord.setRrClass(DNSResourceRecordClass.IN);
+        cnameRecord.setRrType(DNSResourceRecordType.CNAME);
+        cnameRecord.setTtl(3600L);
+        cnameRecord.setOwnerName("smtp." + domainName);
+        cnameRecord.setData("smtp.majordomo.ru");
+        dnsResourceRecordDAO.insertByDomainName(domainName, cnameRecord);
+
+        cnameRecord.setOwnerName("pop3." + domainName);
+        cnameRecord.setData("pop3.majordomo.ru");
+        dnsResourceRecordDAO.insertByDomainName(domainName, cnameRecord);
+
+        cnameRecord.setOwnerName("mail." + domainName);
+        cnameRecord.setData("mail.majordomo.ru");
+        dnsResourceRecordDAO.insertByDomainName(domainName, cnameRecord);
     }
 
     void setZoneStatus(Domain domain, Boolean switchedOn) {

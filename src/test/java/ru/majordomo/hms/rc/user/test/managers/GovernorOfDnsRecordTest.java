@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolationException;
 
@@ -75,9 +76,49 @@ public class GovernorOfDnsRecordTest {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "new-domain.ru");
         keyValue.put("accountId", "0");
+
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        assertThat(records.size(), is(6));
-        assertThat(records.get(0).getRrType(), is(DNSResourceRecordType.SOA));
+        assertThat(
+                records.size(),
+                is(10)
+        );
+        assertThat(
+                records.get(0).getRrType(),
+                is(DNSResourceRecordType.SOA)
+        );
+        assertThat(
+                records.stream()
+                        .filter(r -> r.getRrType().equals(DNSResourceRecordType.CNAME))
+                        .count(),
+                is(3L)
+        );
+    }
+
+    @Test
+    public void initDomainRF() throws Exception {
+        Domain domain = new Domain();
+        domain.setName("ололоевич.рф");
+        governorOfDnsRecord.initDomain(domain);
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", "ололоевич.рф");
+        keyValue.put("accountId", "0");
+        List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
+
+        assertThat(
+                records.size(),
+                is(10)
+        );
+        assertThat(
+                records.get(0).getRrType(),
+                is(DNSResourceRecordType.SOA)
+        );
+        assertThat(
+                records.stream()
+                        .filter(r -> r.getRrType().equals(DNSResourceRecordType.CNAME))
+                        .count(),
+                is(3L)
+        );
     }
 
     @Test
@@ -210,20 +251,5 @@ public class GovernorOfDnsRecordTest {
     public void findOne() throws Exception {
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(4L);
         assertThat(record.getRecordId(), is(4L));
-    }
-
-    @Test
-    public void initDomainRF() throws Exception {
-        Domain domain = new Domain();
-        domain.setName("ололоевич.рф");
-        governorOfDnsRecord.initDomain(domain);
-
-        Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "ололоевич.рф");
-        keyValue.put("accountId", "0");
-        List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
-        assertThat(records.size(), is(6));
-        assertThat(records.get(0).getRrType(), is(DNSResourceRecordType.SOA));
-        System.out.println(dnsResourceRecordDAO.findOne(10L));
     }
 }
