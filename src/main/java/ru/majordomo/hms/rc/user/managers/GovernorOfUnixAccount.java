@@ -121,7 +121,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                         unixAccount.setWritable((Boolean) entry.getValue());
                         break;
                     case "quota":
-                        unixAccount.setQuota((Long) entry.getValue());
+                        unixAccount.setQuota(new Long((Integer) entry.getValue()) * 1024);
                         break;
                     default:
                         break;
