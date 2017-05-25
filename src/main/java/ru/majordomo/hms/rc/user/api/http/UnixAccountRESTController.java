@@ -49,7 +49,7 @@ public class UnixAccountRESTController {
     @RequestMapping(value = {"/unix-account/{unixAccountId}/quota-report"}, method = RequestMethod.POST)
     public ResponseEntity<Void> updateQuota(@PathVariable String unixAccountId, @RequestBody QuotaReport report) {
         try {
-            governor.updateQuota(unixAccountId, report.getQuotaUsed());
+            governor.updateQuotaUsed(unixAccountId, report.getQuotaUsed());
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
