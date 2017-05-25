@@ -120,6 +120,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                     case "writable":
                         unixAccount.setWritable((Boolean) entry.getValue());
                         break;
+                    case "quota":
+                        unixAccount.setQuota(new Long((Integer) entry.getValue()) * 1024);
+                        break;
                     default:
                         break;
                 }
@@ -135,7 +138,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         return unixAccount;
     }
 
-    public void updateQuota(String unixAccountId, Long quotaSize) {
+    public void updateQuotaUsed(String unixAccountId, Long quotaSize) {
         UnixAccount unixAccount = repository.findOne(unixAccountId);
         if (unixAccount != null) {
             unixAccount.setQuotaUsed(quotaSize);
