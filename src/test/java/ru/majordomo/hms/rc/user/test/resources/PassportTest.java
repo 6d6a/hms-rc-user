@@ -27,7 +27,7 @@ public class PassportTest {
 
     @Test
     public void equals() {
-        Passport standard = ResourceGenerator.generatePassport();
+        Passport standard = ResourceGenerator.generatePassportIndividual();
 
         Passport tested = new Passport();
         tested.setNumber(standard.getNumber());

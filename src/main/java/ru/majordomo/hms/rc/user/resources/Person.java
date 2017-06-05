@@ -15,15 +15,18 @@ import java.util.Objects;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
-import ru.majordomo.hms.rc.user.resources.validation.ValidPerson;
 import ru.majordomo.hms.rc.user.resources.validation.ValidPhone;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualForeignChecks;
 import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
 
+import static ru.majordomo.hms.rc.user.resources.Constants.COUNTRY_FOREIGN_PATTERN;
+
 @Document(collection = "persons")
-@ValidPerson
 @GroupSequenceProvider(value = PersonGroupSequenceProvider.class)
 public class Person extends Resource {
     @NotNull(message = "Должен быть указан тип персоны")
@@ -43,6 +46,19 @@ public class Person extends Resource {
     private LegalEntity legalEntity;
 
     @NotBlank(message = "Страна должна быть указана")
+    @Pattern.List(
+            {
+                    @Pattern(
+                            regexp = "(^RU$)",
+                            groups = {PersonIndividualChecks.class},
+                            message = "Для граждан РФ страна должна быть указана как 'RU'"
+                    ),
+                    @Pattern(
+                            regexp = COUNTRY_FOREIGN_PATTERN,
+                            groups = {PersonIndividualForeignChecks.class}
+                    )
+            }
+    )
     private String country;
 
     @Valid

@@ -26,41 +26,116 @@ public class ResourceGenerator {
     public static List<Person> generateBatchOfPerson() {
         List<Person> batchOfPersons = new ArrayList<>();
 
-        Person parovozov = new Person();
-        parovozov.setId(ObjectId.get().toString());
-        parovozov.setAccountId(ObjectId.get().toString());
-        parovozov.setName("Паровозов Аркадий Локомотивович");
-        parovozov.addEmailAddress("arkady@parovozov.ru");
-        parovozov.addEmailAddress("parovozov@gmail.com");
-        parovozov.addPhoneNumber("+79110000911");
-        parovozov.addPhoneNumber("+79110000001");
-        parovozov.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        Person individual = new Person();
+        individual.setId(ObjectId.get().toString());
+        individual.setAccountId(ObjectId.get().toString());
+        individual.setType(PersonType.INDIVIDUAL);
+        individual.setName("Паровозов Аркадий Локомотивович");
+        individual.addEmailAddress("arkady@parovozov.ru");
+        individual.addEmailAddress("parovozov@gmail.com");
+        individual.addPhoneNumber("+79110000911");
+        individual.addPhoneNumber("+79110000001");
+        individual.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        individual.setCountry("RU");
 
-        Passport passport = generatePassport();
-        parovozov.setPassport(passport);
+        Passport passport = generatePassportIndividual();
+        individual.setPassport(passport);
 
-        Person hosting = new Person();
-        hosting.setId(ObjectId.get().toString());
-        hosting.setName("ООО Хостинг");
-        hosting.setAccountId(ObjectId.get().toString());
-        hosting.setId(ObjectId.get().toString());
-        hosting.addEmailAddress("support@majordomo.ru");
-        hosting.addEmailAddress("info@majordomo.ru");
-        hosting.addPhoneNumber("+78123353545");
-        hosting.addPhoneNumber("+74957272278");
-        hosting.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        batchOfPersons.add(individual);
 
-        LegalEntity hostingInfo = generateLegalEntity();
+        Person individualForeign = new Person();
+        individualForeign.setId(ObjectId.get().toString());
+        individualForeign.setAccountId(ObjectId.get().toString());
+        individualForeign.setType(PersonType.INDIVIDUAL);
+        individualForeign.setName("Misha Kolya Petya");
+        individualForeign.addEmailAddress("misha@kolya.ru");
+        individualForeign.addEmailAddress("misha@petya.com");
+        individualForeign.addPhoneNumber("+15110000911");
+        individualForeign.addPhoneNumber("+14110000001");
+        individualForeign.setPostalAddress(new Address(100000L,"New-York", "George Washington street, 14"));
+        individualForeign.setCountry("US");
 
-        hosting.setLegalEntity(hostingInfo);
+        Passport passportForeign = generatePassportIndividualForeign();
+        individualForeign.setPassport(passportForeign);
 
-        batchOfPersons.add(parovozov);
-        batchOfPersons.add(hosting);
+        batchOfPersons.add(individualForeign);
+
+        Person company = new Person();
+        company.setId(ObjectId.get().toString());
+        company.setAccountId(ObjectId.get().toString());
+        company.setName("ООО Хостинг");
+        company.setType(PersonType.COMPANY);
+        company.addEmailAddress("support@majordomo.ru");
+        company.addEmailAddress("info@majordomo.ru");
+        company.addPhoneNumber("+78123353545");
+        company.addPhoneNumber("+74957272278");
+        company.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        company.setCountry("RU");
+
+        LegalEntity legalEntityCompany = generateLegalEntityCompany();
+
+        company.setLegalEntity(legalEntityCompany);
+
+        batchOfPersons.add(company);
+
+        Person companyForeign = new Person();
+        companyForeign.setId(ObjectId.get().toString());
+        companyForeign.setAccountId(ObjectId.get().toString());
+        companyForeign.setName("Hosting Ltd.");
+        companyForeign.setType(PersonType.COMPANY_FOREIGN);
+        companyForeign.addEmailAddress("support@majordomo.ru");
+        companyForeign.addEmailAddress("info@majordomo.ru");
+        companyForeign.addPhoneNumber("+78123353545");
+        companyForeign.addPhoneNumber("+74957272278");
+        companyForeign.setPostalAddress(new Address(100000L,"New-York", "George Washington street. 14"));
+        companyForeign.setCountry("US");
+
+        LegalEntity legalEntityCompanyForeign = generateLegalEntityCompanyForeign();
+
+        companyForeign.setLegalEntity(legalEntityCompanyForeign);
+
+        batchOfPersons.add(companyForeign);
+
+        Person entrepreneur = new Person();
+        entrepreneur.setId(ObjectId.get().toString());
+        entrepreneur.setAccountId(ObjectId.get().toString());
+        entrepreneur.setName("ООО Хостинг");
+        entrepreneur.setType(PersonType.COMPANY);
+        entrepreneur.addEmailAddress("support@majordomo.ru");
+        entrepreneur.addEmailAddress("info@majordomo.ru");
+        entrepreneur.addPhoneNumber("+78123353545");
+        entrepreneur.addPhoneNumber("+74957272278");
+        entrepreneur.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        entrepreneur.setCountry("RU");
+
+        LegalEntity legalEntityEntrepreneur = generateLegalEntityCompany();
+
+        entrepreneur.setLegalEntity(legalEntityEntrepreneur);
+
+        batchOfPersons.add(entrepreneur);
+
+        Person entrepreneurForeign = new Person();
+        entrepreneurForeign.setId(ObjectId.get().toString());
+        entrepreneurForeign.setAccountId(ObjectId.get().toString());
+        entrepreneurForeign.setName("Hosting Ltd.");
+        entrepreneurForeign.setType(PersonType.COMPANY_FOREIGN);
+        entrepreneurForeign.addEmailAddress("support@majordomo.ru");
+        entrepreneurForeign.addEmailAddress("info@majordomo.ru");
+        entrepreneurForeign.addPhoneNumber("+78123353545");
+        entrepreneurForeign.addPhoneNumber("+74957272278");
+        entrepreneurForeign.setPostalAddress(new Address(100000L,"New-York", "George Washington street. 14"));
+        entrepreneurForeign.setCountry("US");
+
+        LegalEntity legalEntityEntrepreneurForeign = generateLegalEntityCompanyForeign();
+
+        entrepreneurForeign.setLegalEntity(legalEntityEntrepreneurForeign);
+
+        batchOfPersons.add(entrepreneurForeign);
 
         return batchOfPersons;
     }
 
-    public static LegalEntity generateLegalEntity() {
+    public static LegalEntity generateLegalEntityCompany() {
         LegalEntity legalEntity = new LegalEntity();
         legalEntity.setInn("7814522538");
         legalEntity.setOkpo("30727716");
@@ -72,7 +147,14 @@ public class ResourceGenerator {
         return legalEntity;
     }
 
-    public static Passport generatePassport() {
+    public static LegalEntity generateLegalEntityCompanyForeign() {
+        LegalEntity legalEntity = new LegalEntity();
+        legalEntity.setAddress(Address.fromString("New-York, George Washington street. 14, 111111"));
+
+        return legalEntity;
+    }
+
+    public static Passport generatePassportIndividual() {
         Passport passport = new Passport();
         passport.setNumber("1234567890");
         passport.setBirthday("1970-01-01");
@@ -83,6 +165,19 @@ public class ResourceGenerator {
 
         return passport;
     }
+
+    public static Passport generatePassportIndividualForeign() {
+        Passport passport = new Passport();
+        passport.setDocument("passport 1234567890");
+        passport.setBirthday("1970-01-01");
+        passport.setIssuedOrg("Spy passport department of CIA");
+        passport.setIssuedDate("2005-05-20");
+        passport.setMainPage("http://storage/" + ObjectId.get().toString());
+        passport.setRegisterPage("http://storage/" + ObjectId.get().toString());
+
+        return passport;
+    }
+
     public static List<Database> generateBatchOfDatabases() throws UnsupportedEncodingException {
         List<Database> batchOfDatabases = new ArrayList<>();
         List<DatabaseUser> batchOfDatabaseUsers = generateBatchOfDatabaseUsers();

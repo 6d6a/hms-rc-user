@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import java.util.Objects;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -55,6 +56,8 @@ public class LegalEntity {
     private String ogrn;
 
     private String okvedCodes;
+
+    @Valid
     private Address address;
 
     @Length(max = 128, groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})

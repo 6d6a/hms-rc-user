@@ -8,6 +8,8 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 
+import static ru.majordomo.hms.rc.user.resources.PersonType.INDIVIDUAL;
+
 public class ServiceMessageGenerator {
     public ServiceMessage generateWebsiteCreateMessage() {
         return new ServiceMessage();
@@ -21,6 +23,7 @@ public class ServiceMessageGenerator {
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("name", "Климов Никита Анатольевич");
+        serviceMessage.addParam("type", INDIVIDUAL.name());
         serviceMessage.addParam("phoneNumbers", Collections.singletonList("+79052033565"));
         serviceMessage.addParam("emailAddresses", Collections.singletonList("nikita@klimov.us"));
         serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));

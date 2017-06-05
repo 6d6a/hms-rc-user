@@ -25,6 +25,7 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.resources.PersonType;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
 
@@ -136,6 +137,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                     case "name":
                         person.setName(cleaner.cleanString((String) entry.getValue()));
                         break;
+                    case "type":
+                        person.setType(PersonType.valueOf(cleaner.cleanString((String) entry.getValue())));
+                        break;
                     case "country":
                         person.setCountry(cleaner.cleanString((String) entry.getValue()));
                         break;
@@ -234,6 +238,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
         Person person = new Person();
         setResourceParams(person, serviceMessage, cleaner);
+        PersonType type = PersonType.valueOf(cleaner.cleanString((String) serviceMessage.getParam("type")));
         String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
         Map<String,String> postalAddressMap = (Map<String,String>) serviceMessage.getParam("address");
         Address postalAddress = null;
@@ -266,6 +271,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         person.setPassport(passport);
         person.setLegalEntity(legalEntity);
         person.setCountry(country);
+        person.setType(type);
         person.setPostalAddress(postalAddress);
         person.setNicHandle(nicHandle);
 
@@ -292,7 +298,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         Set<ConstraintViolation<Person>> constraintViolations = validator.validate(person, PersonChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("person: " + person + " constraintViolations: " + constraintViolations.toString());
+            logger.error("person: " + person + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -365,7 +371,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
     public Passport buildPassportFromMap(Map<String, String> passportMap) {
         Passport passport = new Passport();
-        passport.setNumber(passportMap.get("number"));
+        if (passportMap.get("number") != null && !passportMap.get("number").equals("")) {
+            passport.setNumber(passportMap.get("number"));
+        }
+        if (passportMap.get("document") != null && !passportMap.get("document").equals("")) {
+            passport.setDocument(passportMap.get("document"));
+        }
         passport.setIssuedOrg(passportMap.get("issuedOrg"));
         if (passportMap.get("issuedDate") != null && !passportMap.get("issuedDate").equals("")) {
             passport.setIssuedDate(passportMap.get("issuedDate"));

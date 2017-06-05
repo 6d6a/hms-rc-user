@@ -5,6 +5,8 @@ import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.groups.Default;
+
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyChecks;
@@ -19,8 +21,9 @@ public class PersonGroupSequenceProvider implements DefaultGroupSequenceProvider
     public List<Class<?>> getValidationGroups(Person person) {
         List<Class<?>> sequence = new ArrayList<>();
 
-        sequence.add(PersonChecks.class);
+        sequence.add(Person.class);
 
+        sequence.add(PersonChecks.class);
 
         if(person != null && person.getType() != null){
             switch (person.getType()) {
