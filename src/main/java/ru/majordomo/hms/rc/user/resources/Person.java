@@ -3,7 +3,10 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.group.GroupSequenceProvider;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -11,13 +14,21 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
+import ru.majordomo.hms.rc.user.resources.validation.ValidPerson;
 import ru.majordomo.hms.rc.user.resources.validation.ValidPhone;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
 
 @Document(collection = "persons")
+@ValidPerson
+@GroupSequenceProvider(value = PersonGroupSequenceProvider.class)
 public class Person extends Resource {
+    @NotNull(message = "Должен быть указан тип персоны")
+    private PersonType type;
+
     @Valid
     private List<@ValidPhone(groups = PersonChecks.class) String> phoneNumbers = new ArrayList<>();
 
@@ -25,12 +36,27 @@ public class Person extends Resource {
     @Valid
     private List<@ValidEmail(groups = PersonChecks.class) String> emailAddresses = new ArrayList<>();
 
+    @Valid
     private Passport passport;
+
+    @Valid
     private LegalEntity legalEntity;
+
+    @NotBlank(message = "Страна должна быть указана")
     private String country;
+
+    @Valid
     private Address postalAddress;
     private String nicHandle;
     private List<String> linkedAccountIds = new ArrayList<>();
+
+    public PersonType getType() {
+        return type;
+    }
+
+    public void setType(PersonType type) {
+        this.type = type;
+    }
 
     public String getNicHandle() {
         return nicHandle;
@@ -147,6 +173,8 @@ public class Person extends Resource {
         if (o == null || getClass() != o.getClass()) return false;
         Person person = (Person) o;
         return Objects.equals(phoneNumbers, person.phoneNumbers) &&
+                Objects.equals(type, person.type) &&
+                Objects.equals(nicHandle, person.nicHandle) &&
                 Objects.equals(emailAddresses, person.emailAddresses) &&
                 Objects.equals(passport, person.passport) &&
                 Objects.equals(legalEntity, person.legalEntity);
@@ -160,13 +188,15 @@ public class Person extends Resource {
     @Override
     public String toString() {
         return "Person{" +
-                super.toString() +
+                "type=" + type +
                 ", phoneNumbers=" + phoneNumbers +
                 ", emailAddresses=" + emailAddresses +
                 ", passport=" + passport +
                 ", legalEntity=" + legalEntity +
                 ", country='" + country + '\'' +
-                ", postalAddress='" + postalAddress + '\'' +
-                '}';
+                ", postalAddress=" + postalAddress +
+                ", nicHandle='" + nicHandle + '\'' +
+                ", linkedAccountIds=" + linkedAccountIds +
+                "} " + super.toString();
     }
 }

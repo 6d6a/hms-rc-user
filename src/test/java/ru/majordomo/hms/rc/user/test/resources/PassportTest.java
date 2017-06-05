@@ -36,7 +36,6 @@ public class PassportTest {
         tested.setIssuedOrg(standard.getIssuedOrg());
         tested.setMainPage(standard.getMainPage());
         tested.setRegisterPage(standard.getRegisterPage());
-        tested.setAddress(standard.getAddress());
 
         assertTrue(standard != tested);
         assertTrue(standard.equals(tested));

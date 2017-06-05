@@ -67,7 +67,7 @@ public class ResourceGenerator {
         legalEntity.setKpp("781401001");
         legalEntity.setOgrn("781401001");
         legalEntity.setOkvedCodes("64.2, 72.20, 72.40, 72.60, 74.40");
-        legalEntity.setAddress("Санкт-Петербург, Торфяная дор. 7Ф, оф. 1320");
+        legalEntity.setAddress(Address.fromString("Санкт-Петербург, Торфяная дор. 7Ф, оф. 1320"));
 
         return legalEntity;
     }
@@ -80,7 +80,6 @@ public class ResourceGenerator {
         passport.setIssuedDate("2005-05-20");
         passport.setMainPage("http://storage/" + ObjectId.get().toString());
         passport.setRegisterPage("http://storage/" + ObjectId.get().toString());
-        passport.setAddress("Санкт-Петербург, пр. Невский, д.24, кв. 2");
 
         return passport;
     }

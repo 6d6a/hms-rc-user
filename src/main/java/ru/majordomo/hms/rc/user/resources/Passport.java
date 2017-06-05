@@ -2,21 +2,160 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
+
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
+
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualForeignChecks;
+
 public class Passport {
+    @NotBlank(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Length(
+            min = 2,
+            max = 64,
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            }
+    )
+    @Pattern.List(
+            {
+                    @Pattern(
+                            regexp = "(?ui)(^[а-яё]+$)",
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
+                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                    )
+            }
+    )
+    private String firstname;
+
+    @NotBlank(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Length(min = 2, max = 64, groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Pattern.List(
+            {
+                    @Pattern(
+                            regexp = "(?ui)(^[а-яё-]+$)",
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё-]+)$|^([a-z-]+)$)",
+                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                    )
+            }
+    )
+    private String lastname;
+
+    @NotBlank(groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
+    @Length.List(
+            {
+                    @Length(max = 64, groups = {
+                            PersonIndividualChecks.class,
+                            PersonIndividualForeignChecks.class
+                    }),
+                    @Length(min = 2, max = 64, groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
+            }
+    )
+    @Pattern.List(
+            {
+                    @Pattern(
+                            regexp = "(?ui)(^[а-яё]+$)",
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
+                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                    )
+            }
+    )
+    private String middlename;
+
+    @NotBlank(groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
+    @Length(min = 10, max = 255, groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
+    @Pattern(regexp = "(?ui)(^([a-zа-яё0-9\\,\\.\\/ -]+)$)", groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
+    private String document;
+
+    @NotBlank(groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
+    @Length(min = 10, max = 10, groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
+    @Pattern(regexp = "(^[0-9]+$)", groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
     private String number;
+
+    @NotBlank(groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
+    @Length(min = 10, max = 200, groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
+    @Pattern(regexp = "(?ui)(^[а-яё№\\(\\)\\d\\.\\,\\/ -]+$)", groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
     private String issuedOrg;
+
+    @NotNull(groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
     private LocalDate issuedDate;
+
+    @NotNull(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Past(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
     private LocalDate birthday;
+
     private String mainPage;
     private String registerPage;
-    private String address;
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public String getMiddlename() {
+        return middlename;
+    }
+
+    public void setMiddlename(String middlename) {
+        this.middlename = middlename;
+    }
 
     public String getMainPage() {
         return mainPage;
@@ -32,14 +171,6 @@ public class Passport {
 
     public void setRegisterPage(String registerPage) {
         this.registerPage = registerPage;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public String getNumber() {
@@ -102,16 +233,24 @@ public class Passport {
         }
     }
 
+    public String getDocument() {
+        return document;
+    }
+
+    public void setDocument(String document) {
+        this.document = document;
+    }
+
     @Override
     public String toString() {
         return "Passport{" +
-                "number='" + number + '\'' +
+                "document='" + document + '\'' +
+                ", number='" + number + '\'' +
                 ", issuedOrg='" + issuedOrg + '\'' +
                 ", issuedDate=" + issuedDate +
                 ", birthday=" + birthday +
                 ", mainPage='" + mainPage + '\'' +
                 ", registerPage='" + registerPage + '\'' +
-                ", address='" + address + '\'' +
                 '}';
     }
 
@@ -121,16 +260,16 @@ public class Passport {
         if (o == null || getClass() != o.getClass()) return false;
         Passport passport = (Passport) o;
         return Objects.equals(number, passport.number) &&
+                Objects.equals(document, passport.document) &&
                 Objects.equals(issuedOrg, passport.issuedOrg) &&
                 Objects.equals(issuedDate, passport.issuedDate) &&
                 Objects.equals(birthday, passport.birthday) &&
                 Objects.equals(mainPage, passport.mainPage) &&
-                Objects.equals(registerPage, passport.registerPage) &&
-                Objects.equals(address, passport.address);
+                Objects.equals(registerPage, passport.registerPage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(number, issuedOrg, issuedDate, birthday, mainPage, registerPage, address);
+        return Objects.hash(number, issuedOrg, issuedDate, birthday, mainPage, registerPage);
     }
 }

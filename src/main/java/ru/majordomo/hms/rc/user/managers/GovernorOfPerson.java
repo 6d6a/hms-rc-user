@@ -375,7 +375,6 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         }
         passport.setMainPage(passportMap.get("mainPage"));
         passport.setRegisterPage(passportMap.get("registerPage"));
-        passport.setAddress(passportMap.get("address"));
         return passport;
     }
 
@@ -386,7 +385,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         legalEntity.setKpp(legalEntityMap.get("kpp"));
         legalEntity.setOgrn(legalEntityMap.get("ogrn"));
         legalEntity.setOkvedCodes(legalEntityMap.get("okvedCodes"));
-        legalEntity.setAddress(legalEntityMap.get("address"));
+        legalEntity.setAddress(Address.fromString(legalEntityMap.get("address")));
         legalEntity.setBankName(legalEntityMap.get("bankName"));
         legalEntity.setBik(legalEntityMap.get("bik"));
         legalEntity.setCorrespondentAccount(legalEntityMap.get("correspondentAccount"));

@@ -25,6 +25,7 @@ import ru.majordomo.hms.rc.user.common.PhoneNumberManager;
 import ru.majordomo.hms.rc.user.event.person.PersonCreateEvent;
 import ru.majordomo.hms.rc.user.event.person.PersonImportEvent;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.resources.Address;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
@@ -492,7 +493,7 @@ public class PersonDBImportService implements ResourceDBImportService {
             legalEntity.setBik(bankBik);
         }
 
-        legalEntity.setAddress(rs.getString("legal_address"));
+        legalEntity.setAddress(Address.fromString(rs.getString("legal_address")));
 
         return legalEntity;
     }

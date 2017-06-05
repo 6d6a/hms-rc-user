@@ -1,26 +1,133 @@
 package ru.majordomo.hms.rc.user.resources;
 
-import java.util.ArrayList;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
+
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
+
 public class LegalEntity {
+    @Length(max = 64, groups = {PersonCompanyChecks.class})
+    @Pattern(regexp = "(?ui)(^[а-яё -]+$)", groups = {PersonCompanyChecks.class})
+    private String orgForm;
+
+    @NotBlank(groups = {PersonCompanyChecks.class})
+    @Length(min = 1, max = 255, groups = {PersonCompanyChecks.class})
+    @Pattern.List(
+            {
+                    @Pattern(regexp = "(?ui)(^[a-zа-яё0-9№\\/\\,\\.\\+ !-]+$)", groups = {PersonCompanyChecks.class}),
+                    @Pattern(regexp = "(?ui)(^([а-яё0-9'\\/\\,\\.\\+ -]+)$|^([a-z0-9\\/\\,\\.\\+ -]+)$)", groups = {PersonCompanyForeignChecks.class})
+            }
+    )
+    private String orgName;
+
+    @NotBlank(groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
+    @Length.List(
+            {
+                    @Length(min = 10, max = 10, groups = {PersonCompanyChecks.class}),
+                    @Length(min = 12, max = 12, groups = {PersonEntrepreneurChecks.class})
+            }
+    )
+    @Pattern(regexp = "(^[\\d]+$)", groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
     private String inn;
+
     private String okpo;
+
+    @NotBlank(groups = {PersonCompanyChecks.class})
+    @Length(min = 9, max = 9, groups = {PersonCompanyChecks.class})
+    @Pattern(regexp = "(^[\\d]+$)", groups = {PersonCompanyChecks.class})
     private String kpp;
+
+    @NotBlank(groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
+    @Length.List(
+            {
+                    @Length(min = 13, max = 13, groups = {PersonCompanyChecks.class}),
+                    @Length(min = 15, max = 15, groups = {PersonEntrepreneurChecks.class})
+            }
+    )
+    @Pattern(regexp = "(^[\\d]+$)", groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
     private String ogrn;
+
     private String okvedCodes;
-    private String address;
+    private Address address;
+
+    @Length(max = 128, groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
+    @Pattern(
+            regexp = "(?ui)(^([а-яё0-9\\,\\.\"\\(\\)№ -]+)$|^([a-z0-9\\,\\.\"\\(\\)# -]+)$)",
+            groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class}
+    )
     private String bankName;
+
+    @Length(min = 9, max = 9, groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
+    @Pattern(regexp = "(^[\\d]+$)", groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
     private String bik;
+
+    @Length(min = 20, max = 20, groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
+    @Pattern(regexp = "(^[\\d]+$)", groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
     private String correspondentAccount;
+
+    @Length(min = 20, max = 20, groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
+    @Pattern(regexp = "(^[\\d]+$)", groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
     private String bankAccount;
+
     private String directorName;
 
-    public String getAddress() {
+    @NotNull(groups = {PersonCompanyChecks.class})
+    @Length(min = 2, max = 64, groups = {PersonCompanyChecks.class, PersonCompanyForeignChecks.class})
+    @Pattern.List(
+            {
+                    @Pattern(regexp = "(?ui)(^[а-яё]+$)", groups = {PersonCompanyChecks.class}),
+                    @Pattern(regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)", groups = {PersonCompanyForeignChecks.class})
+            }
+    )
+    private String directorFirstname;
+
+    @NotNull(groups = {PersonCompanyChecks.class})
+    @Length(min = 2, max = 64, groups = {PersonCompanyChecks.class, PersonCompanyForeignChecks.class})
+    @Pattern.List(
+            {
+                    @Pattern(regexp = "(?ui)(^[а-яё-]+$)", groups = {PersonCompanyChecks.class}),
+                    @Pattern(regexp = "(?ui)(^([а-яё-]+)$|^([a-z-]+)$)", groups = {PersonCompanyForeignChecks.class})
+            }
+    )
+    private String directorLastname;
+
+    @Length(max = 64, groups = {PersonCompanyChecks.class, PersonCompanyForeignChecks.class})
+    @Pattern.List(
+            {
+                    @Pattern(regexp = "(?ui)(^[а-яё]+$)", groups = {PersonCompanyChecks.class}),
+                    @Pattern(regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)", groups = {PersonCompanyForeignChecks.class})
+            }
+    )
+    private String directorMiddlename;
+
+    public String getOrgForm() {
+        return orgForm;
+    }
+
+    public void setOrgForm(String orgForm) {
+        this.orgForm = orgForm;
+    }
+
+    public String getOrgName() {
+        return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+        this.orgName = orgName;
+    }
+
+    public Address getAddress() {
         return address;
     }
 
-    public void setAddress(String address) {
+    public void setAddress(Address address) {
         this.address = address;
     }
 
@@ -102,6 +209,30 @@ public class LegalEntity {
 
     public void setDirectorName(String directorName) {
         this.directorName = directorName;
+    }
+
+    public String getDirectorFirstname() {
+        return directorFirstname;
+    }
+
+    public void setDirectorFirstname(String directorFirstname) {
+        this.directorFirstname = directorFirstname;
+    }
+
+    public String getDirectorLastname() {
+        return directorLastname;
+    }
+
+    public void setDirectorLastname(String directorLastname) {
+        this.directorLastname = directorLastname;
+    }
+
+    public String getDirectorMiddlename() {
+        return directorMiddlename;
+    }
+
+    public void setDirectorMiddlename(String directorMiddlename) {
+        this.directorMiddlename = directorMiddlename;
     }
 
     @Override

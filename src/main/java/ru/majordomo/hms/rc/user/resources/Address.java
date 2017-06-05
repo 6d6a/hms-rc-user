@@ -2,13 +2,110 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.google.common.base.Objects;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.Range;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.validation.constraints.NotNull;
+
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualForeignChecks;
+
 public class Address {
+    @NotNull(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonCompanyChecks.class,
+            PersonCompanyForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Range.List(
+            {
+                    @Range(min = 6, max = 6, groups = {
+                            PersonIndividualChecks.class,
+                            PersonCompanyChecks.class,
+                            PersonEntrepreneurChecks.class
+                    }),
+                    @Range(min = 4, max = 6, groups = {
+                            PersonIndividualForeignChecks.class,
+                            PersonCompanyForeignChecks.class,
+                            PersonEntrepreneurForeignChecks.class
+                    })
+            }
+    )
     private Long zip;
+
+    @NotBlank(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonCompanyChecks.class,
+            PersonCompanyForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Length(min = 3, max = 128, groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonCompanyChecks.class,
+            PersonCompanyForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @javax.validation.constraints.Pattern.List(
+            {
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^[а-яё0-9\\,\\.\\/ -]+$)",
+                            groups = {PersonIndividualChecks.class, PersonCompanyChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^([а-яё0-9\\,\\.\\/ -]+)$|^([a-z0-9\\,\\.\\/ -]+)$)",
+                            groups = {PersonIndividualForeignChecks.class, PersonCompanyForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                    )
+            }
+    )
     private String street;
+
+    @NotBlank(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonCompanyChecks.class,
+            PersonCompanyForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Length(min = 3, max = 64, groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonCompanyChecks.class,
+            PersonCompanyForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @javax.validation.constraints.Pattern.List(
+            {
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^[а-яё -]+$)",
+                            groups = {PersonIndividualChecks.class, PersonCompanyChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^([а-яё -]+)$|^([a-z- ]+)$)",
+                            groups = {PersonIndividualForeignChecks.class, PersonCompanyForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                    )
+            }
+    )
     private String city;
+
+    public static Address fromString(String address) {
+        return new Address(address);
+    }
 
     public Address() {
     }
