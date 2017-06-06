@@ -28,6 +28,7 @@ import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.resources.PersonType;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
 
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {
@@ -136,6 +137,21 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                 switch (entry.getKey().toString()) {
                     case "name":
                         person.setName(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "firstname":
+                        person.setFirstname(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "lastname":
+                        person.setLastname(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "middlename":
+                        person.setMiddlename(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "orgName":
+                        person.setOrgName(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "orgForm":
+                        person.setOrgForm(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "type":
                         person.setType(PersonType.valueOf(cleaner.cleanString((String) entry.getValue())));
@@ -266,6 +282,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         }
         String nicHandle = cleaner.cleanString((String) serviceMessage.getParam("nicHandle"));
 
+        String firstname = cleaner.cleanString((String) serviceMessage.getParam("firstname"));
+        String lastname = cleaner.cleanString((String) serviceMessage.getParam("lastname"));
+        String middlename = cleaner.cleanString((String) serviceMessage.getParam("middlename"));
+        String orgName = cleaner.cleanString((String) serviceMessage.getParam("orgName"));
+        String orgForm = cleaner.cleanString((String) serviceMessage.getParam("orgForm"));
+
         person.setPhoneNumbers(phoneNumbers);
         person.setEmailAddresses(emailAddresses);
         person.setPassport(passport);
@@ -274,6 +296,11 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         person.setType(type);
         person.setPostalAddress(postalAddress);
         person.setNicHandle(nicHandle);
+        person.setFirstname(firstname);
+        person.setLastname(lastname);
+        person.setMiddlename(middlename);
+        person.setOrgName(orgName);
+        person.setOrgForm(orgForm);
 
         logger.debug("Action ID: " + actionId +
                 " Operation Id: " + operationId +
@@ -295,7 +322,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
     @Override
     public void validate(Person person) throws ParameterValidateException {
-        Set<ConstraintViolation<Person>> constraintViolations = validator.validate(person, PersonChecks.class);
+        PersonGroupSequenceProvider personGroupSequenceProvider = new PersonGroupSequenceProvider();
+
+        Set<ConstraintViolation<Person>> constraintViolations = validator.validate(
+                person,
+                personGroupSequenceProvider.getValidationGroupsCustom(person).toArray(new Class<?>[]{})
+        );
 
         if (!constraintViolations.isEmpty()) {
             logger.error("person: " + person + " constraintViolations: " + constraintViolations.toString());
@@ -401,14 +433,16 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         legalEntity.setBik(legalEntityMap.get("bik"));
         legalEntity.setCorrespondentAccount(legalEntityMap.get("correspondentAccount"));
         legalEntity.setBankAccount(legalEntityMap.get("bankAccount"));
-        legalEntity.setDirectorName(legalEntityMap.get("directorName"));
+        legalEntity.setDirectorFirstname(legalEntityMap.get("directorFirstname"));
+        legalEntity.setDirectorLastname(legalEntityMap.get("directorLastname"));
+        legalEntity.setDirectorMiddlename(legalEntityMap.get("directorMiddlename"));
         return legalEntity;
     }
 
     public Address buildAddressFromMap(Map<String,String> addressMap) {
         Address address = new Address();
-        Long zip = Long.valueOf(addressMap.get("zip"));
-        address.setZip(Long.valueOf(zip));
+        String zip = addressMap.get("zip");
+        address.setZip(zip);
         address.setCity(addressMap.get("city"));
         address.setStreet(addressMap.get("street"));
 

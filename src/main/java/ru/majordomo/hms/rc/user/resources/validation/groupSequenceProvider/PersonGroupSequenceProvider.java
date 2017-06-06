@@ -25,6 +25,24 @@ public class PersonGroupSequenceProvider implements DefaultGroupSequenceProvider
 
         sequence.add(PersonChecks.class);
 
+        addCustomGroupsToSecuence(sequence, person);
+
+        return sequence;
+    }
+
+    public List<Class<?>> getValidationGroupsCustom(Person person) {
+        List<Class<?>> sequence = new ArrayList<>();
+
+        sequence.add(Default.class);
+
+        sequence.add(PersonChecks.class);
+
+        addCustomGroupsToSecuence(sequence, person);
+
+        return sequence;
+    }
+
+    private void addCustomGroupsToSecuence(List<Class<?>> sequence, Person person) {
         if(person != null && person.getType() != null){
             switch (person.getType()) {
                 case INDIVIDUAL:
@@ -47,7 +65,5 @@ public class PersonGroupSequenceProvider implements DefaultGroupSequenceProvider
                     break;
             }
         }
-
-        return sequence;
     }
 }

@@ -15,19 +15,20 @@ public class ServiceMessageGenerator {
         return new ServiceMessage();
     }
 
-    public static ServiceMessage generatePersonCreateServiceMessage() {
+    public static ServiceMessage generateIndividualPersonCreateServiceMessage() {
         List<Person> persons = ResourceGenerator.generateBatchOfPerson();
         Person person = persons.get(0);
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
-        serviceMessage.addParam("name", "Климов Никита Анатольевич");
         serviceMessage.addParam("type", INDIVIDUAL.name());
+        serviceMessage.addParam("firstname", person.getFirstname());
+        serviceMessage.addParam("lastname", person.getLastname());
+        serviceMessage.addParam("middlename", person.getMiddlename());
         serviceMessage.addParam("phoneNumbers", Collections.singletonList("+79052033565"));
         serviceMessage.addParam("emailAddresses", Collections.singletonList("nikita@klimov.us"));
         serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));
-        serviceMessage.addParam("legalEntity", person.getLegalEntity());
         serviceMessage.addParam("country", person.getCountry());
         serviceMessage.addParam("postalAddress", person.getPostalAddress());
 
@@ -36,13 +37,12 @@ public class ServiceMessageGenerator {
 
     private static HashMap<String, String> passportToHashMap(Passport passport) {
         HashMap<String, String> hashMap = new HashMap<>();
-//        hashMap.put("number", passport.getNumber());
-//        hashMap.put("issuedOrg", passport.getIssuedOrg());
-//        hashMap.put("issuedDate", passport.getIssuedDateAsString());
+        hashMap.put("number", passport.getNumber());
+        hashMap.put("issuedOrg", passport.getIssuedOrg());
+        hashMap.put("issuedDate", passport.getIssuedDateAsString());
         hashMap.put("birthday", passport.getBirthdayAsString());
 //        hashMap.put("mainPage", passport.getMainPage());
 //        hashMap.put("registerPage", passport.getRegisterPage());
-//        hashMap.put("address", passport.getAddress());
 
         return hashMap;
     }

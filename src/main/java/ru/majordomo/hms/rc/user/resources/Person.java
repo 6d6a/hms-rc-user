@@ -3,7 +3,9 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.mysql.management.util.Str;
 
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.group.GroupSequenceProvider;
@@ -20,6 +22,10 @@ import javax.validation.constraints.Pattern;
 import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
 import ru.majordomo.hms.rc.user.resources.validation.ValidPhone;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurForeignChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualForeignChecks;
 import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
@@ -55,7 +61,8 @@ public class Person extends Resource {
                     ),
                     @Pattern(
                             regexp = COUNTRY_FOREIGN_PATTERN,
-                            groups = {PersonIndividualForeignChecks.class}
+                            groups = {PersonIndividualForeignChecks.class},
+                            message = "Неверно указана страна"
                     )
             }
     )
@@ -63,8 +70,107 @@ public class Person extends Resource {
 
     @Valid
     private Address postalAddress;
+
     private String nicHandle;
     private List<String> linkedAccountIds = new ArrayList<>();
+
+    @NotBlank(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Length(
+            min = 2,
+            max = 64,
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            }
+    )
+    @Pattern.List(
+            {
+                    @Pattern(
+                            regexp = "(?ui)(^[а-яё]+$)",
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
+                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                    )
+            }
+    )
+    private String firstname;
+
+    @NotBlank(groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Length(min = 2, max = 64, groups = {
+            PersonIndividualChecks.class,
+            PersonIndividualForeignChecks.class,
+            PersonEntrepreneurChecks.class,
+            PersonEntrepreneurForeignChecks.class
+    })
+    @Pattern.List(
+            {
+                    @Pattern(
+                            regexp = "(?ui)(^[а-яё-]+$)",
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё-]+)$|^([a-z-]+)$)",
+                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                    )
+            }
+    )
+    private String lastname;
+
+    @NotBlank(groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
+    @Length.List(
+            {
+                    @Length(max = 64, groups = {
+                            PersonIndividualChecks.class,
+                            PersonIndividualForeignChecks.class
+                    }),
+                    @Length(min = 2, max = 64, groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
+            }
+    )
+    @Pattern.List(
+            {
+                    @Pattern(
+                            regexp = "(?ui)(^[а-яё]+$)",
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
+                            groups = {PersonEntrepreneurForeignChecks.class}
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$|^$)",
+                            groups = {PersonIndividualForeignChecks.class}
+                    )
+            }
+    )
+    private String middlename;
+
+    @Length(max = 64, groups = {PersonCompanyChecks.class})
+    @Pattern(regexp = "(?ui)(^[а-яё -]+$)", groups = {PersonCompanyChecks.class})
+    private String orgForm;
+
+    @NotBlank(groups = {PersonCompanyChecks.class})
+    @Length(min = 1, max = 255, groups = {PersonCompanyChecks.class})
+    @Pattern.List(
+            {
+                    @Pattern(regexp = "(?ui)(^[a-zа-яё0-9№\\/\\,\\.\\+ !-]+$)", groups = {PersonCompanyChecks.class}),
+                    @Pattern(regexp = "(?ui)(^([а-яё0-9'\\/\\,\\.\\+ -]+)$|^([a-z0-9\\/\\,\\.\\+ -]+)$)", groups = {PersonCompanyForeignChecks.class})
+            }
+    )
+    private String orgName;
 
     public PersonType getType() {
         return type;
@@ -183,23 +289,68 @@ public class Person extends Resource {
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Person person = (Person) o;
-        return Objects.equals(phoneNumbers, person.phoneNumbers) &&
-                Objects.equals(type, person.type) &&
-                Objects.equals(nicHandle, person.nicHandle) &&
-                Objects.equals(emailAddresses, person.emailAddresses) &&
-                Objects.equals(passport, person.passport) &&
-                Objects.equals(legalEntity, person.legalEntity);
+    public String getFirstname() {
+        return firstname;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(phoneNumbers, emailAddresses, passport, legalEntity);
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public String getMiddlename() {
+        return middlename;
+    }
+
+    public void setMiddlename(String middlename) {
+        this.middlename = middlename;
+    }
+
+    public String getOrgForm() {
+        return orgForm;
+    }
+
+    public void setOrgForm(String orgForm) {
+        this.orgForm = orgForm;
+    }
+
+    public String getOrgName() {
+        return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+        this.orgName = orgName;
+    }
+
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//        Person person = (Person) o;
+//        return Objects.equals(phoneNumbers, person.phoneNumbers) &&
+//                Objects.equals(type, person.type) &&
+//                Objects.equals(nicHandle, person.nicHandle) &&
+//                Objects.equals(emailAddresses, person.emailAddresses) &&
+//                Objects.equals(passport, person.passport) &&
+//                Objects.equals(legalEntity, person.legalEntity) &&
+//                Objects.equals(firstname, person.firstname) &&
+//                Objects.equals(lastname, person.lastname) &&
+//                Objects.equals(middlename, person.middlename) &&
+//                Objects.equals(orgForm, person.orgForm) &&
+//                Objects.equals(orgName, person.orgName);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(phoneNumbers, emailAddresses, passport, legalEntity);
+//    }
 
     @Override
     public String toString() {
@@ -213,6 +364,54 @@ public class Person extends Resource {
                 ", postalAddress=" + postalAddress +
                 ", nicHandle='" + nicHandle + '\'' +
                 ", linkedAccountIds=" + linkedAccountIds +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", middlename='" + middlename + '\'' +
+                ", orgForm='" + orgForm + '\'' +
+                ", orgName='" + orgName + '\'' +
                 "} " + super.toString();
+    }
+
+    @Override
+    public String getName() {
+        String name = "";
+
+        if(type != null){
+            switch (type) {
+                case ENTREPRENEUR:
+                case ENTREPRENEUR_FOREIGN:
+                    name += "ИП ";
+                case INDIVIDUAL:
+                case INDIVIDUAL_FOREIGN:
+                    if (lastname != null && !lastname.equals("")) {
+                        name += lastname + " ";
+                    }
+
+                    if (firstname != null && !firstname.equals("")) {
+                        name += firstname + " ";
+                    }
+
+                    if (middlename != null && !middlename.equals("")) {
+                        name += middlename;
+                    }
+                    break;
+                case COMPANY:
+                case COMPANY_FOREIGN:
+                    if (orgForm != null && !orgForm.equals("")) {
+                        name += orgForm + " ";
+                    }
+
+                    if (orgName != null && !orgName.equals("")) {
+                        name += orgName;
+                    }
+                    break;
+            }
+        }
+
+        if (name.equals("")) {
+            name = super.getName();
+        }
+
+        return name;
     }
 }

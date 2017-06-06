@@ -35,11 +35,15 @@ public class ResourceGenerator {
         individual.addEmailAddress("parovozov@gmail.com");
         individual.addPhoneNumber("+79110000911");
         individual.addPhoneNumber("+79110000001");
-        individual.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        individual.setPostalAddress(new Address("195000","Торфяная дор. 7, лит. Ф, оф. 1323", "Санкт-Петербург"));
         individual.setCountry("RU");
 
         Passport passport = generatePassportIndividual();
         individual.setPassport(passport);
+
+        individual.setFirstname("Аркадий");
+        individual.setLastname("Паровозов");
+        individual.setMiddlename("Локомотивович");
 
         batchOfPersons.add(individual);
 
@@ -47,16 +51,19 @@ public class ResourceGenerator {
         individualForeign.setId(ObjectId.get().toString());
         individualForeign.setAccountId(ObjectId.get().toString());
         individualForeign.setType(PersonType.INDIVIDUAL);
-        individualForeign.setName("Misha Kolya Petya");
+        individualForeign.setName("Misha Kolya");
         individualForeign.addEmailAddress("misha@kolya.ru");
         individualForeign.addEmailAddress("misha@petya.com");
         individualForeign.addPhoneNumber("+15110000911");
         individualForeign.addPhoneNumber("+14110000001");
-        individualForeign.setPostalAddress(new Address(100000L,"New-York", "George Washington street, 14"));
+        individualForeign.setPostalAddress(new Address("100000","New-York", "George Washington street, 14"));
         individualForeign.setCountry("US");
 
         Passport passportForeign = generatePassportIndividualForeign();
         individualForeign.setPassport(passportForeign);
+
+        individualForeign.setFirstname("Misha");
+        individualForeign.setLastname("Kolya");
 
         batchOfPersons.add(individualForeign);
 
@@ -69,66 +76,84 @@ public class ResourceGenerator {
         company.addEmailAddress("info@majordomo.ru");
         company.addPhoneNumber("+78123353545");
         company.addPhoneNumber("+74957272278");
-        company.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        company.setPostalAddress(new Address("195000","Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
         company.setCountry("RU");
 
         LegalEntity legalEntityCompany = generateLegalEntityCompany();
 
         company.setLegalEntity(legalEntityCompany);
 
+        company.setOrgForm("ООО");
+        company.setOrgName("Хостинг");
+
         batchOfPersons.add(company);
 
         Person companyForeign = new Person();
         companyForeign.setId(ObjectId.get().toString());
         companyForeign.setAccountId(ObjectId.get().toString());
-        companyForeign.setName("Hosting Ltd.");
+        companyForeign.setName("Hosting");
         companyForeign.setType(PersonType.COMPANY_FOREIGN);
         companyForeign.addEmailAddress("support@majordomo.ru");
         companyForeign.addEmailAddress("info@majordomo.ru");
         companyForeign.addPhoneNumber("+78123353545");
         companyForeign.addPhoneNumber("+74957272278");
-        companyForeign.setPostalAddress(new Address(100000L,"New-York", "George Washington street. 14"));
+        companyForeign.setPostalAddress(new Address("100000","New-York", "George Washington street. 14"));
         companyForeign.setCountry("US");
 
         LegalEntity legalEntityCompanyForeign = generateLegalEntityCompanyForeign();
 
         companyForeign.setLegalEntity(legalEntityCompanyForeign);
 
+        companyForeign.setOrgName("Hosting");
+
         batchOfPersons.add(companyForeign);
 
         Person entrepreneur = new Person();
         entrepreneur.setId(ObjectId.get().toString());
         entrepreneur.setAccountId(ObjectId.get().toString());
-        entrepreneur.setName("ООО Хостинг");
+        entrepreneur.setName("ИП Паровозов Аркадий Локомотивович");
         entrepreneur.setType(PersonType.COMPANY);
         entrepreneur.addEmailAddress("support@majordomo.ru");
         entrepreneur.addEmailAddress("info@majordomo.ru");
         entrepreneur.addPhoneNumber("+78123353545");
         entrepreneur.addPhoneNumber("+74957272278");
-        entrepreneur.setPostalAddress(new Address(195000L,"Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
+        entrepreneur.setPostalAddress(new Address("195000","Санкт-Петербург", "Торфяная дор. 7, лит. Ф, оф. 1323"));
         entrepreneur.setCountry("RU");
 
         LegalEntity legalEntityEntrepreneur = generateLegalEntityCompany();
 
         entrepreneur.setLegalEntity(legalEntityEntrepreneur);
 
+        Passport passportEntrepreneur = generatePassportIndividual();
+        entrepreneur.setPassport(passportEntrepreneur);
+
+        entrepreneur.setFirstname("Аркадий");
+        entrepreneur.setLastname("Паровозов");
+        entrepreneur.setMiddlename("Локомотивович");
+
         batchOfPersons.add(entrepreneur);
 
         Person entrepreneurForeign = new Person();
         entrepreneurForeign.setId(ObjectId.get().toString());
         entrepreneurForeign.setAccountId(ObjectId.get().toString());
-        entrepreneurForeign.setName("Hosting Ltd.");
+        entrepreneurForeign.setName("Entrepreneur Misha Kolya");
         entrepreneurForeign.setType(PersonType.COMPANY_FOREIGN);
         entrepreneurForeign.addEmailAddress("support@majordomo.ru");
         entrepreneurForeign.addEmailAddress("info@majordomo.ru");
         entrepreneurForeign.addPhoneNumber("+78123353545");
         entrepreneurForeign.addPhoneNumber("+74957272278");
-        entrepreneurForeign.setPostalAddress(new Address(100000L,"New-York", "George Washington street. 14"));
+        entrepreneurForeign.setPostalAddress(new Address("100000","New-York", "George Washington street. 14"));
         entrepreneurForeign.setCountry("US");
 
         LegalEntity legalEntityEntrepreneurForeign = generateLegalEntityCompanyForeign();
 
         entrepreneurForeign.setLegalEntity(legalEntityEntrepreneurForeign);
+
+        Passport passportEntrepreneurForeign = generatePassportIndividualForeign();
+        entrepreneurForeign.setPassport(passportEntrepreneurForeign);
+
+        entrepreneurForeign.setFirstname("Misha");
+        entrepreneurForeign.setLastname("Kolya");
 
         batchOfPersons.add(entrepreneurForeign);
 
@@ -142,7 +167,7 @@ public class ResourceGenerator {
         legalEntity.setKpp("781401001");
         legalEntity.setOgrn("781401001");
         legalEntity.setOkvedCodes("64.2, 72.20, 72.40, 72.60, 74.40");
-        legalEntity.setAddress(Address.fromString("Санкт-Петербург, Торфяная дор. 7Ф, оф. 1320"));
+        legalEntity.setAddress(Address.fromString("Санкт-Петербург, Торфяная дор. 7Ф оф. 1320, 190000"));
 
         return legalEntity;
     }

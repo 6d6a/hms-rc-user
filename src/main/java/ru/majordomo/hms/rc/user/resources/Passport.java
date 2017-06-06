@@ -9,95 +9,15 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 
+import ru.majordomo.hms.rc.user.resources.validation.LocalDatePast;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurForeignChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualForeignChecks;
 
 public class Passport {
-    @NotBlank(groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
-    @Length(
-            min = 2,
-            max = 64,
-            groups = {
-                    PersonIndividualChecks.class,
-                    PersonIndividualForeignChecks.class,
-                    PersonEntrepreneurChecks.class,
-                    PersonEntrepreneurForeignChecks.class
-            }
-    )
-    @Pattern.List(
-            {
-                    @Pattern(
-                            regexp = "(?ui)(^[а-яё]+$)",
-                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
-                    ),
-                    @Pattern(
-                            regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
-                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
-                    )
-            }
-    )
-    private String firstname;
-
-    @NotBlank(groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
-    @Length(min = 2, max = 64, groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
-    @Pattern.List(
-            {
-                    @Pattern(
-                            regexp = "(?ui)(^[а-яё-]+$)",
-                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
-                    ),
-                    @Pattern(
-                            regexp = "(?ui)(^([а-яё-]+)$|^([a-z-]+)$)",
-                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
-                    )
-            }
-    )
-    private String lastname;
-
-    @NotBlank(groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
-    @Length.List(
-            {
-                    @Length(max = 64, groups = {
-                            PersonIndividualChecks.class,
-                            PersonIndividualForeignChecks.class
-                    }),
-                    @Length(min = 2, max = 64, groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
-            }
-    )
-    @Pattern.List(
-            {
-                    @Pattern(
-                            regexp = "(?ui)(^[а-яё]+$)",
-                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
-                    ),
-                    @Pattern(
-                            regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
-                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
-                    )
-            }
-    )
-    private String middlename;
-
     @NotBlank(groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
     @Length(min = 10, max = 255, groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
     @Pattern(regexp = "(?ui)(^([a-zа-яё0-9\\,\\.\\/ -]+)$)", groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
@@ -122,7 +42,7 @@ public class Passport {
             PersonEntrepreneurChecks.class,
             PersonEntrepreneurForeignChecks.class
     })
-    @Past(groups = {
+    @LocalDatePast(groups = {
             PersonIndividualChecks.class,
             PersonIndividualForeignChecks.class,
             PersonEntrepreneurChecks.class,
@@ -132,30 +52,6 @@ public class Passport {
 
     private String mainPage;
     private String registerPage;
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getMiddlename() {
-        return middlename;
-    }
-
-    public void setMiddlename(String middlename) {
-        this.middlename = middlename;
-    }
 
     public String getMainPage() {
         return mainPage;
@@ -254,7 +150,7 @@ public class Passport {
                 '}';
     }
 
-    @Override
+        @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

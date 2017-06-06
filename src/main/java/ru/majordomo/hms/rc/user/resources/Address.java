@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.Range;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,21 +26,21 @@ public class Address {
             PersonEntrepreneurChecks.class,
             PersonEntrepreneurForeignChecks.class
     })
-    @Range.List(
+    @Length.List(
             {
-                    @Range(min = 6, max = 6, groups = {
+                    @Length(min = 6, max = 6, groups = {
                             PersonIndividualChecks.class,
                             PersonCompanyChecks.class,
                             PersonEntrepreneurChecks.class
                     }),
-                    @Range(min = 4, max = 6, groups = {
+                    @Length(min = 4, max = 6, groups = {
                             PersonIndividualForeignChecks.class,
                             PersonCompanyForeignChecks.class,
                             PersonEntrepreneurForeignChecks.class
                     })
             }
     )
-    private Long zip;
+    private String zip;
 
     @NotBlank(groups = {
             PersonIndividualChecks.class,
@@ -110,7 +109,7 @@ public class Address {
     public Address() {
     }
 
-    public Address(Long zip, String street, String city) {
+    public Address(String zip, String street, String city) {
         this.zip = zip;
         this.street = street;
         this.city = city;
@@ -149,11 +148,11 @@ public class Address {
         }
     }
 
-    public Long getZip() {
+    public String getZip() {
         return zip;
     }
 
-    public void setZip(Long zip) {
+    public void setZip(String zip) {
         this.zip = zip;
     }
 
@@ -197,11 +196,11 @@ public class Address {
         return Objects.hashCode(zip, street, city);
     }
 
-    public static Long findPostalIndexInAddressString(String address) {
+    public static String findPostalIndexInAddressString(String address) {
         String postalIndexPattern = "\\d{4,}";
         Pattern pattern = Pattern.compile(postalIndexPattern);
         Matcher matcher = pattern.matcher(address);
 
-        return matcher.find() ? Long.valueOf(matcher.group()) : null;
+        return matcher.find() ? matcher.group() : null;
     }
 }

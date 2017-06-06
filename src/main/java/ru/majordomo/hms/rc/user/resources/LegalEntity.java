@@ -14,20 +14,6 @@ import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignC
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
 
 public class LegalEntity {
-    @Length(max = 64, groups = {PersonCompanyChecks.class})
-    @Pattern(regexp = "(?ui)(^[а-яё -]+$)", groups = {PersonCompanyChecks.class})
-    private String orgForm;
-
-    @NotBlank(groups = {PersonCompanyChecks.class})
-    @Length(min = 1, max = 255, groups = {PersonCompanyChecks.class})
-    @Pattern.List(
-            {
-                    @Pattern(regexp = "(?ui)(^[a-zа-яё0-9№\\/\\,\\.\\+ !-]+$)", groups = {PersonCompanyChecks.class}),
-                    @Pattern(regexp = "(?ui)(^([а-яё0-9'\\/\\,\\.\\+ -]+)$|^([a-z0-9\\/\\,\\.\\+ -]+)$)", groups = {PersonCompanyForeignChecks.class})
-            }
-    )
-    private String orgName;
-
     @NotBlank(groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
     @Length.List(
             {
@@ -79,8 +65,6 @@ public class LegalEntity {
     @Pattern(regexp = "(^[\\d]+$)", groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class})
     private String bankAccount;
 
-    private String directorName;
-
     @NotNull(groups = {PersonCompanyChecks.class})
     @Length(min = 2, max = 64, groups = {PersonCompanyChecks.class, PersonCompanyForeignChecks.class})
     @Pattern.List(
@@ -109,22 +93,6 @@ public class LegalEntity {
             }
     )
     private String directorMiddlename;
-
-    public String getOrgForm() {
-        return orgForm;
-    }
-
-    public void setOrgForm(String orgForm) {
-        this.orgForm = orgForm;
-    }
-
-    public String getOrgName() {
-        return orgName;
-    }
-
-    public void setOrgName(String orgName) {
-        this.orgName = orgName;
-    }
 
     public Address getAddress() {
         return address;
@@ -206,14 +174,6 @@ public class LegalEntity {
         this.bankAccount = bankAccount;
     }
 
-    public String getDirectorName() {
-        return directorName;
-    }
-
-    public void setDirectorName(String directorName) {
-        this.directorName = directorName;
-    }
-
     public String getDirectorFirstname() {
         return directorFirstname;
     }
@@ -246,12 +206,18 @@ public class LegalEntity {
                 ", kpp='" + kpp + '\'' +
                 ", ogrn='" + ogrn + '\'' +
                 ", okvedCodes='" + okvedCodes + '\'' +
-                ", address='" + address + '\'' +
-                ", directorName='" + directorName + '\'' +
+                ", address=" + address +
+                ", bankName='" + bankName + '\'' +
+                ", bik='" + bik + '\'' +
+                ", correspondentAccount='" + correspondentAccount + '\'' +
+                ", bankAccount='" + bankAccount + '\'' +
+                ", directorFirstname='" + directorFirstname + '\'' +
+                ", directorLastname='" + directorLastname + '\'' +
+                ", directorMiddlename='" + directorMiddlename + '\'' +
                 '}';
     }
 
-    @Override
+        @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -267,6 +233,4 @@ public class LegalEntity {
     public int hashCode() {
         return Objects.hash(inn, okpo, kpp, ogrn, okvedCodes);
     }
-
-
 }
