@@ -18,36 +18,111 @@ import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualCheck
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualForeignChecks;
 
 public class Passport {
-    @NotBlank(groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
-    @Length(min = 10, max = 255, groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
-    @Pattern(regexp = "(?ui)(^([a-zа-яё0-9\\,\\.\\/ -]+)$)", groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class})
+    @NotBlank(
+            groups = {
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Документ' обязательно для заполнения"
+    )
+    @Length(
+            min = 10,
+            max = 255,
+            groups = {
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Документ' должно содержать от {min} до {max} символов"
+    )
+    @Pattern(
+            regexp = "(?ui)(^([a-zа-яё0-9\\,\\.\\/ -]+)$)",
+            groups = {
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "В поле 'Документ' разрешены только символы русского и латинского алфавита, цифры, а также ',', '.', '/' и '-'"
+    )
     private String document;
 
-    @NotBlank(groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
-    @Length(min = 10, max = 10, groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
-    @Pattern(regexp = "(^[0-9]+$)", groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
+    @NotBlank(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            },
+            message = "Поле 'Номер паспорта' обязательно для заполнения"
+    )
+    @Length(
+            min = 10,
+            max = 10,
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            },
+            message = "Поле 'Номер паспорта' должно содержать ровно {max} символов"
+    )
+    @Pattern(
+            regexp = "(^[0-9]+$)",
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            },
+            message = "В поле 'Номер паспорта' разрешены только цифры"
+    )
     private String number;
 
-    @NotBlank(groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
-    @Length(min = 10, max = 200, groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
-    @Pattern(regexp = "(?ui)(^[а-яё№\\(\\)\\d\\.\\,\\/ -]+$)", groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
+    @NotBlank(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            },
+            message = "Поле 'Паспорт выдан' обязательно для заполнения"
+    )
+    @Length(
+            min = 10,
+            max = 200,
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            },
+            message = "Поле 'Паспорт выдан' должно содержать от {min} до {max} символов"
+    )
+    @Pattern(
+            regexp = "(?ui)(^[а-яё№\\(\\)\\d\\.\\,\\/ -]+$)",
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            },
+            message = "В поле 'Паспорт выдан' разрешены только символы русского алфавита, цифры, а также '№', '(', ')', ',', '.', '/' и '-'"
+    )
     private String issuedOrg;
 
-    @NotNull(groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class})
+    @NotNull(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            },
+            message = "Поле 'Дата выдачи паспорта' обязательно для заполнения"
+    )
     private LocalDate issuedDate;
 
-    @NotNull(groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
-    @LocalDatePast(groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
+    @NotNull(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Дата рождения' обязательно для заполнения"
+    )
+    @LocalDatePast(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Дата рождения' должно быть ранее текущей даты"
+    )
     private LocalDate birthday;
 
     private String mainPage;

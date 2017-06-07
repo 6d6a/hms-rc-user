@@ -74,12 +74,15 @@ public class Person extends Resource {
     private String nicHandle;
     private List<String> linkedAccountIds = new ArrayList<>();
 
-    @NotBlank(groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
+    @NotBlank(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Имя' обязательно для заполнения"
+    )
     @Length(
             min = 2,
             max = 64,
@@ -88,86 +91,149 @@ public class Person extends Resource {
                     PersonIndividualForeignChecks.class,
                     PersonEntrepreneurChecks.class,
                     PersonEntrepreneurForeignChecks.class
-            }
+            },
+            message = "Поле 'Имя' должно содержать от {min} до {max} символов"
     )
     @Pattern.List(
             {
                     @Pattern(
                             regexp = "(?ui)(^[а-яё]+$)",
-                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class},
+                            message = "В поле 'Имя' разрешены только символы русского алфавита"
                     ),
                     @Pattern(
                             regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
-                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class},
+                            message = "В поле 'Имя' разрешены символы только русского или только латинского алфавита"
                     )
             }
     )
     private String firstname;
 
-    @NotBlank(groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
-    @Length(min = 2, max = 64, groups = {
-            PersonIndividualChecks.class,
-            PersonIndividualForeignChecks.class,
-            PersonEntrepreneurChecks.class,
-            PersonEntrepreneurForeignChecks.class
-    })
+    @NotBlank(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Фамилия' обязательно для заполнения"
+    )
+    @Length(
+            min = 2,
+            max = 64,
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Фамилия' должно содержать от {min} до {max} символов"
+    )
     @Pattern.List(
             {
                     @Pattern(
                             regexp = "(?ui)(^[а-яё-]+$)",
-                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class},
+                            message = "В поле 'Фамилия' разрешены только символы русского алфавита"
                     ),
                     @Pattern(
                             regexp = "(?ui)(^([а-яё-]+)$|^([a-z-]+)$)",
-                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class}
+                            groups = {PersonIndividualForeignChecks.class, PersonEntrepreneurForeignChecks.class},
+                            message = "В поле 'Фамилия' разрешены символы только русского или только латинского алфавита и дефис"
                     )
             }
     )
     private String lastname;
 
-    @NotBlank(groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
+    @NotBlank(
+            groups = {
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
+            message = "Поле 'Отчество' обязательно для заполнения"
+    )
     @Length.List(
             {
-                    @Length(max = 64, groups = {
-                            PersonIndividualChecks.class,
-                            PersonIndividualForeignChecks.class
-                    }),
-                    @Length(min = 2, max = 64, groups = {PersonEntrepreneurChecks.class, PersonEntrepreneurForeignChecks.class})
+                    @Length(
+                            max = 64,
+                            groups = {
+                                    PersonIndividualChecks.class,
+                                    PersonIndividualForeignChecks.class
+                            },
+                            message = "Поле 'Отчество' должно содержать максимум {max} символа"
+                    ),
+                    @Length(
+                            min = 2,
+                            max = 64,
+                            groups = {
+                                    PersonEntrepreneurChecks.class,
+                                    PersonEntrepreneurForeignChecks.class
+                            },
+                            message = "Поле 'Отчество' должно содержать от {min} до {max} символов"
+                    )
             }
     )
     @Pattern.List(
             {
                     @Pattern(
+                            regexp = "(?ui)(^[а-яё]+$|^$)",
+                            groups = {PersonIndividualChecks.class},
+                            message = "В поле 'Отчество' разрешены только символы русского алфавита"
+                    ),
+                    @Pattern(
                             regexp = "(?ui)(^[а-яё]+$)",
-                            groups = {PersonIndividualChecks.class, PersonEntrepreneurChecks.class}
+                            groups = {PersonEntrepreneurChecks.class},
+                            message = "В поле 'Отчество' разрешены только символы русского алфавита"
                     ),
                     @Pattern(
                             regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$)",
-                            groups = {PersonEntrepreneurForeignChecks.class}
+                            groups = {PersonEntrepreneurForeignChecks.class},
+                            message = "В поле 'Отчество' разрешены символы только русского или только латинского алфавита"
                     ),
                     @Pattern(
                             regexp = "(?ui)(^([а-яё]+)$|^([a-z]+)$|^$)",
-                            groups = {PersonIndividualForeignChecks.class}
+                            groups = {PersonIndividualForeignChecks.class},
+                            message = "В поле 'Отчество' разрешены символы только русского или только латинского алфавита"
                     )
             }
     )
     private String middlename;
 
-    @Length(max = 64, groups = {PersonCompanyChecks.class})
-    @Pattern(regexp = "(?ui)(^[а-яё -]+$)", groups = {PersonCompanyChecks.class})
+    @Length(
+            max = 64,
+            groups = {PersonCompanyChecks.class},
+            message = "Поле 'Организационно-правовая форма компании' должно содержать максимум {max} символа"
+    )
+    @Pattern(
+            regexp = "(?ui)(^[а-яё -]+$|^$)",
+            groups = {PersonCompanyChecks.class},
+            message = "В поле 'Организационно-правовая форма компании' разрешены только символы русского алфавита"
+    )
     private String orgForm;
 
-    @NotBlank(groups = {PersonCompanyChecks.class})
-    @Length(min = 1, max = 255, groups = {PersonCompanyChecks.class})
+    @NotBlank(
+            groups = {PersonCompanyChecks.class},
+            message = "Поле 'Название компании' обязательно для заполнения"
+    )
+    @Length(
+            min = 1,
+            max = 255,
+            groups = {PersonCompanyChecks.class},
+            message = "Поле 'Название компании' должно содержать от {min} до {max} символов"
+    )
     @Pattern.List(
             {
-                    @Pattern(regexp = "(?ui)(^[a-zа-яё0-9№\\/\\,\\.\\+ !-]+$)", groups = {PersonCompanyChecks.class}),
-                    @Pattern(regexp = "(?ui)(^([а-яё0-9'\\/\\,\\.\\+ -]+)$|^([a-z0-9\\/\\,\\.\\+ -]+)$)", groups = {PersonCompanyForeignChecks.class})
+                    @Pattern(
+                            regexp = "(?ui)(^[a-zа-яё0-9№\\/\\,\\.\\+ !-]+$)",
+                            groups = {PersonCompanyChecks.class},
+                            message = "В поле 'Название компании' разрешены символы русского и латинского алфавита, а также '№', '/', ',', '.', '+', '!' и '-'"
+                    ),
+                    @Pattern(
+                            regexp = "(?ui)(^([а-яё0-9'\\/\\,\\.\\+ -]+)$|^([a-z0-9\\/\\,\\.\\+ -]+)$)",
+                            groups = {PersonCompanyForeignChecks.class},
+                            message = "В поле 'Название компании' разрешены символы только русского или только латинского алфавита, а также '/', ',', '.', '+' и '-'"
+                    )
             }
     )
     private String orgName;
