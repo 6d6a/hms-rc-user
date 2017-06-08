@@ -168,6 +168,9 @@ public class ResourceGenerator {
         legalEntity.setOgrn("781401001");
         legalEntity.setOkvedCodes("64.2, 72.20, 72.40, 72.60, 74.40");
         legalEntity.setAddress(Address.fromString("Санкт-Петербург, Торфяная дор. 7Ф оф. 1320, 190000"));
+        legalEntity.setDirectorFirstname("Директор");
+        legalEntity.setDirectorLastname("Директоров");
+        legalEntity.setDirectorMiddlename("Директорович");
 
         return legalEntity;
     }
@@ -175,6 +178,8 @@ public class ResourceGenerator {
     public static LegalEntity generateLegalEntityCompanyForeign() {
         LegalEntity legalEntity = new LegalEntity();
         legalEntity.setAddress(Address.fromString("New-York, George Washington street. 14, 111111"));
+        legalEntity.setDirectorFirstname("Директор");
+        legalEntity.setDirectorLastname("Директоров");
 
         return legalEntity;
     }
