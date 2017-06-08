@@ -72,6 +72,10 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             preValidate(person);
             validate(person);
 
+            if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
+                createPersonInDomainRegistrar(person);
+            }
+
             store(person);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
@@ -81,6 +85,16 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     Person createPersonRegistrant(Person person) {
+        preValidate(person);
+        validate(person);
+
+        createPersonInDomainRegistrar(person);
+
+        store(person);
+        return person;
+    }
+
+    private void createPersonInDomainRegistrar(Person person) {
         try {
             ResponseEntity responseEntity = domainRegistrarClient.createPerson(person);
             String location = responseEntity.getHeaders().getLocation().getPath();
@@ -106,10 +120,6 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             logger.debug("Ошибка при создании персоны: " + errorMessage);
             throw new ParameterValidateException(errorMessage);
         }
-        preValidate(person);
-        validate(person);
-        store(person);
-        return person;
     }
 
     @Override
@@ -202,11 +212,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         preValidate(person);
         validate(person);
 
-//        try {
-//            domainRegistrarClient.updatePerson(person.getNicHandle(), person);
-//        } catch (Exception e) {
-//            logger.error("Не удалось обновить персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
-//        }
+        if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
+            createPersonInDomainRegistrar(person);
+        }
 
         store(person);
 
