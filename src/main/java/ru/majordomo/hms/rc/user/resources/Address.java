@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignLegalAddressChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyLegalAddressChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurForeignChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualChecks;
@@ -23,7 +25,9 @@ public class Address {
                     PersonCompanyChecks.class,
                     PersonCompanyForeignChecks.class,
                     PersonEntrepreneurChecks.class,
-                    PersonEntrepreneurForeignChecks.class
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
             },
             message = "Поле 'Индекс' обязательно для заполнения"
     )
@@ -35,7 +39,8 @@ public class Address {
                             groups = {
                                     PersonIndividualChecks.class,
                                     PersonCompanyChecks.class,
-                                    PersonEntrepreneurChecks.class
+                                    PersonEntrepreneurChecks.class,
+                                    PersonCompanyLegalAddressChecks.class
                             },
                             message = "Поле 'Индекс' должно содержать ровно {max} символов"
                     ),
@@ -45,7 +50,8 @@ public class Address {
                             groups = {
                                     PersonIndividualForeignChecks.class,
                                     PersonCompanyForeignChecks.class,
-                                    PersonEntrepreneurForeignChecks.class
+                                    PersonEntrepreneurForeignChecks.class,
+                                    PersonCompanyForeignLegalAddressChecks.class
                             },
                             message = "Поле 'Индекс' должно содержать от {min} до {max} символов"
                     )
@@ -59,7 +65,9 @@ public class Address {
                     PersonCompanyChecks.class,
                     PersonCompanyForeignChecks.class,
                     PersonEntrepreneurChecks.class,
-                    PersonEntrepreneurForeignChecks.class
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
             },
             message = "В поле 'Индекс' разрешены только цифры"
     )
@@ -72,7 +80,9 @@ public class Address {
                     PersonCompanyChecks.class,
                     PersonCompanyForeignChecks.class,
                     PersonEntrepreneurChecks.class,
-                    PersonEntrepreneurForeignChecks.class
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
             },
             message = "Поле 'Адрес' обязательно для заполнения"
     )
@@ -85,7 +95,9 @@ public class Address {
                     PersonCompanyChecks.class,
                     PersonCompanyForeignChecks.class,
                     PersonEntrepreneurChecks.class,
-                    PersonEntrepreneurForeignChecks.class
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
             },
             message = "Поле 'Адрес' должно содержать от {min} до {max} символов"
     )
@@ -96,7 +108,8 @@ public class Address {
                             groups = {
                                     PersonIndividualChecks.class,
                                     PersonCompanyChecks.class,
-                                    PersonEntrepreneurChecks.class
+                                    PersonEntrepreneurChecks.class,
+                                    PersonCompanyLegalAddressChecks.class
                             },
                             message = "В поле 'Адрес' разрешены только символы русского алфавита, цифры, ',', '.', '/' и '-'"
                     ),
@@ -105,7 +118,8 @@ public class Address {
                             groups = {
                                     PersonIndividualForeignChecks.class,
                                     PersonCompanyForeignChecks.class,
-                                    PersonEntrepreneurForeignChecks.class
+                                    PersonEntrepreneurForeignChecks.class,
+                                    PersonCompanyForeignLegalAddressChecks.class
                             },
                             message = "В поле 'Адрес' разрешены символы только русского или только латинского алфавита, цифры, ',', '.', '/' и '-'"
                     )
@@ -120,7 +134,9 @@ public class Address {
                     PersonCompanyChecks.class,
                     PersonCompanyForeignChecks.class,
                     PersonEntrepreneurChecks.class,
-                    PersonEntrepreneurForeignChecks.class
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
             },
             message = "Поле 'Город' обязательно для заполнения"
     )
@@ -133,7 +149,9 @@ public class Address {
                     PersonCompanyChecks.class,
                     PersonCompanyForeignChecks.class,
                     PersonEntrepreneurChecks.class,
-                    PersonEntrepreneurForeignChecks.class
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
             },
             message = "Поле 'Город' должно содержать от {min} до {max} символов"
     )
@@ -144,7 +162,8 @@ public class Address {
                             groups = {
                                     PersonIndividualChecks.class,
                                     PersonCompanyChecks.class,
-                                    PersonEntrepreneurChecks.class
+                                    PersonEntrepreneurChecks.class,
+                                    PersonCompanyLegalAddressChecks.class
                             },
                             message = "В поле 'Адрес' разрешены только символы русского алфавита и '-'"
                     ),
@@ -153,7 +172,8 @@ public class Address {
                             groups = {
                                     PersonIndividualForeignChecks.class,
                                     PersonCompanyForeignChecks.class,
-                                    PersonEntrepreneurForeignChecks.class
+                                    PersonEntrepreneurForeignChecks.class,
+                                    PersonCompanyForeignLegalAddressChecks.class
                             },
                             message = "В поле 'Адрес' разрешены символы только русского или только латинского алфавита и '-'"
                     )

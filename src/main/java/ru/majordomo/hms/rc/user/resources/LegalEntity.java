@@ -6,10 +6,14 @@ import org.hibernate.validator.constraints.NotBlank;
 import java.util.Objects;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.groups.ConvertGroup;
 
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignLegalAddressChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyLegalAddressChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
 
 public class LegalEntity {
@@ -89,6 +93,19 @@ public class LegalEntity {
     private String okvedCodes;
 
     @Valid
+    @NotNull(
+            message = "Юридический адрес должен быть заполнен",
+            groups = {
+                    PersonCompanyChecks.class,
+                    PersonEntrepreneurChecks.class
+            }
+    )
+    @ConvertGroup.List(
+            {
+                    @ConvertGroup(from = PersonCompanyChecks.class, to = PersonCompanyLegalAddressChecks.class),
+                    @ConvertGroup(from = PersonCompanyForeignChecks.class, to = PersonCompanyForeignLegalAddressChecks.class)
+            }
+    )
     private Address address;
 
     @Length(
