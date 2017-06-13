@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Pattern;
 
 import ru.majordomo.hms.rc.user.resources.validation.LocalDatePast;
@@ -42,6 +43,13 @@ public class Passport {
             },
             message = "В поле 'Документ' разрешены только символы русского и латинского алфавита, цифры, а также ',', '.', '/' и '-'"
     )
+    @Null(
+            message = "Поле 'Документ' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class
+            }
+    )
     private String document;
 
     @NotBlank(
@@ -67,6 +75,13 @@ public class Passport {
                     PersonEntrepreneurChecks.class
             },
             message = "В поле 'Номер паспорта' разрешены только цифры"
+    )
+    @Null(
+            message = "Поле 'Номер паспорта' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            }
     )
     private String number;
 
@@ -94,6 +109,13 @@ public class Passport {
             },
             message = "В поле 'Паспорт выдан' разрешены только символы русского алфавита, цифры, а также '№', '(', ')', ',', '.', '/' и '-'"
     )
+    @Null(
+            message = "Поле 'Паспорт выдан' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            }
+    )
     private String issuedOrg;
 
     @NotNull(
@@ -102,6 +124,13 @@ public class Passport {
                     PersonEntrepreneurChecks.class
             },
             message = "Поле 'Дата выдачи паспорта' обязательно для заполнения"
+    )
+    @Null(
+            message = "Поле 'Дата выдачи паспорта' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            }
     )
     private LocalDate issuedDate;
 

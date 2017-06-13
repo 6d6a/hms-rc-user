@@ -163,10 +163,8 @@ public class ResourceGenerator {
     public static LegalEntity generateLegalEntityCompany() {
         LegalEntity legalEntity = new LegalEntity();
         legalEntity.setInn("7814522538");
-        legalEntity.setOkpo("30727716");
         legalEntity.setKpp("781401001");
         legalEntity.setOgrn("781401001");
-        legalEntity.setOkvedCodes("64.2, 72.20, 72.40, 72.60, 74.40");
         legalEntity.setAddress(Address.fromString("Санкт-Петербург, Торфяная дор. 7Ф оф. 1320, 190000"));
         legalEntity.setDirectorFirstname("Директор");
         legalEntity.setDirectorLastname("Директоров");

@@ -3,7 +3,6 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.mysql.management.util.Str;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
@@ -13,10 +12,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Pattern;
 
 import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
@@ -55,6 +54,13 @@ public class Person extends Resource {
                     PersonEntrepreneurForeignChecks.class
             }
     )
+    @Null(
+            message = "Паспортные данные нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class
+            }
+    )
     private Passport passport;
 
     @Valid
@@ -64,6 +70,14 @@ public class Person extends Resource {
                     PersonCompanyChecks.class,
                     PersonEntrepreneurChecks.class,
                     PersonCompanyForeignChecks.class
+            }
+    )
+    @Null(
+            message = "Реквизиты нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
             }
     )
     private LegalEntity legalEntity;
@@ -398,6 +412,13 @@ public class Person extends Resource {
     }
 
     public String getOrgForm() {
+        if (orgForm == null) {
+            String fullName = getName();
+            if (fullName != null && !fullName.equals("")) {
+                String[] splittedFullName = fullName.split(" ", 2);
+                return splittedFullName[0];
+            }
+        }
         return orgForm;
     }
 
@@ -406,6 +427,18 @@ public class Person extends Resource {
     }
 
     public String getOrgName() {
+        if (orgName == null) {
+            String fullName = getName();
+            if (fullName != null && !fullName.equals("")) {
+                String[] splittedFullName = fullName.split(" ", 2);
+                if (splittedFullName.length == 2) {
+                    return splittedFullName[1];
+                } else {
+                    return splittedFullName[0];
+                }
+            }
+        }
+
         return orgName;
     }
 

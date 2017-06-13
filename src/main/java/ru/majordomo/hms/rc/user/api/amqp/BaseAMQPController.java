@@ -81,7 +81,7 @@ class BaseAMQPController {
             resource = governor.create(serviceMessage);
             success = true;
         } catch (ConstraintViolationException e) {
-            errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
+            errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(". "));
             logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
                     " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                     " Создание ресурса " + resourceType + " не удалось: " + errorMessage);
@@ -140,7 +140,7 @@ class BaseAMQPController {
             resource = governor.update(serviceMessage);
             success = true;
         } catch (ConstraintViolationException e) {
-            errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
+            errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(". "));
             logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
                     " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                     " Обновление ресурса " + resourceType + " не удалось: " + errorMessage);

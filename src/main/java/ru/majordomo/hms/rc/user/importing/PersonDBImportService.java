@@ -443,8 +443,6 @@ public class PersonDBImportService implements ResourceDBImportService {
         legalEntity.setInn(rs.getString("inn"));
         legalEntity.setKpp(rs.getString("kpp"));
         legalEntity.setOgrn(rs.getString("ogrn"));
-        legalEntity.setOkpo(rs.getString("okpo"));
-        legalEntity.setOkvedCodes(rs.getString("okved"));
 
         String bankRekv = rs.getString("bank_rekv");
         String bankName = rs.getString("bank_name");

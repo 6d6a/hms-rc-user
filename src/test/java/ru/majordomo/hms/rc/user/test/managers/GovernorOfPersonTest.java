@@ -223,8 +223,8 @@ public class GovernorOfPersonTest {
         String country = "NL";
         Map<String, String> newPassport = new HashMap<>();
         newPassport.put("address", "Очень странный дом на горе");
-        newPassport.put("issuedOrg", "Google inc.");
-        newPassport.put("number", "");
+        newPassport.put("issuedOrg", null);
+        newPassport.put("number", null);
         newPassport.put("document", "passport 4545454545");
         newPassport.put("birthday", "1990-05-20");
 

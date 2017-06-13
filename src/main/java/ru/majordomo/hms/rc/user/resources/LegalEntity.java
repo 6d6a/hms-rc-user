@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Pattern;
 import javax.validation.groups.ConvertGroup;
 
@@ -15,6 +16,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignC
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignLegalAddressChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyLegalAddressChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurForeignChecks;
 
 public class LegalEntity {
     @NotBlank(
@@ -42,9 +44,13 @@ public class LegalEntity {
             groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class},
             message = "В поле 'ИНН' разрешены только цифры"
     )
+    @Null(
+            message = "Поле 'ИНН' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class
+            }
+    )
     private String inn;
-
-    private String okpo;
 
     @NotBlank(
             groups = {PersonCompanyChecks.class},
@@ -60,6 +66,13 @@ public class LegalEntity {
             regexp = "(^[\\d]+$)",
             groups = {PersonCompanyChecks.class},
             message = "В поле 'КПП' разрешены только цифры"
+    )
+    @Null(
+            message = "Поле 'КПП' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonEntrepreneurChecks.class
+            }
     )
     private String kpp;
 
@@ -88,9 +101,13 @@ public class LegalEntity {
             groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class},
             message = "В поле 'ОГРН' разрешены только цифры"
     )
+    @Null(
+            message = "Поле 'ОГРН' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class
+            }
+    )
     private String ogrn;
-
-    private String okvedCodes;
 
     @Valid
     @NotNull(
@@ -106,6 +123,12 @@ public class LegalEntity {
                     @ConvertGroup(from = PersonCompanyForeignChecks.class, to = PersonCompanyForeignLegalAddressChecks.class)
             }
     )
+    @Null(
+            message = "Поле 'Юридический адрес' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class
+            }
+    )
     private Address address;
 
     @Length(
@@ -118,6 +141,13 @@ public class LegalEntity {
             groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class},
             message = "В поле 'Наименование банка' разрешены символы только русского алфавита или " +
                     "только латинского алфавита, цифры, а также '№', '#', '(', ')', '\"', ',', '.' и '-'"
+    )
+    @Null(
+            message = "Поле 'Наименование банка' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyForeignChecks.class
+            }
     )
     private String bankName;
 
@@ -132,6 +162,13 @@ public class LegalEntity {
             groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class},
             message = "В поле 'БИК' разрешены только цифры"
     )
+    @Null(
+            message = "Поле 'БИК' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyForeignChecks.class
+            }
+    )
     private String bik;
 
     @Length(
@@ -145,6 +182,13 @@ public class LegalEntity {
             groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class},
             message = "В поле 'Кор. счет' разрешены только цифры"
     )
+    @Null(
+            message = "Поле 'Кор. счет' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyForeignChecks.class
+            }
+    )
     private String correspondentAccount;
 
     @Length(
@@ -157,6 +201,13 @@ public class LegalEntity {
             regexp = "(^[\\d]+$)",
             groups = {PersonCompanyChecks.class, PersonEntrepreneurChecks.class},
             message = "В поле 'Счет' разрешены только цифры"
+    )
+    @Null(
+            message = "Поле 'Счет' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyForeignChecks.class
+            }
     )
     private String bankAccount;
 
@@ -182,6 +233,13 @@ public class LegalEntity {
                             groups = {PersonCompanyForeignChecks.class},
                             message = "В поле 'Имя директора' разрешены символы только русского алфавита или только латинского алфавита"
                     )
+            }
+    )
+    @Null(
+            message = "Поле 'Имя директора' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonEntrepreneurChecks.class
             }
     )
     private String directorFirstname;
@@ -210,6 +268,13 @@ public class LegalEntity {
                     )
             }
     )
+    @Null(
+            message = "Поле 'Фамилия директора' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonEntrepreneurChecks.class
+            }
+    )
     private String directorLastname;
 
     @Length(
@@ -231,6 +296,13 @@ public class LegalEntity {
                     )
             }
     )
+    @Null(
+            message = "Поле 'Отчество директора' нельзя заполнять для выбранного типа персоны",
+            groups = {
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonEntrepreneurChecks.class
+            }
+    )
     private String directorMiddlename;
 
     public Address getAddress() {
@@ -249,14 +321,6 @@ public class LegalEntity {
         this.inn = inn;
     }
 
-    public String getOkpo() {
-        return okpo;
-    }
-
-    public void setOkpo(String okpo) {
-        this.okpo = okpo;
-    }
-
     public String getKpp() {
         return kpp;
     }
@@ -271,14 +335,6 @@ public class LegalEntity {
 
     public void setOgrn(String ogrn) {
         this.ogrn = ogrn;
-    }
-
-    public String getOkvedCodes() {
-        return okvedCodes;
-    }
-
-    public void setOkvedCodes(String okvedCodes) {
-        this.okvedCodes = okvedCodes;
     }
 
     public String getBankName() {
@@ -341,10 +397,8 @@ public class LegalEntity {
     public String toString() {
         return "LegalEntity{" +
                 "inn='" + inn + '\'' +
-                ", okpo='" + okpo + '\'' +
                 ", kpp='" + kpp + '\'' +
                 ", ogrn='" + ogrn + '\'' +
-                ", okvedCodes='" + okvedCodes + '\'' +
                 ", address=" + address +
                 ", bankName='" + bankName + '\'' +
                 ", bik='" + bik + '\'' +
@@ -362,14 +416,12 @@ public class LegalEntity {
         if (o == null || getClass() != o.getClass()) return false;
         LegalEntity that = (LegalEntity) o;
         return Objects.equals(inn, that.inn) &&
-                Objects.equals(okpo, that.okpo) &&
                 Objects.equals(kpp, that.kpp) &&
-                Objects.equals(ogrn, that.ogrn) &&
-                Objects.equals(okvedCodes, that.okvedCodes);
+                Objects.equals(ogrn, that.ogrn);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(inn, okpo, kpp, ogrn, okvedCodes);
+        return Objects.hash(inn, kpp, ogrn);
     }
 }

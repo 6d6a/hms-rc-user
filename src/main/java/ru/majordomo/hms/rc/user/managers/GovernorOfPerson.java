@@ -442,10 +442,8 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     public LegalEntity buildLegalEntityFromMap(Map<String, Object> legalEntityMap) {
         LegalEntity legalEntity = new LegalEntity();
         legalEntity.setInn((String) legalEntityMap.get("inn"));
-        legalEntity.setOkpo((String) legalEntityMap.get("okpo"));
         legalEntity.setKpp((String) legalEntityMap.get("kpp"));
         legalEntity.setOgrn((String) legalEntityMap.get("ogrn"));
-        legalEntity.setOkvedCodes((String) legalEntityMap.get("okvedCodes"));
         legalEntity.setBankName((String) legalEntityMap.get("bankName"));
         legalEntity.setBik((String) legalEntityMap.get("bik"));
         legalEntity.setCorrespondentAccount((String) legalEntityMap.get("correspondentAccount"));
