@@ -104,21 +104,21 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String errorReason = e.getMessage();
             logger.debug("Ошибка при создании персоны:" + errorReason);
             String errorContent = errorReason.replaceAll(".*content:", "");
-            String errorMessage;
-            try {
-                StringBuilder errorCollector = new StringBuilder();
-                JsonNode obj = mapper.readTree(errorContent);
-                Iterator<JsonNode> errors = obj.get("errors").elements();
-                while (errors.hasNext()) {
-                    JsonNode error = errors.next();
-                    errorCollector.append(error.get("code").textValue()).append("\n");
-                }
-                errorMessage = errorCollector.toString();
-            } catch (IOException ex) {
-                errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
-            }
-            logger.debug("Ошибка при создании персоны: " + errorMessage);
-            throw new ParameterValidateException(errorMessage);
+//            String errorMessage;
+//            try {
+//                StringBuilder errorCollector = new StringBuilder();
+//                JsonNode obj = mapper.readTree(errorContent);
+//                Iterator<JsonNode> errors = obj.get("errors").elements();
+//                while (errors.hasNext()) {
+//                    JsonNode error = errors.next();
+//                    errorCollector.append(error.get("code").textValue()).append("\n");
+//                }
+//                errorMessage = errorCollector.toString();
+//            } catch (IOException ex) {
+//                errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
+//            }
+            logger.debug("Ошибка при создании персоны: " + errorContent);
+            throw new ParameterValidateException(errorContent);
         }
     }
 
