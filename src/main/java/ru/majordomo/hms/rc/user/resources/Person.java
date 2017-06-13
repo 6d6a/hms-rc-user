@@ -46,9 +46,26 @@ public class Person extends Resource {
     private List<@ValidEmail(groups = PersonChecks.class) String> emailAddresses = new ArrayList<>();
 
     @Valid
+    @NotNull(
+            message = "Паспортные данные должны быть заполнены",
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            }
+    )
     private Passport passport;
 
     @Valid
+    @NotNull(
+            message = "Реквизиты должны быть заполнены",
+            groups = {
+                    PersonCompanyChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonCompanyForeignChecks.class
+            }
+    )
     private LegalEntity legalEntity;
 
     @NotBlank(message = "Страна должна быть указана")
@@ -69,7 +86,7 @@ public class Person extends Resource {
     private String country;
 
     @Valid
-    @NotNull
+    @NotNull(message = "Почтовый адрес должен быть заполнен")
     private Address postalAddress;
 
     private String nicHandle;

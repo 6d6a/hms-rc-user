@@ -102,6 +102,13 @@ public class GovernorOfPersonTest {
     }
 
     @Test(expected = ConstraintViolationException.class)
+    public void createWithoutPostalAddress() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
+        serviceMessage.delParam("postalAddress");
+        governor.create(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
     public void createWithBadEmail() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         serviceMessage.delParam("emailAddresses");
@@ -262,8 +269,10 @@ public class GovernorOfPersonTest {
         String country = "RU";
         Map<String, String> newPassport = new HashMap<>();
 
-        Map<String, String> newLegalEntity = new HashMap<>();
-        newLegalEntity.put("address", "Адский ад, улица Котловая д.2, 198765");
+        Address newLegalAddress = new Address("195001", "улица Шушки, дом Плюшки", "Санкт-Петербург");
+
+        Map<String, Object> newLegalEntity = new HashMap<>();
+        newLegalEntity.put("address", objectMapper.convertValue(newLegalAddress, LinkedHashMap.class));
         newLegalEntity.put("inn", "2323232323");
         newLegalEntity.put("ogrn", "0123456789123");
         newLegalEntity.put("kpp", "012345678");

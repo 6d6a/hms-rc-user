@@ -53,7 +53,14 @@ public class Address {
     )
     @javax.validation.constraints.Pattern(
             regexp = "(^[\\d]+$)",
-            groups = {PersonIndividualChecks.class},
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class
+            },
             message = "В поле 'Индекс' разрешены только цифры"
     )
     private String zip;

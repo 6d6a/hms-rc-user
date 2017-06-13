@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.test.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.bson.types.ObjectId;
 
 import java.util.*;
@@ -11,6 +13,8 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import static ru.majordomo.hms.rc.user.resources.PersonType.INDIVIDUAL;
 
 public class ServiceMessageGenerator {
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
     public ServiceMessage generateWebsiteCreateMessage() {
         return new ServiceMessage();
     }
@@ -30,7 +34,7 @@ public class ServiceMessageGenerator {
         serviceMessage.addParam("emailAddresses", Collections.singletonList("nikita@klimov.us"));
         serviceMessage.addParam("passport", passportToHashMap(person.getPassport()));
         serviceMessage.addParam("country", person.getCountry());
-        serviceMessage.addParam("postalAddress", person.getPostalAddress());
+        serviceMessage.addParam("postalAddress", objectMapper.convertValue(person.getPostalAddress(), LinkedHashMap.class));
 
         return serviceMessage;
     }

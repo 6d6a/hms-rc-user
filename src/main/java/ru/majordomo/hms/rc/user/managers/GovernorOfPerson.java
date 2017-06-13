@@ -194,9 +194,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                         person.setPassport(passport);
                         break;
                     case "legalEntity":
-                        Map<String, String> legalEntityMap = (Map<String, String>) entry.getValue();
+                        Map<String, Object> legalEntityMap = (Map<String, Object>) entry.getValue();
                         LegalEntity legalEntity = null;
-                        if (legalEntityMap != null && !isMapWithEmptyStrings(legalEntityMap)) {
+                        if (legalEntityMap != null && !isObjectsMapWithEmptyStrings(legalEntityMap)) {
                             legalEntity = buildLegalEntityFromMap(legalEntityMap);
                         }
                         person.setLegalEntity(legalEntity);
@@ -230,6 +230,16 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         }
         return true;
     }
+    private boolean isObjectsMapWithEmptyStrings(Map<String, Object> map) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            Object value = entry.getValue();
+            if (value != null && !value.equals("")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     @Override
     public void preDelete(String resourceId) {
@@ -283,7 +293,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             passport = buildPassportFromMap(passportMap);
         }
 
-        Map<String, String> legalEntityMap = (Map<String, String>) serviceMessage.getParam("legalEntity");
+        Map<String, Object> legalEntityMap = (Map<String, Object>) serviceMessage.getParam("legalEntity");
         LegalEntity legalEntity = null;
         if (legalEntityMap != null) {
             legalEntity = buildLegalEntityFromMap(legalEntityMap);
@@ -429,21 +439,29 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         return passport;
     }
 
-    public LegalEntity buildLegalEntityFromMap(Map<String, String> legalEntityMap) {
+    public LegalEntity buildLegalEntityFromMap(Map<String, Object> legalEntityMap) {
         LegalEntity legalEntity = new LegalEntity();
-        legalEntity.setInn(legalEntityMap.get("inn"));
-        legalEntity.setOkpo(legalEntityMap.get("okpo"));
-        legalEntity.setKpp(legalEntityMap.get("kpp"));
-        legalEntity.setOgrn(legalEntityMap.get("ogrn"));
-        legalEntity.setOkvedCodes(legalEntityMap.get("okvedCodes"));
-        legalEntity.setAddress(Address.fromString(legalEntityMap.get("address")));
-        legalEntity.setBankName(legalEntityMap.get("bankName"));
-        legalEntity.setBik(legalEntityMap.get("bik"));
-        legalEntity.setCorrespondentAccount(legalEntityMap.get("correspondentAccount"));
-        legalEntity.setBankAccount(legalEntityMap.get("bankAccount"));
-        legalEntity.setDirectorFirstname(legalEntityMap.get("directorFirstname"));
-        legalEntity.setDirectorLastname(legalEntityMap.get("directorLastname"));
-        legalEntity.setDirectorMiddlename(legalEntityMap.get("directorMiddlename"));
+        legalEntity.setInn((String) legalEntityMap.get("inn"));
+        legalEntity.setOkpo((String) legalEntityMap.get("okpo"));
+        legalEntity.setKpp((String) legalEntityMap.get("kpp"));
+        legalEntity.setOgrn((String) legalEntityMap.get("ogrn"));
+        legalEntity.setOkvedCodes((String) legalEntityMap.get("okvedCodes"));
+        legalEntity.setBankName((String) legalEntityMap.get("bankName"));
+        legalEntity.setBik((String) legalEntityMap.get("bik"));
+        legalEntity.setCorrespondentAccount((String) legalEntityMap.get("correspondentAccount"));
+        legalEntity.setBankAccount((String) legalEntityMap.get("bankAccount"));
+        legalEntity.setDirectorFirstname((String) legalEntityMap.get("directorFirstname"));
+        legalEntity.setDirectorLastname((String) legalEntityMap.get("directorLastname"));
+        legalEntity.setDirectorMiddlename((String) legalEntityMap.get("directorMiddlename"));
+
+        Map<String,String> postalAddressMap = (HashMap<String,String>) legalEntityMap.get("address");
+        Address postalAddress = null;
+        if (postalAddressMap != null) {
+            postalAddress = buildAddressFromMap(postalAddressMap);
+        }
+
+        legalEntity.setAddress(postalAddress);
+
         return legalEntity;
     }
 
