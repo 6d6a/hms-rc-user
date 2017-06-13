@@ -237,7 +237,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         keyValue.put("personId", resourceId);
 
         if (governorOfDomain.buildAll(keyValue).size() > 0) {
-            throw new ParameterValidateException("Имеется");
+            throw new ParameterValidateException("Имеются домены, зарегистрированные на данную персону. Удаление персоны невозможно");
         }
     }
 
@@ -264,7 +264,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         setResourceParams(person, serviceMessage, cleaner);
         PersonType type = PersonType.valueOf(cleaner.cleanString((String) serviceMessage.getParam("type")));
         String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
-        Map<String,String> postalAddressMap = (Map<String,String>) serviceMessage.getParam("address");
+        Map<String,String> postalAddressMap = (Map<String,String>) serviceMessage.getParam("postalAddress");
         Address postalAddress = null;
         if (postalAddressMap != null) {
             postalAddress = buildAddressFromMap(postalAddressMap);

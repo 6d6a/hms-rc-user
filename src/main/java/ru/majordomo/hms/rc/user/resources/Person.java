@@ -69,6 +69,7 @@ public class Person extends Resource {
     private String country;
 
     @Valid
+    @NotNull
     private Address postalAddress;
 
     private String nicHandle;
