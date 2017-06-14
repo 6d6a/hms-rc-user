@@ -271,6 +271,22 @@ public class Person extends Resource {
     private String orgName;
 
     public PersonType getType() {
+        if (type == null) {
+            String personType;
+            if (getPassport() != null && getLegalEntity() != null) {
+                personType = "ENTREPRENEUR";
+            } else if (getPassport() == null && getLegalEntity() != null) {
+                personType = "COMPANY";
+            } else {
+                personType = "INDIVIDUAL";
+            }
+            if (getCountry() != null && !getCountry().equals("RU")) {
+                personType = personType + "_FOREIGN";
+            }
+
+            return PersonType.valueOf(personType);
+        }
+
         return type;
     }
 
@@ -388,7 +404,12 @@ public class Person extends Resource {
     }
 
     public String getFirstname() {
-        if (firstname == null) {
+        if (firstname == null &&
+                (getType().equals(PersonType.INDIVIDUAL) ||
+                        getType().equals(PersonType.INDIVIDUAL_FOREIGN) ||
+                        getType().equals(PersonType.ENTREPRENEUR) ||
+                        getType().equals(PersonType.ENTREPRENEUR_FOREIGN))
+                ) {
             String fullName = getName();
             if (fullName != null && !fullName.equals("")) {
                 String[] splittedFullName = fullName.split(" ", 3);
@@ -408,7 +429,11 @@ public class Person extends Resource {
     }
 
     public String getLastname() {
-        if (lastname == null) {
+        if (lastname == null &&
+                (getType().equals(PersonType.INDIVIDUAL) ||
+                        getType().equals(PersonType.INDIVIDUAL_FOREIGN) ||
+                        getType().equals(PersonType.ENTREPRENEUR) ||
+                        getType().equals(PersonType.ENTREPRENEUR_FOREIGN))) {
             String fullName = getName();
             if (fullName != null && !fullName.equals("")) {
                 String[] splittedFullName = fullName.split(" ", 3);
@@ -424,7 +449,11 @@ public class Person extends Resource {
     }
 
     public String getMiddlename() {
-        if (middlename == null) {
+        if (middlename == null &&
+                (getType().equals(PersonType.INDIVIDUAL) ||
+                        getType().equals(PersonType.INDIVIDUAL_FOREIGN) ||
+                        getType().equals(PersonType.ENTREPRENEUR) ||
+                        getType().equals(PersonType.ENTREPRENEUR_FOREIGN))) {
             String fullName = getName();
             if (fullName != null && !fullName.equals("")) {
                 String[] splittedFullName = fullName.split(" ", 3);
@@ -441,7 +470,10 @@ public class Person extends Resource {
     }
 
     public String getOrgForm() {
-        if (orgForm == null) {
+        if (orgForm == null &&
+                (getType().equals(PersonType.COMPANY) ||
+                        getType().equals(PersonType.COMPANY_FOREIGN))
+                ) {
             String fullName = getName();
             if (fullName != null && !fullName.equals("")) {
                 String[] splittedFullName = fullName.split(" ", 2);
@@ -456,7 +488,9 @@ public class Person extends Resource {
     }
 
     public String getOrgName() {
-        if (orgName == null) {
+        if (orgName == null &&
+                (getType().equals(PersonType.COMPANY) ||
+                        getType().equals(PersonType.COMPANY_FOREIGN))) {
             String fullName = getName();
             if (fullName != null && !fullName.equals("")) {
                 String[] splittedFullName = fullName.split(" ", 2);
