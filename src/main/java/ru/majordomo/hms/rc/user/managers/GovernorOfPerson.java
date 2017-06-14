@@ -25,8 +25,10 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.rc.user.resources.PersonType;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
 
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {
@@ -70,6 +72,10 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             preValidate(person);
             validate(person);
 
+            if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
+                createPersonInDomainRegistrar(person);
+            }
+
             store(person);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
@@ -79,6 +85,16 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     Person createPersonRegistrant(Person person) {
+        preValidate(person);
+        validate(person);
+
+        createPersonInDomainRegistrar(person);
+
+        store(person);
+        return person;
+    }
+
+    private void createPersonInDomainRegistrar(Person person) {
         try {
             ResponseEntity responseEntity = domainRegistrarClient.createPerson(person);
             String location = responseEntity.getHeaders().getLocation().getPath();
@@ -88,26 +104,22 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             String errorReason = e.getMessage();
             logger.debug("Ошибка при создании персоны:" + errorReason);
             String errorContent = errorReason.replaceAll(".*content:", "");
-            String errorMessage;
-            try {
-                StringBuilder errorCollector = new StringBuilder();
-                JsonNode obj = mapper.readTree(errorContent);
-                Iterator<JsonNode> errors = obj.get("errors").elements();
-                while (errors.hasNext()) {
-                    JsonNode error = errors.next();
-                    errorCollector.append(error.get("code").textValue()).append("\n");
-                }
-                errorMessage = errorCollector.toString();
-            } catch (IOException ex) {
-                errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
-            }
-            logger.debug("Ошибка при создании персоны: " + errorMessage);
-            throw new ParameterValidateException(errorMessage);
+//            String errorMessage;
+//            try {
+//                StringBuilder errorCollector = new StringBuilder();
+//                JsonNode obj = mapper.readTree(errorContent);
+//                Iterator<JsonNode> errors = obj.get("errors").elements();
+//                while (errors.hasNext()) {
+//                    JsonNode error = errors.next();
+//                    errorCollector.append(error.get("code").textValue()).append("\n");
+//                }
+//                errorMessage = errorCollector.toString();
+//            } catch (IOException ex) {
+//                errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
+//            }
+            logger.debug("Ошибка при создании персоны: " + errorContent);
+            throw new ParameterValidateException(errorContent);
         }
-        preValidate(person);
-        validate(person);
-        store(person);
-        return person;
     }
 
     @Override
@@ -135,6 +147,24 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                 switch (entry.getKey().toString()) {
                     case "name":
                         person.setName(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "firstname":
+                        person.setFirstname(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "lastname":
+                        person.setLastname(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "middlename":
+                        person.setMiddlename(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "orgName":
+                        person.setOrgName(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "orgForm":
+                        person.setOrgForm(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "type":
+                        person.setType(PersonType.valueOf(cleaner.cleanString((String) entry.getValue())));
                         break;
                     case "country":
                         person.setCountry(cleaner.cleanString((String) entry.getValue()));
@@ -164,9 +194,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                         person.setPassport(passport);
                         break;
                     case "legalEntity":
-                        Map<String, String> legalEntityMap = (Map<String, String>) entry.getValue();
+                        Map<String, Object> legalEntityMap = (Map<String, Object>) entry.getValue();
                         LegalEntity legalEntity = null;
-                        if (legalEntityMap != null && !isMapWithEmptyStrings(legalEntityMap)) {
+                        if (legalEntityMap != null && !isObjectsMapWithEmptyStrings(legalEntityMap)) {
                             legalEntity = buildLegalEntityFromMap(legalEntityMap);
                         }
                         person.setLegalEntity(legalEntity);
@@ -182,11 +212,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         preValidate(person);
         validate(person);
 
-//        try {
-//            domainRegistrarClient.updatePerson(person.getNicHandle(), person);
-//        } catch (Exception e) {
-//            logger.error("Не удалось обновить персону с ID " + person.getId() + " в DOMAIN-REGISTRAR");
-//        }
+        if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
+            createPersonInDomainRegistrar(person);
+        }
 
         store(person);
 
@@ -202,6 +230,16 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         }
         return true;
     }
+    private boolean isObjectsMapWithEmptyStrings(Map<String, Object> map) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            Object value = entry.getValue();
+            if (value != null && !value.equals("")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     @Override
     public void preDelete(String resourceId) {
@@ -209,7 +247,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         keyValue.put("personId", resourceId);
 
         if (governorOfDomain.buildAll(keyValue).size() > 0) {
-            throw new ParameterValidateException("Имеется");
+            throw new ParameterValidateException("Имеются домены, зарегистрированные на данную персону. Удаление персоны невозможно");
         }
     }
 
@@ -234,8 +272,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
         Person person = new Person();
         setResourceParams(person, serviceMessage, cleaner);
+        PersonType type = PersonType.valueOf(cleaner.cleanString((String) serviceMessage.getParam("type")));
         String country = cleaner.cleanString((String) serviceMessage.getParam("country"));
-        Map<String,String> postalAddressMap = (Map<String,String>) serviceMessage.getParam("address");
+        Map<String,String> postalAddressMap = (Map<String,String>) serviceMessage.getParam("postalAddress");
         Address postalAddress = null;
         if (postalAddressMap != null) {
             postalAddress = buildAddressFromMap(postalAddressMap);
@@ -254,20 +293,32 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             passport = buildPassportFromMap(passportMap);
         }
 
-        Map<String, String> legalEntityMap = (Map<String, String>) serviceMessage.getParam("legalEntity");
+        Map<String, Object> legalEntityMap = (Map<String, Object>) serviceMessage.getParam("legalEntity");
         LegalEntity legalEntity = null;
         if (legalEntityMap != null) {
             legalEntity = buildLegalEntityFromMap(legalEntityMap);
         }
         String nicHandle = cleaner.cleanString((String) serviceMessage.getParam("nicHandle"));
 
+        String firstname = cleaner.cleanString((String) serviceMessage.getParam("firstname"));
+        String lastname = cleaner.cleanString((String) serviceMessage.getParam("lastname"));
+        String middlename = cleaner.cleanString((String) serviceMessage.getParam("middlename"));
+        String orgName = cleaner.cleanString((String) serviceMessage.getParam("orgName"));
+        String orgForm = cleaner.cleanString((String) serviceMessage.getParam("orgForm"));
+
         person.setPhoneNumbers(phoneNumbers);
         person.setEmailAddresses(emailAddresses);
         person.setPassport(passport);
         person.setLegalEntity(legalEntity);
         person.setCountry(country);
+        person.setType(type);
         person.setPostalAddress(postalAddress);
         person.setNicHandle(nicHandle);
+        person.setFirstname(firstname);
+        person.setLastname(lastname);
+        person.setMiddlename(middlename);
+        person.setOrgName(orgName);
+        person.setOrgForm(orgForm);
 
         logger.debug("Action ID: " + actionId +
                 " Operation Id: " + operationId +
@@ -289,10 +340,15 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
     @Override
     public void validate(Person person) throws ParameterValidateException {
-        Set<ConstraintViolation<Person>> constraintViolations = validator.validate(person, PersonChecks.class);
+        PersonGroupSequenceProvider personGroupSequenceProvider = new PersonGroupSequenceProvider();
+
+        Set<ConstraintViolation<Person>> constraintViolations = validator.validate(
+                person,
+                personGroupSequenceProvider.getValidationGroupsCustom(person).toArray(new Class<?>[]{})
+        );
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("person: " + person + " constraintViolations: " + constraintViolations.toString());
+            logger.error("person: " + person + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -365,7 +421,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
     public Passport buildPassportFromMap(Map<String, String> passportMap) {
         Passport passport = new Passport();
-        passport.setNumber(passportMap.get("number"));
+        if (passportMap.get("number") != null && !passportMap.get("number").equals("")) {
+            passport.setNumber(passportMap.get("number"));
+        }
+        if (passportMap.get("document") != null && !passportMap.get("document").equals("")) {
+            passport.setDocument(passportMap.get("document"));
+        }
         passport.setIssuedOrg(passportMap.get("issuedOrg"));
         if (passportMap.get("issuedDate") != null && !passportMap.get("issuedDate").equals("")) {
             passport.setIssuedDate(passportMap.get("issuedDate"));
@@ -375,30 +436,37 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         }
         passport.setMainPage(passportMap.get("mainPage"));
         passport.setRegisterPage(passportMap.get("registerPage"));
-        passport.setAddress(passportMap.get("address"));
         return passport;
     }
 
-    public LegalEntity buildLegalEntityFromMap(Map<String, String> legalEntityMap) {
+    public LegalEntity buildLegalEntityFromMap(Map<String, Object> legalEntityMap) {
         LegalEntity legalEntity = new LegalEntity();
-        legalEntity.setInn(legalEntityMap.get("inn"));
-        legalEntity.setOkpo(legalEntityMap.get("okpo"));
-        legalEntity.setKpp(legalEntityMap.get("kpp"));
-        legalEntity.setOgrn(legalEntityMap.get("ogrn"));
-        legalEntity.setOkvedCodes(legalEntityMap.get("okvedCodes"));
-        legalEntity.setAddress(legalEntityMap.get("address"));
-        legalEntity.setBankName(legalEntityMap.get("bankName"));
-        legalEntity.setBik(legalEntityMap.get("bik"));
-        legalEntity.setCorrespondentAccount(legalEntityMap.get("correspondentAccount"));
-        legalEntity.setBankAccount(legalEntityMap.get("bankAccount"));
-        legalEntity.setDirectorName(legalEntityMap.get("directorName"));
+        legalEntity.setInn((String) legalEntityMap.get("inn"));
+        legalEntity.setKpp((String) legalEntityMap.get("kpp"));
+        legalEntity.setOgrn((String) legalEntityMap.get("ogrn"));
+        legalEntity.setBankName((String) legalEntityMap.get("bankName"));
+        legalEntity.setBik((String) legalEntityMap.get("bik"));
+        legalEntity.setCorrespondentAccount((String) legalEntityMap.get("correspondentAccount"));
+        legalEntity.setBankAccount((String) legalEntityMap.get("bankAccount"));
+        legalEntity.setDirectorFirstname((String) legalEntityMap.get("directorFirstname"));
+        legalEntity.setDirectorLastname((String) legalEntityMap.get("directorLastname"));
+        legalEntity.setDirectorMiddlename((String) legalEntityMap.get("directorMiddlename"));
+
+        Map<String,String> postalAddressMap = (HashMap<String,String>) legalEntityMap.get("address");
+        Address postalAddress = null;
+        if (postalAddressMap != null) {
+            postalAddress = buildAddressFromMap(postalAddressMap);
+        }
+
+        legalEntity.setAddress(postalAddress);
+
         return legalEntity;
     }
 
     public Address buildAddressFromMap(Map<String,String> addressMap) {
         Address address = new Address();
-        Long zip = Long.valueOf(addressMap.get("zip"));
-        address.setZip(Long.valueOf(zip));
+        String zip = addressMap.get("zip");
+        address.setZip(zip);
         address.setCity(addressMap.get("city"));
         address.setStreet(addressMap.get("street"));
 

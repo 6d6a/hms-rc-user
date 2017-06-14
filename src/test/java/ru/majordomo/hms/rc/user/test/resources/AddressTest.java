@@ -1,8 +1,5 @@
 package ru.majordomo.hms.rc.user.test.resources;
 
-import com.mysql.management.util.Str;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import ru.majordomo.hms.rc.user.resources.Address;
 
@@ -24,7 +21,7 @@ public class AddressTest {
         String rawAddress = "123560, Санкт-Петербург, ул.Пушкина";
         Address address = new Address(rawAddress);
         assertThat(address.getCity(), is("Санкт-Петербург"));
-        assertThat(address.getZip(), is(123560L));
+        assertThat(address.getZip(), is("123560"));
         assertThat(address.getStreet(), is("ул.Пушкина"));
     }
 
@@ -33,7 +30,7 @@ public class AddressTest {
         String rawAddress = "197000, Санкт-Петербург, Невский пр., д. 1, кв. 5";
         Address address = new Address(rawAddress);
         assertThat(address.getCity(), is("Санкт-Петербург"));
-        assertThat(address.getZip(), is(197000L));
+        assertThat(address.getZip(), is("197000"));
         assertThat(address.getStreet(), is("Невский пр., д. 1, кв. 5"));
     }
 
@@ -42,7 +39,7 @@ public class AddressTest {
         String rawAddress = "123560 Санкт-Петербург ул.Пушкина";
         Address address = new Address(rawAddress);
         assertThat(address.getCity(), is("Санкт-Петербург"));
-        assertThat(address.getZip(), is(123560L));
+        assertThat(address.getZip(), is("123560"));
         assertThat(address.getStreet(), is("ул.Пушкина"));
     }
 

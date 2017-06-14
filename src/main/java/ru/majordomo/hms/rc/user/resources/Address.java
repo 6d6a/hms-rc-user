@@ -2,18 +2,193 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.google.common.base.Objects;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyForeignLegalAddressChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonCompanyLegalAddressChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonEntrepreneurForeignChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.PersonIndividualForeignChecks;
+
 public class Address {
-    private Long zip;
+    @NotBlank(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
+            },
+            message = "Поле 'Индекс' обязательно для заполнения"
+    )
+    @Length.List(
+            {
+                    @Length(
+                            min = 6,
+                            max = 6,
+                            groups = {
+                                    PersonIndividualChecks.class,
+                                    PersonCompanyChecks.class,
+                                    PersonEntrepreneurChecks.class,
+                                    PersonCompanyLegalAddressChecks.class
+                            },
+                            message = "Поле 'Индекс' должно содержать ровно {max} символов"
+                    ),
+                    @Length(
+                            min = 4,
+                            max = 6,
+                            groups = {
+                                    PersonIndividualForeignChecks.class,
+                                    PersonCompanyForeignChecks.class,
+                                    PersonEntrepreneurForeignChecks.class,
+                                    PersonCompanyForeignLegalAddressChecks.class
+                            },
+                            message = "Поле 'Индекс' должно содержать от {min} до {max} символов"
+                    )
+            }
+    )
+    @javax.validation.constraints.Pattern(
+            regexp = "(^[\\d]+$)",
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
+            },
+            message = "В поле 'Индекс' разрешены только цифры"
+    )
+    private String zip;
+
+    @NotBlank(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
+            },
+            message = "Поле 'Адрес' обязательно для заполнения"
+    )
+    @Length(
+            min = 3,
+            max = 128,
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
+            },
+            message = "Поле 'Адрес' должно содержать от {min} до {max} символов"
+    )
+    @javax.validation.constraints.Pattern.List(
+            {
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^[а-яё0-9\\,\\.\\/ -]+$)",
+                            groups = {
+                                    PersonIndividualChecks.class,
+                                    PersonCompanyChecks.class,
+                                    PersonEntrepreneurChecks.class,
+                                    PersonCompanyLegalAddressChecks.class
+                            },
+                            message = "В поле 'Адрес' разрешены только символы русского алфавита, цифры, ',', '.', '/' и '-'"
+                    ),
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^([а-яё0-9\\,\\.\\/ -]+)$|^([a-z0-9\\,\\.\\/ -]+)$)",
+                            groups = {
+                                    PersonIndividualForeignChecks.class,
+                                    PersonCompanyForeignChecks.class,
+                                    PersonEntrepreneurForeignChecks.class,
+                                    PersonCompanyForeignLegalAddressChecks.class
+                            },
+                            message = "В поле 'Адрес' разрешены символы только русского или только латинского алфавита, цифры, ',', '.', '/' и '-'"
+                    )
+            }
+    )
     private String street;
+
+    @NotBlank(
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
+            },
+            message = "Поле 'Город' обязательно для заполнения"
+    )
+    @Length(
+            min = 3,
+            max = 64,
+            groups = {
+                    PersonIndividualChecks.class,
+                    PersonIndividualForeignChecks.class,
+                    PersonCompanyChecks.class,
+                    PersonCompanyForeignChecks.class,
+                    PersonEntrepreneurChecks.class,
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonCompanyLegalAddressChecks.class,
+                    PersonCompanyForeignLegalAddressChecks.class
+            },
+            message = "Поле 'Город' должно содержать от {min} до {max} символов"
+    )
+    @javax.validation.constraints.Pattern.List(
+            {
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^[а-яё -]+$)",
+                            groups = {
+                                    PersonIndividualChecks.class,
+                                    PersonCompanyChecks.class,
+                                    PersonEntrepreneurChecks.class,
+                                    PersonCompanyLegalAddressChecks.class
+                            },
+                            message = "В поле 'Адрес' разрешены только символы русского алфавита и '-'"
+                    ),
+                    @javax.validation.constraints.Pattern(
+                            regexp = "(?ui)(^([а-яё -]+)$|^([a-z- ]+)$)",
+                            groups = {
+                                    PersonIndividualForeignChecks.class,
+                                    PersonCompanyForeignChecks.class,
+                                    PersonEntrepreneurForeignChecks.class,
+                                    PersonCompanyForeignLegalAddressChecks.class
+                            },
+                            message = "В поле 'Адрес' разрешены символы только русского или только латинского алфавита и '-'"
+                    )
+            }
+    )
     private String city;
+
+    public static Address fromString(String address) {
+        return new Address(address);
+    }
 
     public Address() {
     }
 
-    public Address(Long zip, String street, String city) {
+    public Address(String zip, String street, String city) {
         this.zip = zip;
         this.street = street;
         this.city = city;
@@ -52,11 +227,11 @@ public class Address {
         }
     }
 
-    public Long getZip() {
+    public String getZip() {
         return zip;
     }
 
-    public void setZip(Long zip) {
+    public void setZip(String zip) {
         this.zip = zip;
     }
 
@@ -100,11 +275,11 @@ public class Address {
         return Objects.hashCode(zip, street, city);
     }
 
-    public static Long findPostalIndexInAddressString(String address) {
+    public static String findPostalIndexInAddressString(String address) {
         String postalIndexPattern = "\\d{4,}";
         Pattern pattern = Pattern.compile(postalIndexPattern);
         Matcher matcher = pattern.matcher(address);
 
-        return matcher.find() ? Long.valueOf(matcher.group()) : null;
+        return matcher.find() ? matcher.group() : null;
     }
 }

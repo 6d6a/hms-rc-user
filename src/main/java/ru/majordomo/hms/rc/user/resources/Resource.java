@@ -40,8 +40,8 @@ public abstract class Resource {
                               DomainChecks.class,
                               FTPUserChecks.class,
                               MailboxChecks.class,
-                              PersonChecks.class,
-                              PersonImportChecks.class,
+//                              PersonChecks.class,
+//                              PersonImportChecks.class,
                               SSLCertificateChecks.class,
                               SSLCertificateImportChecks.class,
                               UnixAccountChecks.class,
@@ -50,7 +50,7 @@ public abstract class Resource {
                       })
     @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseChecks.class, DatabaseUserChecks.class, DatabaseUserImportChecks.class})
     @DomainName(groups = DomainChecks.class)
-    @ValidPersonName(groups = {PersonChecks.class})
+//    @ValidPersonName(groups = {PersonChecks.class})
     @ValidDatabaseName(groups = {DatabaseChecks.class})
     @ValidDatabaseUserName(groups = {DatabaseUserChecks.class})
     @ValidFTPUserName(groups = {FTPUserChecks.class})
