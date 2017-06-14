@@ -121,7 +121,11 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                         unixAccount.setWritable((Boolean) entry.getValue());
                         break;
                     case "quota":
-                        unixAccount.setQuota(new Long((Integer) entry.getValue()) * 1024);
+                        try {
+                            unixAccount.setQuota((Long) entry.getValue());
+                        } catch (NumberFormatException e) {
+                            throw new ParameterValidateException("Квота имеет неверный формат");
+                        }
                         break;
                     default:
                         break;
