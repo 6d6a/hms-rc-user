@@ -113,8 +113,7 @@ public class LegalEntity {
     @NotNull(
             message = "Юридический адрес должен быть заполнен",
             groups = {
-                    PersonCompanyChecks.class,
-                    PersonEntrepreneurChecks.class
+                    PersonCompanyChecks.class
             }
     )
     @ConvertGroup.List(
@@ -126,7 +125,8 @@ public class LegalEntity {
     @Null(
             message = "Поле 'Юридический адрес' нельзя заполнять для выбранного типа персоны",
             groups = {
-                    PersonEntrepreneurForeignChecks.class
+                    PersonEntrepreneurForeignChecks.class,
+                    PersonEntrepreneurChecks.class
             }
     )
     private Address address;
