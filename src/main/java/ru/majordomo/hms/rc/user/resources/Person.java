@@ -388,6 +388,18 @@ public class Person extends Resource {
     }
 
     public String getFirstname() {
+        if (firstname == null) {
+            String fullName = getName();
+            if (fullName != null && !fullName.equals("")) {
+                String[] splittedFullName = fullName.split(" ", 3);
+                if (splittedFullName.length == 3 || splittedFullName.length == 2) {
+                    return splittedFullName[1];
+                } else {
+                    return splittedFullName[0];
+                }
+            }
+        }
+
         return firstname;
     }
 
@@ -396,6 +408,14 @@ public class Person extends Resource {
     }
 
     public String getLastname() {
+        if (lastname == null) {
+            String fullName = getName();
+            if (fullName != null && !fullName.equals("")) {
+                String[] splittedFullName = fullName.split(" ", 3);
+                return splittedFullName[0];
+            }
+        }
+
         return lastname;
     }
 
@@ -404,6 +424,15 @@ public class Person extends Resource {
     }
 
     public String getMiddlename() {
+        if (middlename == null) {
+            String fullName = getName();
+            if (fullName != null && !fullName.equals("")) {
+                String[] splittedFullName = fullName.split(" ", 3);
+                if (splittedFullName.length == 3) {
+                    return splittedFullName[2];
+                }
+            }
+        }
         return middlename;
     }
 
