@@ -7,11 +7,13 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
+import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 
 @Document(collection = "SSLCertificates")
+@UniqueNameResource(SSLCertificate.class)
 public class SSLCertificate extends Resource {
     private String dns01Digest;
 
