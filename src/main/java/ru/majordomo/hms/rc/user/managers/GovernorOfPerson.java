@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import org.apache.commons.lang.NotImplementedException;
@@ -8,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -26,7 +25,6 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.resources.PersonType;
-import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
 
@@ -471,5 +469,24 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         address.setStreet(addressMap.get("street"));
 
         return address;
+    }
+
+    public Stream<Person> findPersonsWithNicHandlesByNicHandleNotBlank() {
+        return repository.findPersonsWithNicHandlesByNicHandleNotBlank();
+    }
+
+    public void sync(Person person) {
+        Person personFromDomainRegistrar = domainRegistrarClient.getPerson(person.getNicHandle());
+
+        if (personFromDomainRegistrar != null) {
+            personFromDomainRegistrar.setId(person.getId());
+            personFromDomainRegistrar.setAccountId(person.getAccountId());
+            personFromDomainRegistrar.setSwitchedOn(person.getSwitchedOn());
+
+            preValidate(personFromDomainRegistrar);
+            validate(personFromDomainRegistrar);
+
+//            store(personFromDomainRegistrar);
+        }
     }
 }
