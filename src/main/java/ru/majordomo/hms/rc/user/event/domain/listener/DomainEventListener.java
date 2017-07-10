@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.user.event.domain.DomainSyncEvent;
 import ru.majordomo.hms.rc.user.importing.DomainDBImportService;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.RegSpec;
 
 @Component
 public class DomainEventListener extends ResourceEventListener<Domain> {
@@ -34,5 +35,23 @@ public class DomainEventListener extends ResourceEventListener<Domain> {
     @Async("threadPoolTaskExecutor")
     public void onImportEvent(DomainImportEvent event) {
         processImportEvent(event);
+    }
+
+    @EventListener
+    @Async("threadPoolTaskExecutor")
+    public void onDomainSyncEvent(DomainSyncEvent event) {
+        String domainName = event.getSource();
+
+        RegSpec regSpec = event.getRegSpec();
+
+        logger.debug("We got DomainSyncEvent");
+
+        try {
+            GovernorOfDomain governorOfDomain = (GovernorOfDomain) governor;
+            governorOfDomain.updateRegSpec(domainName, regSpec);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("[DomainSyncEventListener] Exception: " + e.getMessage());
+        }
     }
 }

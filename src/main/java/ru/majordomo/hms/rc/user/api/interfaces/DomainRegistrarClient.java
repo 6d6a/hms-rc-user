@@ -16,7 +16,7 @@ public interface DomainRegistrarClient {
     @RequestMapping(value = "/person/{nicHandle}/domain/{domainName}", method = RequestMethod.POST)
     ResponseEntity registerDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName);
 
-    @RequestMapping(value = "/domain/renew/{domainName}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/domain/{domainName}/renew", method = RequestMethod.PUT)
     ResponseEntity renewDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName);
 
     @RequestMapping(value = "/person", method = RequestMethod.POST)

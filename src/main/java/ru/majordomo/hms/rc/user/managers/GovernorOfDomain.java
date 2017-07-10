@@ -175,6 +175,14 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         return domain;
     }
 
+    public void updateRegSpec(String domainName, RegSpec regSpec) {
+        Domain domain = repository.findByName(domainName);
+        if (domain != null) {
+            domain.setRegSpec(regSpec);
+        }
+        repository.save(domain);
+    }
+
     @Override
     public void preDelete(String resourceId) {
         Map<String, String> keyValue = new HashMap<>();
