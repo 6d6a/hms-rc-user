@@ -45,9 +45,15 @@ public class WebSiteValidator implements ConstraintValidator<ValidWebSite, WebSi
         }
 
         if (isValid) {
-            return PathManager.isPathInsideTheDir(webSite.getDocumentRoot(), webSite.getUnixAccount().getHomeDir());
-        } else {
-            return false;
+            if (!PathManager.isPathInsideTheDir(webSite.getDocumentRoot(), webSite.getUnixAccount().getHomeDir())) {
+                isValid = false;
+                constraintValidatorContext.disableDefaultConstraintViolation();
+                constraintValidatorContext
+                        .buildConstraintViolationWithTemplate("{ru.majordomo.hms.rc.user.resources.validation.ValidWebSiteDocumentRoot.message}")
+                        .addConstraintViolation();
+            }
         }
+
+        return isValid;
     }
 }

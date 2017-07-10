@@ -345,6 +345,14 @@ public class GovernorOfWebsiteTest {
         governor.update(serviceMessage);
     }
 
+    @Test(expected = ConstraintViolationException.class)
+    public void validateDocumentRoot2() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("documentRoot", "asdasdasdasd.com/www/../../../123");
+
+        governor.update(serviceMessage);
+    }
+
     @After
     public void deleteAll() {
         domainRepository.deleteAll();
