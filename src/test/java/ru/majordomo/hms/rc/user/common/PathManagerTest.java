@@ -18,7 +18,7 @@ public class PathManagerTest {
     public void isPathInsideTheDirValid() throws Exception {
         String unixAccountHomeDir = "/home/u2000";
 
-        String webSiteDir = "asdasdasdasd.com/www/../../123";
+        String webSiteDir = "asdasdasdasd.com/www";
 
         assertTrue(PathManager.isPathInsideTheDir(webSiteDir, unixAccountHomeDir));
     }
