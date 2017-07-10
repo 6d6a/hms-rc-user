@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.majordomo.hms.rc.user.event.ResourceEventListener;
 import ru.majordomo.hms.rc.user.event.domain.DomainCreateEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainImportEvent;
+import ru.majordomo.hms.rc.user.event.domain.DomainSyncEvent;
 import ru.majordomo.hms.rc.user.importing.DomainDBImportService;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.Domain;
