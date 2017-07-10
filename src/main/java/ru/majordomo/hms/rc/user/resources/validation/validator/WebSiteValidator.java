@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import ru.majordomo.hms.rc.user.resources.Mailbox;
+import ru.majordomo.hms.rc.user.common.PathManager;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
 import ru.majordomo.hms.rc.user.resources.validation.ValidWebSite;
@@ -44,6 +44,10 @@ public class WebSiteValidator implements ConstraintValidator<ValidWebSite, WebSi
             return false;
         }
 
-        return isValid;
+        if (isValid) {
+            return PathManager.isPathInsideTheDir(webSite.getDocumentRoot(), webSite.getUnixAccount().getHomeDir());
+        } else {
+            return false;
+        }
     }
 }
