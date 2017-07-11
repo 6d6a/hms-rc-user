@@ -31,7 +31,7 @@ public class PersonScheduler {
         this.publisher = publisher;
     }
 
-    @Scheduled(cron = "0 20 6 * * *")
+    @Scheduled(cron = "0 20 6,18 * * *")
 //    @Scheduled(initialDelay = 10000, fixedDelay = 6000000)
     @SchedulerLock(name = "syncPersons")
     public void cleanTokens() {

@@ -481,12 +481,23 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         if (personFromDomainRegistrar != null) {
             personFromDomainRegistrar.setId(person.getId());
             personFromDomainRegistrar.setAccountId(person.getAccountId());
-            personFromDomainRegistrar.setSwitchedOn(person.getSwitchedOn());
+            personFromDomainRegistrar.setSwitchedOn(true);
 
-            preValidate(personFromDomainRegistrar);
-            validate(personFromDomainRegistrar);
+            try {
+                preValidate(personFromDomainRegistrar);
+                validate(personFromDomainRegistrar);
+                store(personFromDomainRegistrar);
+            } catch (ParameterValidateException | ConstraintViolationException e) {
+                e.printStackTrace();
 
-//            store(personFromDomainRegistrar);
+                person.setSwitchedOn(false);
+
+                store(person);
+            }
+        } else {
+            person.setSwitchedOn(false);
+
+            store(person);
         }
     }
 }

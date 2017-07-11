@@ -37,7 +37,7 @@ public class PersonEventListener extends ResourceEventListener<Person> {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onImportEvent(PersonSyncEvent event) {
+    public void onSyncEvent(PersonSyncEvent event) {
         logger.debug("We got PersonSyncEvent");
 
         try {
