@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,8 @@ public class Domain extends Resource {
 
     @Indexed
     private String parentDomainId;
+
+    private LocalDateTime synced;
 
     @Override
     public void switchResource() {
@@ -129,6 +132,14 @@ public class Domain extends Resource {
         this.parentDomainId = parentDomainId;
     }
 
+    public LocalDateTime getSynced() {
+        return synced;
+    }
+
+    public void setSynced(LocalDateTime synced) {
+        this.synced = synced;
+    }
+
     @Override
     public String toString() {
         return "Domain{" +
@@ -140,6 +151,7 @@ public class Domain extends Resource {
                 ", sslCertificateId='" + sslCertificateId + '\'' +
                 ", autoRenew=" + autoRenew +
                 ", parentDomainId='" + parentDomainId + '\'' +
+                ", synced='" + synced + '\'' +
                 "} " + super.toString();
     }
 }

@@ -67,7 +67,12 @@ public class DomainRestController {
     @RequestMapping(method = RequestMethod.POST, value = "/domain/process-sync")
     public ResponseEntity<Void> processDomainsSync(@RequestBody Map<String, RegSpec> domains) {
         try {
+            //Синхронизируем существующие
             domains.forEach((key, value) -> publisher.publishEvent(new DomainSyncEvent(key, value)));
+
+            //Удаляем reg-spec у необновляющихся более 4 часов.
+            governor.clearNotSyncedDomains();
+
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
