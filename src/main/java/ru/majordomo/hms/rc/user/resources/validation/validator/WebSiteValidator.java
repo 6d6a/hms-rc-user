@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import ru.majordomo.hms.rc.user.resources.Mailbox;
+import ru.majordomo.hms.rc.user.common.PathManager;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
 import ru.majordomo.hms.rc.user.resources.validation.ValidWebSite;
@@ -42,6 +42,16 @@ public class WebSiteValidator implements ConstraintValidator<ValidWebSite, WebSi
             isValid = !operations.exists(query, WebSite.class);
         } catch (RuntimeException e) {
             return false;
+        }
+
+        if (isValid) {
+            if (!PathManager.isPathInsideTheDir(webSite.getDocumentRoot(), webSite.getUnixAccount().getHomeDir())) {
+                isValid = false;
+                constraintValidatorContext.disableDefaultConstraintViolation();
+                constraintValidatorContext
+                        .buildConstraintViolationWithTemplate("{ru.majordomo.hms.rc.user.resources.validation.ValidWebSiteDocumentRoot.message}")
+                        .addConstraintViolation();
+            }
         }
 
         return isValid;
