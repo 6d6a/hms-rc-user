@@ -187,17 +187,16 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     public void clearNotSyncedDomains() {
-        try (Stream<Domain> domainStream = repository.findAllStream()) {
-            domainStream.forEach(domain -> {
-                if (domain.getSynced() != null && domain.getRegSpec() != null && domain.getSynced().isBefore(LocalDateTime.now().minusHours(4))) {
-                    domain.setRegSpec(null);
-                    repository.save(domain);
-                } else if (domain.getSynced() == null) {
-                    domain.setSynced(LocalDateTime.now());
-                    repository.save(domain);
-                }
-            });
-        }
+        Stream<Domain> domainStream = repository.findAllStream();
+        domainStream.forEach(domain -> {
+            if (domain.getSynced() != null && domain.getRegSpec() != null && domain.getSynced().isBefore(LocalDateTime.now().minusHours(4))) {
+                domain.setRegSpec(null);
+                repository.save(domain);
+            } else if (domain.getSynced() == null) {
+                domain.setSynced(LocalDateTime.now());
+                repository.save(domain);
+            }
+        });
     }
 
     @Override
