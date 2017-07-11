@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import ru.majordomo.hms.rc.user.event.ResourceEventListener;
+import ru.majordomo.hms.rc.user.event.domain.DomainClearSyncEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainCreateEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainImportEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainSyncEvent;
@@ -53,5 +54,18 @@ public class DomainEventListener extends ResourceEventListener<Domain> {
             e.printStackTrace();
             logger.error("[DomainSyncEventListener] Exception: " + e.getMessage());
         }
+    }
+
+    @EventListener
+    @Async("threadPoolTaskExecutor")
+    public void onDomainClearSyncEvent(DomainClearSyncEvent event) {
+        try {
+            GovernorOfDomain governorOfDomain = (GovernorOfDomain) governor;
+            governorOfDomain.clearNotSyncedDomains();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("[DomainClearSyncEventListener] Exception: " + e.getMessage());
+        }
+
     }
 }

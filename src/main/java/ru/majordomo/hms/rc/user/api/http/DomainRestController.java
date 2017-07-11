@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.event.domain.DomainClearSyncEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainSyncEvent;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
@@ -71,7 +72,7 @@ public class DomainRestController {
             domains.forEach((key, value) -> publisher.publishEvent(new DomainSyncEvent(key, value)));
 
             //Удаляем reg-spec у необновляющихся более 4 часов.
-            governor.clearNotSyncedDomains();
+            publisher.publishEvent(new DomainClearSyncEvent("DomainClearSyncEvent"));
 
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
