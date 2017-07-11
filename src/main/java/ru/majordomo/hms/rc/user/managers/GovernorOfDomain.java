@@ -182,8 +182,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         if (domain != null) {
             domain.setRegSpec(regSpec);
             domain.setSynced(LocalDateTime.now());
+            repository.save(domain);
         }
-        repository.save(domain);
     }
 
     public void clearNotSyncedDomains() {
