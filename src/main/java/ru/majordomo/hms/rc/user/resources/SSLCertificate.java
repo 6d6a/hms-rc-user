@@ -11,6 +11,8 @@ import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 
 @Document(collection = "SSLCertificates")
 @UniqueNameResource(SSLCertificate.class)
@@ -20,6 +22,12 @@ public class SSLCertificate extends Resource {
     private URI challengeLocation;
 
     private URI authorizationLocation;
+
+    private List<String> dns01Digests = new LinkedList<>();
+
+    private List<URI> challengeLocations = new LinkedList<>();
+
+    private List<URI> authorizationLocations = new LinkedList<>();
 
     private String key;
 
@@ -60,6 +68,30 @@ public class SSLCertificate extends Resource {
 
     public void setDns01Digest(String dns01Digest) {
         this.dns01Digest = dns01Digest;
+    }
+
+    public List<URI> getChallengeLocations() {
+        return challengeLocations;
+    }
+
+    public void setChallengeLocations(List<URI> challengeLocations) {
+        this.challengeLocations = challengeLocations;
+    }
+
+    public List<URI> getAuthorizationLocations() {
+        return authorizationLocations;
+    }
+
+    public void setAuthorizationLocations(List<URI> authorizationLocations) {
+        this.authorizationLocations = authorizationLocations;
+    }
+
+    public List<String> getDns01Digests() {
+        return dns01Digests;
+    }
+
+    public void setDns01Digests(List<String> dns01Digests) {
+        this.dns01Digests = dns01Digests;
     }
 
     public String getKey() {
@@ -110,6 +142,15 @@ public class SSLCertificate extends Resource {
         this.notAfter = notAfter;
     }
 
+    public List<String> convert(List<URI> source) {
+        List<String> converted = new LinkedList<>();
+
+        for(URI uri : source)
+            converted.add(uri.toASCIIString());
+
+        return converted;
+    }
+
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
@@ -118,9 +159,9 @@ public class SSLCertificate extends Resource {
     @Override
     public String toString() {
         return "SSLCertificate{" +
-                ", dns01Digest='" + dns01Digest + '\'' +
-                ", challengeLocation=" + challengeLocation +
-                ", authorizationLocation=" + authorizationLocation +
+                ", dns01Digest='" + String.join(";", dns01Digests) + '\'' +
+                ", challengeLocation=" + String.join(";", this.convert(challengeLocations)) +
+                ", authorizationLocation=" + String.join(";", this.convert(authorizationLocations)) +
                 ", key='" + key + '\'' +
                 ", csr='" + csr + '\'' +
                 ", cert='" + cert + '\'' +

@@ -82,6 +82,7 @@ public class SSLCertificateDBImportService implements ResourceDBImportService {
         sslCertificate.setAccountId(rs.getString("id"));
         sslCertificate.setSwitchedOn(rs.getString("switched_on").equals("1"));
         sslCertificate.setName(rs.getString("name"));
+        //TODO переделать на Lists
         sslCertificate.setDns01Digest(rs.getString("dns01Digest"));
 
         try {
