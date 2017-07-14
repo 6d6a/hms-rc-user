@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.IDN;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class DomainRestController {
             Domain domain = governor.build(keyValue);
             if (domain.getParentDomainId() != null)
                 domain = governor.build(domain.getParentDomainId());
-            record.setName(domain.getName());
+            record.setName(IDN.toASCII(domain.getName()));
             governorOfDnsRecord.validate(record);
             governorOfDnsRecord.store(record);
             return new ResponseEntity<>(record, HttpStatus.ACCEPTED);
