@@ -282,6 +282,8 @@ class BaseAMQPController {
 
             return "te" + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("[getTaskExecutorRoutingKey] got exception: " + e.getMessage());
             throw new ParameterValidateException("Exception: " + e.getMessage());
         }
     }
