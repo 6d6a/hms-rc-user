@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.IDN;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -178,6 +179,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     public void updateRegSpec(String domainName, RegSpec regSpec) {
+        domainName = IDN.toUnicode(domainName.toLowerCase());
         Domain domain = repository.findByName(domainName);
         if (domain != null) {
             domain.setRegSpec(regSpec);
