@@ -2,10 +2,12 @@ package ru.majordomo.hms.rc.user.repositories;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import org.springframework.data.mongodb.repository.Query;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface DomainRepository extends MongoRepository<Domain,String> {
     List<Domain> findByAccountId(String accountId);
@@ -23,4 +25,7 @@ public interface DomainRepository extends MongoRepository<Domain,String> {
     List<Domain> findByAccountIdAndParentDomainIdNotNull(String accountId);
     List<Domain> findByParentDomainIdNotNull();
     List<Domain> findByNameContains(String nameContains);
+
+    @Query("{}")
+    Stream<Domain> findAllStream();
 }

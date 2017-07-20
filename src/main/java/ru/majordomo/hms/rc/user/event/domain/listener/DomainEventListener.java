@@ -6,11 +6,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import ru.majordomo.hms.rc.user.event.ResourceEventListener;
+import ru.majordomo.hms.rc.user.event.domain.DomainClearSyncEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainCreateEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainImportEvent;
+import ru.majordomo.hms.rc.user.event.domain.DomainSyncEvent;
 import ru.majordomo.hms.rc.user.importing.DomainDBImportService;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.RegSpec;
 
 @Component
 public class DomainEventListener extends ResourceEventListener<Domain> {
@@ -33,5 +36,36 @@ public class DomainEventListener extends ResourceEventListener<Domain> {
     @Async("threadPoolTaskExecutor")
     public void onImportEvent(DomainImportEvent event) {
         processImportEvent(event);
+    }
+
+    @EventListener
+    @Async("threadPoolTaskExecutor")
+    public void onDomainSyncEvent(DomainSyncEvent event) {
+        String domainName = event.getSource();
+
+        RegSpec regSpec = event.getRegSpec();
+
+        logger.debug("We got DomainSyncEvent");
+
+        try {
+            GovernorOfDomain governorOfDomain = (GovernorOfDomain) governor;
+            governorOfDomain.updateRegSpec(domainName, regSpec);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("[DomainSyncEventListener] Exception: " + e.getMessage());
+        }
+    }
+
+    @EventListener
+    @Async("threadPoolTaskExecutor")
+    public void onDomainClearSyncEvent(DomainClearSyncEvent event) {
+        try {
+            GovernorOfDomain governorOfDomain = (GovernorOfDomain) governor;
+            governorOfDomain.clearNotSyncedDomains();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("[DomainClearSyncEventListener] Exception: " + e.getMessage());
+        }
+
     }
 }
