@@ -13,6 +13,6 @@ public interface PersonRepository extends MongoRepository<Person,String> {
     List<Person> findByLinkedAccountIds(String accountId);
     Person findByIdAndAccountId(String personId, String accountId);
     Person findByIdAndLinkedAccountIds(String personId, String accountId);
-    @Query(value="{ 'nicHandle' : {$ne : ''} }", fields="{ 'nicHandle' : 1}")
+    @Query(value="{ 'nicHandle' : {$ne : ''} }")
     Stream<Person> findPersonsWithNicHandlesByNicHandleNotBlank();
 }
