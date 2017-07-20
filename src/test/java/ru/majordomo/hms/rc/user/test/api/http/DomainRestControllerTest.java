@@ -117,7 +117,8 @@ public class DomainRestControllerTest {
                                 fieldWithPath("dnsResourceRecords").description("Список записей в зоне домена (DNS resource records)"),
                                 fieldWithPath("sslCertificate").description("Объект SSL сертификата"),
                                 fieldWithPath("autoRenew").description("Флаг автоматического продления"),
-                                fieldWithPath("parentDomainId").description("ID домена-родителя - отличное от null означает, что это поддомен")
+                                fieldWithPath("parentDomainId").description("ID домена-родителя - отличное от null означает, что это поддомен"),
+                                fieldWithPath("synced").description("Дата последней синхронизации домена")
                         )
                 ));
     }

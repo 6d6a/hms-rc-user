@@ -107,6 +107,16 @@ public class GovernorOfDomainTest {
         assertNull(domain.getRegSpec());
     }
 
+    @Test(expected = ConstraintViolationException.class)
+    public void creatingWithBadName() throws Exception {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setAccountId(domains.get(0).getAccountId());
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("name", "online");
+        serviceMessage.addParam("register", false);
+        governor.create(serviceMessage);
+    }
+
     @Test(expected = ParameterValidateException.class)
     public void createWithRegisterWithoutPersonId() throws Exception {
         ServiceMessage serviceMessage = new ServiceMessage();

@@ -5,9 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.IDN;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -173,6 +176,29 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         store(domain);
 
         return domain;
+    }
+
+    public void updateRegSpec(String domainName, RegSpec regSpec) {
+        domainName = IDN.toUnicode(domainName.toLowerCase());
+        Domain domain = repository.findByName(domainName);
+        if (domain != null) {
+            domain.setRegSpec(regSpec);
+            domain.setSynced(LocalDateTime.now());
+            repository.save(domain);
+        }
+    }
+
+    public void clearNotSyncedDomains() {
+        Stream<Domain> domainStream = repository.findAllStream();
+        domainStream.forEach(domain -> {
+            if (domain.getSynced() != null && domain.getRegSpec() != null && domain.getSynced().isBefore(LocalDateTime.now().minusHours(4))) {
+                domain.setRegSpec(null);
+                repository.save(domain);
+            } else if (domain.getSynced() == null) {
+                domain.setSynced(LocalDateTime.now());
+                repository.save(domain);
+            }
+        });
     }
 
     @Override
