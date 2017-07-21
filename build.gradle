@@ -133,6 +133,8 @@ dependencies {
     compile('javax.el:javax.el-api:3.0.0')
     compile('org.glassfish.web:javax.el:2.2.4')
     compile('com.google.guava:guava:21.0')
+    compile("net.javacrumbs.shedlock:shedlock-spring:0.10.0")
+    compile("net.javacrumbs.shedlock:shedlock-provider-mongo:0.8.0")
 }
 
 dependencyManagement {
