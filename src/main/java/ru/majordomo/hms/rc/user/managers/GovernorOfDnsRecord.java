@@ -4,6 +4,7 @@ import com.mysql.management.util.NotImplementedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
@@ -25,8 +26,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
     private Cleaner cleaner;
     private GovernorOfDomain governorOfDomain;
+    private GovernorOfUnixAccount governorOfUnixAccount;
     private Validator validator;
     private DNSResourceRecordDAOImpl dnsResourceRecordDAO;
+    private StaffResourceControllerClient rcStaffClient;
 
     @Autowired
     public void setCleaner(Cleaner cleaner) {
@@ -39,6 +42,11 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Autowired
+    public void setGovernorOfDomain(GovernorOfUnixAccount governorOfUnixAccount) {
+        this.governorOfUnixAccount = governorOfUnixAccount;
+    }
+
+    @Autowired
     public void setDnsResourceRecordDAO(DNSResourceRecordDAOImpl dnsResourceRecordDAO) {
         this.dnsResourceRecordDAO = dnsResourceRecordDAO;
     }
@@ -46,6 +54,11 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Autowired
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    @Autowired
+    public void setRcStaffClient(StaffResourceControllerClient rcStaffClient) {
+        this.rcStaffClient = rcStaffClient;
     }
 
     @Override
@@ -277,11 +290,33 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         record.setRrType(DNSResourceRecordType.A);
         record.setOwnerName(domainName);
         record.setTtl(3600L);
-        //TODO Убрать этот квикфикс (получать IP с RC-STAFF)
-        record.setData("78.108.80.175");
+        try {
+            record.setData(getServerPrimaryIp(domain.getAccountId()));
+        } catch (ParameterValidateException e) {
+            logger.error("[addDefaultARecords] Ошибка: " + e.getMessage());
+            return;
+        }
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
         record.setOwnerName("*." + domainName);
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
+    }
+
+    private String getServerPrimaryIp(String accountId) {
+        String serverId;
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("accountId", accountId);
+        Collection<UnixAccount> unixAccounts = governorOfUnixAccount.buildAll(keyValue);
+        if (unixAccounts.iterator().hasNext()) {
+            serverId = unixAccounts.iterator().next().getServerId();
+        } else {
+            throw new ParameterValidateException("Не удалось получить ID сервера");
+        }
+        Map<String, String> serverIpInfo = rcStaffClient.getServerIpInfoByServerId(serverId);
+        if (serverIpInfo != null) {
+            return serverIpInfo.get("primaryIp");
+        } else {
+            throw new ParameterValidateException("Не удалось получить IP сервера");
+        }
     }
 
     public void addMailRecords(Domain domain) {

@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
 import org.bson.types.ObjectId;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,13 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
+import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
+import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
@@ -58,6 +62,17 @@ public class GovernorOfDnsRecordTest {
     @Autowired
     private DNSResourceRecordDAOImpl dnsResourceRecordDAO;
 
+    @Autowired
+    private UnixAccountRepository unixAccountRepository;
+
+    private Collection<UnixAccount> unixAccounts;
+
+    @Before
+    public void setUp() throws Exception {
+        unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
+        unixAccountRepository.save(unixAccounts);
+    }
+
     @Test
     public void getByDomainName() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
@@ -71,11 +86,12 @@ public class GovernorOfDnsRecordTest {
     public void initDomain() throws Exception {
         Domain domain = new Domain();
         domain.setName("new-domain.ru");
+        domain.setAccountId(unixAccounts.iterator().next().getAccountId());
         governorOfDnsRecord.initDomain(domain);
 
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "new-domain.ru");
-        keyValue.put("accountId", "0");
+        keyValue.put("accountId", unixAccounts.iterator().next().getAccountId());
 
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         assertThat(
@@ -98,11 +114,12 @@ public class GovernorOfDnsRecordTest {
     public void initDomainRF() throws Exception {
         Domain domain = new Domain();
         domain.setName("ололоевич.рф");
+        domain.setAccountId(unixAccounts.iterator().next().getAccountId());
         governorOfDnsRecord.initDomain(domain);
 
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", "ололоевич.рф");
-        keyValue.put("accountId", "0");
+        keyValue.put("accountId", unixAccounts.iterator().next().getAccountId());
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
 
         assertThat(
@@ -112,6 +129,13 @@ public class GovernorOfDnsRecordTest {
         assertThat(
                 records.get(0).getRrType(),
                 is(DNSResourceRecordType.SOA)
+        );
+        assertThat(
+                records.stream()
+                        .filter(r -> r.getRrType().equals(DNSResourceRecordType.A))
+                        .collect(Collectors.toList())
+                        .get(0).getData(),
+                is("78.108.80.185")
         );
         assertThat(
                 records.stream()

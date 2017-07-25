@@ -13,9 +13,7 @@ import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Configuration
 public class ConfigStaffResourceControllerClient {
@@ -55,6 +53,16 @@ public class ConfigStaffResourceControllerClient {
                 server.setName("web100500");
                 server.setServiceIds(Collections.singletonList(mockedServiceId));
                 return server;
+            }
+
+            @Override
+            public Map<String, String> getServerIpInfoByServerId(String serverId) {
+                Map<String, String> serverIpInfo = new HashMap<>();
+                serverIpInfo.put("id", "1234");
+                serverIpInfo.put("serverId", serverId);
+                serverIpInfo.put("primaryIp", "78.108.80.185");
+                serverIpInfo.put("secondaryIp", "78.108.80.186");
+                return serverIpInfo;
             }
 
             @Override
