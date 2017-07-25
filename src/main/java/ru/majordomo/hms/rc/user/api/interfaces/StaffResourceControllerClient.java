@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
@@ -16,6 +17,9 @@ import ru.majordomo.hms.rc.user.configurations.FeignConfig;
 public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=shared-hosting&state=active", consumes = "application/json;utf8")
     Server getActiveHostingServer();
+
+    @RequestMapping(method = RequestMethod.GET, value = "/server-ip-info?serverId={serverId}")
+    Map<String, String> getServerIpInfoByServerId(@PathVariable("serverId") String serverId);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=mysql-database-server&state=active", consumes = "application/json;utf8")
     Server getActiveDatabaseServer();
