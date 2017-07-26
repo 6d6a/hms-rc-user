@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import ru.majordomo.hms.rc.user.configurations.FeignConfig;
+import ru.majordomo.hms.rc.user.resources.DomainRegistrar;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 
@@ -16,8 +17,11 @@ public interface DomainRegistrarClient {
     @RequestMapping(value = "/person/{nicHandle}/domain/{domainName}", method = RequestMethod.POST)
     ResponseEntity registerDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName);
 
-    @RequestMapping(value = "/domain/{domainName}/renew", method = RequestMethod.PUT)
-    ResponseEntity renewDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName);
+    @RequestMapping(value = "/domain/{domainName}/renew/{registrar}", method = RequestMethod.PUT)
+    ResponseEntity renewDomain(
+            @PathVariable("domainName") String domainName,
+            @PathVariable("registrar") DomainRegistrar registrar
+    );
 
     @RequestMapping(value = "/person", method = RequestMethod.POST)
     ResponseEntity createPerson(@RequestBody Person person);
