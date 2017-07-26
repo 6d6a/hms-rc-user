@@ -145,11 +145,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                         case "renew":
                             if ((Boolean) entry.getValue()) {
                                 try {
-                                    if (domain.getPersonId() == null) {
-                                        throw new ParameterValidateException("Отсутствует personId");
-                                    }
-                                    Person person = governorOfPerson.build(domain.getPersonId());
-                                    ResponseEntity responseEntity = registrar.renewDomain(person.getNicHandle(), domain.getName(),
+                                    ResponseEntity responseEntity = registrar.renewDomain(domain.getName(),
                                             domain.getRegSpec().getRegistrar());
                                     if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
                                         throw new ParameterValidateException("Ошибка при продлении домена");
