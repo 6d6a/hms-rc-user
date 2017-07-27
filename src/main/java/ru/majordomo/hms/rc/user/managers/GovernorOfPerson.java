@@ -485,7 +485,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
             try {
                 preValidate(personFromDomainRegistrar);
-                validate(personFromDomainRegistrar);
+                //validateImported(personFromDomainRegistrar);
                 store(personFromDomainRegistrar);
             } catch (ParameterValidateException | ConstraintViolationException e) {
                 e.printStackTrace();
