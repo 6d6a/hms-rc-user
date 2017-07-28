@@ -118,7 +118,8 @@ public class DomainRestControllerTest {
                                 fieldWithPath("sslCertificate").description("Объект SSL сертификата"),
                                 fieldWithPath("autoRenew").description("Флаг автоматического продления"),
                                 fieldWithPath("parentDomainId").description("ID домена-родителя - отличное от null означает, что это поддомен"),
-                                fieldWithPath("synced").description("Дата последней синхронизации домена")
+                                fieldWithPath("synced").description("Дата последней синхронизации домена"),
+                                fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )
                 ));
     }

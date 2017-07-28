@@ -119,7 +119,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     }
 
     @Override
-    protected FTPUser buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
+    public FTPUser buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException {
         FTPUser ftpUser = new FTPUser();
         setResourceParams(ftpUser, serviceMessage, cleaner);
 

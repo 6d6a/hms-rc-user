@@ -316,7 +316,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     @Override
-    protected WebSite buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public WebSite buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         WebSite webSite = new WebSite();
 
         setResourceParams(webSite, serviceMessage, cleaner);

@@ -84,6 +84,8 @@ public abstract class Resource {
     @Indexed
     Boolean switchedOn = true;
 
+    Boolean locked = false;
+
     public abstract void switchResource();
 
     public String getAccountId() {
@@ -114,6 +116,14 @@ public abstract class Resource {
         this.id = id;
     }
 
+    public Boolean getLocked() {
+        return locked;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
+    }
+
     public String getName() {
         return name;
     }
@@ -128,6 +138,7 @@ public abstract class Resource {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", accountId='" + accountId + '\'' +
+                ", locked=" + locked +
                 ", switchedOn=" + switchedOn +
                 '}';
     }

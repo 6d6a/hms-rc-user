@@ -541,11 +541,12 @@ public class ResourceGenerator {
             databaseUser.setAccountId(ObjectId.get().toString());
             databaseUser.setServiceId("583300c5a94c541d14d58c85");
             databaseUser.setId(ObjectId.get().toString());
-            databaseUser.setType(POSTGRES);
+            databaseUser.setType(MYSQL);
             databaseUser.setPasswordHashByPlainPassword("123456" + i);
             databaseUser.setAllowedIpsAsCollectionOfString(Collections.emptyList());
             databaseUser.setName("u10000" + i);
             databaseUser.setSwitchedOn(true);
+            databaseUser.setLocked(false);
 
             batchOfDatabaseUsers.add(databaseUser);
         }

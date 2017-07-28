@@ -243,7 +243,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    protected Domain buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public Domain buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         setResourceParams(domain, serviceMessage, cleaner);
         if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
