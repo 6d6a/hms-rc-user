@@ -224,7 +224,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
-    protected Mailbox buildResourceFromServiceMessage(ServiceMessage serviceMessage)
+    public Mailbox buildResourceFromServiceMessage(ServiceMessage serviceMessage)
             throws ClassCastException {
         Mailbox mailbox = new Mailbox();
         setResourceParams(mailbox, serviceMessage, cleaner);

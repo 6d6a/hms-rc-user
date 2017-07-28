@@ -128,7 +128,8 @@ public class UnixAccountRestControllerTest {
                                 fieldWithPath("writable").description("Флаг, указывающий на то, возможна ли запись новых файлов пользователем"),
                                 fieldWithPath("passwordHash").description("Криптованный хеш пароля"),
                                 fieldWithPath("keyPair").description("Пара ключей для доступа по SSH"),
-                                fieldWithPath("sendmailAllowed").description("Разрешена ли отправка почты из скриптов аккаунта")
+                                fieldWithPath("sendmailAllowed").description("Разрешена ли отправка почты из скриптов аккаунта"),
+                                fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )
                 ));
     }

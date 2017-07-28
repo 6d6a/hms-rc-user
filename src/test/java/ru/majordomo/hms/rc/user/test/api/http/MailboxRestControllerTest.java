@@ -140,7 +140,8 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("uid").description("Служебное поле. Назначается сервером, изменение невозможно."),
                                 fieldWithPath("writable").description("Флаг, указывающий на то, будут ли доставляться новые письма в ящик"),
                                 fieldWithPath("spamFilterAction").description("Действие SPAM-фильтра"),
-                                fieldWithPath("spamFilterMood").description("Придирчивость SPAM-фильтра")
+                                fieldWithPath("spamFilterMood").description("Придирчивость SPAM-фильтра"),
+                                fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )
                 ));
     }

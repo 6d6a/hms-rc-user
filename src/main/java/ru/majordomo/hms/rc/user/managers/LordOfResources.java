@@ -40,7 +40,7 @@ public abstract class LordOfResources<T extends Resource> {
 
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
 
-    protected abstract T buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
+    public abstract T buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
 
     public abstract void validate(T resource) throws ParameterValidateException;
 

@@ -141,7 +141,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
-    protected Database buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public Database buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Database database = new Database();
         String serviceId = null;
         DBType type = null;

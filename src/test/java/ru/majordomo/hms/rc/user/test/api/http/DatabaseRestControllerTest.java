@@ -114,7 +114,8 @@ public class DatabaseRestControllerTest {
                                 fieldWithPath("type").description("Тип базы данных"),
                                 fieldWithPath("quotaUsed").description("Фактический размер базы в килобайтах"),
                                 fieldWithPath("writable").description("Флаг доступности записи."),
-                                fieldWithPath("databaseUsers").description("Список пользователей этой базы")
+                                fieldWithPath("databaseUsers").description("Список пользователей этой базы"),
+                                fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )
                 ));
     }

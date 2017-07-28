@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -108,6 +109,8 @@ class BaseAMQPController {
                 report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
                 sender.send(resourceType + ".create", "pm", report);
             }
+            resource.setLocked(true);
+            governor.store(resource);
         } else {
             sender.send(resourceType + ".create", "pm", report);
         }
@@ -122,8 +125,15 @@ class BaseAMQPController {
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
-        if (!successEvent && resource != null) {
-            governor.drop(resource.getId());
+        if (!successEvent) {
+            if (resource != null) {
+                governor.drop(resource.getId());
+            }
+        } else {
+            if (resource != null) {
+                resource.setLocked(true);
+                governor.store(resource);
+            }
         }
 
         sender.send(resourceType + ".create", "pm", report);
@@ -135,6 +145,31 @@ class BaseAMQPController {
         Boolean success;
         Resource resource = null;
         String errorMessage = "";
+
+        try {
+            String resourceId = (String) serviceMessage.getParam("resourceId");
+            if (resourceId == null || resourceId.equals("")) {
+                throw new ParameterValidateException("Не указан resourceId");
+            }
+            try {
+                resource = governor.build(resourceId);
+            } catch (Exception e) {
+                throw new ParameterValidateException("Не найден ресурс с ID: " + resourceId);
+            }
+            if (resource.getLocked()) {
+                throw new ParameterValidateException("Ресурс в процессе обновления");
+            }
+        } catch (ParameterValidateException e) {
+            logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                    " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                    " Обновление ресурса " + resourceType + " не удалось: " + e.getMessage());
+            errorMessage = e.getMessage();
+
+            ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+            report.addParam("success", false);
+            sender.send(resourceType + ".update", "pm", report);
+            return;
+        }
 
         try {
             resource = governor.update(serviceMessage);
@@ -159,6 +194,8 @@ class BaseAMQPController {
         if (success && (resource instanceof ServerStorable || resource instanceof Serviceable) && !resourceType.equals("mailbox")) {
             String teRoutingKey = getTaskExecutorRoutingKey(resource);
             sender.send(resourceType + ".update", teRoutingKey, report);
+            resource.setLocked(true);
+            governor.store(resource);
         } else {
             sender.send(resourceType + ".update", "pm", report);
         }
@@ -173,6 +210,11 @@ class BaseAMQPController {
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
         report.addParam("success", successEvent);
+
+        if (resource != null) {
+            resource.setLocked(true);
+            governor.store(resource);
+        }
 
         sender.send(resourceType + ".update", "pm", report);
     }
@@ -203,6 +245,17 @@ class BaseAMQPController {
         }
 
         if (resource != null) {
+            if (resource.getLocked()) {
+                logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
+                        " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
+                        " Обновление ресурса " + resourceType + " не удалось: locked");
+                errorMessage = "Ресурс в процессе обновления";
+
+                ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+                report.addParam("success", false);
+                sender.send(resourceType + ".update", "pm", report);
+                return;
+            }
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
             report.addParam("success", true);
             if (resource instanceof ServerStorable || resource instanceof Serviceable) {
@@ -216,6 +269,8 @@ class BaseAMQPController {
                     report.addParam("errorMessage", e.getMessage());
                 }
                 sender.send(resourceType + ".delete", teRoutingKey, report);
+                resource.setLocked(true);
+                governor.store(resource);
             } else {
                 try {
                     governor.drop(resourceId);
@@ -239,8 +294,13 @@ class BaseAMQPController {
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
-        if (successEvent && resource != null) {
-            governor.drop(resource.getId());
+        if (successEvent){
+            if (resource != null) {
+                governor.drop(resource.getId());
+            }
+        } else {
+            resource.setLocked(false);
+            governor.store(resource);
         }
 
         sender.send(resourceType + ".delete", "pm", report);

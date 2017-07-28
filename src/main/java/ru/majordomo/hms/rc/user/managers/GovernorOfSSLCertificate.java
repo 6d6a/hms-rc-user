@@ -165,7 +165,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     }
 
     @Override
-    protected SSLCertificate buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public SSLCertificate buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         SSLCertificate sslCertificate;
         ObjectMapper mapper = new ObjectMapper();
         try {

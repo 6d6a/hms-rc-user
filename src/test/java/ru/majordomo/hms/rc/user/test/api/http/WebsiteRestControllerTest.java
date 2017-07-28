@@ -229,7 +229,8 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("multiViews").description("Опция multiViews для Apache2"),
                                 fieldWithPath("allowUrlFopen").description("Опция allow_url_fopen для PHP"),
                                 fieldWithPath("mbstringFuncOverload").description("Опция mbstring.func_overload для PHP"),
-                                fieldWithPath("serviceId").description("serviceId для данного вебсайта")
+                                fieldWithPath("serviceId").description("serviceId для данного вебсайта"),
+                                fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )
                 ));
     }

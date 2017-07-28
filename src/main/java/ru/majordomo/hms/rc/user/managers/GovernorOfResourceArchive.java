@@ -94,7 +94,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     }
 
     @Override
-    protected ResourceArchive buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public ResourceArchive buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         ResourceArchive archive = new ResourceArchive();
         setResourceParams(archive, serviceMessage, cleaner);
         String resourceId;

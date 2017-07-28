@@ -177,7 +177,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     @Override
-    protected UnixAccount buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public UnixAccount buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         UnixAccount unixAccount = new UnixAccount();
         setResourceParams(unixAccount, serviceMessage, cleaner);
 
