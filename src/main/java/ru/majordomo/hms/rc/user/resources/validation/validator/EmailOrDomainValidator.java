@@ -15,14 +15,13 @@ public class EmailOrDomainValidator implements ConstraintValidator<ValidEmailOrD
     @Override
     public boolean isValid(final String emailOrDomainName, ConstraintValidatorContext constraintValidatorContext) {
         Boolean validEmail;
-        Boolean validDomainName;
+        Boolean validDomainName = true;
 
         try {
-            if (!DomainValidator.getInstance().isValid(emailOrDomainName)) return false;
+            if (!DomainValidator.getInstance().isValid(emailOrDomainName)) validDomainName = false;
 
             InternetDomainName domain = InternetDomainName.from(emailOrDomainName);
-            String domainPublicPart = domain.publicSuffix().toString();
-            validDomainName = true;
+            domain.publicSuffix();
         } catch (Exception e) {
             validDomainName = false;
         }
