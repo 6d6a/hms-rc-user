@@ -10,9 +10,6 @@ import javax.validation.ConstraintValidatorContext;
 
 import ru.majordomo.hms.rc.user.resources.validation.DomainName;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 @Component
 public class DomainNameValidator implements ConstraintValidator<DomainName, String> {
 
@@ -26,7 +23,7 @@ public class DomainNameValidator implements ConstraintValidator<DomainName, Stri
             if (!DomainValidator.getInstance().isValid(domainName)) return false;
 
             InternetDomainName domain = InternetDomainName.from(domainName);
-            String domainPublicPart = domain.publicSuffix().toString();
+            domain.publicSuffix();
         } catch (Exception e) {
             return false;
         }

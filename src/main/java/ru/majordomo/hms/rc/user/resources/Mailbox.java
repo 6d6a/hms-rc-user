@@ -7,10 +7,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
-import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
-import ru.majordomo.hms.rc.user.resources.validation.ValidAbsoluteFilePath;
-import ru.majordomo.hms.rc.user.resources.validation.ValidEmail;
-import ru.majordomo.hms.rc.user.resources.validation.ValidMailbox;
+import ru.majordomo.hms.rc.user.resources.validation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
@@ -39,10 +36,10 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private List<@ValidEmail String> redirectAddresses = new ArrayList<>();
 
     @Valid
-    private List<@ValidEmail String> blackList = new ArrayList<>();
+    private List<@ValidEmailOrDomainName String> blackList = new ArrayList<>();
 
     @Valid
-    private List<@ValidEmail String> whiteList = new ArrayList<>();
+    private List<@ValidEmailOrDomainName String> whiteList = new ArrayList<>();
 
     private Boolean mailFromAllowed = true;
 
@@ -147,11 +144,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     @JsonIgnore
     public List<String> getBlackListInPunycode() {
-        List<String> blackListInPunycode = new ArrayList<>();
-        for (String blackElem : blackList) {
-            blackListInPunycode.add(IDN.toASCII(blackElem.split("@")[0]) + "@" + IDN.toASCII(blackElem.split("@")[1]));
-        }
-        return blackListInPunycode;
+        return this.getPunycodedList(blackList);
     }
 
     public void setBlackList(List<String> blackList) {
@@ -168,11 +161,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     @JsonIgnore
     public List<String> getWhiteListInPunycode() {
-        List<String> whiteListInPunycode = new ArrayList<>();
-        for (String whiteElem : whiteList) {
-            whiteListInPunycode.add(IDN.toASCII(whiteElem.split("@")[0]) + "@" + IDN.toASCII(whiteElem.split("@")[1]));
-        }
-        return whiteListInPunycode;
+        return this.getPunycodedList(whiteList);
     }
 
     public void setWhiteList(List<String> whiteList) {
@@ -181,6 +170,19 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     public void addToWhiteList(String emailAddress) {
         this.whiteList.add(emailAddress);
+    }
+
+    private List<String> getPunycodedList(List<String> notPunycodedList) {
+        List<String> punycidedList= new ArrayList<>();
+        for (String elem : notPunycodedList) {
+            String[] afterSplit = elem.split("@");
+            if (afterSplit.length == 2) {
+                punycidedList.add(IDN.toASCII(afterSplit[0]) + "@" + IDN.toASCII(afterSplit[1]));
+            } else {
+                punycidedList.add(IDN.toASCII(afterSplit[0]));
+            }
+        }
+        return punycidedList;
     }
 
     public Boolean getMailFromAllowed() { return mailFromAllowed; }
