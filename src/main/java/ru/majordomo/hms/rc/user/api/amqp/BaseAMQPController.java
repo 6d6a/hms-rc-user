@@ -131,7 +131,7 @@ class BaseAMQPController {
             }
         } else {
             if (resource != null) {
-                resource.setLocked(true);
+                resource.setLocked(false);
                 governor.store(resource);
             }
         }
@@ -194,7 +194,7 @@ class BaseAMQPController {
         if (success && (resource instanceof ServerStorable || resource instanceof Serviceable) && !resourceType.equals("mailbox")) {
             String teRoutingKey = getTaskExecutorRoutingKey(resource);
             sender.send(resourceType + ".update", teRoutingKey, report);
-            resource.setLocked(true);
+            resource.setLocked(false);
             governor.store(resource);
         } else {
             sender.send(resourceType + ".update", "pm", report);
