@@ -147,7 +147,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                 try {
                                     ResponseEntity responseEntity = registrar.renewDomain(domain.getName(),
                                             domain.getRegSpec().getRegistrar());
-                                    if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                                    if (!responseEntity.getStatusCode().equals(HttpStatus.ACCEPTED)) {
                                         throw new ParameterValidateException("Ошибка при продлении домена");
                                     }
                                     domain.setRegSpec(registrar.getRegSpec(domain.getName()));
