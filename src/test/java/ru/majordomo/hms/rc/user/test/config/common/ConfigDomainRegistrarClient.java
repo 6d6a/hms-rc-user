@@ -34,7 +34,7 @@ public class ConfigDomainRegistrarClient {
 
             @Override
             public ResponseEntity renewDomain(@PathVariable("domainName") String domainName, @PathVariable("registrar") DomainRegistrar registrar) {
-                return new ResponseEntity(HttpStatus.CREATED);
+                return new ResponseEntity(HttpStatus.ACCEPTED);
             }
 
             @Override
