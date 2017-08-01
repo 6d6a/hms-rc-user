@@ -248,7 +248,6 @@ class BaseAMQPController {
                         " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                         " Обновление ресурса " + resourceType + " не удалось: locked");
                 errorMessage = "Ресурс в процессе обновления";
-
                 ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
                 report.addParam("success", false);
                 sender.send(resourceType + ".update", "pm", report);
