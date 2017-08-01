@@ -125,12 +125,10 @@ class BaseAMQPController {
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
-        if (!successEvent) {
-            if (resource != null) {
+        if (resource != null) {
+            if (!successEvent) {
                 governor.drop(resource.getId());
-            }
-        } else {
-            if (resource != null) {
+            } else {
                 resource.setLocked(false);
                 governor.store(resource);
             }
@@ -250,7 +248,6 @@ class BaseAMQPController {
                         " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                         " Обновление ресурса " + resourceType + " не удалось: locked");
                 errorMessage = "Ресурс в процессе обновления";
-
                 ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
                 report.addParam("success", false);
                 sender.send(resourceType + ".update", "pm", report);
@@ -294,13 +291,13 @@ class BaseAMQPController {
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
-        if (successEvent){
-            if (resource != null) {
+        if (resource != null) {
+            if (successEvent){
                 governor.drop(resource.getId());
+            } else {
+                resource.setLocked(false);
+                governor.store(resource);
             }
-        } else {
-            resource.setLocked(false);
-            governor.store(resource);
         }
 
         sender.send(resourceType + ".delete", "pm", report);
