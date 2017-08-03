@@ -255,6 +255,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             } else {
                 throw new ParameterValidateException("Персона должна быть указана");
             }
+            
             domain.setAutoRenew(true);
         } else if (serviceMessage.getParam("parentDomainId") != null) {
             Domain parent = repository.findOne((String) serviceMessage.getParam("parentDomainId"));
