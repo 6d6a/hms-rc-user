@@ -115,7 +115,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    protected DNSResourceRecord buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public DNSResourceRecord buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         DNSResourceRecord record = new DNSResourceRecord();
         return setRecordParams(serviceMessage, record);
     }

@@ -145,12 +145,9 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                         case "renew":
                             if ((Boolean) entry.getValue()) {
                                 try {
-                                    if (domain.getPersonId() == null) {
-                                        throw new ParameterValidateException("Отсутствует personId");
-                                    }
-                                    Person person = governorOfPerson.build(domain.getPersonId());
-                                    ResponseEntity responseEntity = registrar.renewDomain(person.getNicHandle(), domain.getName());
-                                    if (!responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                                    ResponseEntity responseEntity = registrar.renewDomain(domain.getName(),
+                                            domain.getRegSpec().getRegistrar());
+                                    if (!responseEntity.getStatusCode().equals(HttpStatus.ACCEPTED)) {
                                         throw new ParameterValidateException("Ошибка при продлении домена");
                                     }
                                     domain.setRegSpec(registrar.getRegSpec(domain.getName()));
@@ -246,7 +243,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    protected Domain buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public Domain buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         setResourceParams(domain, serviceMessage, cleaner);
         if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
@@ -258,6 +255,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             } else {
                 throw new ParameterValidateException("Персона должна быть указана");
             }
+            
+            domain.setAutoRenew(true);
         } else if (serviceMessage.getParam("parentDomainId") != null) {
             Domain parent = repository.findOne((String) serviceMessage.getParam("parentDomainId"));
             if (parent == null) {

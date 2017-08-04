@@ -10,6 +10,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
+import ru.majordomo.hms.rc.user.resources.DomainRegistrar;
 import ru.majordomo.hms.rc.user.resources.DomainState;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
@@ -32,8 +33,8 @@ public class ConfigDomainRegistrarClient {
             }
 
             @Override
-            public ResponseEntity renewDomain(@PathVariable("nicHandle") String nicHandle, @PathVariable("domainName") String domainName) {
-                return new ResponseEntity(HttpStatus.CREATED);
+            public ResponseEntity renewDomain(@PathVariable("domainName") String domainName, @PathVariable("registrar") DomainRegistrar registrar) {
+                return new ResponseEntity(HttpStatus.ACCEPTED);
             }
 
             @Override

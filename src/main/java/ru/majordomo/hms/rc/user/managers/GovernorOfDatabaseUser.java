@@ -150,7 +150,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
-    protected DatabaseUser buildResourceFromServiceMessage(ServiceMessage serviceMessage)
+    public DatabaseUser buildResourceFromServiceMessage(ServiceMessage serviceMessage)
             throws ClassCastException, UnsupportedEncodingException {
         DatabaseUser databaseUser = new DatabaseUser();
         setResourceParams(databaseUser, serviceMessage, cleaner);

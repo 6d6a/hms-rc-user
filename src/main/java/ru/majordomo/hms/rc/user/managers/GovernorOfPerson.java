@@ -260,7 +260,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     @Override
-    protected Person buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
+    public Person buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
 
         String actionId = serviceMessage.getActionIdentity();
         String operationId = serviceMessage.getOperationIdentity();
@@ -485,7 +485,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
             try {
                 preValidate(personFromDomainRegistrar);
-                validate(personFromDomainRegistrar);
+                //validateImported(personFromDomainRegistrar);
                 store(personFromDomainRegistrar);
             } catch (ParameterValidateException | ConstraintViolationException e) {
                 e.printStackTrace();

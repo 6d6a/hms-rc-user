@@ -154,7 +154,7 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.setAccountId(databaseUserList.get(0).getAccountId());
         sender.send("database-user.update", "rc.user", serviceMessage, "pm");
         Message message = rabbitTemplate.receive("te.web100500", 1000);
-        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message, "The message must not be null!");
         Assert.notNull(message.getBody(), "The message body must not be null");
     }
 
@@ -164,7 +164,7 @@ public class DatabaseUserAMQPControllerTest {
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
         sender.send("database-user.update", "rc.user", serviceMessage, "te");
         Message message = rabbitTemplate.receive("pm-update", 1000);
-        Assert.notNull(message, "The message must not be null");
+        Assert.notNull(message, "The message must not be null!");
         Assert.notNull(message.getBody(), "The message body must not be null");
     }
 

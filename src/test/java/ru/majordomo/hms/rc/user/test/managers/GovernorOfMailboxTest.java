@@ -236,8 +236,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("quota", 500000L);
-        serviceMessage.addParam("blackList", Collections.singletonList("ololo@bad.ru"));
-        serviceMessage.addParam("whiteList", Collections.singletonList("ololo@good.ru"));
+        serviceMessage.addParam("blackList", Arrays.asList("ololo@bad.ru", "spam.com"));
+        serviceMessage.addParam("whiteList", Arrays.asList("good.ru", "ololo@my-friend.com"));
         serviceMessage.addParam("redirectAddresses", Collections.singletonList("ololo@redirect.ru"));
         governor.update(serviceMessage);
 
@@ -246,8 +246,8 @@ public class GovernorOfMailboxTest {
         assertNotNull(mailbox.getPasswordHash());
         assertThat(mailbox.getQuota(), is(500000L));
         assertThat(mailbox.getQuotaUsed(), is(0L));
-        assertThat(mailbox.getWhiteList(), is(Collections.singletonList("ololo@good.ru")));
-        assertThat(mailbox.getBlackList(), is(Collections.singletonList("ololo@bad.ru")));
+        assertThat(mailbox.getWhiteList(), is(Arrays.asList("good.ru", "ololo@my-friend.com")));
+        assertThat(mailbox.getBlackList(), is(Arrays.asList("ololo@bad.ru", "spam.com")));
         assertThat(mailbox.getRedirectAddresses(), is(Collections.singletonList("ololo@redirect.ru")));
         assertThat(mailbox.getPasswordHash(), not(mailboxes.get(0).getPasswordHash()));
 

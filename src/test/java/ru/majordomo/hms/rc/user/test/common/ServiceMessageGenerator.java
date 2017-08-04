@@ -172,7 +172,7 @@ public class ServiceMessageGenerator {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(ObjectId.get().toString());
-        serviceMessage.addParam("password", "87654321");
+        serviceMessage.addParam("allowedAddressList", Arrays.asList("8.8.8.8"));
 
         return serviceMessage;
     }
