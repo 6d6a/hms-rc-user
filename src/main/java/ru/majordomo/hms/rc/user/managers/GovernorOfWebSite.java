@@ -283,6 +283,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "multiViews":
                         website.setMultiViews((Boolean) entry.getValue());
                         break;
+                    case "ddosProtection":
+                        website.setDdosProtection((Boolean) entry.getValue());
+                        break;
                     case "switchedOn":
                         website.setSwitchedOn((Boolean) entry.getValue());
                     default:
