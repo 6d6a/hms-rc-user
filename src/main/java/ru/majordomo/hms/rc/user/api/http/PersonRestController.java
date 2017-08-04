@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
 
@@ -45,4 +46,17 @@ public class PersonRestController {
         return governor.buildAll(keyValue);
     }
 
+    @RequestMapping(value = "/{accountId}/person", method = RequestMethod.POST)
+    public Person addByNicHandle(
+            @PathVariable String accountId,
+            @RequestBody Map<String, String> requestBody
+    ) {
+        String nicHandle = requestBody.get("nicHandle");
+
+        if (nicHandle == null || nicHandle.equals("")) {
+            throw new ParameterValidateException("Для добавления персоны необходимо указать её nicHandle");
+        }
+
+        return governor.addByNicHandle(accountId, nicHandle);
+    }
 }

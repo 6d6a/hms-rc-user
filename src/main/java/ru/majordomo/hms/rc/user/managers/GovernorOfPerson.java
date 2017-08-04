@@ -500,4 +500,27 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             store(person);
         }
     }
+
+    public Person addByNicHandle(String accountId, String nicHandle) {
+        Person personFromDomainRegistrar = domainRegistrarClient.getPerson(nicHandle);
+
+        if (personFromDomainRegistrar != null) {
+            personFromDomainRegistrar.setAccountId(accountId);
+            personFromDomainRegistrar.setSwitchedOn(true);
+
+            try {
+                preValidate(personFromDomainRegistrar);
+                validate(personFromDomainRegistrar);
+                store(personFromDomainRegistrar);
+            } catch (ParameterValidateException | ConstraintViolationException e) {
+                e.printStackTrace();
+                throw e;
+            }
+
+            return personFromDomainRegistrar;
+        } else {
+            throw new ResourceNotFoundException("Персона с nicHandle: " + nicHandle + " не найдена " +
+                    "у регистратора, либо не находится на партнерском договоре c Majordomo.");
+        }
+    }
 }
