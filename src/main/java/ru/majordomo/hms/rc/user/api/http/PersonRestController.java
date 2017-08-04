@@ -46,10 +46,11 @@ public class PersonRestController {
         return governor.buildAll(keyValue);
     }
 
-    @RequestMapping(value = {"/{accountId}/person", "/{accountId}/person/"}, method = RequestMethod.POST)
+    @RequestMapping(value = "/{accountId}/person", method = RequestMethod.POST)
     public Person addByNicHandle(
             @PathVariable String accountId,
-            @RequestBody Map<String, String> requestBody) {
+            @RequestBody Map<String, String> requestBody
+    ) {
         String nicHandle = requestBody.get("nicHandle");
 
         if (nicHandle == null || nicHandle.equals("")) {

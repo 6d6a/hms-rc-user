@@ -520,7 +520,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             return personFromDomainRegistrar;
         } else {
             throw new ResourceNotFoundException("Персона с nicHandle: " + nicHandle + " не найдена " +
-                    "у регистратора, либо не находится на нашем партнерском договоре.");
+                    "у регистратора, либо не находится на партнерском договоре c Majordomo.");
         }
     }
 }
