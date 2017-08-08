@@ -388,9 +388,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setAccessByOldHttpVersion(accessByOldHttpVersion);
             webSite.setStaticFileExtensions(staticFileExtensions);
             webSite.setIndexFileList(indexFileList);
-            webSite.setAccessLogEnabled(accessLogEnabled);
-            webSite.setErrorLogEnabled(errorLogEnabled);
-            webSite.setAllowUrlFopen(allowUrlFopen);
+            webSite.setAccessLogEnabled(accessLogEnabled != null ? accessLogEnabled : true);
+            webSite.setErrorLogEnabled(errorLogEnabled != null ? errorLogEnabled : true);
+            webSite.setAllowUrlFopen(allowUrlFopen != null ? allowUrlFopen : true);
             webSite.setMbstringFuncOverload(mbstringFuncOverload);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
