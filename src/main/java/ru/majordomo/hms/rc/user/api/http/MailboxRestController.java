@@ -48,6 +48,11 @@ public class MailboxRestController {
         return governor.buildAll(keyValue);
     }
 
+    @RequestMapping(value = {"/mailbox/filter"}, method = RequestMethod.GET, headers = {"X-HMS-Projection=te"})
+    public Collection<Mailbox> filterTe(@RequestParam Map<String, String> keyValue) {
+        return governor.buildAllForTe(keyValue);
+    }
+
     @RequestMapping(value = {"/mailbox/filter"}, method = RequestMethod.GET)
     public Collection<Mailbox> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
