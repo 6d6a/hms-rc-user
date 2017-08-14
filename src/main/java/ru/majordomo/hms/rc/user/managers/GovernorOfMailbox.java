@@ -11,6 +11,7 @@ import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.jongo.MongoCursor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -108,7 +109,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Autowired
-    public void setMongoClient(MongoClient mongoClient) {
+    public void setMongoClient(@Qualifier("jongoMongoClient") MongoClient mongoClient) {
         this.mongoClient = mongoClient;
     }
 
