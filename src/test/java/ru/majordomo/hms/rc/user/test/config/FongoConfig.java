@@ -8,8 +8,6 @@ import org.bson.types.ObjectId;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
@@ -27,6 +25,11 @@ public class FongoConfig  extends AbstractMongoConfiguration {
 
     @Bean
     public MongoClient mongoClient() {
+        return new MongoClient();
+    }
+
+    @Bean("jongoMongoClient")
+    public MongoClient jongoMongoClient() throws Exception {
         return new MongoClient();
     }
 }
