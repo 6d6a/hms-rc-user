@@ -426,8 +426,15 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     @Override
     public Mailbox construct(Mailbox mailbox) throws ParameterValidateException {
-        Domain domain = governorOfDomain.build(mailbox.getDomainId());
-        mailbox.setDomain(domain);
+        Domain domain;
+        try {
+            if (mailbox.getDomainId() != null) {
+                domain = governorOfDomain.build(mailbox.getDomainId());
+                mailbox.setDomain(domain);
+            }
+        } catch (ResourceNotFoundException e) {
+            e.printStackTrace();
+        }
         return mailbox;
     }
 
