@@ -23,10 +23,12 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Person;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
@@ -90,6 +92,8 @@ public class MailboxRestControllerTest {
     private PersonRepository personRepository;
     @Autowired
     private DomainRepository domainRepository;
+    @Autowired
+    private UnixAccountRepository unixAccountRepository;
 
     @Before
     public void setUp() throws Exception {
@@ -98,6 +102,8 @@ public class MailboxRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfMailboxes = ResourceGenerator.generateBatchOfMailboxes();
+        List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
+        unixAccountRepository.save(unixAccounts);
         for (Mailbox mailbox: batchOfMailboxes) {
             Person person = mailbox.getDomain().getPerson();
             Domain domain = mailbox.getDomain();
@@ -107,6 +113,8 @@ public class MailboxRestControllerTest {
 
             domainRepository.save(domain);
             mailbox.setDomainId(domain.getId());
+
+            mailbox.setUid(unixAccounts.get(0).getUid());
         }
 
         repository.save((Iterable) batchOfMailboxes);

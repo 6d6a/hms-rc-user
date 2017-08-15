@@ -23,6 +23,7 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
+import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -33,6 +34,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private MailboxRepository repository;
     private MailboxRedisRepository redisRepository;
+    private UnixAccountRepository unixAccountRepository;
     private GovernorOfDomain governorOfDomain;
     private GovernorOfUnixAccount governorOfUnixAccount;
     private Cleaner cleaner;
@@ -69,6 +71,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     @Autowired
     public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
         this.governorOfUnixAccount = governorOfUnixAccount;
+    }
+
+    @Autowired
+    public void setUnixAccountRepository(UnixAccountRepository unixAccountRepository) {
+        this.unixAccountRepository = unixAccountRepository;
     }
 
     @Autowired
@@ -559,7 +566,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             if (mailbox.getQuotaUsed() > mailbox.getQuota()) {
                 mailbox.setWritable(false);
             } else {
-                mailbox.setWritable(true);
+                UnixAccount unixAccount = unixAccountRepository.findByUid(mailbox.getUid());
+                if (unixAccount == null) { throw new ResourceNotFoundException("UnixAccount с UID: " + mailbox.getUid() + " не найден"); }
+                if (unixAccount.getWritable()) { mailbox.setWritable(true); }
             }
         } else {
             throw new ResourceNotFoundException("Mailbox с ID: " + mailboxId + " не найден");
