@@ -11,6 +11,7 @@ import java.util.List;
 public interface UnixAccountRepository extends MongoRepository<UnixAccount,String> {
     UnixAccount findFirstByOrderByUidDesc();
     UnixAccount findFirstByOrderByUidAsc();
+    UnixAccount findByUid(Integer uid);
     Page<UnixAccount> findAllByOrderByUidAsc(Pageable pageable);
     List<UnixAccount> findByAccountId(String accountId);
     List<UnixAccount> findByServerId(String serverId);
