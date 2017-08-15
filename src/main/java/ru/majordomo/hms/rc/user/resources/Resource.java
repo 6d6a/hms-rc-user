@@ -1,9 +1,8 @@
 package ru.majordomo.hms.rc.user.resources;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
+import org.jongo.marshall.jackson.oid.MongoId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
@@ -27,6 +26,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
 public abstract class Resource {
     @Id
+    @MongoId
     private String id;
 
     @NotBlank(message = "Имя не может быть пустым",

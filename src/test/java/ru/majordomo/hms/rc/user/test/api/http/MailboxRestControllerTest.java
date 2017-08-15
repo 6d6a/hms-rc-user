@@ -123,6 +123,7 @@ public class MailboxRestControllerTest {
                         responseFields(
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
+                                fieldWithPath("domainId").description("ID домена"),
                                 fieldWithPath("name").description("Имя ящика без указания домена"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли ящик"),
                                 fieldWithPath("passwordHash").description("Хэш пароля"),

@@ -213,7 +213,6 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         this.spamFilterMood = spamFilterMood;
     }
 
-    @JsonIgnore
     public String getDomainId() {
         return domainId;
     }

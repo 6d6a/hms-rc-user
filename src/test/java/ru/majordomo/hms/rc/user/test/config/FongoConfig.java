@@ -2,12 +2,12 @@ package ru.majordomo.hms.rc.user.test.config;
 
 import com.github.fakemongo.Fongo;
 import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+
 import org.bson.types.ObjectId;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
@@ -21,5 +21,15 @@ public class FongoConfig  extends AbstractMongoConfiguration {
     @Override
     public Mongo mongo() {
         return new Fongo(getDatabaseName()).getMongo();
+    }
+
+    @Bean
+    public MongoClient mongoClient() {
+        return new MongoClient();
+    }
+
+    @Bean("jongoMongoClient")
+    public MongoClient jongoMongoClient() throws Exception {
+        return new MongoClient();
     }
 }

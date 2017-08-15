@@ -2,16 +2,25 @@ package ru.majordomo.hms.rc.user.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
 
 import feign.FeignException;
+
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
+import org.jongo.MongoCursor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -43,6 +52,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     private Validator validator;
 
+    private MongoClient mongoClient;
+    private String springDataMongodbDatabase;
+
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
@@ -54,6 +66,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     @Value("${default.mailbox.spamfilter.mood}")
     public void setDefaultSpamFilterMood(SpamFilterMood spamFilterMood) {
         this.defaultSpamFilterMood = spamFilterMood;
+    }
+
+    @Value("${spring.data.mongodb.database}")
+    public void setSpringDataMongodbDatabase(String springDataMongodbDatabase) {
+        this.springDataMongodbDatabase = springDataMongodbDatabase;
     }
 
     @Autowired
@@ -89,6 +106,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     @Autowired
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    @Autowired
+    public void setMongoClient(@Qualifier("jongoMongoClient") MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
     }
 
     @Override
@@ -405,8 +427,22 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     @Override
     public Mailbox construct(Mailbox mailbox) throws ParameterValidateException {
-        Domain domain = governorOfDomain.build(mailbox.getDomainId());
-        mailbox.setDomain(domain);
+        Domain domain;
+        try {
+            if (mailbox.getDomainId() != null) {
+                domain = governorOfDomain.build(mailbox.getDomainId());
+                mailbox.setDomain(domain);
+            }
+        } catch (ResourceNotFoundException e) {
+            e.printStackTrace();
+        }
+        return mailbox;
+    }
+
+    private Mailbox constructForTe(Map<String, Domain> domainMap, Mailbox mailbox) {
+        if (domainMap.containsKey(mailbox.getDomainId())) {
+            mailbox.setDomain(domainMap.get(mailbox.getDomainId()));
+        }
         return mailbox;
     }
 
@@ -453,6 +489,56 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         }
 
         return buildedMailboxes;
+    }
+
+    public Collection<Mailbox> buildAllForTe(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<Mailbox> mailboxes = new ArrayList<>();
+
+        logger.info("[start] searchForDomains");
+
+        DB db = mongoClient.getDB(springDataMongodbDatabase);
+
+        Jongo jongo = new Jongo(db);
+        MongoCollection domainsCollection = jongo.getCollection("domains");
+
+        List<Domain> domains = new ArrayList<>();
+
+        try (MongoCursor<Domain> domainsCursor = domainsCollection
+                .find()
+                .projection("{name: 1}")
+                .as(Domain.class)
+        ) {
+            while (domainsCursor.hasNext()) {
+                domains.add(domainsCursor.next());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        logger.debug("[end] searchForDomains");
+
+        Map<String, Domain> domainMap = domains.stream().collect(Collectors.toMap(Resource::getId, d -> d));
+
+        if (keyValue.get("serverId") != null) {
+            logger.debug("[start] searchForMailbox");
+
+            MongoCollection mailboxesCollection = jongo.getCollection("mailboxes");
+
+            try (MongoCursor<Mailbox> mailboxCursor = mailboxesCollection
+                    .find("{serverId:#}", keyValue.get("serverId"))
+                    .as(Mailbox.class)
+            ) {
+                while (mailboxCursor.hasNext()) {
+                    mailboxes.add(constructForTe(domainMap, mailboxCursor.next()));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            logger.debug("[end] searchForMailbox");
+        }
+
+        return mailboxes;
     }
 
     @Override
