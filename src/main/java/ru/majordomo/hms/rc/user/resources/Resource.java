@@ -48,7 +48,7 @@ public abstract class Resource {
                               WebSiteChecks.class,
                               WebSiteImportChecks.class
                       })
-    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseChecks.class, DatabaseUserChecks.class, DatabaseUserImportChecks.class})
+    @Length(max = 16, message = "Имя не может быть длиннее 16 символов", groups = {DatabaseUserChecks.class, DatabaseUserImportChecks.class})
     @DomainName(groups = DomainChecks.class)
 //    @ValidPersonName(groups = {PersonChecks.class})
     @ValidDatabaseName(groups = {DatabaseChecks.class})
