@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -229,6 +230,10 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
             throw new ResourceNotFoundException("SSLCertificate с ID: " + resourceId + " не найден");
         }
         return sslCertificate;
+    }
+
+    public Stream<SSLCertificate> findAllStream() {
+        return repository.findAll().stream();
     }
 
     @Override
