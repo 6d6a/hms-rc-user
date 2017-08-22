@@ -133,6 +133,7 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("domainId").description("ID домена"),
                                 fieldWithPath("name").description("Имя ящика без указания домена"),
+                                fieldWithPath("comment").description("Комментарий для ящика"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли ящик"),
                                 fieldWithPath("passwordHash").description("Хэш пароля"),
                                 fieldWithPath("domain").description("Домен, на котором создан ящик"),
