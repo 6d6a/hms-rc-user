@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -31,6 +32,11 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     @NotBlank(message = "Не указан пароль для почтового ящика")
     private String passwordHash;
+
+    @Length(
+            max = 128,
+            message = "Поле 'Комментарий' не может быть длиннее {max} символов")
+    private String comment;
 
     @Valid
     private List<@ValidEmail String> redirectAddresses = new ArrayList<>();
@@ -115,6 +121,14 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         if (plainPassword != null && !plainPassword.equals("")) {
             passwordHash = PasswordManager.forMailStorage(plainPassword);
         }
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public List<String> getRedirectAddresses() {
@@ -300,6 +314,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
                 "domain=" + domain +
                 ", domainId='" + domainId + '\'' +
                 ", passwordHash='" + passwordHash + '\'' +
+                ", comment='" + comment + '\'' +
                 ", redirectAddresses=" + redirectAddresses +
                 ", blackList=" + blackList +
                 ", whiteList=" + whiteList +

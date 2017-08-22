@@ -38,6 +38,7 @@ import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 
 @Service
 public class GovernorOfMailbox extends LordOfResources<Mailbox> {
@@ -267,6 +268,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         SpamFilterMood spamFilterMood = null;
         SpamFilterAction spamFilterAction = null;
         String domainId;
+        String comment = null;
 
         try {
             if (serviceMessage.getParam("domainId") == null) {
@@ -277,6 +279,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
             if (serviceMessage.getParam("password") != null) {
                 plainPassword = (String) serviceMessage.getParam("password");
+            }
+
+            if (serviceMessage.getParam("comment") != null) {
+                comment = (String) serviceMessage.getParam("comment");
             }
 
             if (serviceMessage.getParam("redirectAddresses") != null) {
@@ -372,6 +378,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailbox.setAntiSpamEnabled(antiSpamEnabled);
         mailbox.setSpamFilterAction(spamFilterAction);
         mailbox.setSpamFilterMood(spamFilterMood);
+        mailbox.setComment(comment);
 
         return mailbox;
     }
@@ -424,7 +431,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     @Override
     public void validateImported(Mailbox mailbox) {
-        Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxChecks.class);
+        Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxImportChecks.class);
 
         if (!constraintViolations.isEmpty()) {
             logger.debug("[validateImported] mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());

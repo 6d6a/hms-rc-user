@@ -15,6 +15,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
@@ -40,6 +41,7 @@ public abstract class Resource {
                               DomainChecks.class,
                               FTPUserChecks.class,
                               MailboxChecks.class,
+                              MailboxImportChecks.class,
 //                              PersonChecks.class,
 //                              PersonImportChecks.class,
                               SSLCertificateChecks.class,
@@ -54,7 +56,7 @@ public abstract class Resource {
     @ValidDatabaseName(groups = {DatabaseChecks.class})
     @ValidDatabaseUserName(groups = {DatabaseUserChecks.class})
     @ValidFTPUserName(groups = {FTPUserChecks.class})
-    @ValidMailboxName(groups = {MailboxChecks.class})
+    @ValidMailboxName(groups = {MailboxChecks.class, MailboxImportChecks.class})
     @ObjectId(value = Domain.class, fieldName = "name", groups = SSLCertificateChecks.class, message = "Домен с указанным именем не найден")
     @Indexed
     private String name;
@@ -69,6 +71,7 @@ public abstract class Resource {
                               DomainChecks.class,
                               FTPUserChecks.class,
                               MailboxChecks.class,
+                              MailboxImportChecks.class,
                               PersonChecks.class,
                               PersonImportChecks.class,
                               ResourceArchiveChecks.class,
