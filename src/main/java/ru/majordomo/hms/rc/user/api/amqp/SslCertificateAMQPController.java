@@ -91,7 +91,9 @@ public class SslCertificateAMQPController {
             String accountId = serviceMessage.getAccountId();
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", name);
-            keyValue.put("accountId", accountId);
+            //TODO подумать насколько это хорошо или плохо
+            //TODO (если есть cert на другом акке для этого домена, то забирать его на новый акк)
+//            keyValue.put("accountId", accountId);
 
             if (governor.exists(keyValue)) {
                 SSLCertificate certificate = (SSLCertificate) governor.update(serviceMessage);

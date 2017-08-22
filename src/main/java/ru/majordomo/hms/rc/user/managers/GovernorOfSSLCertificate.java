@@ -85,6 +85,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         if (sslCertificate == null) {
             throw new ResourceNotFoundException();
         }
+        sslCertificate.setAccountId(serviceMessage.getAccountId());
         sslCertificate.setSwitchedOn(true);
         return sslCertificate;
     }
@@ -218,6 +219,10 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
         if (hasNameAndAccountId(keyValue)) {
             certificate = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+        }
+
+        if (keyValue.get("name") != null) {
+            certificate = repository.findByName(keyValue.get("name"));
         }
 
         return certificate != null;
