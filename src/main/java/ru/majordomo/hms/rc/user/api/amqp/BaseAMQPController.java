@@ -240,6 +240,11 @@ class BaseAMQPController {
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
             report.addParam("success", false);
             sender.send(resourceType + ".delete", "pm", report);
+        } catch (ParameterValidateException e) {
+            errorMessage = "Обработка ресурса " + resourceType + " с ID: " + resourceId + " и accountId: " + accountId + " не удалась";
+            ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
+            report.addParam("success", false);
+            sender.send(resourceType + ".delete", "pm", report);
         }
 
         if (resource != null) {
