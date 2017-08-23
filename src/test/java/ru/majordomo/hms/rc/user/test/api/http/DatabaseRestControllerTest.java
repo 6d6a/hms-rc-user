@@ -112,6 +112,7 @@ public class DatabaseRestControllerTest {
                                 fieldWithPath("switchedOn").description("Флаг того, активна ли база данных"),
                                 fieldWithPath("serviceId").description("ID сервиса, к которому привязана база данных"),
                                 fieldWithPath("type").description("Тип базы данных"),
+                                fieldWithPath("quota").description("Максимальный размер базы данных"),
                                 fieldWithPath("quotaUsed").description("Фактический размер базы в килобайтах"),
                                 fieldWithPath("writable").description("Флаг доступности записи."),
                                 fieldWithPath("databaseUsers").description("Список пользователей этой базы"),

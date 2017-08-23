@@ -98,13 +98,11 @@ public class Database extends Resource implements Serviceable, Quotable {
     }
 
     @Override
-    @JsonIgnore
     public void setQuota(Long quota) {
         this.quota = quota;
     }
 
     @Override
-    @JsonIgnore
     public Long getQuota() {
         return quota;
     }
