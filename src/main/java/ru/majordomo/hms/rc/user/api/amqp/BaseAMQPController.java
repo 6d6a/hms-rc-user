@@ -71,8 +71,10 @@ class BaseAMQPController {
         return resource;
     }
 
-    void handleCreateEventFromPM(String resourceType,
-                                 ServiceMessage serviceMessage) {
+    void handleCreateEventFromPM(
+            String resourceType,
+            ServiceMessage serviceMessage
+    ) {
 
         Boolean success;
         Resource resource = null;
@@ -104,7 +106,6 @@ class BaseAMQPController {
                 sender.send(resourceType + ".create", teRoutingKey, report);
             } catch (ParameterValidateException e) {
                 errorMessage = e.getMessage();
-                serviceMessage.delParam("success");
                 serviceMessage.addParam("success", false);
                 report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
                 sender.send(resourceType + ".create", "pm", report);
@@ -116,9 +117,10 @@ class BaseAMQPController {
         }
     }
 
-    void handleCreateEventFromTE(String resourceType,
-                                 ServiceMessage serviceMessage) {
-
+    void handleCreateEventFromTE(
+            String resourceType,
+            ServiceMessage serviceMessage
+    ) {
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
         Resource resource = getResourceByUrl(resourceUrl);
@@ -137,9 +139,10 @@ class BaseAMQPController {
         sender.send(resourceType + ".create", "pm", report);
     }
 
-    void handleUpdateEventFromPM(String resourceType,
-                                 ServiceMessage serviceMessage) {
-
+    void handleUpdateEventFromPM(
+            String resourceType,
+            ServiceMessage serviceMessage
+    ) {
         Boolean success;
         Resource resource = null;
         String errorMessage = "";
@@ -199,9 +202,10 @@ class BaseAMQPController {
         }
     }
 
-    void handleUpdateEventFromTE(String resourceType,
-                                 ServiceMessage serviceMessage) {
-
+    void handleUpdateEventFromTE(
+            String resourceType,
+            ServiceMessage serviceMessage
+    ) {
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
         Resource resource = getResourceByUrl(resourceUrl);
@@ -217,8 +221,10 @@ class BaseAMQPController {
         sender.send(resourceType + ".update", "pm", report);
     }
 
-    void handleDeleteEventFromPM(String resourceType, ServiceMessage serviceMessage) {
-
+    void handleDeleteEventFromPM(
+            String resourceType,
+            ServiceMessage serviceMessage
+    ) {
         String errorMessage = "";
         String resourceId = null;
         Resource resource = null;
@@ -265,8 +271,6 @@ class BaseAMQPController {
                 try {
                     governor.preDelete(resourceId);
                 } catch (ParameterValidateException e) {
-                    report.delParam("success");
-                    report.delParam("errorMessage");
                     report.addParam("success", false);
                     report.addParam("errorMessage", e.getMessage());
                 }
@@ -277,8 +281,6 @@ class BaseAMQPController {
                 try {
                     governor.drop(resourceId);
                 } catch (ParameterValidateException e) {
-                    report.delParam("success");
-                    report.delParam("errorMessage");
                     report.addParam("success", false);
                     report.addParam("errorMessage", e.getMessage());
                 }
@@ -287,9 +289,10 @@ class BaseAMQPController {
         }
     }
 
-    void handleDeleteEventFromTE(String resourceType,
-                                             ServiceMessage serviceMessage) {
-
+    void handleDeleteEventFromTE(
+            String resourceType,
+            ServiceMessage serviceMessage
+    ) {
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
         Resource resource = getResourceByUrl(resourceUrl);
@@ -309,15 +312,23 @@ class BaseAMQPController {
 
     }
 
-    private ServiceMessage createReportMessage(ServiceMessage event,
-                                               String resourceType,
-                                               Resource resource, String errorMessage) {
+    private ServiceMessage createReportMessage(
+            ServiceMessage event,
+            String resourceType,
+            Resource resource,
+            String errorMessage
+    ) {
         ServiceMessage report = new ServiceMessage();
         report.setActionIdentity(event.getActionIdentity());
         report.setOperationIdentity(event.getOperationIdentity());
         report.setAccountId(event.getAccountId());
         if (resource != null) {
             report.setObjRef("http://" + applicationName + "/" + resourceType + "/" + resource.getId());
+            report.addParam("name", resource.getName());
+
+            if (report.getAccountId() == null || report.getAccountId().equals("")) {
+                report.setAccountId(resource.getAccountId());
+            }
         }
         Boolean eventSuccess = (Boolean) event.getParam("success");
         if (eventSuccess == null) {
@@ -349,5 +360,4 @@ class BaseAMQPController {
             throw new ParameterValidateException("Exception: " + e.getMessage());
         }
     }
-
 }

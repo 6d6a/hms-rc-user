@@ -10,13 +10,11 @@ buildscript {
         resolutionStrategy.cacheDynamicVersionsFor 5, 'minutes'
     }
     dependencies {
-        classpath("io.spring.gradle:dependency-management-plugin:0.6.0.RELEASE")
+        classpath("io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("se.transmode.gradle:gradle-docker:1.2")
         classpath "com.avast.gradle:docker-compose-gradle-plugin:0.3.9"
         classpath("ru.majordomo.gradle.plugins:copycompose:1.+")
-        classpath("ru.majordomo.hms.rc.user:resources:1+")
-        classpath("ru.majordomo.hms.rc.staff:resources:1.0.6.+")
         classpath("org.ajoberstar:gradle-git:1.6.0")
     }
 }
@@ -122,7 +120,7 @@ dependencies {
     compile("commons-validator:commons-validator:1.6")
     compile("com.googlecode.libphonenumber:libphonenumber:7.7.3")
     compile("com.jcraft:jsch:0.1.54")
-    testCompile('com.github.fakemongo:fongo:2.0.9')
+    testCompile('com.github.fakemongo:fongo:2.1.0')
     testCompile('com.github.kstyrc:embedded-redis:0.6')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile("org.springframework.restdocs:spring-restdocs-mockmvc:${springRestDocsVersion}")
