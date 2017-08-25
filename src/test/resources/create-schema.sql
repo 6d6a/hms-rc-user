@@ -1,5 +1,3 @@
-CREATE DOMAIN IF NOT EXISTS enum as int(1);
-
 DROP TABLE IF EXISTS records;
 CREATE TABLE records (
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -10,7 +8,7 @@ CREATE TABLE records (
   ttl int(11) DEFAULT NULL,
   prio int(11) DEFAULT NULL,
   change_date int(11) DEFAULT NULL,
-  active enum NOT NULL DEFAULT '1',
+  active varchar(1) NOT NULL DEFAULT '1' check (active in ('1', '0')),
   PRIMARY KEY (id)
 );
 
@@ -23,7 +21,7 @@ CREATE TABLE domains (
   type varchar(6) NOT NULL DEFAULT '',
   notified_serial int(11) DEFAULT NULL,
   account varchar(40) DEFAULT NULL,
-  active enum NOT NULL DEFAULT '1',
+  active varchar(1) NOT NULL DEFAULT '1' check (active in ('1', '0')),
   uid int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (id)
 );
