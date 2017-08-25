@@ -150,7 +150,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                     if (!responseEntity.getStatusCode().equals(HttpStatus.ACCEPTED)) {
                                         throw new ParameterValidateException("Ошибка при продлении домена");
                                     }
-                                    domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                                    RegSpec regSpec = registrar.getRegSpec(domain.getName());
+                                    regSpec.setPaidTill(regSpec.getPaidTill().plusYears(1));
+                                    regSpec.setFreeDate(regSpec.getFreeDate().plusYears(1));
+                                    domain.setRegSpec(regSpec);
                                 } catch (Exception e) {
                                     throw new ParameterValidateException(e.getMessage());
                                 }
