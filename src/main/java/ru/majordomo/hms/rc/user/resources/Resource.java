@@ -90,14 +90,11 @@ public abstract class Resource {
     @Indexed
     Boolean switchedOn = true;
 
-    Boolean locked = false;
-
     @JsonIgnore
     private LocalDateTime lockedDateTime;
 
     public Boolean isLocked() {
-        return (this.locked
-                && this.lockedDateTime != null
+        return (this.lockedDateTime != null
                 && this.lockedDateTime.plusMinutes(20).isAfter(LocalDateTime.now())
         );
     }
@@ -132,14 +129,11 @@ public abstract class Resource {
         this.id = id;
     }
 
-    public Boolean getLocked() {
-        return locked;
-    }
-
     public void setLocked(Boolean locked) {
-        this.locked = locked;
         if (locked) {
             this.lockedDateTime = LocalDateTime.now();
+        } else {
+            this.lockedDateTime = null;
         }
     }
 
@@ -157,7 +151,6 @@ public abstract class Resource {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", accountId='" + accountId + '\'' +
-                ", locked=" + locked +
                 ", switchedOn=" + switchedOn +
                 ", lockedDateTime=" + lockedDateTime +
                 '}';
