@@ -96,10 +96,9 @@ public abstract class Resource {
     private LocalDateTime lockedDateTime;
 
     public Boolean isLocked() {
-        return (this.locked != null
-                && this.locked
+        return (this.locked
                 && this.lockedDateTime != null
-                && this.lockedDateTime.plusMinutes(20).isBefore(LocalDateTime.now())
+                && this.lockedDateTime.plusMinutes(20).isAfter(LocalDateTime.now())
         );
     }
 
