@@ -151,18 +151,22 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                         throw new ParameterValidateException("Ошибка при продлении домена");
                                     }
                                     RegSpec regSpec = registrar.getRegSpec(domain.getName());
-                                    if (regSpec == null) {
-                                        regSpec = domain.getRegSpec();
-                                    }
-                                    if (regSpec.getPaidTill() == null) {
-                                        regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
-                                    } else {
-                                        regSpec.setPaidTill(regSpec.getPaidTill().plusYears(1));
-                                    }
-                                    if (regSpec.getFreeDate() == null) {
-                                        regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
-                                    } else {
-                                        regSpec.setFreeDate(regSpec.getFreeDate().plusYears(1));
+                                    //TODO надо переделать на получении id заявки на продление домена от reg-rpc
+                                    // устанавливать статус домена в продление и проверять статус продления
+                                    try {
+                                        if (regSpec == null) {
+                                            if (domain.getRegSpec() != null) {
+                                                regSpec = domain.getRegSpec();
+                                                regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
+                                                regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
+                                            } else {
+                                                regSpec = new RegSpec();
+                                                regSpec.setPaidTill(LocalDate.now().plusYears(1));
+                                                regSpec.setFreeDate(LocalDate.now().plusYears(1));
+                                            }
+                                        }
+                                    } catch (NullPointerException e) {
+                                        //NullPointer может быть в случае, если RegSpec в домене содержит null вместо дат PaidTill или FreeDate
                                     }
                                     domain.setRegSpec(regSpec);
                                 } catch (Exception e) {
