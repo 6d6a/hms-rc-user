@@ -157,7 +157,7 @@ class BaseAMQPController {
             } catch (Exception e) {
                 throw new ParameterValidateException("Не найден ресурс с ID: " + resourceId);
             }
-            if (resource.getLocked()) {
+            if (resource.isLocked()) {
                 throw new ParameterValidateException("Ресурс в процессе обновления");
             }
         } catch (ParameterValidateException e) {
@@ -254,7 +254,7 @@ class BaseAMQPController {
         }
 
         if (resource != null) {
-            if (resource.getLocked()) {
+            if (resource.isLocked()) {
                 logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
                         " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                         " Обновление ресурса " + resourceType + " не удалось: locked");

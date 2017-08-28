@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.jongo.marshall.jackson.oid.MongoId;
@@ -24,6 +25,8 @@ import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateImportC
 import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
+
+import java.time.LocalDateTime;
 
 public abstract class Resource {
     @Id
@@ -89,6 +92,17 @@ public abstract class Resource {
 
     Boolean locked = false;
 
+    @JsonIgnore
+    private LocalDateTime lockedDateTime;
+
+    public Boolean isLocked() {
+        return (this.locked != null
+                && this.locked
+                && this.lockedDateTime != null
+                && this.lockedDateTime.plusMinutes(20).isBefore(LocalDateTime.now())
+        );
+    }
+
     public abstract void switchResource();
 
     public String getAccountId() {
@@ -125,6 +139,9 @@ public abstract class Resource {
 
     public void setLocked(Boolean locked) {
         this.locked = locked;
+        if (locked) {
+            this.lockedDateTime = LocalDateTime.now();
+        }
     }
 
     public String getName() {
@@ -143,6 +160,7 @@ public abstract class Resource {
                 ", accountId='" + accountId + '\'' +
                 ", locked=" + locked +
                 ", switchedOn=" + switchedOn +
+                ", lockedDateTime=" + lockedDateTime +
                 '}';
     }
 }
