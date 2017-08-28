@@ -151,13 +151,18 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                         throw new ParameterValidateException("Ошибка при продлении домена");
                                     }
                                     RegSpec regSpec = registrar.getRegSpec(domain.getName());
-                                    if (regSpec != null) {
-                                        if (regSpec.getPaidTill() == null) {
-                                            regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
-                                        }
-                                        if (regSpec.getFreeDate() == null) {
-                                            regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
-                                        }
+                                    if (regSpec == null) {
+                                        regSpec = domain.getRegSpec();
+                                    }
+                                    if (regSpec.getPaidTill() == null) {
+                                        regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
+                                    } else {
+                                        regSpec.setPaidTill(regSpec.getPaidTill().plusYears(1));
+                                    }
+                                    if (regSpec.getFreeDate() == null) {
+                                        regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
+                                    } else {
+                                        regSpec.setFreeDate(regSpec.getFreeDate().plusYears(1));
                                     }
                                     domain.setRegSpec(regSpec);
                                 } catch (Exception e) {
