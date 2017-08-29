@@ -167,6 +167,8 @@ public class GovernorOfDomainTest {
         serviceMessage.addParam("resourceId", domains.get(0).getId());
         serviceMessage.addParam("renew", true);
         RegSpec regSpec = domains.get(0).getRegSpec();
+        regSpec.setPaidTill(regSpec.getPaidTill().plusYears(1));
+        regSpec.setFreeDate(regSpec.getFreeDate().plusYears(1));
         Domain domain = governor.update(serviceMessage);
         assertNotEquals(regSpec, domain.getRegSpec());
     }
