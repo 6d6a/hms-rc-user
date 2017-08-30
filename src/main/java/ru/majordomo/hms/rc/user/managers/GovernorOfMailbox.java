@@ -668,7 +668,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         } else {
             throw new ResourceNotFoundException("Mailbox с ID: " + mailboxId + " не найден");
         }
-        store(mailbox);
+        validateAndStore(mailbox);
     }
 
 }
