@@ -664,7 +664,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             if (unixAccount == null) { throw new ResourceNotFoundException("UnixAccount с UID: " + mailbox.getUid() + " не найден"); }
             if (unixAccount.getWritable()) { mailbox.setWritable(true); }
         }
-        validateAndStore(mailbox);
+        store(mailbox);
+        syncWithRedis(mailbox);
     }
 
 }
