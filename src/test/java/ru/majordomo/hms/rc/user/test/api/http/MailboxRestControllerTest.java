@@ -100,15 +100,6 @@ public class MailboxRestControllerTest {
 
     private static RedisServer redisServer;
 
-//    @BeforeCla
-//    public void startRedis() throws Exception {
-//        if (redisServer == null) {
-//            JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) redisConnectionFactory;
-//            redisServer = new RedisServer(jedisConnectionFactory.getPort());
-//            redisServer.start();
-//        }
-//    }
-
     @Before
     public void setUp() throws Exception {
         if (redisServer == null) {
