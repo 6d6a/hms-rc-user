@@ -1,12 +1,12 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+import redis.embedded.RedisServer;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -94,9 +95,18 @@ public class MailboxRestControllerTest {
     private DomainRepository domainRepository;
     @Autowired
     private UnixAccountRepository unixAccountRepository;
+    @Autowired
+    private RedisConnectionFactory redisConnectionFactory;
+
+    private static RedisServer redisServer;
 
     @Before
     public void setUp() throws Exception {
+        if (redisServer == null) {
+            JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) redisConnectionFactory;
+            redisServer = new RedisServer(jedisConnectionFactory.getPort());
+            redisServer.start();
+        }
         this.doc = document("domain/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
         mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .apply(documentationConfiguration(this.restDocumentation))
@@ -115,6 +125,7 @@ public class MailboxRestControllerTest {
             mailbox.setDomainId(domain.getId());
 
             mailbox.setUid(unixAccounts.get(0).getUid());
+            mailbox.setMailSpool("/homebig/" + domain.getName() + "/" + mailbox.getName());
         }
 
         repository.save((Iterable) batchOfMailboxes);
@@ -223,5 +234,10 @@ public class MailboxRestControllerTest {
                 "/" + resourceName + "/" + batchOfMailboxes.get(0).getId() + "/quota-report"
         ).contentType(APPLICATION_JSON_UTF8).accept(APPLICATION_JSON_UTF8).content(json);
         mockMvc.perform(request).andExpect(status().isAccepted());
+    }
+
+    @AfterClass
+    public static void enough() throws Exception {
+            redisServer.stop();
     }
 }
