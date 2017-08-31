@@ -655,25 +655,14 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     public void updateQuota(String mailboxId, Long quotaSize) {
-        Mailbox mailbox = repository.findOne(mailboxId);
-        if (mailbox != null) {
-            try {
-                mailbox.setDomain(governorOfDomain.build(mailbox.getDomainId()));
-            } catch (ResourceNotFoundException e) {
-                throw new ResourceNotFoundException(
-                        "Domain с Id [" + mailbox.getDomainId() +
-                                "] не найден, перезапись mailbox с Id [" + mailboxId + "] в redis невозможна.");
-            }
-            mailbox.setQuotaUsed(quotaSize);
-            if (mailbox.getQuotaUsed() > mailbox.getQuota()) {
-                mailbox.setWritable(false);
-            } else {
-                UnixAccount unixAccount = unixAccountRepository.findByUid(mailbox.getUid());
-                if (unixAccount == null) { throw new ResourceNotFoundException("UnixAccount с UID: " + mailbox.getUid() + " не найден"); }
-                if (unixAccount.getWritable()) { mailbox.setWritable(true); }
-            }
+        Mailbox mailbox = build(mailboxId);
+        mailbox.setQuotaUsed(quotaSize);
+        if (mailbox.getQuotaUsed() > mailbox.getQuota()) {
+            mailbox.setWritable(false);
         } else {
-            throw new ResourceNotFoundException("Mailbox с ID: " + mailboxId + " не найден");
+            UnixAccount unixAccount = unixAccountRepository.findByUid(mailbox.getUid());
+            if (unixAccount == null) { throw new ResourceNotFoundException("UnixAccount с UID: " + mailbox.getUid() + " не найден"); }
+            if (unixAccount.getWritable()) { mailbox.setWritable(true); }
         }
         validateAndStore(mailbox);
     }
