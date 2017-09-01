@@ -137,11 +137,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     @JsonIgnore
     public List<String> getRedirectAddressesInPunycode() {
-        List<String> redirectInPunycode = new ArrayList<>();
-        for (String redirectElem : redirectAddresses) {
-            redirectInPunycode.add(IDN.toASCII(redirectElem.split("@")[0]) + "@" + IDN.toASCII(redirectElem.split("@")[1]));
-        }
-        return redirectInPunycode;
+        return getPunycodedList(redirectAddresses);
     }
 
     public void setRedirectAddresses(List<String> redirectAddresses) {
