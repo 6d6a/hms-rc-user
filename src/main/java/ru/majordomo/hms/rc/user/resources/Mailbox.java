@@ -187,9 +187,13 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         for (String elem : notPunycodedList) {
             String[] afterSplit = elem.split("@");
             if (afterSplit.length == 2) {
-                punycidedList.add(IDN.toASCII(afterSplit[0]) + "@" + IDN.toASCII(afterSplit[1]));
+                try {
+                    punycidedList.add(IDN.toASCII(afterSplit[0]) + "@" + IDN.toASCII(afterSplit[1]));
+                } catch (Exception ignored) {}
             } else {
-                punycidedList.add(IDN.toASCII(afterSplit[0]));
+                try {
+                    punycidedList.add(IDN.toASCII(afterSplit[0]));
+                } catch (Exception ignored) {}
             }
         }
         return punycidedList;
