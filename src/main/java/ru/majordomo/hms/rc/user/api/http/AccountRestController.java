@@ -52,7 +52,7 @@ public class AccountRestController {
     @RequestMapping(value = {"/{accountId}/account-move"}, method = RequestMethod.POST)
     public Boolean moveAccount(
             @PathVariable("accountId") String accountId,
-            @RequestParam Map<String, String> params
+            @RequestBody Map<String, String> params
     ) {
         String desiredServerId = params.get("serverId");
         Server desiredServer = staffResourceControllerClient.getServerById(desiredServerId);
