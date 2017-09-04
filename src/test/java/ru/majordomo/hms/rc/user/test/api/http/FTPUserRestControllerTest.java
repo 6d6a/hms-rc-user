@@ -107,6 +107,7 @@ public class FTPUserRestControllerTest {
                                 fieldWithPath("passwordHash").description("Хэш пользователя"),
                                 fieldWithPath("unixAccount").description("Аккаунт пользователя на сервере"),
                                 fieldWithPath("allowedIPAddresses").description("Список адресов, с которых возможен доступ на сервер"),
+                                fieldWithPath("allowWebFtp").description("Доступность FTP-сервера через WebFTP, если указаны разрешенные IP-адреса"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )
                 ));
