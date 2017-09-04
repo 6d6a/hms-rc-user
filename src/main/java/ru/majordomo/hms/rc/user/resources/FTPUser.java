@@ -37,6 +37,16 @@ public class FTPUser extends Resource implements Securable {
     @Indexed
     private String unixAccountId;
 
+    private Boolean allowWebFtp = true;
+
+    public Boolean getAllowWebFtp() {
+        return this.allowWebFtp;
+    }
+
+    public void setAllowWebFtp(Boolean enabled){
+        this.allowWebFtp = enabled;
+    }
+
     @JsonIgnore
     public List<Long> getAllowedIPAddresses() {
         return allowedIPAddresses;
@@ -125,6 +135,7 @@ public class FTPUser extends Resource implements Securable {
                 ", allowedIPAddresses=" + allowedIPAddresses +
                 ", unixAccount=" + unixAccount +
                 ", unixAccountId='" + unixAccountId + '\'' +
+                ", allowWebFtp='" + allowWebFtp + '\'' +
                 "} " + super.toString();
     }
 }
