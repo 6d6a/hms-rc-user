@@ -49,7 +49,7 @@ public class AccountRestController {
         this.governorOfWebSite = governorOfWebSite;
     }
 
-    @RequestMapping(value = {"/{accountId}/account/move"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/{accountId}/account-move"}, method = RequestMethod.POST)
     public Boolean moveAccount(
             @PathVariable("accountId") String accountId,
             @RequestParam Map<String, String> params
