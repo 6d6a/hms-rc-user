@@ -85,6 +85,12 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                             throw new ParameterValidateException("Неверный формат IP-адреса");
                         }
                         break;
+                    case "allowWebFtp":
+                        try {
+                            ftpUser.setAllowWebFtp((Boolean) entry.getValue());
+                        } catch (Exception e) {
+                            throw new ParameterValidateException("Неверный формат allowWebFtp");
+                        }
                     case "switchedOn":
                         ftpUser.setSwitchedOn((Boolean) entry.getValue());
                         break;
