@@ -11,12 +11,13 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -88,15 +89,21 @@ public class SslCertificateAMQPController {
         }
         try {
             String name = (String) serviceMessage.getParam("name");
-            String accountId = serviceMessage.getAccountId();
+//            String accountId = serviceMessage.getAccountId();
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", name);
-            //TODO подумать насколько это хорошо или плохо
-            //TODO (если есть cert на другом акке для этого домена, то забирать его на новый акк)
+            //TODO подумать насколько это плохо ->
+            //TODO -> (если есть cert на другом акке для этого домена, то забирать его на новый акк)
 //            keyValue.put("accountId", accountId);
 
             if (governor.exists(keyValue)) {
-                SSLCertificate certificate = (SSLCertificate) governor.update(serviceMessage);
+                SSLCertificate certificate = governor.update(serviceMessage);
+
+                if (certificate.getNotAfter().isBefore(LocalDateTime.now().plusDays(5))) {
+                    sender.send("ssl-certificate.create", "letsencrypt", serviceMessage, "rc");
+                    return;
+                }
+
                 governor.validate(certificate);
                 governor.store(certificate);
 
@@ -133,7 +140,7 @@ public class SslCertificateAMQPController {
         ServiceMessage report;
         if (success) {
             try {
-                SSLCertificate certificate = (SSLCertificate) governor.create(serviceMessage);
+                SSLCertificate certificate = governor.create(serviceMessage);
                 String teRoutingKey = governor.getTERoutingKey(certificate.getId());
 
                 report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
