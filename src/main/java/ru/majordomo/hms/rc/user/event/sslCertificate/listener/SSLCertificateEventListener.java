@@ -12,29 +12,33 @@ import ru.majordomo.hms.rc.user.event.ResourceEventListener;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateCreateEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateImportEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateRenewEvent;
+import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificatesRenewEvent;
 import ru.majordomo.hms.rc.user.importing.SSLCertificateDBImportService;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
+import ru.majordomo.hms.rc.user.schedulers.SSLCertificateScheduler;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 
 @Component
 public class SSLCertificateEventListener extends ResourceEventListener<SSLCertificate> {
 
     private Sender sender;
+    private SSLCertificateScheduler scheduler;
 
     @Autowired
     public SSLCertificateEventListener(
             GovernorOfSSLCertificate governorOfSSLCertificate,
             SSLCertificateDBImportService sslCertificateDBImportService,
-            Sender sender) {
+            Sender sender,
+            SSLCertificateScheduler scheduler
+    ) {
+        this.scheduler = scheduler;
         this.governor = governorOfSSLCertificate;
         this.dbImportService = sslCertificateDBImportService;
         this.sender = sender;
@@ -85,5 +89,13 @@ public class SSLCertificateEventListener extends ResourceEventListener<SSLCertif
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @EventListener
+    @Async("threadPoolTaskExecutor")
+    public void on(SSLCertificatesRenewEvent event) {
+        logger.debug("We got SSLCertificatesRenewEvent");
+
+        scheduler.renewCerts();
     }
 }

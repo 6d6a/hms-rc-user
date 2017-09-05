@@ -1,13 +1,11 @@
 package ru.majordomo.hms.rc.user.schedulers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.javacrumbs.shedlock.core.SchedulerLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -53,10 +51,8 @@ public class SSLCertificateScheduler {
         this.governorOfDomain = governorOfDomain;
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
-    @SchedulerLock(name = "sslCertRenewLock")
     public void renewCerts() {
-        logger.debug("Started sslCertRenew");
+        logger.info("Started sslCertRenew");
 
         Integer counter = 0;
 
@@ -75,7 +71,7 @@ public class SSLCertificateScheduler {
 
             logger.info("Total Certs processed for renew: " + counter);
         }
-        logger.debug("Ended sslCertRenew");
+        logger.info("Ended sslCertRenew");
     }
 
     private boolean SSLSerificatePrcoess(SSLCertificate sslCertificate) {
