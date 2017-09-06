@@ -99,8 +99,8 @@ public class SslCertificateAMQPController {
             if (governor.exists(keyValue)) {
                 SSLCertificate certificate = governor.update(serviceMessage);
 
-                if (certificate.getNotAfter().isBefore(LocalDateTime.now().plusDays(5))) {
-                    sender.send("ssl-certificate.create", "letsencrypt", serviceMessage, "rc");
+                if (certificate.getNotAfter().isBefore(LocalDateTime.now())) {
+                    sender.send("ssl-certificate.update", "letsencrypt", serviceMessage, "rc");
                     return;
                 }
 
