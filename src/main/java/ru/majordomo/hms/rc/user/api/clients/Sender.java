@@ -30,15 +30,7 @@ public class Sender {
     }
 
     public void send(String exchange, String routingKey, ServiceMessage payload) {
-        Message message = buildMessage(payload, applicationName);
-        rabbitTemplate.convertAndSend(exchange, routingKey, message);
-        logger.info("ACTION_IDENTITY: " + payload.getActionIdentity() +
-                " OPERATION_IDENTITY: " + payload.getOperationIdentity() +
-                " Сообщение от: " + applicationName + " " +
-                "в exchange: " + exchange + " " +
-                "с routing key: " + routingKey + " " +
-                "отправлено." + " " +
-                "Вот оно: " + message.toString());
+        send(exchange, routingKey, payload, applicationName);
     }
 
     public void send(String exchange, String routingKey, ServiceMessage payload, String provider) {
