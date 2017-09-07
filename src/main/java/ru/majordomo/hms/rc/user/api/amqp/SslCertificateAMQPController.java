@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.ExchangeTypes;
@@ -100,6 +102,10 @@ public class SslCertificateAMQPController {
                 SSLCertificate certificate = governor.update(serviceMessage);
 
                 if (certificate.getNotAfter().isBefore(LocalDateTime.now())) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    String json = mapper.writeValueAsString(certificate);
+                    serviceMessage.addParam("sslCertificate", json);
+
                     sender.send("ssl-certificate.update", "letsencrypt", serviceMessage, "rc");
                     return;
                 }
