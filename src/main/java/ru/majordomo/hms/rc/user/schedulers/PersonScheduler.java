@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.schedulers;
 
+import net.javacrumbs.shedlock.core.SchedulerLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ public class PersonScheduler {
         this.publisher = publisher;
     }
 
+    @SchedulerLock(name = "syncPersons")
     public void syncPersons() {
         logger.info("Started syncPersons");
         try (Stream<Person> tokenStream = governorOfPerson.findPersonsWithNicHandlesByNicHandleNotBlank()) {
