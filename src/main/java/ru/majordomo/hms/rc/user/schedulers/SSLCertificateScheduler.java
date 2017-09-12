@@ -1,11 +1,11 @@
 package ru.majordomo.hms.rc.user.schedulers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.javacrumbs.shedlock.core.SchedulerLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificateRenewEvent;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
@@ -34,48 +33,44 @@ public class SSLCertificateScheduler {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final GovernorOfSSLCertificate governorOfSSLCertificate;
-    private final ApplicationEventPublisher publisher;
     private final Sender sender;
     private final GovernorOfDomain governorOfDomain;
 
     @Autowired
     public SSLCertificateScheduler(
             GovernorOfSSLCertificate governorOfSSLCertificate,
-            ApplicationEventPublisher publisher,
             Sender sender,
             GovernorOfDomain governorOfDomain
     ) {
         this.governorOfSSLCertificate = governorOfSSLCertificate;
-        this.publisher = publisher;
         this.sender = sender;
         this.governorOfDomain = governorOfDomain;
     }
 
+    @SchedulerLock(name = "sslCertRenewLock")
     public void renewCerts() {
         logger.info("Started sslCertRenew");
 
         Integer counter = 0;
 
         try (Stream<SSLCertificate> sslCerts = governorOfSSLCertificate.findAllStream()) {
-            //sslCerts.forEach(sslCert -> publisher.publishEvent(new SSLCertificateRenewEvent(sslCert)));
             List<SSLCertificate> listSSLCerts = sslCerts.collect(Collectors.toList());
 
             for(SSLCertificate sslCert : listSSLCerts){
-                if (this.SSLSerificatePrcoess(sslCert)) {
+                if (this.SSLCertificateProcess(sslCert)) {
                     counter++;
                 }
-                if (counter == 50) {
+                if (counter == 150) {
                     break;
                 }
             }
 
-            logger.info("Total Certs processed for renew: " + counter);
+            logger.info("Total Certs processed for renew: " + counter + " found for renew: " + sslCerts.count());
         }
         logger.info("Ended sslCertRenew");
     }
 
-    private boolean SSLSerificatePrcoess(SSLCertificate sslCertificate) {
-
+    private boolean SSLCertificateProcess(SSLCertificate sslCertificate) {
         try {
 
             Domain domain;
@@ -102,7 +97,6 @@ public class SSLCertificateScheduler {
                         Instant.ofEpochMilli(myCert.getNotAfter().getTime()), ZoneId.systemDefault());
 
                 if (domain != null) {
-
                     //Еcли сертификат выключен и просрочен
                     if (!sslCertificate.isSwitchedOn() && notAfter.isAfter(LocalDateTime.now())) {
                         logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() + " AccountId: " + sslCertificate.getAccountId());
@@ -133,7 +127,6 @@ public class SSLCertificateScheduler {
             }
 
             return false;
-
         } catch (Exception e) {
             e.printStackTrace();
             return false;
