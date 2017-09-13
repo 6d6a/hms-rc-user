@@ -113,8 +113,13 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
         }
 
-        if (domain.getParentDomainId() == null)
-            governorOfDnsRecord.initDomain(domain);
+        try {
+            if (domain.getParentDomainId() == null)
+                governorOfDnsRecord.initDomain(domain);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            e.printStackTrace();
+        }
 
         return domain;
     }
