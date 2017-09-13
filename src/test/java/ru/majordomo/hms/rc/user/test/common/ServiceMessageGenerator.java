@@ -150,7 +150,7 @@ public class ServiceMessageGenerator {
     public static ServiceMessage generateFTPUserCreateServiceMessageWithoutUnixAccountId() {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
-        serviceMessage.addParam("name", "f111111");
+        serviceMessage.addParam("name", "f_-111111");
         serviceMessage.addParam("homedir", "/mjru");
         serviceMessage.addParam("password", "12345678");
 
