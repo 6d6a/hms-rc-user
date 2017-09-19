@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -31,14 +30,12 @@ public class PersonScheduler {
         this.publisher = publisher;
     }
 
-    @Scheduled(cron = "0 20 6,18 * * *")
-//    @Scheduled(initialDelay = 10000, fixedDelay = 6000000)
     @SchedulerLock(name = "syncPersons")
-    public void cleanTokens() {
-        logger.debug("Started syncPersons");
+    public void syncPersons() {
+        logger.info("Started syncPersons");
         try (Stream<Person> tokenStream = governorOfPerson.findPersonsWithNicHandlesByNicHandleNotBlank()) {
             tokenStream.forEach(person -> publisher.publishEvent(new PersonSyncEvent(person)));
         }
-        logger.debug("Ended syncPersons");
+        logger.info("Ended syncPersons");
     }
 }

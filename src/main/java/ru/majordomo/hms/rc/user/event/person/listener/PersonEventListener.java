@@ -9,16 +9,23 @@ import ru.majordomo.hms.rc.user.event.ResourceEventListener;
 import ru.majordomo.hms.rc.user.event.person.PersonCreateEvent;
 import ru.majordomo.hms.rc.user.event.person.PersonImportEvent;
 import ru.majordomo.hms.rc.user.event.person.PersonSyncEvent;
+import ru.majordomo.hms.rc.user.event.person.SyncPersonsEvent;
 import ru.majordomo.hms.rc.user.importing.PersonDBImportService;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
+import ru.majordomo.hms.rc.user.schedulers.PersonScheduler;
 
 @Component
 public class PersonEventListener extends ResourceEventListener<Person> {
+    private final PersonScheduler scheduler;
+
     @Autowired
     public PersonEventListener(
             GovernorOfPerson governorOfPerson,
-            PersonDBImportService personDBImportService) {
+            PersonDBImportService personDBImportService,
+            PersonScheduler scheduler
+    ) {
+        this.scheduler = scheduler;
         this.governor = governorOfPerson;
         this.dbImportService = personDBImportService;
     }
@@ -45,5 +52,13 @@ public class PersonEventListener extends ResourceEventListener<Person> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @EventListener
+    @Async("threadPoolTaskExecutor")
+    public void on(SyncPersonsEvent event) {
+        logger.debug("We got SyncPersonsEvent");
+
+        scheduler.syncPersons();
     }
 }
