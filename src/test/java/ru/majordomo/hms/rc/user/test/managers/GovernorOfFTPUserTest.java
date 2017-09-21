@@ -145,6 +145,26 @@ public class GovernorOfFTPUserTest {
     }
 
     @Test(expected = ConstraintViolationException.class)
+    public void createWithHomeDirOutsideUserHomeDir() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
+        serviceMessage.addParam("unixAccountId", unixAccounts.get(1).getId());
+        serviceMessage.setAccountId(unixAccounts.get(1).getAccountId());
+        serviceMessage.delParam("homedir");
+        serviceMessage.addParam("homedir", "../../");
+        governor.create(serviceMessage);
+    }
+
+    @Test
+    public void createWithValidHomeDirContainingUpperDirs() throws Exception {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
+        serviceMessage.addParam("unixAccountId", unixAccounts.get(1).getId());
+        serviceMessage.setAccountId(unixAccounts.get(1).getAccountId());
+        serviceMessage.delParam("homedir");
+        serviceMessage.addParam("homedir", "some_site/www/../../another_site/www");
+        governor.create(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
     public void createWithoutPassword() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());

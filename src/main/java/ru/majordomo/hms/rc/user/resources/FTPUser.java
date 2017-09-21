@@ -17,10 +17,12 @@ import ru.majordomo.hms.rc.staff.resources.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
 import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
+import ru.majordomo.hms.rc.user.resources.validation.ValidFTPUser;
 import ru.majordomo.hms.rc.user.resources.validation.ValidRelativeFilePath;
 
 @Document(collection = "ftpUsers")
 @UniqueNameResource(FTPUser.class)
+@ValidFTPUser
 public class FTPUser extends Resource implements Securable {
     @NotBlank(message = "Пароль FTP пользователя не может быть пустым")
     private String passwordHash;
