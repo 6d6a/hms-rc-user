@@ -40,7 +40,7 @@ public class FTPUserValidator implements ConstraintValidator<ValidFTPUser, FTPUs
             isValid = false;
             constraintValidatorContext.disableDefaultConstraintViolation();
             constraintValidatorContext
-                    .buildConstraintViolationWithTemplate("{ru.majordomo.hms.rc.user.resources.validation.ValidWebSiteDocumentRoot.message}")
+                    .buildConstraintViolationWithTemplate("{ru.majordomo.hms.rc.user.resources.validation.ValidFTPUserHomeDir.message}")
                     .addConstraintViolation();
         }
 
