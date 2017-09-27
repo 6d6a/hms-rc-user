@@ -1,10 +1,5 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
-import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
@@ -15,7 +10,12 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
 
-@EnableRabbit
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.PERSON_CREATE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.PERSON_DELETE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.PERSON_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
+
 @Service
 public class PersonAMQPController extends BaseAMQPController<Person> {
 
@@ -24,49 +24,40 @@ public class PersonAMQPController extends BaseAMQPController<Person> {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.person.create",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "person.create", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${spring.application.name}" + "." + PERSON_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleCreateEventFromPM("person", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleCreateEventFromTE("person", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.person.update",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "person.update", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${spring.application.name}" + "." + PERSON_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleUpdateEventFromPM("person", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleUpdateEventFromTE("person", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.person.delete",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "person.delete", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${spring.application.name}" + "." + PERSON_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleDeleteEventFromPM("person", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleDeleteEventFromTE("person", serviceMessage);
                 break;
         }

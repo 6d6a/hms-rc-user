@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.configurations;
 
-import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -19,28 +20,31 @@ import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.ALL_EXCHANGES;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
+
 @Configuration
 @Profile({"default","prod","dev"})
+@EnableRabbit
 public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 
-    private String rabbitHost;
-    private String rabbitUsername;
-    private String rabbitPassword;
-
     @Value("${spring.rabbitmq.host}")
-    public void setRabbitHost(String rabbitHost) {
-        this.rabbitHost = rabbitHost;
-    }
+    private String rabbitHost;
 
     @Value("${spring.rabbitmq.username}")
-    public void setRabbitUsername(String rabbitUsername) {
-        this.rabbitUsername = rabbitUsername;
-    }
+    private String rabbitUsername;
 
     @Value("${spring.rabbitmq.password}")
-    public void setRabbitPassword(String rabbitPassword) {
-        this.rabbitPassword = rabbitPassword;
-    }
+    private String rabbitPassword;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
+    @Value("${hms.instance_name}")
+    private String instanceName;
 
     @Bean
     public ConnectionFactory connectionFactory() {
@@ -92,9 +96,54 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
     RetryOperationsInterceptor interceptor() {
         return RetryInterceptorBuilder.stateless()
                 .maxAttempts(3)
-                .recoverer(new RepublishMessageRecoverer(rabbitTemplate(), "rc-user", "error"))
+                .recoverer(
+                        new RepublishMessageRecoverer(
+                                rabbitTemplate(),
+                                instanceName + "." + applicationName,
+                                "error"
+                        )
+                )
                 .build();
     }
+
+    @Bean
+    public List<Exchange> exchanges() {
+        List<Exchange> exchanges = new ArrayList<>();
+
+        for (String exchangeName : ALL_EXCHANGES) {
+            exchanges.add(new TopicExchange(exchangeName));
+        }
+
+        return exchanges;
+    }
+
+    @Bean
+    public List<Queue> queues() {
+        List<Queue> queues = new ArrayList<>();
+
+        for (String exchangeName : ALL_EXCHANGES) {
+            queues.add(new Queue(applicationName + "." + exchangeName));
+        }
+
+        return queues;
+    }
+
+    @Bean
+    public List<Binding> bindings() {
+        List<Binding> bindings = new ArrayList<>();
+
+        for (String exchangeName : ALL_EXCHANGES) {
+            bindings.add(new Binding(
+                    applicationName + "." + exchangeName,
+                    Binding.DestinationType.QUEUE,
+                    exchangeName,
+//                    instanceName + "." + applicationName, В остальных приложениях это так работает,
+                    // но в rcUser джигурдец - (appName = rc-user, routKey = rc.user)
+                    instanceName + "." + RC_USER,
+                    null
+            ));
+        }
+
+        return bindings;
+    }
 }
-
-

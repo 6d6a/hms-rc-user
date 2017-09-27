@@ -1,10 +1,5 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
-import org.springframework.amqp.core.ExchangeTypes;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
@@ -15,7 +10,12 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
-@EnableRabbit
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_CREATE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_DELETE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
+
 @Service
 public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
 
@@ -24,49 +24,40 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.unix-account.create",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "unix-account.create", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${spring.application.name}" + "." + UNIX_ACCOUNT_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleCreateEventFromPM("unix-account", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleCreateEventFromTE("unix-account", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.unix-account.update",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "unix-account.update", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${spring.application.name}" + "." + UNIX_ACCOUNT_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleUpdateEventFromPM("unix-account", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleUpdateEventFromTE("unix-account", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.unix-account.delete",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "unix-account.delete", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${spring.application.name}" + "." + UNIX_ACCOUNT_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleDeleteEventFromPM("unix-account", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleDeleteEventFromTE("unix-account", serviceMessage);
                 break;
         }

@@ -26,11 +26,16 @@ import ru.majordomo.hms.rc.user.resources.Serviceable;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
+
 @Component
 @EnableRabbit
 abstract class BaseAMQPController<T extends Resource> {
 
     protected String applicationName;
+    protected String instanceName;
+
     private Sender sender;
     private StaffResourceControllerClient staffRcClient;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -40,6 +45,11 @@ abstract class BaseAMQPController<T extends Resource> {
     @Value("${spring.application.name}")
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName;
+    }
+
+    @Value("${hms.instance_name}")
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 
     @Autowired
@@ -107,12 +117,12 @@ abstract class BaseAMQPController<T extends Resource> {
                 errorMessage = e.getMessage();
                 serviceMessage.addParam("success", false);
                 report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
-                sender.send(resourceType + ".create", "pm", report);
+                sender.send(resourceType + ".create", PM, report);
             }
             resource.setLocked(true);
             governor.store(resource);
         } else {
-            sender.send(resourceType + ".create", "pm", report);
+            sender.send(resourceType + ".create", PM, report);
         }
     }
 
@@ -135,7 +145,7 @@ abstract class BaseAMQPController<T extends Resource> {
             }
         }
 
-        sender.send(resourceType + ".create", "pm", report);
+        sender.send(resourceType + ".create", PM, report);
     }
 
     void handleUpdateEventFromPM(
@@ -167,7 +177,7 @@ abstract class BaseAMQPController<T extends Resource> {
 
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
             report.addParam("success", false);
-            sender.send(resourceType + ".update", "pm", report);
+            sender.send(resourceType + ".update", PM, report);
             return;
         }
 
@@ -197,7 +207,7 @@ abstract class BaseAMQPController<T extends Resource> {
             resource.setLocked(true);
             governor.store(resource);
         } else {
-            sender.send(resourceType + ".update", "pm", report);
+            sender.send(resourceType + ".update", PM, report);
         }
     }
 
@@ -217,7 +227,7 @@ abstract class BaseAMQPController<T extends Resource> {
             governor.store(resource);
         }
 
-        sender.send(resourceType + ".update", "pm", report);
+        sender.send(resourceType + ".update", PM, report);
     }
 
     void handleDeleteEventFromPM(
@@ -244,12 +254,12 @@ abstract class BaseAMQPController<T extends Resource> {
             errorMessage = "Ресурс " + resourceType + " с ID: " + resourceId + " и accountId: " + accountId + " не найден";
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
             report.addParam("success", false);
-            sender.send(resourceType + ".delete", "pm", report);
+            sender.send(resourceType + ".delete", PM, report);
         } catch (ParameterValidateException e) {
             errorMessage = "Обработка ресурса " + resourceType + " с ID: " + resourceId + " и accountId: " + accountId + " не удалась";
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
             report.addParam("success", false);
-            sender.send(resourceType + ".delete", "pm", report);
+            sender.send(resourceType + ".delete", PM, report);
         }
 
         if (resource != null) {
@@ -260,7 +270,7 @@ abstract class BaseAMQPController<T extends Resource> {
                 errorMessage = "Ресурс в процессе обновления";
                 ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
                 report.addParam("success", false);
-                sender.send(resourceType + ".update", "pm", report);
+                sender.send(resourceType + ".update", PM, report);
                 return;
             }
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
@@ -283,7 +293,7 @@ abstract class BaseAMQPController<T extends Resource> {
                     report.addParam("success", false);
                     report.addParam("errorMessage", e.getMessage());
                 }
-                sender.send(resourceType + ".delete", "pm", report);
+                sender.send(resourceType + ".delete", PM, report);
             }
         }
     }
@@ -307,7 +317,7 @@ abstract class BaseAMQPController<T extends Resource> {
             }
         }
 
-        sender.send(resourceType + ".delete", "pm", report);
+        sender.send(resourceType + ".delete", PM, report);
 
     }
 
@@ -352,11 +362,15 @@ abstract class BaseAMQPController<T extends Resource> {
                 serverName = staffRcClient.getServerByServiceId(serviceable.getServiceId()).getName();
             }
 
-            return "te" + "." + serverName.split("\\.")[0];
+            return TE + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("[getTaskExecutorRoutingKey] got exception: " + e.getMessage());
             throw new ParameterValidateException("Exception: " + e.getMessage());
         }
+    }
+
+    protected String getRealProviderName(String eventProvider) {
+        return eventProvider.replaceAll("^" + instanceName + "\\.", "");
     }
 }
