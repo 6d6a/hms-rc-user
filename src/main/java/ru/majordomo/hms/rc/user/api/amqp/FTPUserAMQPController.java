@@ -13,10 +13,11 @@ import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
+import ru.majordomo.hms.rc.user.resources.FTPUser;
 
 @EnableRabbit
 @Service
-public class FTPUserAMQPController extends BaseAMQPController {
+public class FTPUserAMQPController extends BaseAMQPController<FTPUser> {
 
     @Autowired
     public void setGovernor(GovernorOfFTPUser governor) {

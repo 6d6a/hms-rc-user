@@ -8,10 +8,11 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
+import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 
 @EnableRabbit
 @Service
-public class DnsRecordAMQPController extends BaseAMQPController {
+public class DnsRecordAMQPController extends BaseAMQPController<DNSResourceRecord> {
 
     @Autowired
     public void setGovernor(GovernorOfDnsRecord governor) {

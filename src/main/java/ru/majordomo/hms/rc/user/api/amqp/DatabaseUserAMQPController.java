@@ -13,10 +13,11 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
+import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
 @EnableRabbit
 @Service
-public class DatabaseUserAMQPController extends BaseAMQPController {
+public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser> {
 
     @Autowired
     public void setGovernor(GovernorOfDatabaseUser governor) {

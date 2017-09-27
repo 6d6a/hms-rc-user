@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -29,14 +28,14 @@ import javax.validation.ConstraintViolationException;
 
 @Component
 @EnableRabbit
-class BaseAMQPController {
+abstract class BaseAMQPController<T extends Resource> {
 
     protected String applicationName;
     private Sender sender;
     private StaffResourceControllerClient staffRcClient;
-    private static final Logger logger = LoggerFactory.getLogger(BaseAMQPController.class);
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected LordOfResources governor;
+    protected LordOfResources<T> governor;
 
     @Value("${spring.application.name}")
     public void setApplicationName(String applicationName) {
@@ -53,8 +52,8 @@ class BaseAMQPController {
         this.staffRcClient = staffRcClient;
     }
 
-    private Resource getResourceByUrl(String url) {
-        Resource resource = null;
+    private T getResourceByUrl(String url) {
+        T resource = null;
         try {
             URL processingUrl = new URL(url);
             String path = processingUrl.getPath();
@@ -77,7 +76,7 @@ class BaseAMQPController {
     ) {
 
         Boolean success;
-        Resource resource = null;
+        T resource = null;
         String errorMessage = "";
 
         try {
@@ -123,7 +122,7 @@ class BaseAMQPController {
     ) {
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
-        Resource resource = getResourceByUrl(resourceUrl);
+        T resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
@@ -144,7 +143,7 @@ class BaseAMQPController {
             ServiceMessage serviceMessage
     ) {
         Boolean success;
-        Resource resource = null;
+        T resource = null;
         String errorMessage = "";
 
         try {
@@ -208,7 +207,7 @@ class BaseAMQPController {
     ) {
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
-        Resource resource = getResourceByUrl(resourceUrl);
+        T resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
         report.addParam("success", successEvent);
@@ -227,7 +226,7 @@ class BaseAMQPController {
     ) {
         String errorMessage = "";
         String resourceId = null;
-        Resource resource = null;
+        T resource = null;
 
         String accountId = serviceMessage.getAccountId();
 
@@ -295,7 +294,7 @@ class BaseAMQPController {
     ) {
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
-        Resource resource = getResourceByUrl(resourceUrl);
+        T resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
         ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
 
@@ -315,7 +314,7 @@ class BaseAMQPController {
     private ServiceMessage createReportMessage(
             ServiceMessage event,
             String resourceType,
-            Resource resource,
+            T resource,
             String errorMessage
     ) {
         ServiceMessage report = new ServiceMessage();
@@ -342,7 +341,7 @@ class BaseAMQPController {
         return report;
     }
 
-    private String getTaskExecutorRoutingKey(Resource resource) throws ParameterValidateException {
+    private String getTaskExecutorRoutingKey(T resource) throws ParameterValidateException {
         try {
             String serverName = null;
             if (resource instanceof ServerStorable) {

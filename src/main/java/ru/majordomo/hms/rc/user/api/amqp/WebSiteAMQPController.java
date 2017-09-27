@@ -12,10 +12,11 @@ import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
+import ru.majordomo.hms.rc.user.resources.WebSite;
 
 @EnableRabbit
 @Service
-public class WebSiteAMQPController extends BaseAMQPController {
+public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
 
     @Autowired
     public void setGovernor(GovernorOfWebSite governor) {

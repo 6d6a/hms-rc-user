@@ -8,10 +8,11 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
+import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 
 @EnableRabbit
 @Service
-public class ResourceArchiveAMQPController extends BaseAMQPController {
+public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceArchive> {
 
     @Autowired
     public void setGovernor(GovernorOfResourceArchive governor) {

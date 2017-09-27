@@ -14,10 +14,11 @@ import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.resources.Mailbox;
 
 @EnableRabbit
 @Service
-public class MailboxAMQPController extends BaseAMQPController {
+public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
 
     @Autowired
     public void setGovernor(GovernorOfMailbox governor) {

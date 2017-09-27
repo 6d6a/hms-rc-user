@@ -13,10 +13,11 @@ import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @EnableRabbit
 @Service
-public class UnixAccountAMQPController extends BaseAMQPController {
+public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
 
     @Autowired
     public void setGovernor(GovernorOfUnixAccount governor) {
