@@ -27,6 +27,8 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceController
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
 
 @Ignore
 @RunWith(SpringRunner.class)
@@ -102,7 +104,7 @@ public class PersonAMQPControllerTest {
     @Test
     public void sendAndReceive() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateBadServiceMessage();
-        sender.send("person.create", "rc.user", serviceMessage, "pm");
+        sender.send("person.create", RC_USER, serviceMessage, PM);
         Message message = rabbitTemplate.receive("pm", 1000);
     }
 }

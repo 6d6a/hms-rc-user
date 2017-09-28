@@ -3,6 +3,10 @@ package ru.majordomo.hms.rc.user.test.config.amqp;
 import com.rabbitmq.client.ConnectionFactory;
 
 import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
@@ -14,6 +18,7 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
 import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -22,7 +27,13 @@ import org.springframework.messaging.handler.annotation.support.DefaultMessageHa
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.util.SocketUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ru.majordomo.hms.rc.user.api.clients.Sender;
+
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.ALL_EXCHANGES;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
 
 @Configuration
 @EnableRabbit
@@ -30,6 +41,12 @@ import ru.majordomo.hms.rc.user.api.clients.Sender;
 public class AMQPBrokerConfig implements RabbitListenerConfigurer {
 
     public static final int BROKER_PORT = SocketUtils.findAvailableTcpPort();
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
+    @Value("${hms.instance_name}")
+    private String instanceName;
 
     @Bean
     public CachingConnectionFactory connectionFactory() throws Exception {
@@ -96,8 +113,48 @@ public class AMQPBrokerConfig implements RabbitListenerConfigurer {
     }
 
     @Bean
-    public Sender sender() {
-        return new Sender();
+    public Sender sender() throws Exception {
+        return new Sender(rabbitTemplate(), applicationName, instanceName);
     }
 
+    @Bean
+    public List<Exchange> exchanges() {
+        List<Exchange> exchanges = new ArrayList<>();
+
+        for (String exchangeName : ALL_EXCHANGES) {
+            exchanges.add(new TopicExchange(exchangeName));
+        }
+
+        return exchanges;
+    }
+
+    @Bean
+    public List<Queue> queues() {
+        List<Queue> queues = new ArrayList<>();
+
+        for (String exchangeName : ALL_EXCHANGES) {
+            queues.add(new Queue(applicationName + "." + exchangeName));
+        }
+
+        return queues;
+    }
+
+    @Bean
+    public List<Binding> bindings() {
+        List<Binding> bindings = new ArrayList<>();
+
+        for (String exchangeName : ALL_EXCHANGES) {
+            bindings.add(new Binding(
+                    applicationName + "." + exchangeName,
+                    Binding.DestinationType.QUEUE,
+                    exchangeName,
+                    //instanceName + "." + applicationName, В остальных приложениях это так работает,
+                    // но в rcUser джигурдец - (appName = rc-user, routKey = rc.user)
+                    instanceName + "." + RC_USER,
+                    null
+            ));
+        }
+
+        return bindings;
+    }
 }

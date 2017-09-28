@@ -6,6 +6,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
@@ -30,6 +31,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
@@ -64,6 +68,9 @@ public class DatabaseUserAMQPControllerTest {
     @Autowired
     private Sender sender;
 
+    @Value("${hms.instance_name}")
+    private String instanceName;
+
     @BeforeClass
     public static void startBroker() throws Exception {
         brokerManager.start();
@@ -95,7 +102,7 @@ public class DatabaseUserAMQPControllerTest {
         Exchange exchange = new TopicExchange("database-user." + actionString);
 
         Queue queue = new Queue("te.web100500", false);
-        String routingKey = "te.web100500";
+        String routingKey = instanceName + "." + "te.web100500";
 
         rabbitAdmin.declareQueue(queue);
         rabbitAdmin.declareBinding(
@@ -113,7 +120,7 @@ public class DatabaseUserAMQPControllerTest {
         Exchange exchange = new TopicExchange("database-user." + actionString);
 
         Queue queue = new Queue("pm-" + actionString, false);
-        String routingKey = "pm";
+        String routingKey = instanceName + "." + "pm";
 
         rabbitAdmin.declareQueue(queue);
         rabbitAdmin.declareBinding(
@@ -131,7 +138,7 @@ public class DatabaseUserAMQPControllerTest {
     public void sendAndReceiveCreatePM() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         serviceMessage.addParam("serviceId", "583300c5a94c541d14d58c85");
-        sender.send("database-user.create", "rc.user", serviceMessage, "pm");
+        sender.send("database-user.create", RC_USER, serviceMessage, PM);
         Message message = rabbitTemplate.receive("te.web100500", 3000);
         Assert.notNull(message, "The message must not be null");
         Assert.notNull(message.getBody(), "The message body must not be null");
@@ -141,7 +148,7 @@ public class DatabaseUserAMQPControllerTest {
     public void sendAndReceiveCreateTE() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateReportFromTEServiceMessage();
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
-        sender.send("database-user.create", "rc.user", serviceMessage, "te");
+        sender.send("database-user.create", RC_USER, serviceMessage, TE);
         Message message = rabbitTemplate.receive("pm-create", 1000);
         Assert.notNull(message, "The message must not be null");
         Assert.notNull(message.getBody(), "The message body must not be null");
@@ -152,7 +159,7 @@ public class DatabaseUserAMQPControllerTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserUpdateServiceMessage();
         serviceMessage.addParam("resourceId", databaseUserList.get(0).getId());
         serviceMessage.setAccountId(databaseUserList.get(0).getAccountId());
-        sender.send("database-user.update", "rc.user", serviceMessage, "pm");
+        sender.send("database-user.update", RC_USER, serviceMessage, PM);
         Message message = rabbitTemplate.receive("te.web100500", 1000);
         Assert.notNull(message, "The message must not be null!");
         Assert.notNull(message.getBody(), "The message body must not be null");
@@ -162,7 +169,7 @@ public class DatabaseUserAMQPControllerTest {
     public void sendAndReceiveUpdateTE() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateReportFromTEServiceMessage();
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
-        sender.send("database-user.update", "rc.user", serviceMessage, "te");
+        sender.send("database-user.update", RC_USER, serviceMessage, TE);
         Message message = rabbitTemplate.receive("pm-update", 1000);
         Assert.notNull(message, "The message must not be null!");
         Assert.notNull(message.getBody(), "The message body must not be null");
@@ -173,7 +180,7 @@ public class DatabaseUserAMQPControllerTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserDeleteServiceMessage();
         serviceMessage.addParam("resourceId", databaseUserList.get(0).getId());
         serviceMessage.setAccountId(databaseUserList.get(0).getAccountId());
-        sender.send("database-user.delete", "rc.user", serviceMessage, "pm");
+        sender.send("database-user.delete", RC_USER, serviceMessage, PM);
         Message message = rabbitTemplate.receive("te.web100500", 1000);
         Assert.notNull(message, "The message must not be null");
         Assert.notNull(message.getBody(), "The message body must not be null");
@@ -183,7 +190,7 @@ public class DatabaseUserAMQPControllerTest {
     public void sendAndReceiveDeleteTE() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateReportFromTEServiceMessage();
         serviceMessage.setObjRef("http://rc-user/database-user/" + databaseUserList.get(0).getId());
-        sender.send("database-user.delete", "rc.user", serviceMessage, "te");
+        sender.send("database-user.delete", RC_USER, serviceMessage, TE);
         Message message = rabbitTemplate.receive("pm-delete", 1000);
         Assert.notNull(message, "The message must not be null");
         Assert.notNull(message.getBody(), "The message body must not be null");
