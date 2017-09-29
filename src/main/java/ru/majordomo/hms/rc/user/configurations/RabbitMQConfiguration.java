@@ -43,7 +43,7 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
     @Value("${spring.application.name}")
     private String applicationName;
 
-    @Value("${hms.instance_name}")
+    @Value("${hms.instance.name}")
     private String instanceName;
 
     @Bean
@@ -122,7 +122,7 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
         List<Queue> queues = new ArrayList<>();
 
         for (String exchangeName : ALL_EXCHANGES) {
-            queues.add(new Queue(applicationName + "." + exchangeName));
+            queues.add(new Queue(instanceName + "." + applicationName + "." + exchangeName));
         }
 
         return queues;
@@ -134,7 +134,7 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 
         for (String exchangeName : ALL_EXCHANGES) {
             bindings.add(new Binding(
-                    applicationName + "." + exchangeName,
+                    instanceName + "." + applicationName + "." + exchangeName,
                     Binding.DestinationType.QUEUE,
                     exchangeName,
 //                    instanceName + "." + applicationName, В остальных приложениях это так работает,

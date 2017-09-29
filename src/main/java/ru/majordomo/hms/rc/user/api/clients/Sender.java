@@ -24,7 +24,7 @@ public class Sender {
     public Sender(
             RabbitTemplate rabbitTemplate,
             @Value("${spring.application.name}") String applicationName,
-            @Value("${hms.instance_name}") String instanceName
+            @Value("${hms.instance.name}") String instanceName
     ) {
         this.rabbitTemplate = rabbitTemplate;
         this.instanceName = instanceName;

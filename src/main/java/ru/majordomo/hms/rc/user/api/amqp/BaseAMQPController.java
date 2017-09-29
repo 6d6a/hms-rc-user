@@ -47,7 +47,7 @@ abstract class BaseAMQPController<T extends Resource> {
         this.applicationName = applicationName;
     }
 
-    @Value("${hms.instance_name}")
+    @Value("${hms.instance.name}")
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }

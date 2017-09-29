@@ -68,7 +68,7 @@ public class DatabaseUserAMQPControllerTest {
     @Autowired
     private Sender sender;
 
-    @Value("${hms.instance_name}")
+    @Value("${hms.instance.name}")
     private String instanceName;
 
     @BeforeClass

@@ -45,7 +45,7 @@ public class AMQPBrokerConfig implements RabbitListenerConfigurer {
     @Value("${spring.application.name}")
     private String applicationName;
 
-    @Value("${hms.instance_name}")
+    @Value("${hms.instance.name}")
     private String instanceName;
 
     @Bean
