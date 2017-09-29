@@ -23,7 +23,7 @@ public class DnsRecordAMQPController extends BaseAMQPController<DNSResourceRecor
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DNS_RECORD_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DNS_RECORD_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -36,7 +36,7 @@ public class DnsRecordAMQPController extends BaseAMQPController<DNSResourceRecor
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DNS_RECORD_UPDATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DNS_RECORD_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -49,7 +49,7 @@ public class DnsRecordAMQPController extends BaseAMQPController<DNSResourceRecor
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DNS_RECORD_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DNS_RECORD_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

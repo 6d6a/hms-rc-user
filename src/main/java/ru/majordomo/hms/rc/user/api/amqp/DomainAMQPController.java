@@ -24,7 +24,7 @@ public class DomainAMQPController extends BaseAMQPController<Domain> {
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DOMAIN_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DOMAIN_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -37,7 +37,7 @@ public class DomainAMQPController extends BaseAMQPController<Domain> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DOMAIN_UPDATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DOMAIN_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -50,7 +50,7 @@ public class DomainAMQPController extends BaseAMQPController<Domain> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DOMAIN_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DOMAIN_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

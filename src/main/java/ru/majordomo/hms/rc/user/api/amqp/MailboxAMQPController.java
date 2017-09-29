@@ -24,7 +24,7 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + MAILBOX_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + MAILBOX_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -37,7 +37,7 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + MAILBOX_UPDATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + MAILBOX_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -50,7 +50,7 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + MAILBOX_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + MAILBOX_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

@@ -57,7 +57,7 @@ public class SslCertificateAMQPController {
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + SSL_CERTIFICATE_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + SSL_CERTIFICATE_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -73,7 +73,7 @@ public class SslCertificateAMQPController {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + SSL_CERTIFICATE_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + SSL_CERTIFICATE_DELETE)
     public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

@@ -24,7 +24,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser>
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DATABASE_USER_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_USER_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -37,7 +37,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser>
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DATABASE_USER_UPDATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_USER_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -50,7 +50,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser>
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DATABASE_USER_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_USER_DELETE)
     public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

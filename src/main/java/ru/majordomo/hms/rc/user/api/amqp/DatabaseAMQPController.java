@@ -24,7 +24,7 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DATABASE_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -37,7 +37,7 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DATABASE_UPDATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -50,7 +50,7 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + DATABASE_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

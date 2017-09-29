@@ -24,7 +24,7 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + UNIX_ACCOUNT_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + UNIX_ACCOUNT_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -37,7 +37,7 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + UNIX_ACCOUNT_UPDATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + UNIX_ACCOUNT_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -50,7 +50,7 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + UNIX_ACCOUNT_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + UNIX_ACCOUNT_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

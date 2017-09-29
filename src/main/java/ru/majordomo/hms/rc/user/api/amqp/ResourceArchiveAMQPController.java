@@ -22,7 +22,7 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + RESOURCE_ARCHIVE_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -35,7 +35,7 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
         }
     }
 
-//    @RabbitListener(queues = "${spring.application.name}" + "." + RESOURCE_ARCHIVE_UPDATE)
+//    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_UPDATE)
 //    public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
 //                                  @Payload ServiceMessage serviceMessage) {
 //        switch (getRealProviderName(eventProvider)) {
@@ -48,7 +48,7 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
 //        }
 //    }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + RESOURCE_ARCHIVE_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {

@@ -24,7 +24,7 @@ public class PersonAMQPController extends BaseAMQPController<Person> {
         this.governor = governor;
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + PERSON_CREATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + PERSON_CREATE)
     public void handleCreateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -37,7 +37,7 @@ public class PersonAMQPController extends BaseAMQPController<Person> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + PERSON_UPDATE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + PERSON_UPDATE)
     public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
@@ -50,7 +50,7 @@ public class PersonAMQPController extends BaseAMQPController<Person> {
         }
     }
 
-    @RabbitListener(queues = "${spring.application.name}" + "." + PERSON_DELETE)
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + PERSON_DELETE)
     public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
                                   @Payload ServiceMessage serviceMessage) {
         switch (getRealProviderName(eventProvider)) {
