@@ -133,7 +133,7 @@ public class AMQPBrokerConfig implements RabbitListenerConfigurer {
         List<Queue> queues = new ArrayList<>();
 
         for (String exchangeName : ALL_EXCHANGES) {
-            queues.add(new Queue(applicationName + "." + exchangeName));
+            queues.add(new Queue(instanceName + "." + applicationName + "." + exchangeName));
         }
 
         return queues;
@@ -145,7 +145,7 @@ public class AMQPBrokerConfig implements RabbitListenerConfigurer {
 
         for (String exchangeName : ALL_EXCHANGES) {
             bindings.add(new Binding(
-                    applicationName + "." + exchangeName,
+                    instanceName + "." + applicationName + "." + exchangeName,
                     Binding.DestinationType.QUEUE,
                     exchangeName,
                     //instanceName + "." + applicationName, В остальных приложениях это так работает,
