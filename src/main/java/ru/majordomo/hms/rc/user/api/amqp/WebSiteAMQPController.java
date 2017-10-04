@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -26,8 +27,11 @@ public class WebSiteAMQPController extends BaseAMQPController {
             durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "website.create", type = "topic"),
             key = "rc.user"))
-    public void handleCreateEvent(@Header(value = "provider") String eventProvider,
-                                  @Payload ServiceMessage serviceMessage) {
+    public void handleCreateEvent(
+            Message amqpMessage,
+            @Header(value = "provider") String eventProvider,
+            @Payload ServiceMessage serviceMessage
+    ) {
         switch (eventProvider) {
             case ("pm"):
                 handleCreateEventFromPM("website", serviceMessage);
@@ -42,8 +46,11 @@ public class WebSiteAMQPController extends BaseAMQPController {
             durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "website.update", type = "topic"),
             key = "rc.user"))
-    public void handleUpdateEvent(@Header(value = "provider") String eventProvider,
-                                  @Payload ServiceMessage serviceMessage) {
+    public void handleUpdateEvent(
+            Message amqpMessage,
+            @Header(value = "provider") String eventProvider,
+            @Payload ServiceMessage serviceMessage
+    ) {
         switch (eventProvider) {
             case ("pm"):
                 handleUpdateEventFromPM("website", serviceMessage);
@@ -58,8 +65,11 @@ public class WebSiteAMQPController extends BaseAMQPController {
             durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "website.delete", type = "topic"),
             key = "rc.user"))
-    public void handleDeleteEvent(@Header(value = "provider") String eventProvider,
-                                  @Payload ServiceMessage serviceMessage) {
+    public void handleDeleteEvent(
+            Message amqpMessage,
+            @Header(value = "provider") String eventProvider,
+            @Payload ServiceMessage serviceMessage
+    ) {
         switch (eventProvider) {
             case ("pm"):
                 handleDeleteEventFromPM("website", serviceMessage);
