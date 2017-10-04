@@ -35,7 +35,7 @@ public class Sender {
 
     public void send(String exchange, String routingKey, ServiceMessage payload, String provider) {
         Message message = buildMessage(payload, provider);
-        rabbitTemplate.convertAndSend(exchange, routingKey, message);
+        rabbitTemplate.send(exchange, routingKey, message);
         logger.info("ACTION_IDENTITY: " + payload.getActionIdentity() +
                 " OPERATION_IDENTITY: " + payload.getOperationIdentity() +
                 " Сообщение от: " + provider + " " +

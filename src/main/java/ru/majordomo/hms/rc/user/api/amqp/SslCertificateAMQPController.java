@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,8 +52,11 @@ public class SslCertificateAMQPController {
             durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "ssl-certificate.create", type = ExchangeTypes.TOPIC),
             key = "rc.user"))
-    public void handleCreateEvent(@Header(value = "provider") String eventProvider,
-                                  @Payload ServiceMessage serviceMessage) {
+    public void handleCreateEvent(
+            Message amqpMessage,
+            @Header(value = "provider") String eventProvider,
+            @Payload ServiceMessage serviceMessage
+    ) {
         switch (eventProvider) {
             case ("pm"):
                 handleCreateSslEventFromPM(serviceMessage);
@@ -70,8 +74,11 @@ public class SslCertificateAMQPController {
             durable = "true", autoDelete = "false"),
             exchange = @Exchange(value = "ssl-certificate.delete", type = "topic"),
             key = "rc.user"))
-    public void handleDeleteEvent(@Header(value = "provider", required = false) String eventProvider,
-                                  @Payload ServiceMessage serviceMessage) {
+    public void handleDeleteEvent(
+            Message amqpMessage,
+            @Header(value = "provider", required = false) String eventProvider,
+            @Payload ServiceMessage serviceMessage
+    ) {
         switch (eventProvider) {
             case ("pm"):
                 handleDeleteSslEventFromPM(serviceMessage);
