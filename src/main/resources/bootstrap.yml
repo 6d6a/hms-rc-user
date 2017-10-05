@@ -1,0 +1,11 @@
+eureka:
+    instance:
+        metadata-map:
+            management.port: ${management.port:18080}
+spring:
+    application:
+        name: rc-user
+    cloud:
+        config:
+            discovery:
+                enabled: true
