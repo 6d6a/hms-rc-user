@@ -1,11 +1,6 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
-import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
@@ -14,71 +9,67 @@ import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
+import ru.majordomo.hms.rc.user.resources.FTPUser;
 
-@EnableRabbit
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.FTP_USER_CREATE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.FTP_USER_DELETE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.FTP_USER_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
+
 @Service
-public class FTPUserAMQPController extends BaseAMQPController {
+public class FTPUserAMQPController extends BaseAMQPController<FTPUser> {
 
     @Autowired
     public void setGovernor(GovernorOfFTPUser governor) {
         this.governor = governor;
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.create",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "ftp-user.create", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + FTP_USER_CREATE)
     public void handleCreateEvent(
             Message amqpMessage,
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleCreateEventFromPM("ftp-user", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleCreateEventFromTE("ftp-user", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.update",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "ftp-user.update", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + FTP_USER_UPDATE)
     public void handleUpdateEvent(
             Message amqpMessage,
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleUpdateEventFromPM("ftp-user", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleUpdateEventFromTE("ftp-user", serviceMessage);
                 break;
         }
     }
 
-    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "${spring.application.name}.ftp-user.delete",
-            durable = "true", autoDelete = "false"),
-            exchange = @Exchange(value = "ftp-user.delete", type = ExchangeTypes.TOPIC),
-            key = "rc.user"))
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + FTP_USER_DELETE)
     public void handleDeleteEvent(
             Message amqpMessage,
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (eventProvider) {
-            case ("pm"):
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
                 handleDeleteEventFromPM("ftp-user", serviceMessage);
                 break;
-            case ("te"):
+            case TE:
                 handleDeleteEventFromTE("ftp-user", serviceMessage);
                 break;
         }
     }
-
 }

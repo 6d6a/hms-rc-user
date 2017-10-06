@@ -17,23 +17,33 @@ public class Sender {
     private final static Logger logger = LoggerFactory.getLogger(Sender.class);
 
     private RabbitTemplate rabbitTemplate;
-    private String applicationName;
-
-    @Value("${spring.application.name}")
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
-    }
+    private String instanceName;
+    private String fullApplicationName;
 
     @Autowired
-    public void setRabbitTemplate(RabbitTemplate rabbitTemplate) {
+    public Sender(
+            RabbitTemplate rabbitTemplate,
+            @Value("${spring.application.name}") String applicationName,
+            @Value("${hms.instance.name}") String instanceName
+    ) {
         this.rabbitTemplate = rabbitTemplate;
+        this.instanceName = instanceName;
+        this.fullApplicationName = instanceName + "." + applicationName;
     }
 
     public void send(String exchange, String routingKey, ServiceMessage payload) {
-        send(exchange, routingKey, payload, applicationName);
+        send(exchange, routingKey, payload, fullApplicationName);
     }
 
     public void send(String exchange, String routingKey, ServiceMessage payload, String provider) {
+        if (!routingKey.startsWith(instanceName + ".")) {
+            routingKey = instanceName + "." + routingKey;
+        }
+
+        if (!provider.startsWith(instanceName + ".")) {
+            provider = instanceName + "." + provider;
+        }
+
         Message message = buildMessage(payload, provider);
         rabbitTemplate.send(exchange, routingKey, message);
         logger.info("ACTION_IDENTITY: " + payload.getActionIdentity() +
