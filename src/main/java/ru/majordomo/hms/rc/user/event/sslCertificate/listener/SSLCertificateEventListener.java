@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_UPDATE;
 import static ru.majordomo.hms.rc.user.common.Constants.LETSENCRYPT;
 
 @Component
@@ -84,7 +85,7 @@ public class SSLCertificateEventListener extends ResourceEventListener<SSLCertif
                     String json = mapper.writeValueAsString(sslCertificate);
                     serviceMessage.addParam("sslCertificate", json);
                     serviceMessage.setAccountId(sslCertificate.getAccountId());
-                    sender.send("ssl-certificate.update", LETSENCRYPT, serviceMessage);
+                    sender.send(SSL_CERTIFICATE_UPDATE, LETSENCRYPT, serviceMessage);
                 }
             }
 

@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_DELETE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_UPDATE;
 import static ru.majordomo.hms.rc.user.common.Constants.LETSENCRYPT;
 import static ru.majordomo.hms.rc.user.common.Constants.PM;
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
@@ -97,7 +98,7 @@ public class SslCertificateAMQPController {
         if (serviceMessage.getParam("name") == null || serviceMessage.getParam("name").equals("")) {
             ServiceMessage report = createReport(serviceMessage, null, "Необходимо указать имя домена в поле name");
             report.addParam("success", false);
-            sender.send("ssl-certificate.create", PM, report);
+            sender.send(SSL_CERTIFICATE_CREATE, PM, report);
             return;
         }
         try {
@@ -117,7 +118,7 @@ public class SslCertificateAMQPController {
                     String json = mapper.writeValueAsString(certificate);
                     serviceMessage.addParam("sslCertificate", json);
 
-                    sender.send("ssl-certificate.update", LETSENCRYPT, serviceMessage);
+                    sender.send(SSL_CERTIFICATE_UPDATE, LETSENCRYPT, serviceMessage);
                     return;
                 }
 
@@ -128,12 +129,12 @@ public class SslCertificateAMQPController {
                 String teRoutingKey = governor.getTERoutingKey(certificate.getId());
 
                 if (teRoutingKey != null) {
-                    sender.send("ssl-certificate.create", teRoutingKey, report);
+                    sender.send(SSL_CERTIFICATE_CREATE, teRoutingKey, report);
                 } else {
-                    sender.send("ssl-certificate.create", PM, report);
+                    sender.send(SSL_CERTIFICATE_CREATE, PM, report);
                 }
             } else {
-                sender.send("ssl-certificate.create", LETSENCRYPT, serviceMessage);
+                sender.send(SSL_CERTIFICATE_CREATE, LETSENCRYPT, serviceMessage);
             }
         } catch (ConstraintViolationException e) {
             String errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
@@ -143,12 +144,12 @@ public class SslCertificateAMQPController {
             ServiceMessage report = createReport(serviceMessage, null, errorMessage);
             report.delParam("success");
             report.addParam("success", false);
-            sender.send("ssl-certificate.create", PM, report);
+            sender.send(SSL_CERTIFICATE_CREATE, PM, report);
         } catch (Exception e) {
             ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
             report.delParam("success");
             report.addParam("success", false);
-            sender.send("ssl-certificate.create", PM, report);
+            sender.send(SSL_CERTIFICATE_CREATE, PM, report);
         }
     }
 
@@ -162,9 +163,9 @@ public class SslCertificateAMQPController {
 
                 report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
                 if (teRoutingKey != null) {
-                    sender.send("ssl-certificate.create", teRoutingKey, report);
+                    sender.send(SSL_CERTIFICATE_CREATE, teRoutingKey, report);
                 } else {
-                    sender.send("ssl-certificate.create", PM, report);
+                    sender.send(SSL_CERTIFICATE_CREATE, PM, report);
                 }
             } catch (ConstraintViolationException e) {
                 String errorMessage = e.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining());
@@ -174,22 +175,22 @@ public class SslCertificateAMQPController {
                 report = createReport(serviceMessage, null, errorMessage);
                 report.delParam("success");
                 report.addParam("success", false);
-                sender.send("ssl-certificate.create", PM, report);
+                sender.send(SSL_CERTIFICATE_CREATE, PM, report);
             } catch (Exception e) {
                 logger.error(e.getMessage());
                 report = createReport(serviceMessage, null, e.getMessage());
                 report.delParam("success");
                 report.addParam("success", false);
-                sender.send("ssl-certificate.create", PM, report);
+                sender.send(SSL_CERTIFICATE_CREATE, PM, report);
             }
         } else {
             report = createReport(serviceMessage, null, "");
-            sender.send("ssl-certificate.create", PM, report);
+            sender.send(SSL_CERTIFICATE_CREATE, PM, report);
         }
     }
 
     private void handleCreateSslEventFromTE(ServiceMessage serviceMessage) {
-        sender.send("ssl-certificate.create", PM, serviceMessage);
+        sender.send(SSL_CERTIFICATE_CREATE, PM, serviceMessage);
     }
 
     private void handleDeleteSslEventFromPM(ServiceMessage serviceMessage) {
@@ -206,23 +207,23 @@ public class SslCertificateAMQPController {
             ServiceMessage report = createReport(serviceMessage, null, errorMessage);
             report.delParam("success");
             report.addParam("success", false);
-            sender.send("ssl-certificate.create", PM, report);
+            sender.send(SSL_CERTIFICATE_CREATE, PM, report);
         } catch (Exception e) {
             ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
-            sender.send("ssl-certificate.delete", PM, report);
+            sender.send(SSL_CERTIFICATE_DELETE, PM, report);
         }
         String teRoutingKey = governor.getTERoutingKey(certificate.getId());
 
         ServiceMessage report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
         if (teRoutingKey != null) {
-            sender.send("ssl-certificate.delete", teRoutingKey, report);
+            sender.send(SSL_CERTIFICATE_DELETE, teRoutingKey, report);
         } else {
-            sender.send("ssl-certificate.delete", PM, report);
+            sender.send(SSL_CERTIFICATE_DELETE, PM, report);
         }
     }
 
     private void handleDeleteSslEventFromTE(ServiceMessage serviceMessage) {
-        sender.send("ssl-certificate.delete", PM, serviceMessage);
+        sender.send(SSL_CERTIFICATE_DELETE, PM, serviceMessage);
     }
 
     private ServiceMessage createReport(ServiceMessage serviceMessage, SSLCertificate sslCertificate, String errorMessage) {
