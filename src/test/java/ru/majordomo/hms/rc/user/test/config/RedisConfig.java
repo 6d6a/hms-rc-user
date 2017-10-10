@@ -19,7 +19,7 @@ public class RedisConfig {
     private Integer redisPort = SocketUtils.findAvailableTcpPort();
     private String redisHost;
 
-    @Value("${default.redis.host}")
+    @Value("${spring.redis.host}")
     public void setRedisHost(String redisHost) {
         this.redisHost = redisHost;
     }

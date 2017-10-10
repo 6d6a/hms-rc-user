@@ -9,3 +9,6 @@ spring:
         config:
             discovery:
                 enabled: true
+            fail-fast: true
+    profiles:
+        active: dev
