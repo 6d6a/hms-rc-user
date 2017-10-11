@@ -188,6 +188,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         if (userValue) {
                             assignAsAggregator(mailbox);
                         } else {
+                            if (mailbox.getIsAggregator()) {
+                                dropAggregatorInRedis(mailbox);
+                            }
                             mailbox.setIsAggregator(userValue);
                         }
                         break;
