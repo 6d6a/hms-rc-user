@@ -550,7 +550,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     public WebSite build(String resourceId) throws ResourceNotFoundException {
         WebSite webSite = repository.findOne(resourceId);
         if (webSite == null) {
-            throw new ResourceNotFoundException("Сайт с ID " + resourceId + "не найден");
+            throw new ResourceNotFoundException("Сайт с ID " + resourceId + " не найден");
         }
         return construct(webSite);
     }

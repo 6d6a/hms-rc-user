@@ -217,7 +217,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     public Database build(String resourceId) throws ResourceNotFoundException {
         Database database = repository.findOne(resourceId);
         if (database == null) {
-            throw new ResourceNotFoundException("Database с ID:" + resourceId + " не найдена");
+            throw new ResourceNotFoundException("База данных с ID " + resourceId + " не найдена");
         }
         return construct(database);
     }
