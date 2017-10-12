@@ -13,6 +13,7 @@ import org.jongo.MongoCursor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,8 @@ import javax.validation.Validator;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.event.quota.QuotaAlmostFullEvent;
+import ru.majordomo.hms.rc.user.event.quota.QuotaAlreadyFullEvent;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
@@ -57,6 +60,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     private MongoClient mongoClient;
     private String springDataMongodbDatabase;
+    private ApplicationEventPublisher publisher;
+
+    @Autowired
+    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+        this.publisher = publisher;
+    }
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -659,13 +668,27 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     public void updateQuota(String mailboxId, Long quotaSize) {
         Mailbox mailbox = build(mailboxId);
+        Long oldQuotaUsed = mailbox.getQuotaUsed();
+        boolean oldWritable = mailbox.getWritable();
+
         mailbox.setQuotaUsed(quotaSize);
-        if (mailbox.getQuotaUsed() > mailbox.getQuota()) {
+
+        if (mailbox.getQuotaUsed() > mailbox.getQuota() && mailbox.getQuota() != 0) {
             mailbox.setWritable(false);
+            if (oldWritable) {
+                publisher.publishEvent(new QuotaAlreadyFullEvent(mailbox));
+            }
         } else {
             UnixAccount unixAccount = unixAccountRepository.findByUid(mailbox.getUid());
             if (unixAccount == null) { throw new ResourceNotFoundException("UnixAccount с UID: " + mailbox.getUid() + " не найден"); }
-            if (unixAccount.getWritable()) { mailbox.setWritable(true); }
+            if (unixAccount.getWritable() && unixAccount.getQuota() > quotaSize) { mailbox.setWritable(true); }
+            if (mailbox.getWritable()) {
+                Integer quotaUsedInProcent = ((Float)(((float) quotaSize) * 100 / mailbox.getQuota())).intValue();
+                Integer oldQuotaUsedInProcent = ((Float)(((float) oldQuotaUsed) * 100 / mailbox.getQuota())).intValue();
+                if (quotaUsedInProcent > 90 && oldQuotaUsedInProcent < 90) {
+                    publisher.publishEvent(new QuotaAlmostFullEvent(mailbox));
+                }
+            }
         }
         store(mailbox);
         syncWithRedis(mailbox);
