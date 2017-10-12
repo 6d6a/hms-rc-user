@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import ru.majordomo.hms.rc.user.event.person.SyncPersonsEvent;
+import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificatesRenewEvent;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 
@@ -34,6 +35,11 @@ public class SchedulerRestController {
 
             case "ssl_certificates_renew":
                 publisher.publishEvent(new SSLCertificatesRenewEvent());
+
+                break;
+
+            case "resource_archives_clean":
+                publisher.publishEvent(new ResourceArchivesCleanEvent());
 
                 break;
             default:

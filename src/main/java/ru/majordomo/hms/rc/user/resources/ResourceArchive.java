@@ -84,4 +84,16 @@ public class ResourceArchive extends Resource implements Serviceable {
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
     }
+
+    @Override
+    public String toString() {
+        return "ResourceArchive{" +
+                "resourceType=" + resourceType +
+                ", resourceId='" + resourceId + '\'' +
+                ", resource=" + resource +
+                ", fileLink='" + fileLink + '\'' +
+                ", serviceId='" + serviceId + '\'' +
+                ", createdAt=" + createdAt +
+                "} " + super.toString();
+    }
 }

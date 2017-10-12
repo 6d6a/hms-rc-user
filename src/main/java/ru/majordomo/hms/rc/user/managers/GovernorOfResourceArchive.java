@@ -17,11 +17,13 @@ import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -194,6 +196,8 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
         if (hasResourceIdAndAccountId(keyValue)) {
             archive = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
+        } else if (keyValue.get("resourceId") != null) {
+            archive = repository.findOne(keyValue.get("resourceId"));
         }
 
         if (archive == null) {
@@ -232,5 +236,9 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     @Override
     public void store(ResourceArchive archive) {
         repository.save(archive);
+    }
+
+    public Stream<ResourceArchive> findByCreatedAtBefore(LocalDateTime created) {
+        return repository.findByCreatedAtBefore(created);
     }
 }
