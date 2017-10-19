@@ -48,7 +48,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 }, webEnvironment = RANDOM_PORT,
         properties = {
                 "resources.quotable.warnProcent.mailbox=90"
-        })
+        }
+)
 public class DatabaseUserAMQPControllerTest {
 
     private static BrokerManager brokerManager = new BrokerManager();
