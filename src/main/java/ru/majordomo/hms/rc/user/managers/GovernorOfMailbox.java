@@ -704,7 +704,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private void notify(Mailbox mailbox, boolean oldWritable, long oldQuotaUsed){
         if (!mailbox.getWritable() && oldWritable) {
             publisher.publishEvent(new MailboxQuotaFullEvent(mailbox));
-        } else {
+        } else { 
 
             int newQuotaUsedInProcent = ((Float) (((float) mailbox.getQuotaUsed()) * 100 / mailbox.getQuota())).intValue();
             int oldQuotaUsedInProcent = ((Float)(((float) oldQuotaUsed) * 100 / mailbox.getQuota())).intValue();
