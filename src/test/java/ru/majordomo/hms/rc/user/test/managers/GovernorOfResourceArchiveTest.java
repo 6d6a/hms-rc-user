@@ -70,7 +70,8 @@ import static org.hamcrest.CoreMatchers.is;
                 "default.website.mbstringFuncOverload=0",
                 "default.website.followSymLinks=true",
                 "default.website.multiViews=false",
-                "default.archive.hostname=archive.majordomo.ru"
+                "default.archive.hostname=archive.majordomo.ru",
+                "resources.quotable.warnProcent.mailbox=90"
         }
 )
 public class GovernorOfResourceArchiveTest {
