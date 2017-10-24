@@ -57,10 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
                 ConfigGovernors.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "resources.quotable.warnProcent.mailbox=90"
-        }
+        webEnvironment = RANDOM_PORT
 )
 public class FTPUserRestControllerTest {
 
