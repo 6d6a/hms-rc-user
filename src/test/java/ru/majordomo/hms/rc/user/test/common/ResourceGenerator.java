@@ -560,14 +560,20 @@ public class ResourceGenerator {
             batchOfUnixAccounts = generateBatchOfUnixAccounts();
         } catch (Exception e) { }
 
-        Set<String> accountIds = new HashSet<>();
-        batchOfMailboxes.forEach(mailbox -> accountIds.add(mailbox.getAccountId()));
-
-        Iterator iterator = accountIds.iterator();
+        Iterator<UnixAccount> unixAccountIterator = batchOfUnixAccounts.iterator();
+        Iterator<Mailbox> mailboxIterator = batchOfMailboxes.iterator();
         int i = 0;
-        while (i < batchOfUnixAccounts.size() && i < accountIds.size()) {
-            batchOfUnixAccounts.get(i).setAccountId((String) iterator.next());
-            i++;
+        while (unixAccountIterator.hasNext() && mailboxIterator.hasNext()) {
+            Mailbox mailbox = mailboxIterator.next();
+            UnixAccount unixAccount = unixAccountIterator.next();
+
+            while (unixAccount.getAccountId().equals(mailbox.getAccountId()) && mailboxIterator.hasNext()) {
+                mailbox = mailboxIterator.next();
+            }
+            unixAccount.setAccountId(mailbox.getAccountId());
+            Integer uid = 2000 + i;
+            unixAccount.setUid(uid);
+            mailbox.setUid(uid);
         }
 
         return batchOfUnixAccounts;
