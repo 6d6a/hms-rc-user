@@ -114,8 +114,6 @@ public class MailboxRestControllerTest {
                 .build();
         batchOfMailboxes = ResourceGenerator.generateBatchOfMailboxes();
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts(batchOfMailboxes);
-//        System.out.println(unixAccounts.toString());
-//        System.out.println(batchOfMailboxes.toString());
         unixAccountRepository.save(unixAccounts);
         for (Mailbox mailbox: batchOfMailboxes) {
             Person person = mailbox.getDomain().getPerson();
