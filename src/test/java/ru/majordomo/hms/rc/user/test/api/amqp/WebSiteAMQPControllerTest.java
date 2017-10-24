@@ -43,7 +43,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         },
         webEnvironment = RANDOM_PORT,
         properties = {
-                "resources.quotable.warnProcent.mailbox=90"
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class WebSiteAMQPControllerTest {

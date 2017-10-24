@@ -53,7 +53,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
         },
         webEnvironment = NONE,
         properties = {
-                "resources.quotable.warnProcent.mailbox=90"
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class GovernorOfDomainTest {

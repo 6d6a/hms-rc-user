@@ -71,7 +71,7 @@ import static org.hamcrest.CoreMatchers.is;
                 "default.website.followSymLinks=true",
                 "default.website.multiViews=false",
                 "default.archive.hostname=archive.majordomo.ru",
-                "resources.quotable.warnProcent.mailbox=90"
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class GovernorOfResourceArchiveTest {

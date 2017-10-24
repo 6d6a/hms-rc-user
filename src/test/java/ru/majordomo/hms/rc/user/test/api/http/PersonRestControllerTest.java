@@ -57,7 +57,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
         },
         webEnvironment = RANDOM_PORT,
         properties = {
-                "resources.quotable.warnProcent.mailbox=90"
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class PersonRestControllerTest {

@@ -61,11 +61,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private MongoClient mongoClient;
     private String springDataMongodbDatabase;
     private ApplicationEventPublisher publisher;
-    private int warnProcent;
+    private int warnPercent;
 
-    @Value("${resources.quotable.warnProcent.mailbox}")
-    public void setWarnProcent(int warnProcent){
-        this.warnProcent = warnProcent;
+    @Value("${resources.quotable.warnPercent.mailbox}")
+    public void setWarnPercent(int warnPercent){
+        this.warnPercent = warnPercent;
     }
 
     @Autowired
@@ -713,7 +713,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             int newQuotaUsedInProcent = ((Float) (((float) mailbox.getQuotaUsed()) * 100 / mailbox.getQuota())).intValue();
             int oldQuotaUsedInProcent = ((Float)(((float) oldQuotaUsed) * 100 / mailbox.getQuota())).intValue();
 
-            if (newQuotaUsedInProcent >= warnProcent && oldQuotaUsedInProcent < warnProcent) {
+            if (newQuotaUsedInProcent >= warnPercent && oldQuotaUsedInProcent < warnPercent) {
                 publisher.publishEvent(new MailboxQuotaWarnEvent(mailbox));
             }
         }

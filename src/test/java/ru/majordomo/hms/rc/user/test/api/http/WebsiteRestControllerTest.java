@@ -87,7 +87,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "default.website.mbstringFuncOverload=0",
         "default.website.followSymLinks=true",
         "default.website.multiViews=false",
-        "resources.quotable.warnProcent.mailbox=90"
+        "resources.quotable.warnPercent.mailbox=90"
 })
 public class WebsiteRestControllerTest {
 

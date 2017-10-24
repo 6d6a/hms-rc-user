@@ -5,10 +5,7 @@ import com.jcraft.jsch.JSchException;
 import org.bson.types.ObjectId;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.resources.*;
@@ -555,5 +552,24 @@ public class ResourceGenerator {
         batchOfDatabaseUsers.get(1).setPasswordHashByPlainPassword("1234561");
         batchOfDatabaseUsers.get(2).setAccountId(batchOfDatabaseUsers.get(1).getAccountId());
         return batchOfDatabaseUsers;
+    }
+
+    public static List<UnixAccount> generateBatchOfUnixAccounts(List<Mailbox> batchOfMailboxes) {
+        List<UnixAccount> batchOfUnixAccounts = new ArrayList<>();
+        try {
+            batchOfUnixAccounts = generateBatchOfUnixAccounts();
+        } catch (Exception e) { }
+
+        Set<String> accountIds = new HashSet<>();
+        batchOfMailboxes.forEach(mailbox -> accountIds.add(mailbox.getAccountId()));
+
+        Iterator iterator = accountIds.iterator();
+        int i = 0;
+        while (i < batchOfUnixAccounts.size() && i < accountIds.size()) {
+            batchOfUnixAccounts.get(i).setAccountId((String) iterator.next());
+            i++;
+        }
+
+        return batchOfUnixAccounts;
     }
 }

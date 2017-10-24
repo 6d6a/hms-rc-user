@@ -59,7 +59,7 @@ import static org.hamcrest.CoreMatchers.not;
                 "default.redis.host=127.0.0.1",
                 "default.mailbox.spamfilter.mood=NEUTRAL",
                 "default.mailbox.spamfilter.action=MOVE_TO_SPAM_FOLDER",
-                "resources.quotable.warnProcent.mailbox=90"
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class GovernorOfMailboxTest {
