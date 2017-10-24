@@ -51,10 +51,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
                 ConfigGovernors.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnProcent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfDomainTest {
     @Autowired

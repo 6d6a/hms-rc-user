@@ -13,8 +13,6 @@ import org.jongo.MongoCursor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +29,6 @@ import javax.validation.Validator;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
-import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
@@ -61,18 +57,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     private MongoClient mongoClient;
     private String springDataMongodbDatabase;
-    private ApplicationEventPublisher publisher;
-    private int warnProcent;
-
-    @Value("${resources.quotable.warnProcent.mailbox}")
-    public void setWarnProcent(int warnProcent){
-        this.warnProcent = warnProcent;
-    }
-
-    @Autowired
-    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
-        this.publisher = publisher;
-    }
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -675,43 +659,16 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     public void updateQuota(String mailboxId, Long quotaSize) {
         Mailbox mailbox = build(mailboxId);
-
-        // Сохраняем старые значения для определения необходимости отправки уведомлений
-        long oldQuotaUsed = mailbox.getQuotaUsed();
-        boolean oldWritable = mailbox.getWritable();
-
-        //Устанавливаем новые квоту и writable после определения старых значений
         mailbox.setQuotaUsed(quotaSize);
-        mailbox.setWritable(this.getNewWritable(mailbox));
-
+        if (mailbox.getQuotaUsed() > mailbox.getQuota()) {
+            mailbox.setWritable(false);
+        } else {
+            UnixAccount unixAccount = unixAccountRepository.findByUid(mailbox.getUid());
+            if (unixAccount == null) { throw new ResourceNotFoundException("UnixAccount с UID: " + mailbox.getUid() + " не найден"); }
+            if (unixAccount.getWritable()) { mailbox.setWritable(true); }
+        }
         store(mailbox);
         syncWithRedis(mailbox);
-
-        // Отправляем уведомление, если это необходимо
-        notify(mailbox, oldWritable, oldQuotaUsed);
     }
 
-    private boolean getNewWritable(Mailbox mailbox) {
-        if (mailbox.getQuotaUsed() >= mailbox.getQuota() && mailbox.getQuota() != 0) {
-            return false;
-        }
-
-        UnixAccount unixAccount = unixAccountRepository.findByUid(mailbox.getUid());
-
-        return (unixAccount.getWritable() && unixAccount.getQuota() > mailbox.getQuotaUsed());
-    }
-
-    private void notify(Mailbox mailbox, boolean oldWritable, long oldQuotaUsed){
-        if (!mailbox.getWritable() && oldWritable) {
-            publisher.publishEvent(new MailboxQuotaFullEvent(mailbox));
-        } else {
-
-            int newQuotaUsedInProcent = ((Float) (((float) mailbox.getQuotaUsed()) * 100 / mailbox.getQuota())).intValue();
-            int oldQuotaUsedInProcent = ((Float)(((float) oldQuotaUsed) * 100 / mailbox.getQuota())).intValue();
-
-            if (newQuotaUsedInProcent >= warnProcent && oldQuotaUsedInProcent < warnProcent) {
-                publisher.publishEvent(new MailboxQuotaWarnEvent(mailbox));
-            }
-        }
-    }
 }

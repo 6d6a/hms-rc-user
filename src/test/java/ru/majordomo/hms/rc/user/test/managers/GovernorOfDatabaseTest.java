@@ -50,8 +50,7 @@ import static org.hamcrest.CoreMatchers.not;
         },
         webEnvironment = NONE,
         properties = {
-                "default.database.serviceName=DATABASE_MYSQL",
-                "resources.quotable.warnProcent.mailbox=90"
+                "default.database.serviceName=DATABASE_MYSQL"
         }
 )
 public class GovernorOfDatabaseTest {

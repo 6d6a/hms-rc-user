@@ -55,10 +55,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 
                 ConfigGovernors.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "resources.quotable.warnProcent.mailbox=90"
-        })
+        webEnvironment = RANDOM_PORT)
 public class PersonRestControllerTest {
 
     private MockMvc mockMvc;

@@ -48,10 +48,7 @@ import static ru.majordomo.hms.rc.user.resources.PersonType.INDIVIDUAL_FOREIGN;
 
                 ConfigGovernors.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnProcent.mailbox=90"
-        })
+        webEnvironment = NONE)
 public class GovernorOfPersonTest {
     @Autowired
     private GovernorOfPerson governor;
