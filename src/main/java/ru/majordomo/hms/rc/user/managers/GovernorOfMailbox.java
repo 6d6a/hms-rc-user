@@ -702,7 +702,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             throw new ResourceNotFoundException("UnixAccount с AccountId: " + mailbox.getAccountId() + " не найден");
         }
 
-        return (unixAccount.getWritable() && unixAccount.getQuota() > mailbox.getQuotaUsed());
+        return unixAccount.getWritable();
     }
 
     private void notify(Mailbox mailbox, boolean oldWritable, long oldQuotaUsed){
