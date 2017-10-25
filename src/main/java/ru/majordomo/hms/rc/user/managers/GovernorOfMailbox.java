@@ -710,10 +710,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             publisher.publishEvent(new MailboxQuotaFullEvent(mailbox));
         } else {
 
-            int newQuotaUsedInProcent = ((Float) (((float) mailbox.getQuotaUsed()) * 100 / mailbox.getQuota())).intValue();
-            int oldQuotaUsedInProcent = ((Float)(((float) oldQuotaUsed) * 100 / mailbox.getQuota())).intValue();
+            int newQuotaUsedInPercent = ((Float) (((float) mailbox.getQuotaUsed()) * 100 / mailbox.getQuota())).intValue();
+            int oldQuotaUsedInPercent = ((Float)(((float) oldQuotaUsed) * 100 / mailbox.getQuota())).intValue();
 
-            if (newQuotaUsedInProcent >= warnPercent && oldQuotaUsedInProcent < warnPercent) {
+            if (newQuotaUsedInPercent >= warnPercent && oldQuotaUsedInPercent < warnPercent) {
                 publisher.publishEvent(new MailboxQuotaWarnEvent(mailbox));
             }
         }
