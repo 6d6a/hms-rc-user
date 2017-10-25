@@ -52,7 +52,10 @@ import static org.hamcrest.CoreMatchers.anything;
 
                 ConfigGovernors.class
         },
-        webEnvironment = NONE
+        webEnvironment = NONE,
+        properties = {
+                "resources.quotable.warnPercent.mailbox=90"
+        }
 )
 public class GovernorOfFTPUserTest {
 

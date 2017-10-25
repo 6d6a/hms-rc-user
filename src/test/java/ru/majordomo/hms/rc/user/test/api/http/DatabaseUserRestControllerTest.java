@@ -60,7 +60,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         },
         webEnvironment = RANDOM_PORT,
         properties = {
-                "default.database.serviceName=DATABASE_MYSQL"
+                "default.database.serviceName=DATABASE_MYSQL",
+                "resources.quotable.warnPercent.mailbox=90"
+
         }
 )
 public class DatabaseUserRestControllerTest {

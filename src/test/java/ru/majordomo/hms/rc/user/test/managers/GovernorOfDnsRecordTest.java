@@ -53,6 +53,7 @@ import static org.hamcrest.CoreMatchers.is;
         },
         webEnvironment = NONE,
         properties = {
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class GovernorOfDnsRecordTest {

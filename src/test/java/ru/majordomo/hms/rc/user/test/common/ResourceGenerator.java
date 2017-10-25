@@ -5,10 +5,7 @@ import com.jcraft.jsch.JSchException;
 import org.bson.types.ObjectId;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.resources.*;
@@ -555,5 +552,30 @@ public class ResourceGenerator {
         batchOfDatabaseUsers.get(1).setPasswordHashByPlainPassword("1234561");
         batchOfDatabaseUsers.get(2).setAccountId(batchOfDatabaseUsers.get(1).getAccountId());
         return batchOfDatabaseUsers;
+    }
+
+    public static List<UnixAccount> generateBatchOfUnixAccounts(List<Mailbox> batchOfMailboxes) {
+        List<UnixAccount> batchOfUnixAccounts = new ArrayList<>();
+        try {
+            batchOfUnixAccounts = generateBatchOfUnixAccounts();
+        } catch (Exception e) { }
+
+        Iterator<UnixAccount> unixAccountIterator = batchOfUnixAccounts.iterator();
+        Iterator<Mailbox> mailboxIterator = batchOfMailboxes.iterator();
+        int i = 0;
+        while (unixAccountIterator.hasNext() && mailboxIterator.hasNext()) {
+            Mailbox mailbox = mailboxIterator.next();
+            UnixAccount unixAccount = unixAccountIterator.next();
+
+            while (unixAccount.getAccountId().equals(mailbox.getAccountId()) && mailboxIterator.hasNext()) {
+                mailbox = mailboxIterator.next();
+            }
+            unixAccount.setAccountId(mailbox.getAccountId());
+            Integer uid = 2000 + i;
+            unixAccount.setUid(uid);
+            mailbox.setUid(uid);
+        }
+
+        return batchOfUnixAccounts;
     }
 }

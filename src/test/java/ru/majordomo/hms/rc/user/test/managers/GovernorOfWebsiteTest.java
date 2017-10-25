@@ -77,7 +77,8 @@ import static org.hamcrest.CoreMatchers.is;
                 "default.website.allowUrlFopen=false",
                 "default.website.mbstringFuncOverload=0",
                 "default.website.followSymLinks=true",
-                "default.website.multiViews=false"
+                "default.website.multiViews=false",
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class GovernorOfWebsiteTest {

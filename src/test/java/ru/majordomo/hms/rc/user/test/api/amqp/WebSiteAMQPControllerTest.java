@@ -41,7 +41,11 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
                 ConfigGovernors.class
         },
-        webEnvironment = RANDOM_PORT)
+        webEnvironment = RANDOM_PORT,
+        properties = {
+                "resources.quotable.warnPercent.mailbox=90"
+        }
+)
 public class WebSiteAMQPControllerTest {
 
     private static BrokerManager brokerManager = new BrokerManager();

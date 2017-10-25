@@ -72,7 +72,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "default.redis.host:127.0.0.1",
                 "default.redis.port:6379",
                 "default.mailbox.spamfilter.mood:NEUTRAL",
-                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER"
+                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER",
+                "resources.quotable.warnPercent.mailbox=90"
         }
 )
 public class MailboxRestControllerTest {
@@ -112,7 +113,7 @@ public class MailboxRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfMailboxes = ResourceGenerator.generateBatchOfMailboxes();
-        List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
+        List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts(batchOfMailboxes);
         unixAccountRepository.save(unixAccounts);
         for (Mailbox mailbox: batchOfMailboxes) {
             Person person = mailbox.getDomain().getPerson();
