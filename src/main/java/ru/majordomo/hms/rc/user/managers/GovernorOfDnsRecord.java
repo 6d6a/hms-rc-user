@@ -16,6 +16,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -189,6 +190,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     protected DNSResourceRecord construct(DNSResourceRecord record) throws ParameterValidateException {
         record.setRrClass(DNSResourceRecordClass.IN);
         record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getRecordId()));
+        record.setOwnerName(IDN.toUnicode(record.getOwnerName()));
         return record;
     }
 
@@ -198,6 +200,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             for (DNSResourceRecord record : records) {
                 record.setRrClass(DNSResourceRecordClass.IN);
                 record.setName(domainName);
+                record.setOwnerName(IDN.toUnicode(record.getOwnerName()));
             }
         }
 
