@@ -16,7 +16,6 @@ import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
