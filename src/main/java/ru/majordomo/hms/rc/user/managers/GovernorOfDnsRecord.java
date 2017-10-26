@@ -189,6 +189,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     protected DNSResourceRecord construct(DNSResourceRecord record) throws ParameterValidateException {
         record.setRrClass(DNSResourceRecordClass.IN);
         record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getRecordId()));
+        record.setOwnerName(IDN.toUnicode(record.getOwnerName()));
         return record;
     }
 
@@ -198,6 +199,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             for (DNSResourceRecord record : records) {
                 record.setRrClass(DNSResourceRecordClass.IN);
                 record.setName(domainName);
+                record.setOwnerName(IDN.toUnicode(record.getOwnerName()));
             }
         }
 
