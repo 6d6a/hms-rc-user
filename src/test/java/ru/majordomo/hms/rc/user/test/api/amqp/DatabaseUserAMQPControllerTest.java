@@ -109,7 +109,7 @@ public class DatabaseUserAMQPControllerTest {
         Exchange exchange = new TopicExchange("database-user." + actionString);
 
         Queue queue = new Queue("te.web100500", false);
-        String routingKey = instanceName + "." + "te.web100500";
+        String routingKey = "te.web100500";
 
         rabbitAdmin.declareQueue(queue);
         rabbitAdmin.declareBinding(
