@@ -1,7 +1,5 @@
-management:
-  port: 18080
-  security:
-    enabled: false
-
-endpoints:
-  sensitive: false
+#management:
+#  port: 18080
+#spring:
+#  redis:
+#    host: localhost

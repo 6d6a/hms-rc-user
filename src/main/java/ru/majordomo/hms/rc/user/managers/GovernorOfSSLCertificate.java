@@ -26,6 +26,8 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateImportChecks;
 
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
+
 @Service
 public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
@@ -296,7 +298,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         }
         try {
             String serverName = staffRcClient.getServerByServiceId(webSite.getServiceId()).getName();
-            return "te" + "." + serverName.split("\\.")[0];
+            return TE + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
             throw new ParameterValidateException("Exception: " + e.getMessage());
         }

@@ -69,8 +69,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         },
         webEnvironment = RANDOM_PORT,
         properties = {
-                "default.redis.host:127.0.0.1",
-                "default.redis.port:6379",
+                "spring.redis.host:127.0.0.1",
+                "spring.redis.port:6379",
                 "default.mailbox.spamfilter.mood:NEUTRAL",
                 "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER",
                 "resources.quotable.warnPercent.mailbox=90"

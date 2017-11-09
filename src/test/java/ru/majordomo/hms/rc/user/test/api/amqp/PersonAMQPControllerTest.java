@@ -27,6 +27,10 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceController
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.PERSON_CREATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Ignore
 @RunWith(SpringRunner.class)
@@ -74,39 +78,25 @@ public class PersonAMQPControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        setUpTE();
-        setUpPM();
+        setupRabbit(TE);
+        setupRabbit(PM);
     }
 
-    private void setUpTE() throws Exception {
-        Exchange exchange = new TopicExchange("person.create");
-        Queue queue = new Queue("te", false);
-        String routingKey = "te";
+    private void setupRabbit(String name) {
+        Exchange exchange = new TopicExchange(PERSON_CREATE);
+        Queue queue = new Queue(name, false);
 
         rabbitAdmin.declareQueue(queue);
         rabbitAdmin.declareExchange(exchange);
         rabbitAdmin.declareBinding(new Binding(queue.getName(), Binding.DestinationType.QUEUE,
-                exchange.getName(), routingKey,
-                Collections.emptyMap()));
-
-    }
-
-    private void setUpPM() throws Exception {
-        Exchange exchange = new TopicExchange("person.create");
-        Queue queue = new Queue("pm", false);
-        String routingKey = "pm";
-
-        rabbitAdmin.declareQueue(queue);
-        rabbitAdmin.declareExchange(exchange);
-        rabbitAdmin.declareBinding(new Binding(queue.getName(), Binding.DestinationType.QUEUE,
-                exchange.getName(), routingKey,
+                exchange.getName(), name,
                 Collections.emptyMap()));
     }
 
     @Test
     public void sendAndReceive() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateBadServiceMessage();
-        sender.send("person.create", "rc.user", serviceMessage, "pm");
-        Message message = rabbitTemplate.receive("pm", 1000);
+        sender.send(PERSON_CREATE, RC_USER, serviceMessage, PM);
+        Message message = rabbitTemplate.receive(PM, 1000);
     }
 }

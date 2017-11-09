@@ -28,6 +28,9 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.LETSENCRYPT;
+
 @Component
 public class SSLCertificateScheduler {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -118,7 +121,7 @@ public class SSLCertificateScheduler {
                         String json = mapper.writeValueAsString(sslCertificate);
                         serviceMessage.addParam("sslCertificate", json);
                         serviceMessage.setAccountId(sslCertificate.getAccountId());
-                        sender.send("ssl-certificate.update", "letsencrypt", serviceMessage, "rc");
+                        sender.send(SSL_CERTIFICATE_UPDATE, LETSENCRYPT, serviceMessage);
 
                         return true;
                     }
