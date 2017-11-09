@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
+
 @Service
 public class Sender {
 
@@ -36,7 +38,9 @@ public class Sender {
     }
 
     public void send(String exchange, String routingKey, ServiceMessage payload, String provider) {
-        if (!routingKey.startsWith(instanceName + ".")) {
+        if (!routingKey.startsWith(instanceName + ".")
+                && !routingKey.startsWith(TE)
+                && !routingKey.startsWith(instanceName + "." + TE)) {
             routingKey = instanceName + "." + routingKey;
         }
 
