@@ -51,6 +51,8 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     private SSHKeyPair keyPair;
     private List<CronTask> crontab = new ArrayList<>();
 
+    private Boolean infected;
+
     public List<CronTask> getCrontab() {
         return crontab;
     }
@@ -173,4 +175,11 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
         return passwordHash;
     }
 
+    public Boolean getInfected() {
+        return infected;
+    }
+
+    public void setInfected(Boolean infected) {
+        this.infected = infected;
+    }
 }
