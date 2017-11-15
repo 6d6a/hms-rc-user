@@ -58,6 +58,11 @@ public class UnixAccountRESTController {
         }
     }
 
+    @RequestMapping(value = {"/unix-account/{unixAccountId}/malware-report"}, method = RequestMethod.GET)
+    public MalwareReport getMalwareReport(@PathVariable String unixAccountId) {
+        return governor.getMalwareReport(unixAccountId);
+    }
+
     @RequestMapping(value = {"/unix-account/{unixAccountId}/malware-report"}, method = RequestMethod.POST)
     public ResponseEntity<Void> reportMalware(@PathVariable String unixAccountId, @RequestBody MalwareReport report) {
         report.setUnixAccountId(unixAccountId);
