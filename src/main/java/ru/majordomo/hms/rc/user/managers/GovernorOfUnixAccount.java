@@ -20,10 +20,12 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.repositories.MalwareReportRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
 
@@ -36,6 +38,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private UnixAccountRepository repository;
     private GovernorOfFTPUser governorOfFTPUser;
     private GovernorOfWebSite governorOfWebSite;
+    private MalwareReportRepository malwareReportRepository;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
     private Validator validator;
@@ -53,6 +56,11 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     @Autowired
     public void setGovernorOfWebSite(GovernorOfWebSite governorOfWebSite) {
         this.governorOfWebSite = governorOfWebSite;
+    }
+
+    @Autowired
+    public void setMalwareReportRepository(MalwareReportRepository malwareReportRepository) {
+        this.malwareReportRepository = malwareReportRepository;
     }
 
     @Autowired
@@ -299,6 +307,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         if (unixAccount == null) {
             throw new ResourceNotFoundException("Не найден UnixAccount с ID: " + resourceId);
         }
+        unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
         return unixAccount;
     }
 
@@ -314,6 +323,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             throw new ResourceNotFoundException("Не найден UnixAccount с ID: " + keyValue.get("resourceId"));
         }
 
+        unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
+
         return unixAccount;
     }
 
@@ -327,12 +338,22 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             buildedUnixAccounts = repository.findByServerId(keyValue.get("serverId"));
         }
 
+        for (UnixAccount unixAccount : buildedUnixAccounts) {
+            unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
+        }
+
         return buildedUnixAccounts;
     }
 
     @Override
     public Collection<UnixAccount> buildAll() {
-        return repository.findAll();
+        List<UnixAccount> unixAccounts = repository.findAll();
+
+        for (UnixAccount unixAccount : unixAccounts) {
+            unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
+        }
+
+        return unixAccounts;
     }
 
     @Override
@@ -468,5 +489,40 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         } catch (IllegalArgumentException e) {
             throw new ParameterValidateException("Неверный формат времени выполнения задания");
         }
+    }
+
+    public void processMalwareReport(MalwareReport report) {
+        List<MalwareReport> stored = malwareReportRepository.findByUnixAccountId(report.getUnixAccountId());
+
+        if (stored.size() > 0) {
+            report = stored.get(0);
+        }
+
+        report.setSolved(false);
+
+        if (!malwareReportRepository.existsBySolved(false)) {
+            //TODO import publisher, publish UnixAccountInfectEvent
+        }
+
+        malwareReportRepository.save(report);
+    }
+
+    public MalwareReport getMalwareReport(String unixAccountId) {
+        List<MalwareReport> reports = malwareReportRepository.findByUnixAccountId(unixAccountId);
+        if (reports.size() == 0) return null;
+        return reports.get(0);
+    }
+
+    public void solveMalwareReport(String unixAccountId) {
+        List<MalwareReport> stored = malwareReportRepository.findByUnixAccountId(unixAccountId);
+        MalwareReport report = new MalwareReport();
+
+        if (stored.size() > 0) {
+            report = stored.get(0);
+        }
+
+        report.setSolved(true);
+
+        malwareReportRepository.save(report);
     }
 }

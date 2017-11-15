@@ -11,6 +11,7 @@ import java.util.Map;
 
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
+import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @RestController
@@ -50,6 +51,34 @@ public class UnixAccountRESTController {
     public ResponseEntity<Void> updateQuota(@PathVariable String unixAccountId, @RequestBody QuotaReport report) {
         try {
             governor.updateQuotaUsed(unixAccountId, report.getQuotaUsed());
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(value = {"/unix-account/{unixAccountId}/malware-report"}, method = RequestMethod.GET)
+    public MalwareReport getMalwareReport(@PathVariable String unixAccountId) {
+        return governor.getMalwareReport(unixAccountId);
+    }
+
+    @RequestMapping(value = {"/unix-account/{unixAccountId}/malware-report"}, method = RequestMethod.POST)
+    public ResponseEntity<Void> reportMalware(@PathVariable String unixAccountId, @RequestBody MalwareReport report) {
+        report.setUnixAccountId(unixAccountId);
+        try {
+            governor.processMalwareReport(report);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(value = {"/unix-account/{unixAccountId}/solve-malware-report"}, method = RequestMethod.GET)
+    public ResponseEntity<Void> confirmSolved(@PathVariable String unixAccountId) {
+        try {
+            governor.solveMalwareReport(unixAccountId);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
