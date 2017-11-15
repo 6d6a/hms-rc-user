@@ -38,9 +38,8 @@ public class InfectEventListener {
 
     private void convertAndSendEmail(MalwareReport report) {
         ServiceMessage message = new ServiceMessage();
-        message.addParam(FILENAMES, report.getInfectedFiles());
         message.addParam(API_NAME_KEY, "MajordomoVHMalwareFound");
-        message.addParam(CONFIRM_URL_KEY, "https://hms.majordomo.ru/solve-malware-report");
+        message.addParam(CONFIRM_URL_KEY, "https://hms.majordomo.ru/quarantine");
         message.addParam(TYPE_KEY, EMAIL);
         message.addParam(PRIORITY_KEY, 10);
         personmgr.sendNotificationToClient(message);

@@ -501,7 +501,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         report.setSolved(false);
 
         if (!malwareReportRepository.existsBySolved(false)) {
-            //asd
+            // import publisher, publish UnixAccountInfectEvent
         }
 
         malwareReportRepository.save(report);
