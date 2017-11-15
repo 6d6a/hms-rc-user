@@ -507,7 +507,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         malwareReportRepository.save(report);
     }
 
-    public MalwareReport getMalwareReport(String unixAccountId) {
+    public MalwareReport getMalwareReport(String accountId, String unixAccountId) {
+        if (repository.findByIdAndAccountId(unixAccountId, accountId) == null) throw new ResourceNotFoundException();
         List<MalwareReport> reports = malwareReportRepository.findByUnixAccountId(unixAccountId);
         if (reports.size() == 0) return null;
         return reports.get(0);
