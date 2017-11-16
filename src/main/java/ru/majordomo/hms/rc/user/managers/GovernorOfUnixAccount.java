@@ -307,7 +307,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         if (unixAccount == null) {
             throw new ResourceNotFoundException("Не найден UnixAccount с ID: " + resourceId);
         }
-        unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
+        unixAccount.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(unixAccount.getId(), false));
         return unixAccount;
     }
 
@@ -323,7 +323,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             throw new ResourceNotFoundException("Не найден UnixAccount с ID: " + keyValue.get("resourceId"));
         }
 
-        unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
+        unixAccount.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(unixAccount.getId(), false));
 
         return unixAccount;
     }
@@ -339,7 +339,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         }
 
         for (UnixAccount unixAccount : buildedUnixAccounts) {
-            unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
+            unixAccount.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(unixAccount.getId(), false));
         }
 
         return buildedUnixAccounts;
@@ -350,7 +350,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         List<UnixAccount> unixAccounts = repository.findAll();
 
         for (UnixAccount unixAccount : unixAccounts) {
-            unixAccount.setInfected(malwareReportRepository.existsBySolved(false));
+            unixAccount.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(unixAccount.getId(), false));
         }
 
         return unixAccounts;
@@ -500,7 +500,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
         report.setSolved(false);
 
-        if (!malwareReportRepository.existsBySolved(false)) {
+        if (!malwareReportRepository.existsByUnixAccountIdAndSolved(report.getUnixAccountId(), false)) {
             //TODO import publisher, publish UnixAccountInfectEvent
         }
 
