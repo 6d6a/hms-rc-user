@@ -75,10 +75,10 @@ public class UnixAccountRESTController {
         }
     }
 
-    @RequestMapping(value = {"/unix-account/{unixAccountId}/solve-malware-report"}, method = RequestMethod.GET)
-    public ResponseEntity<Void> confirmSolved(@PathVariable String unixAccountId) {
+    @RequestMapping(value = {"{accountId}/unix-account/{unixAccountId}/solve-malware-report"}, method = RequestMethod.GET)
+    public ResponseEntity<Void> confirmSolved(@PathVariable String accountId, @PathVariable String unixAccountId) {
         try {
-            governor.solveMalwareReport(unixAccountId);
+            governor.solveMalwareReport(accountId, unixAccountId);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
             e.printStackTrace();
