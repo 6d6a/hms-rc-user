@@ -135,6 +135,11 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                             throw new ParameterValidateException("Квота имеет неверный формат");
                         }
                         break;
+                    case "solveQuarantine":
+                        if (entry.getValue() != null) {
+                            solveMalwareReport(resourceId);
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -514,7 +519,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         return reports.get(0);
     }
 
-    public void solveMalwareReport(String unixAccountId) {
+    private void solveMalwareReport(String unixAccountId) {
         List<MalwareReport> stored = malwareReportRepository.findByUnixAccountId(unixAccountId);
         MalwareReport report = new MalwareReport();
 

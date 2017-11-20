@@ -75,17 +75,6 @@ public class UnixAccountRESTController {
         }
     }
 
-    @RequestMapping(value = {"/unix-account/{unixAccountId}/solve-malware-report"}, method = RequestMethod.GET)
-    public ResponseEntity<Void> confirmSolved(@PathVariable String unixAccountId) {
-        try {
-            governor.solveMalwareReport(unixAccountId);
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }
-
     @RequestMapping(value = {"/{accountId}/unix-account", "/{accountId}/unix-account/"}, method = RequestMethod.GET)
     public Collection<UnixAccount> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();

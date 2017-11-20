@@ -51,6 +51,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     private SSHKeyPair keyPair;
     private List<CronTask> crontab = new ArrayList<>();
 
+    @Transient
     private Boolean infected;
 
     public List<CronTask> getCrontab() {
