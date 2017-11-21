@@ -5,14 +5,14 @@ import org.springframework.context.ApplicationEvent;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
-public class UnixAccountInfectEvent extends ApplicationEvent {
+public class UnixAccountInfectNotifyEvent extends ApplicationEvent {
 
-    public UnixAccountInfectEvent(UnixAccount source) {
+    public UnixAccountInfectNotifyEvent(String source) {
         super(source);
     }
 
     @Override
-    public UnixAccount getSource() {
-        return (UnixAccount) super.getSource();
+    public String getSource() {
+        return (String) super.getSource();
     }
 }

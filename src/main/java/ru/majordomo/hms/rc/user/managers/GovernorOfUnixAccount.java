@@ -20,7 +20,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
-import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectEvent;
+import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectNotifyEvent;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MalwareReportRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
@@ -516,7 +516,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         if (!malwareReportRepository.existsByUnixAccountIdAndSolved(report.getUnixAccountId(), false)) {
             UnixAccount unixAccount = build(report.getUnixAccountId());
             if (unixAccount == null) throw new ResourceNotFoundException("При обработке отчёта не удалось найти UnixAccount");
-            publisher.publishEvent(new UnixAccountInfectEvent(unixAccount));
+            publisher.publishEvent(new UnixAccountInfectNotifyEvent(unixAccount.getAccountId()));
         }
 
         malwareReportRepository.save(report);
