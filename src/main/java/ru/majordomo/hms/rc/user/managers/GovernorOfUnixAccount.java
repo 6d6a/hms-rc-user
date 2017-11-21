@@ -6,6 +6,7 @@ import com.jcraft.jsch.JSchException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -19,6 +20,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
+import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectNotifyEvent;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MalwareReportRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
@@ -42,6 +44,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
     private Validator validator;
+    private ApplicationEventPublisher publisher;
+
+    @Autowired
+    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+        this.publisher = publisher;
+    }
 
     @Autowired
     public void setRepository(UnixAccountRepository repository) {
@@ -506,7 +514,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         report.setSolved(false);
 
         if (!malwareReportRepository.existsByUnixAccountIdAndSolved(report.getUnixAccountId(), false)) {
-            //TODO import publisher, publish UnixAccountInfectEvent
+            UnixAccount unixAccount = build(report.getUnixAccountId());
+            if (unixAccount == null) throw new ResourceNotFoundException("При обработке отчёта не удалось найти UnixAccount");
+            publisher.publishEvent(new UnixAccountInfectNotifyEvent(unixAccount.getAccountId()));
         }
 
         malwareReportRepository.save(report);

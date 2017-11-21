@@ -6,8 +6,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectEvent;
-import ru.majordomo.hms.rc.user.resources.MalwareReport;
+import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectNotifyEvent;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Component
 public class InfectEventListener {
@@ -31,15 +31,15 @@ public class InfectEventListener {
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onInfectEvent(UnixAccountInfectEvent event) {
-        MalwareReport report = event.getSource();
-        convertAndSendEmail(report);
+    public void onInfectEvent(UnixAccountInfectNotifyEvent event) {
+        String accountId = event.getSource();
+        convertAndSendEmail(accountId);
     }
 
-    private void convertAndSendEmail(MalwareReport report) {
+    private void convertAndSendEmail(String accountId) {
         ServiceMessage message = new ServiceMessage();
+        message.setAccountId(accountId);
         message.addParam(API_NAME_KEY, "MajordomoVHMalwareFound");
-        message.addParam(CONFIRM_URL_KEY, "https://hms.majordomo.ru/quarantine");
         message.addParam(TYPE_KEY, EMAIL);
         message.addParam(PRIORITY_KEY, 10);
         personmgr.sendNotificationToClient(message);

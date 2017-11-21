@@ -120,7 +120,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
             throw new ParameterValidateException("Не указан resourceId");
         } else {
             if (repository.findByResourceId(resourceId) != null) {
-                throw new ParameterValidateException("Одновременно может хранитсья только один массив");
+                throw new ParameterValidateException("Одновременно может хранитсья только один архив");
             }
             archive.setResourceId(resourceId);
         }
