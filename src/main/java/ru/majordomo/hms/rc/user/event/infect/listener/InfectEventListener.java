@@ -8,6 +8,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectEvent;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Component
 public class InfectEventListener {
@@ -32,14 +33,14 @@ public class InfectEventListener {
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void onInfectEvent(UnixAccountInfectEvent event) {
-        MalwareReport report = event.getSource();
-        convertAndSendEmail(report);
+        UnixAccount unixAccount = event.getSource();
+        convertAndSendEmail(unixAccount);
     }
 
-    private void convertAndSendEmail(MalwareReport report) {
+    private void convertAndSendEmail(UnixAccount unixAccount) {
         ServiceMessage message = new ServiceMessage();
+        message.setAccountId(unixAccount.getAccountId());
         message.addParam(API_NAME_KEY, "MajordomoVHMalwareFound");
-        message.addParam(CONFIRM_URL_KEY, "https://hms.majordomo.ru/quarantine");
         message.addParam(TYPE_KEY, EMAIL);
         message.addParam(PRIORITY_KEY, 10);
         personmgr.sendNotificationToClient(message);
