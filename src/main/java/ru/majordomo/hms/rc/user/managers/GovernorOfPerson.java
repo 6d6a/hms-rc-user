@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
@@ -475,30 +476,43 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         return repository.findPersonsWithNicHandlesByNicHandleNotBlank();
     }
 
-    public void sync(Person person) {
+    private void prepareAndStore(Person localPerson, Person domainRegPerson) {
+
+        domainRegPerson.setId(localPerson.getId());
+        domainRegPerson.setAccountId(localPerson.getAccountId());
+        domainRegPerson.setSwitchedOn(true);
+        preValidate(domainRegPerson);
+
+        store(domainRegPerson);
+    }
+
+    public void manualSync(Person person) {
         Person personFromDomainRegistrar = domainRegistrarClient.getPerson(person.getNicHandle());
 
         if (personFromDomainRegistrar != null) {
-            personFromDomainRegistrar.setId(person.getId());
-            personFromDomainRegistrar.setAccountId(person.getAccountId());
-            personFromDomainRegistrar.setSwitchedOn(true);
+            prepareAndStore(person, personFromDomainRegistrar);
+        } else {
+            throw new ResourceNotFoundException("Персона с nicHandle: " + person.getNicHandle() + " не найдена " +
+                    "у регистратора, либо не находится на партнерском договоре c Majordomo.");
+        }
+    }
 
+    public void sync(Person person) {
+
+        Person personFromDomainRegistrar = domainRegistrarClient.getPerson(person.getNicHandle());
+
+        if (personFromDomainRegistrar != null) {
             try {
-                preValidate(personFromDomainRegistrar);
-                //validateImported(personFromDomainRegistrar);
-                store(personFromDomainRegistrar);
+                prepareAndStore(person, personFromDomainRegistrar);
+                return;
+
             } catch (ParameterValidateException | ConstraintViolationException e) {
                 e.printStackTrace();
-
-                person.setSwitchedOn(false);
-
-                store(person);
             }
-        } else {
-            person.setSwitchedOn(false);
-
-            store(person);
         }
+
+        person.setSwitchedOn(false);
+        store(person);
     }
 
     public Person addByNicHandle(String accountId, String nicHandle) {
