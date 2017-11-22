@@ -7,6 +7,8 @@ import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -27,9 +29,13 @@ import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.resources.DTO.ObjectContainer;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
+
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 
 @Component
 public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
@@ -45,10 +51,16 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private StaffResourceControllerClient staffRcClient;
     private Validator validator;
     private ApplicationEventPublisher publisher;
+    private MongoOperations mongoOperations;
 
     @Autowired
     public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
         this.publisher = publisher;
+    }
+
+    @Autowired
+    public void setMongoOperations(MongoOperations mongoOperations) {
+        this.mongoOperations = mongoOperations;
     }
 
     @Autowired
@@ -375,19 +387,18 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     public String getFreeUnixAccountName() {
-        List<UnixAccount> unixAccounts = repository.findAll();
+        List<String> unixAccountNames = this.getUnixAccountNames();
         int counter = 0;
         int freeNumName = 0;
-        int accountsCount = unixAccounts.size();
+        int accountsCount = unixAccountNames.size();
 
 
         if (accountsCount == 0) {
             freeNumName = MIN_UID;
         } else {
 
-            int[] names = new int[unixAccounts.size()];
-            for (UnixAccount unixAccount : unixAccounts) {
-                String name = unixAccount.getName();
+            int[] names = new int[unixAccountNames.size()];
+            for (String name : unixAccountNames) {
                 if (nameIsNumerable(name)) {
                     names[counter] = getUnixAccountNameAsInteger(name);
                     counter++;
@@ -445,9 +456,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
      * IllegalStateException.
      */
     public Integer getFreeUid() {
-        List<UnixAccount> unixAccounts = repository.findAll();
+        List<Integer> uidList = getUidList();
         int freeUid = 0;
-        int accountsCount = unixAccounts.size();
+        int accountsCount = uidList.size();
 
         if (accountsCount == 0) {
             freeUid = MIN_UID;
@@ -455,8 +466,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
             int[] uids = new int[accountsCount];
             int counter = 0;
-            for (UnixAccount unixAccount : unixAccounts) {
-                uids[counter] = unixAccount.getUid();
+            for (int uid : uidList) {
+                uids[counter] = uid;
                 counter++;
             }
 
@@ -540,5 +551,25 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         report.setSolved(true);
 
         malwareReportRepository.save(report);
+    }
+
+    public List<String> getUnixAccountNames() {
+        return this.getListFieldValue(String.class, "name", "unixAccounts");
+    }
+
+    public List<Integer> getUidList() {
+        return this.getListFieldValue(Integer.class, "uid", "unixAccounts");
+    }
+
+    public <T extends Object> List<T> getListFieldValue(Class<T> clazz, String field, String collection){
+        GroupOperation group = group().addToSet(field).as("object");
+
+        List<ObjectContainer> list = mongoOperations.aggregate(
+                newAggregation(group), collection, ObjectContainer.class
+        ).getMappedResults();
+
+        if (list == null || list.isEmpty()) { return new ArrayList<>(); }
+
+        return list.get(0).getObject();
     }
 }
