@@ -348,6 +348,10 @@ abstract class BaseAMQPController<T extends Resource> {
 
         report.addParam("errorMessage", errorMessage);
 
+        if (event.getParam("teParams") != null) {
+            report.addParam("teParams", event.getParam("teParams"));
+        }
+
         return report;
     }
 
