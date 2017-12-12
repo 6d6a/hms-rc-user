@@ -100,6 +100,9 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
                     case "writable":
                         database.setWritable((Boolean) entry.getValue());
                         break;
+                    case "serviceId":
+                        database.setServiceId((String) entry.getValue());
+                        break;
                     default:
                         break;
                 }

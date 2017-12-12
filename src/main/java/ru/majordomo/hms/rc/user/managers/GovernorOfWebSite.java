@@ -222,6 +222,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "applicationServiceId":
                         website.setServiceId(cleaner.cleanString((String) entry.getValue()));
                         break;
+                    case "serviceId":
+                        website.setServiceId(cleaner.cleanString((String) entry.getValue()));
+                        break;
                     case "documentRoot":
                         String documentRoot = cleaner.cleanString((String) entry.getValue());
                         website.setDocumentRoot(documentRoot);

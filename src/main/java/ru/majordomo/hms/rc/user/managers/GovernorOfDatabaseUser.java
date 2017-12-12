@@ -119,6 +119,9 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                     case "switchedOn":
                         databaseUser.setSwitchedOn((Boolean) entry.getValue());
                         break;
+                    case "serviceId":
+                        databaseUser.setServiceId((String) entry.getValue());
+                        break;
                     default:
                         break;
                 }
