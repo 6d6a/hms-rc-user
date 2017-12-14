@@ -71,21 +71,24 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public DNSResourceRecord update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
-        if (serviceMessage.getParam("resourceId") == null) {
+    public DNSResourceRecord update(ServiceMessage serviceMessage) throws ParameterValidateException {
+        String resourceId = (String) serviceMessage.getParam("resourceId");
+        if (resourceId == null) {
             throw new ParameterValidateException("Необходимо указать resourceId");
         }
-        String resourceId = (String) serviceMessage.getParam("resourceId");
-        Long recordId;
-        try {
-            recordId = Long.parseLong(resourceId);
-        } catch (NumberFormatException e) {
-            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
-        }
-        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
-        record = setRecordParams(serviceMessage, record);
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        DNSResourceRecord record = build(keyValue);
+
+        setRecordParams(record, serviceMessage);
+
         validate(record);
         store(record);
+
         return record;
     }
 
@@ -117,10 +120,13 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Override
     public DNSResourceRecord buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         DNSResourceRecord record = new DNSResourceRecord();
-        return setRecordParams(serviceMessage, record);
+        setResourceParams(record, serviceMessage, cleaner);
+        setRecordParams(record, serviceMessage);
+
+        return record;
     }
 
-    private DNSResourceRecord setRecordParams(ServiceMessage serviceMessage, DNSResourceRecord record) {
+    private void setRecordParams(DNSResourceRecord record, ServiceMessage serviceMessage) {
         try {
             if (serviceMessage.getParam("name") != null) {
                 record.setName(IDN.toASCII(cleaner.cleanString((String) serviceMessage.getParam("name"))));
@@ -147,8 +153,6 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
-
-        return record;
     }
 
     @Override
@@ -176,13 +180,6 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             logger.debug("record: " + record + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
-
-//        Map<String, String> keyValue = new HashMap<>();
-//        keyValue.put("name", record.getName());
-//        keyValue.put("accountId", record.getAccountId());
-//        if (governorOfDomain.build(keyValue) == null) {
-//            throw new ParameterValidateException("Домен, для которого создаётся запись, не принадлежит аккаунту " + record.getAccountId());
-//        }
     }
 
     @Override
@@ -212,7 +209,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         try {
             recordId = Long.parseLong(resourceId);
         } catch (NumberFormatException e) {
-            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
+            throw new ParameterValidateException("ID DNS-записи должен быть в числовом формате");
         }
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
         return construct(record);
@@ -224,7 +221,28 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             throw new ResourceNotFoundException("Должен быть указан resourceId");
         }
 
-        DNSResourceRecord record = build(keyValue.get("resourceId"));
+        Long recordId;
+        try {
+            recordId = Long.parseLong(keyValue.get("resourceId"));
+        } catch (NumberFormatException e) {
+            throw new ParameterValidateException("ID DNS-записи должен быть в числовом формате");
+        }
+
+        DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
+
+        if (hasResourceIdAndAccountId(keyValue)) {
+            Map<String, String> domainsKeyValue = new HashMap<>();
+            domainsKeyValue.put("name", record.getName());
+            domainsKeyValue.put("accountId", keyValue.get("accountId"));
+            if (governorOfDomain.build(domainsKeyValue) == null) {
+                throw new ParameterValidateException("Домен, указанный в ДНС-записи, не принадлежит аккаунту " + record.getAccountId());
+            }
+            record.setAccountId(keyValue.get("accountId"));
+        }
+
+        if (record == null) {
+            throw new ResourceNotFoundException("ДНС-запись с ID:" + keyValue.get("resourceId") + " не найдена");
+        }
 
         return construct(record);
     }

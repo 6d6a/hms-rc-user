@@ -11,11 +11,14 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
 import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
+import ru.majordomo.hms.rc.user.repositories.DomainRepository;
+import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
@@ -66,19 +69,31 @@ public class GovernorOfDnsRecordTest {
     @Autowired
     private UnixAccountRepository unixAccountRepository;
 
+    @Autowired
+    private DomainRepository domainRepository;
+
+    @Autowired
+    private PersonRepository personRepository;
+
     private Collection<UnixAccount> unixAccounts;
+    private List<Domain> domains;
+    private List<Person> persons;
 
     @Before
     public void setUp() throws Exception {
         unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
         unixAccountRepository.save(unixAccounts);
+        persons = ResourceGenerator.generateBatchOfPerson();
+        domains = ResourceGenerator.generateBatchOfDomains(persons);
+        domainRepository.save(domains);
+        personRepository.save(persons);
     }
 
     @Test
     public void getByDomainName() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "example.com");
-        keyValue.put("accountId", "example.com");
+        keyValue.put("name", domains.get(0).getName());
+        keyValue.put("accountId", domains.get(0).getAccountId());
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         assertThat(records.size(), is(7));
     }
@@ -149,15 +164,15 @@ public class GovernorOfDnsRecordTest {
     @Test
     public void create() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "example.com");
-        keyValue.put("accountId", "0");
+        keyValue.put("name", domains.get(0).getName());
+        keyValue.put("accountId", domains.get(0).getAccountId());
 
         List<DNSResourceRecord> recordsBefore = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
-        serviceMessage.addParam("name", "example.com");
-        serviceMessage.addParam("ownerName", "*.example.com");
+        serviceMessage.addParam("name", domains.get(0).getName());
+        serviceMessage.addParam("ownerName", "*." + domains.get(0).getName());
         serviceMessage.addParam("type", "A");
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3600L);
@@ -170,14 +185,14 @@ public class GovernorOfDnsRecordTest {
     @Test(expected = ConstraintViolationException.class)
     public void createBad() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "example.com");
-        keyValue.put("accountId", "0");
+        keyValue.put("name", domains.get(0).getName());
+        keyValue.put("accountId", domains.get(0).getAccountId());
 
         List<DNSResourceRecord> recordsBefore = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
-        serviceMessage.addParam("name", "example.com");
+        serviceMessage.addParam("name", domains.get(0).getName());
         serviceMessage.addParam("ownerName", "*.bad.com");
         serviceMessage.addParam("type", "A");
         serviceMessage.addParam("data", "78.108.80.36");
@@ -188,15 +203,15 @@ public class GovernorOfDnsRecordTest {
     @Test(expected = ConstraintViolationException.class)
     public void createWithoutType() throws Exception {
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "example.com");
-        keyValue.put("accountId", "0");
+        keyValue.put("name", domains.get(0).getName());
+        keyValue.put("accountId", domains.get(0).getAccountId());
 
         List<DNSResourceRecord> recordsBefore = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
-        serviceMessage.addParam("name", "example.com");
-        serviceMessage.addParam("ownerName", "*.example.com");
+        serviceMessage.addParam("name", domains.get(0).getName());
+        serviceMessage.addParam("ownerName", "*." + domains.get(0).getName());
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3600L);
         governorOfDnsRecord.create(serviceMessage);
@@ -216,15 +231,15 @@ public class GovernorOfDnsRecordTest {
     @Test
     public void getDomainNameByRecordId() throws Exception {
         String domainName = dnsResourceRecordDAO.getDomainNameByRecordId(2L);
-        assertThat(domainName, is("example.com"));
+        assertThat(domainName, is(domains.get(0).getName()));
     }
 
     @Test
     public void storeExistent() throws Exception {
         DNSResourceRecord record = new DNSResourceRecord();
         record.setRecordId(2L);
-        record.setName("example.com");
-        record.setOwnerName("example.com");
+        record.setName(domains.get(0).getName());
+        record.setOwnerName(domains.get(0).getName());
         record.setRrType(DNSResourceRecordType.A);
         record.setTtl(300L);
         record.setData("78.108.87.68");
@@ -239,37 +254,37 @@ public class GovernorOfDnsRecordTest {
     @Test
     public void update() throws Exception {
         ServiceMessage serviceMessage = new ServiceMessage();
-        serviceMessage.setAccountId(ObjectId.get().toString());
+        serviceMessage.setAccountId(domains.get(0).getAccountId());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("resourceId", "2");
-        serviceMessage.addParam("name", "example.com");
-        serviceMessage.addParam("ownerName", "sub2.example.com");
+        serviceMessage.addParam("name", domains.get(0).getName());
+        serviceMessage.addParam("ownerName", "sub2." + domains.get(0).getName());
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3700L);
         governorOfDnsRecord.update(serviceMessage);
 
         DNSResourceRecord record = governorOfDnsRecord.build("2");
         assertThat(record.getRecordId(), is(2L));
-        assertThat(record.getName(), is("example.com"));
-        assertThat(record.getOwnerName(), is("sub2.example.com"));
+        assertThat(record.getName(), is(domains.get(0).getName()));
+        assertThat(record.getOwnerName(), is("sub2." + domains.get(0).getName()));
         assertThat(record.getData(), is("78.108.80.36"));
         assertThat(record.getTtl(), is(3700L));
     }
 
     @Test
     public void switchOnOff() throws Exception {
-        dnsResourceRecordDAO.switchByDomainName("example.com", false);
+        dnsResourceRecordDAO.switchByDomainName(domains.get(0).getName(), false);
 
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("name", "example.com");
+        keyValue.put("name", domains.get(0).getName());
 
         Collection<DNSResourceRecord> records = governorOfDnsRecord.buildAll(keyValue);
-        records.stream().forEach(record -> assertThat(record.getSwitchedOn(), is(false)));
+        records.forEach(record -> assertThat(record.getSwitchedOn(), is(false)));
 
-        dnsResourceRecordDAO.switchByDomainName("example.com", true);
+        dnsResourceRecordDAO.switchByDomainName(domains.get(0).getName(), true);
 
         records = governorOfDnsRecord.buildAll(keyValue);
-        records.stream().forEach(record -> assertThat(record.getSwitchedOn(), is(true)));
+        records.forEach(record -> assertThat(record.getSwitchedOn(), is(true)));
     }
 
     @Test

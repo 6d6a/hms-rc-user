@@ -13,6 +13,6 @@ public class DnsRecordValidator implements ConstraintValidator<ValidDnsRecord, D
 
     @Override
     public boolean isValid(final DNSResourceRecord record, ConstraintValidatorContext constraintValidatorContext) {
-        return record.getOwnerName().endsWith(record.getName());
+        return record.getOwnerName() == null || record.getName() == null || record.getOwnerName().endsWith(record.getName());
     }
 }
