@@ -13,7 +13,9 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 import javax.validation.ConstraintViolation;
@@ -51,12 +53,19 @@ public class SslCertificateAMQPController {
 
     private GovernorOfSSLCertificate governor;
 
+    private GovernorOfDomain governorOfDomain;
+
     @Autowired
     private Sender sender;
 
     @Autowired
     public void setGovernor(GovernorOfSSLCertificate governor) {
         this.governor = governor;
+    }
+
+    @Autowired
+    public void setGovernorOfDomain(GovernorOfDomain governorOfDomain) {
+        this.governorOfDomain = governorOfDomain;
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + SSL_CERTIFICATE_CREATE)
@@ -184,6 +193,29 @@ public class SslCertificateAMQPController {
                 sender.send(SSL_CERTIFICATE_CREATE, PM, report);
             }
         } else {
+            String resourceId = (String) serviceMessage.getParam("resourceId");
+
+            if (resourceId != null) {
+                Domain domain = null;
+                try {
+                    Map<String, String> buildParams = new HashMap<>();
+                    buildParams.put("sslCertificateId", resourceId);
+                    domain = governorOfDomain.build(buildParams);
+                } catch (Exception e) {
+                    logger.info("Fail on renew SSL. Certificate without domain. Id: " + resourceId + ". Dropping ssl.");
+                    //SSL сертификат никому не принадлежит -> дропаем
+                    governor.drop(resourceId);
+                }
+                if (domain != null) {
+                    logger.info("Fail on renew SSL. Certificate with domain. Id: " + resourceId + ". Dropping ssl and removing it in domain.");
+
+                    domain.setSslCertificateId(null);
+                    domain.setSslCertificate(null);
+                    governorOfDomain.store(domain);
+                    governor.drop(resourceId);
+                }
+            }
+
             report = createReport(serviceMessage, null, "");
             sender.send(SSL_CERTIFICATE_CREATE, PM, report);
         }

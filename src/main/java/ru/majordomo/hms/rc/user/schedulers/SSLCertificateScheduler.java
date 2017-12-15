@@ -54,7 +54,7 @@ public class SSLCertificateScheduler {
     public void renewCerts() {
         logger.info("Started sslCertRenew");
 
-        Integer counter = 0;
+        Integer counter = 0, counterAll = 0;
 
         try (Stream<SSLCertificate> sslCerts = governorOfSSLCertificate.findAllStream()) {
             List<SSLCertificate> listSSLCerts = sslCerts.collect(Collectors.toList());
@@ -63,12 +63,14 @@ public class SSLCertificateScheduler {
                 if (this.SSLCertificateProcess(sslCert)) {
                     counter++;
                 }
+                counterAll++;
                 if (counter == 150) {
                     break;
                 }
             }
 
-            logger.info("Total Certs processed for renew: " + counter + " found for renew: " + sslCerts.count());
+            logger.info("Total Certs processed for renew: " + counter +
+                    ". Count of renews before limit exceeds: " + counterAll);
         }
         logger.info("Ended sslCertRenew");
     }
@@ -82,7 +84,8 @@ public class SSLCertificateScheduler {
                 buildParams.put("sslCertificateId", sslCertificate.getId());
                 domain = governorOfDomain.build(buildParams);
             } catch (ResourceNotFoundException e) {
-                logger.info("Found certificate without domain. Id: " + sslCertificate.getId() + " AccountId: " + sslCertificate.getAccountId());
+                logger.info("Found certificate without domain. Id: " + sslCertificate.getId() +
+                        " AccountId: " + sslCertificate.getAccountId());
                 //SSL сертификат никому не принадлежит -> дропаем
                 governorOfSSLCertificate.drop(sslCertificate.getId());
                 return false;
@@ -101,8 +104,10 @@ public class SSLCertificateScheduler {
 
                 if (domain != null) {
                     //Еcли сертификат выключен и просрочен
-                    if (!sslCertificate.isSwitchedOn() && notAfter.isAfter(LocalDateTime.now())) {
-                        logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() + " AccountId: " + sslCertificate.getAccountId());
+                    if (!sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now())) {
+                        logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() +
+                                " name: " + sslCertificate.getName() +
+                                " AccountId: " + sslCertificate.getAccountId());
 
                         domain.setSslCertificateId(null);
                         domain.setSslCertificate(null);
@@ -114,18 +119,20 @@ public class SSLCertificateScheduler {
 
                     //Надо продлить
                     if (sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now().plusDays(5))) {
-                        logger.info("Found active expiring certificate. Id: " + sslCertificate.getId() + " AccountId: " + sslCertificate.getAccountId());
+                        logger.info("Found active expiring certificate. Id: " + sslCertificate.getId() +
+                                " name: " + sslCertificate.getName() +
+                                " AccountId: " + sslCertificate.getAccountId());
 
                         ServiceMessage serviceMessage = new ServiceMessage();
                         ObjectMapper mapper = new ObjectMapper();
                         String json = mapper.writeValueAsString(sslCertificate);
                         serviceMessage.addParam("sslCertificate", json);
+                        serviceMessage.addParam("resourceId", sslCertificate.getId());
                         serviceMessage.setAccountId(sslCertificate.getAccountId());
                         sender.send(SSL_CERTIFICATE_UPDATE, LETSENCRYPT, serviceMessage);
 
                         return true;
                     }
-
                 }
             }
 
