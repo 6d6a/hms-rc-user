@@ -1,5 +1,8 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -349,7 +352,20 @@ abstract class BaseAMQPController<T extends Resource> {
         report.addParam("errorMessage", errorMessage);
 
         if (event.getParam("teParams") != null) {
-            report.addParam("teParams", event.getParam("teParams"));
+            Map<String, Object> teParams = null;
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                teParams = mapper.convertValue(event.getParam("teParams"), new TypeReference<Map<String, Object>>() {});
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                logger.error("Error in converting teParams from message. Exception: " + e.getMessage());
+            }
+
+            if (teParams != null) {
+                for (Map.Entry<String, Object> teParam: teParams.entrySet()) {
+                    report.addParam(teParam.getKey(), teParam.getValue());
+                }
+            }
         }
 
         return report;
