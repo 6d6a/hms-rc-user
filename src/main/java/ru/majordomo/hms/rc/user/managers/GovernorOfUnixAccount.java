@@ -160,6 +160,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                             solveMalwareReport(resourceId);
                         }
                         break;
+                    case "serverId":
+                        unixAccount.setServerId((String) entry.getValue());
+                        break;
                     default:
                         break;
                 }

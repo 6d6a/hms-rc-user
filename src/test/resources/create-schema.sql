@@ -26,11 +26,11 @@ CREATE TABLE domains (
   PRIMARY KEY (id)
 );
 
-INSERT INTO domains VALUES('1', 'example.com', null, null, '', null, null, '1', 2000);
-INSERT INTO records VALUES('1', '1', 'example.com', 'SOA', 'ns.majordomo.ru. support.majordomo.ru. 2004032900 3600 900 3600000 3600', '3600', '10', null, '1');
-INSERT INTO records VALUES('2', '1', 'example.com', 'A', '8.8.8.8', '3600', null, null, '1');
-INSERT INTO records VALUES('3', '1', 'example.com', 'MX', 'mail.majordomo.ru', '3600', '10', null, '1');
-INSERT INTO records VALUES('4', '1', 'example.com', 'NS', 'ns.majordomo.ru', '3600', '10', null, '1');
-INSERT INTO records VALUES('5', '1', 'example.com', 'NS', 'ns2.majordomo.ru', '3600', '10', null, '1');
-INSERT INTO records VALUES('6', '1', 'example.com', 'NS', 'ns3.majordomo.ru', '3600', '10', null, '1');
-INSERT INTO records VALUES('7', '1', 'sub.example.com', 'A', '8.8.8.8', '3600', null, null, '1');
+INSERT INTO domains VALUES('1', 'majordomo.ru', null, null, '', null, null, '1', 2000);
+INSERT INTO records VALUES('1', '1', 'majordomo.ru', 'SOA', 'ns.majordomo.ru. support.majordomo.ru. 2004032900 3600 900 3600000 3600', '3600', '10', null, '1');
+INSERT INTO records VALUES('2', '1', 'majordomo.ru', 'A', '8.8.8.8', '3600', null, null, '1');
+INSERT INTO records VALUES('3', '1', 'majordomo.ru', 'MX', 'mail.majordomo.ru', '3600', '10', null, '1');
+INSERT INTO records VALUES('4', '1', 'majordomo.ru', 'NS', 'ns.majordomo.ru', '3600', '10', null, '1');
+INSERT INTO records VALUES('5', '1', 'majordomo.ru', 'NS', 'ns2.majordomo.ru', '3600', '10', null, '1');
+INSERT INTO records VALUES('6', '1', 'majordomo.ru', 'NS', 'ns3.majordomo.ru', '3600', '10', null, '1');
+INSERT INTO records VALUES('7', '1', 'sub.majordomo.ru', 'A', '8.8.8.8', '3600', null, null, '1');

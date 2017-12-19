@@ -91,7 +91,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
     @Override
     public DNSResourceRecord findOne(Long recordId) {
-        String query = "SELECT * FROM records WHERE id = :recordId";
+        String query = "SELECT r.*, d.name as domain_name FROM records r LEFT JOIN domains d ON d.id = r.domain_id WHERE r.id = :recordId";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("recordId", recordId);
@@ -143,7 +143,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
     @Override
     public List<DNSResourceRecord> getByDomainNameAndTypeIn(String domainName, List<DNSResourceRecordType> types) {
-        String query = "SELECT r.* FROM records r WHERE r.name = :domainName AND r.type IN (:types)";
+        String query = "SELECT r.*, d.name as domain_name FROM records r LEFT JOIN domains d ON d.id = r.domain_id WHERE r.name = :domainName AND r.type IN (:types)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("types", types);
@@ -157,6 +157,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         DNSResourceRecord record = new DNSResourceRecord();
         record.setRecordId(rs.getLong("id"));
         record.setOwnerName(rs.getString("name"));
+        record.setName(rs.getString("domain_name"));
         record.setData(rs.getString("content"));
         record.setDomainId(rs.getLong("domain_id"));
         record.setPrio(rs.getLong("prio") == 0 ? null : rs.getLong("prio"));
@@ -167,7 +168,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
     @Override
     public List<DNSResourceRecord> getByDomainName(String domainName) {
-        String query = "SELECT r.* FROM records r LEFT JOIN domains d ON d.id = r.domain_id where d.name = :domainName";
+        String query = "SELECT r.*, d.name as domain_name FROM records r LEFT JOIN domains d ON d.id = r.domain_id where d.name = :domainName";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("domainName", domainName);
@@ -178,7 +179,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
     @Override
     public List<DNSResourceRecord> getNSRecords(String domainName) {
-        String query = "SELECT r.* FROM records r LEFT JOIN domains d ON d.id = r.domain_id where d.name = :domainName and r.type = :type";
+        String query = "SELECT r.*, d.name as domain_name FROM records r LEFT JOIN domains d ON d.id = r.domain_id where d.name = :domainName and r.type = :type";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("domainName", domainName);
