@@ -36,6 +36,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
+import static ru.majordomo.hms.rc.user.common.Utils.getLongFromUnexpectedInput;
 
 @Component
 public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
@@ -150,7 +151,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                         break;
                     case "quota":
                         try {
-                            unixAccount.setQuota((Long) entry.getValue());
+                            unixAccount.setQuota(getLongFromUnexpectedInput(entry.getValue()));
                         } catch (NumberFormatException e) {
                             throw new ParameterValidateException("Квота имеет неверный формат");
                         }
