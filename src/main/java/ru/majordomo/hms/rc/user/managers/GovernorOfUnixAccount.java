@@ -168,6 +168,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                 }
             }
         } catch (ClassCastException e) {
+            logger.error("Один из параметров указан неверно. " +
+                    "UnixAccountId: " + unixAccount.getId() +
+                    "AccountId: " + unixAccount.getAccountId() +
+                    "ClassCastExceptionMessage: " + e.getMessage() +
+                    "ServiceMessageParams: " + serviceMessage.getParams().toString()
+            );
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
