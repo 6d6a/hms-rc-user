@@ -177,6 +177,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                 switch (entry.getKey().toString()) {
                     case "password":
                         mailbox.setPasswordHashByPlainPassword(cleaner.cleanString((String) entry.getValue()));
+                        break;
                     case "comment":
                         mailbox.setComment(cleaner.cleanString((String) entry.getValue()));
                         break;
