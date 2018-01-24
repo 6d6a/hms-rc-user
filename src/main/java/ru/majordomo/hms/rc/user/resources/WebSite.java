@@ -88,6 +88,20 @@ public class WebSite extends Resource implements Serviceable {
     @Range(min = 0, max = 7, message = "mbstringFuncOverload должно быть между {min} и {max}")
     private Integer mbstringFuncOverload;
 
+    private Boolean displayErrors;
+
+    private Boolean sessionUseTransSid;
+
+    private Integer maxInputVars;
+
+    private Integer opcacheMaxAcceleratedFiles;
+
+    private Integer realpathCacheSize;
+
+    private String requestOrder;
+
+    private Boolean allowUrlInclude;
+
     public Boolean getFollowSymLinks() {
         return followSymLinks;
     }
@@ -306,6 +320,63 @@ public class WebSite extends Resource implements Serviceable {
         }
     }
 
+
+    public Boolean getDisplayErrors() {
+        return displayErrors;
+    }
+
+    public void setDisplayErrors(Boolean displayErrors) {
+        this.displayErrors = displayErrors;
+    }
+
+    public Boolean getSessionUseTransSid() {
+        return sessionUseTransSid;
+    }
+
+    public void setSessionUseTransSid(Boolean sessionUseTransSid) {
+        this.sessionUseTransSid = sessionUseTransSid;
+    }
+
+    public Integer getMaxInputVars() {
+        return maxInputVars;
+    }
+
+    public void setMaxInputVars(Integer maxInputVars) {
+        this.maxInputVars = maxInputVars;
+    }
+
+    public Integer getOpcacheMaxAcceleratedFiles() {
+        return opcacheMaxAcceleratedFiles;
+    }
+
+    public void setOpcacheMaxAcceleratedFiles(Integer opcacheMaxAcceleratedFiles) {
+        this.opcacheMaxAcceleratedFiles = opcacheMaxAcceleratedFiles;
+    }
+
+    public Integer getRealpathCacheSize() {
+        return realpathCacheSize;
+    }
+
+    public void setRealpathCacheSize(Integer realpathCacheSize) {
+        this.realpathCacheSize = realpathCacheSize;
+    }
+
+    public String getRequestOrder() {
+        return requestOrder;
+    }
+
+    public void setRequestOrder(String requestOrder) {
+        this.requestOrder = requestOrder;
+    }
+
+    public Boolean getAllowUrlInclude() {
+        return allowUrlInclude;
+    }
+
+    public void setAllowUrlInclude(Boolean allowUrlInclude) {
+        this.allowUrlInclude = allowUrlInclude;
+    }
+
     @Override
     public String toString() {
         return "WebSite{" +
@@ -329,6 +400,17 @@ public class WebSite extends Resource implements Serviceable {
                 ", indexFileList=" + indexFileList +
                 ", accessLogEnabled=" + accessLogEnabled +
                 ", errorLogEnabled=" + errorLogEnabled +
-                '}';
+                ", followSymLinks=" + followSymLinks +
+                ", multiViews=" + multiViews +
+                ", allowUrlFopen=" + allowUrlFopen +
+                ", mbstringFuncOverload=" + mbstringFuncOverload +
+                ", displayErrors=" + displayErrors +
+                ", sessionUseTransSid=" + sessionUseTransSid +
+                ", maxInputVars=" + maxInputVars +
+                ", opcacheMaxAcceleratedFiles=" + opcacheMaxAcceleratedFiles +
+                ", realpathCacheSize=" + realpathCacheSize +
+                ", requestOrder='" + requestOrder + '\'' +
+                ", allowUrlInclude=" + allowUrlInclude +
+                "} " + super.toString();
     }
 }

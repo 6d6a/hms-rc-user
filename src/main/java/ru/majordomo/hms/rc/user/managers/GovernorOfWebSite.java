@@ -280,6 +280,27 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "mbstringFuncOverload":
                         website.setMbstringFuncOverload((Integer) entry.getValue());
                         break;
+                    case "displayErrors":
+                        website.setDisplayErrors((Boolean) entry.getValue());
+                        break;
+                    case "sessionUseTransSid":
+                        website.setSessionUseTransSid((Boolean) entry.getValue());
+                        break;
+                    case "maxInputVars":
+                        website.setMaxInputVars((Integer) entry.getValue());
+                        break;
+                    case "opcacheMaxAcceleratedFiles":
+                        website.setOpcacheMaxAcceleratedFiles((Integer) entry.getValue());
+                        break;
+                    case "realpathCacheSize":
+                        website.setRealpathCacheSize((Integer) entry.getValue());
+                        break;
+                    case "requestOrder":
+                        website.setRequestOrder(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "allowUrlInclude":
+                        website.setAllowUrlInclude((Boolean) entry.getValue());
+                        break;
                     case "followSymLinks":
                         website.setFollowSymLinks((Boolean) entry.getValue());
                         break;
@@ -376,7 +397,13 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
             Boolean allowUrlFopen = (Boolean) serviceMessage.getParam("allowUrlFopen");
             Integer mbstringFuncOverload = (Integer) serviceMessage.getParam("mbstringFuncOverload");
-
+            Boolean displayErrors = (Boolean) serviceMessage.getParam("displayErrors");
+            Boolean sessionUseTransSid = (Boolean) serviceMessage.getParam("sessionUseTransSid");
+            Integer maxInputVars = (Integer) serviceMessage.getParam("maxInputVars");
+            Integer opcacheMaxAcceleratedFiles = (Integer) serviceMessage.getParam("opcacheMaxAcceleratedFiles");
+            Integer realpathCacheSize = (Integer) serviceMessage.getParam("realpathCacheSize");
+            String requestOrder = cleaner.cleanString((String) serviceMessage.getParam("requestOrder"));
+            Boolean allowUrlInclude = (Boolean) serviceMessage.getParam("allowUrlInclude");
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -395,6 +422,13 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setErrorLogEnabled(errorLogEnabled != null ? errorLogEnabled : true);
             webSite.setAllowUrlFopen(allowUrlFopen != null ? allowUrlFopen : true);
             webSite.setMbstringFuncOverload(mbstringFuncOverload);
+            webSite.setDisplayErrors(displayErrors);
+            webSite.setSessionUseTransSid(sessionUseTransSid);
+            webSite.setMaxInputVars(maxInputVars);
+            webSite.setOpcacheMaxAcceleratedFiles(opcacheMaxAcceleratedFiles);
+            webSite.setRealpathCacheSize(realpathCacheSize);
+            webSite.setRequestOrder(requestOrder);
+            webSite.setAllowUrlInclude(allowUrlInclude);
         } catch (ClassCastException e) {
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
