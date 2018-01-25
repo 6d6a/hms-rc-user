@@ -287,13 +287,13 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setSessionUseTransSid((Boolean) entry.getValue());
                         break;
                     case "maxInputVars":
-                        website.setMaxInputVars((Integer) entry.getValue());
+                        website.setMaxInputVars(entry.getValue() instanceof String ? Integer.parseInt((String) entry.getValue()) : (Integer) entry.getValue());
                         break;
                     case "opcacheMaxAcceleratedFiles":
-                        website.setOpcacheMaxAcceleratedFiles((Integer) entry.getValue());
+                        website.setOpcacheMaxAcceleratedFiles(entry.getValue() instanceof String ? Integer.parseInt((String) entry.getValue()) : (Integer) entry.getValue());
                         break;
                     case "realpathCacheSize":
-                        website.setRealpathCacheSize((Integer) entry.getValue());
+                        website.setRealpathCacheSize(entry.getValue() instanceof String ? Integer.parseInt((String) entry.getValue()) : (Integer) entry.getValue());
                         break;
                     case "requestOrder":
                         website.setRequestOrder(cleaner.cleanString((String) entry.getValue()));
@@ -317,6 +317,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                 }
             }
         } catch (ClassCastException e) {
+            logger.error("WebSite update ClassCastException: " + e.getMessage() + " " + (e.getStackTrace().length > 2 ? e.getStackTrace()[2] : e.getStackTrace()[1]));
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
@@ -399,9 +400,15 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Integer mbstringFuncOverload = (Integer) serviceMessage.getParam("mbstringFuncOverload");
             Boolean displayErrors = (Boolean) serviceMessage.getParam("displayErrors");
             Boolean sessionUseTransSid = (Boolean) serviceMessage.getParam("sessionUseTransSid");
-            Integer maxInputVars = (Integer) serviceMessage.getParam("maxInputVars");
-            Integer opcacheMaxAcceleratedFiles = (Integer) serviceMessage.getParam("opcacheMaxAcceleratedFiles");
-            Integer realpathCacheSize = (Integer) serviceMessage.getParam("realpathCacheSize");
+            Integer maxInputVars = serviceMessage.getParam("maxInputVars") instanceof String
+                    ? Integer.parseInt((String) serviceMessage.getParam("maxInputVars"))
+                    : (Integer) serviceMessage.getParam("maxInputVars");
+            Integer opcacheMaxAcceleratedFiles = serviceMessage.getParam("opcacheMaxAcceleratedFiles") instanceof String
+                    ? Integer.parseInt((String) serviceMessage.getParam("opcacheMaxAcceleratedFiles")) 
+                    : (Integer) serviceMessage.getParam("opcacheMaxAcceleratedFiles");
+            Integer realpathCacheSize = serviceMessage.getParam("realpathCacheSize") instanceof String
+                    ? Integer.parseInt((String) serviceMessage.getParam("realpathCacheSize"))
+                    : (Integer) serviceMessage.getParam("realpathCacheSize");
             String requestOrder = cleaner.cleanString((String) serviceMessage.getParam("requestOrder"));
             Boolean allowUrlInclude = (Boolean) serviceMessage.getParam("allowUrlInclude");
 
