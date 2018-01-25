@@ -33,8 +33,12 @@ public class Cleaner {
     public Boolean cleanBoolean(Object booleanObject) {
         if (booleanObject == null) {
             return null;
-        } else if (booleanObject instanceof String) {
-            return Boolean.valueOf((String) booleanObject);
+        } else if (booleanObject instanceof String ) {
+            if (((String) booleanObject).equalsIgnoreCase("true") || ((String) booleanObject).equalsIgnoreCase("false")) {
+                return Boolean.valueOf((String) booleanObject);
+            } else {
+                return null;
+            }
         } else {
             return (Boolean) booleanObject;
         }
