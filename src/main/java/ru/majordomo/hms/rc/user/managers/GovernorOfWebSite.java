@@ -278,7 +278,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setAllowUrlFopen((Boolean) entry.getValue());
                         break;
                     case "mbstringFuncOverload":
-                        website.setMbstringFuncOverload((Integer) entry.getValue());
+                        website.setMbstringFuncOverload(entry.getValue() instanceof String ? Integer.parseInt((String) entry.getValue()) : (Integer) entry.getValue());
                         break;
                     case "displayErrors":
                         website.setDisplayErrors((Boolean) entry.getValue());
