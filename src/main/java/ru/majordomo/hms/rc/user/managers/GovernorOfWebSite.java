@@ -398,19 +398,50 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
             Boolean allowUrlFopen = (Boolean) serviceMessage.getParam("allowUrlFopen");
             Integer mbstringFuncOverload = (Integer) serviceMessage.getParam("mbstringFuncOverload");
-            Boolean displayErrors = (Boolean) serviceMessage.getParam("displayErrors");
-            Boolean sessionUseTransSid = (Boolean) serviceMessage.getParam("sessionUseTransSid");
-            Integer maxInputVars = serviceMessage.getParam("maxInputVars") instanceof String
-                    ? Integer.parseInt((String) serviceMessage.getParam("maxInputVars"))
-                    : (Integer) serviceMessage.getParam("maxInputVars");
-            Integer opcacheMaxAcceleratedFiles = serviceMessage.getParam("opcacheMaxAcceleratedFiles") instanceof String
-                    ? Integer.parseInt((String) serviceMessage.getParam("opcacheMaxAcceleratedFiles")) 
-                    : (Integer) serviceMessage.getParam("opcacheMaxAcceleratedFiles");
-            Integer realpathCacheSize = serviceMessage.getParam("realpathCacheSize") instanceof String
-                    ? Integer.parseInt((String) serviceMessage.getParam("realpathCacheSize"))
-                    : (Integer) serviceMessage.getParam("realpathCacheSize");
+
+            Boolean displayErrors = null;
+
+            if(serviceMessage.getParam("displayErrors") != null) {
+                displayErrors = (Boolean) serviceMessage.getParam("displayErrors");
+            }
+
+            Boolean sessionUseTransSid = null;
+
+            if(serviceMessage.getParam("sessionUseTransSid") != null) {
+                sessionUseTransSid = (Boolean) serviceMessage.getParam("sessionUseTransSid");
+            }
+
+            Integer maxInputVars = null;
+
+            if(serviceMessage.getParam("maxInputVars") != null) {
+                maxInputVars = serviceMessage.getParam("maxInputVars") instanceof String
+                        ? Integer.parseInt((String) serviceMessage.getParam("maxInputVars"))
+                        : (Integer) serviceMessage.getParam("maxInputVars");
+            }
+
+            Integer opcacheMaxAcceleratedFiles = null;
+
+            if(serviceMessage.getParam("opcacheMaxAcceleratedFiles") != null) {
+                opcacheMaxAcceleratedFiles = serviceMessage.getParam("opcacheMaxAcceleratedFiles") instanceof String
+                        ? Integer.parseInt((String) serviceMessage.getParam("opcacheMaxAcceleratedFiles"))
+                        : (Integer) serviceMessage.getParam("opcacheMaxAcceleratedFiles");
+            }
+
+            Integer realpathCacheSize = null;
+
+            if(serviceMessage.getParam("opcacheMaxAcceleratedFiles") != null) {
+                realpathCacheSize = serviceMessage.getParam("realpathCacheSize") instanceof String
+                        ? Integer.parseInt((String) serviceMessage.getParam("realpathCacheSize"))
+                        : (Integer) serviceMessage.getParam("realpathCacheSize");
+            }
+
             String requestOrder = cleaner.cleanString((String) serviceMessage.getParam("requestOrder"));
-            Boolean allowUrlInclude = (Boolean) serviceMessage.getParam("allowUrlInclude");
+
+            Boolean allowUrlInclude = null;
+
+            if(serviceMessage.getParam("sessionUseTransSid") != null) {
+                allowUrlInclude = (Boolean) serviceMessage.getParam("allowUrlInclude");
+            }
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
