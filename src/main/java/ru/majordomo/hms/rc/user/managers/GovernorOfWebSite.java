@@ -317,7 +317,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                 }
             }
         } catch (ClassCastException e) {
-            logger.error("WebSite update ClassCastException: " + e.getMessage() + " " + (e.getStackTrace().length > 2 ? e.getStackTrace()[2] : e.getStackTrace()[1]));
+            logger.error("WebSite update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
