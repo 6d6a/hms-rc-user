@@ -27,4 +27,24 @@ public class Cleaner {
         }
         return cleanedStringList;
     }
+
+    public Boolean cleanBoolean(Object booleanObject) {
+        if (booleanObject == null) {
+            return null;
+        } else if (booleanObject instanceof String) {
+            return Boolean.valueOf((String) booleanObject);
+        } else {
+            return (Boolean) booleanObject;
+        }
+    }
+
+    public Integer cleanInteger(Object integerObject) {
+        if (integerObject == null) {
+            return null;
+        } else if (integerObject instanceof String) {
+            return Integer.parseInt((String) integerObject);
+        } else {
+            return (Integer) integerObject;
+        }
+    }
 }
