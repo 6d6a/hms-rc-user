@@ -102,6 +102,10 @@ public class WebSite extends Resource implements Serviceable {
 
     private Boolean allowUrlInclude;
 
+    private Integer opcacheRevalidateFreq;
+
+    private Integer memoryLimit;
+
     public Boolean getFollowSymLinks() {
         return followSymLinks;
     }
@@ -377,6 +381,22 @@ public class WebSite extends Resource implements Serviceable {
         this.allowUrlInclude = allowUrlInclude;
     }
 
+    public Integer getOpcacheRevalidateFreq() {
+        return opcacheRevalidateFreq;
+    }
+
+    public void setOpcacheRevalidateFreq(Integer opcacheRevalidateFreq) {
+        this.opcacheRevalidateFreq = opcacheRevalidateFreq;
+    }
+
+    public Integer getMemoryLimit() {
+        return memoryLimit;
+    }
+
+    public void setMemoryLimit(Integer memoryLimit) {
+        this.memoryLimit = memoryLimit;
+    }
+
     @Override
     public String toString() {
         return "WebSite{" +
@@ -411,6 +431,8 @@ public class WebSite extends Resource implements Serviceable {
                 ", realpathCacheSize=" + realpathCacheSize +
                 ", requestOrder='" + requestOrder + '\'' +
                 ", allowUrlInclude=" + allowUrlInclude +
+                ", opcacheRevalidateFreq=" + opcacheRevalidateFreq +
+                ", memoryLimit=" + memoryLimit +
                 "} " + super.toString();
     }
 }

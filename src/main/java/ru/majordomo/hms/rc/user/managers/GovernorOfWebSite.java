@@ -301,6 +301,12 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "allowUrlInclude":
                         website.setAllowUrlInclude(cleaner.cleanBoolean(entry.getValue()));
                         break;
+                    case "opcacheRevalidateFreq":
+                        website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
+                        break;
+                    case "memoryLimit":
+                        website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
+                        break;
                     case "followSymLinks":
                         website.setFollowSymLinks(cleaner.cleanBoolean(entry.getValue()));
                         break;
@@ -398,7 +404,6 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Boolean errorLogEnabled = cleaner.cleanBoolean(serviceMessage.getParam("errorLogEnabled"));
             Boolean allowUrlFopen = cleaner.cleanBoolean(serviceMessage.getParam("allowUrlFopen"));
             Integer mbstringFuncOverload = cleaner.cleanInteger(serviceMessage.getParam("mbstringFuncOverload"));
-
             Boolean displayErrors = cleaner.cleanBoolean(serviceMessage.getParam("displayErrors"));
             Boolean sessionUseTransSid = cleaner.cleanBoolean(serviceMessage.getParam("sessionUseTransSid"));
             Integer maxInputVars = cleaner.cleanInteger(serviceMessage.getParam("maxInputVars"));
@@ -406,6 +411,8 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Integer realpathCacheSize = cleaner.cleanInteger(serviceMessage.getParam("realpathCacheSize"));
             String requestOrder = cleaner.cleanString((String) serviceMessage.getParam("requestOrder"));
             Boolean allowUrlInclude = cleaner.cleanBoolean(serviceMessage.getParam("allowUrlInclude"));
+            Integer opcacheRevalidateFreq = cleaner.cleanInteger(serviceMessage.getParam("opcacheRevalidateFreq"));
+            Integer memoryLimit = cleaner.cleanInteger(serviceMessage.getParam("memoryLimit"));
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -431,6 +438,8 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setRealpathCacheSize(realpathCacheSize);
             webSite.setRequestOrder(requestOrder);
             webSite.setAllowUrlInclude(allowUrlInclude);
+            webSite.setOpcacheRevalidateFreq(opcacheRevalidateFreq);
+            webSite.setMemoryLimit(memoryLimit);
         } catch (ClassCastException e) {
             logger.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidateException("Один из параметров указан неверно");
