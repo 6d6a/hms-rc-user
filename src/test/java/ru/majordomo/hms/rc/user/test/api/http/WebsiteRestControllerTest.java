@@ -230,6 +230,15 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("multiViews").description("Опция multiViews для Apache2"),
                                 fieldWithPath("allowUrlFopen").description("Опция allow_url_fopen для PHP"),
                                 fieldWithPath("mbstringFuncOverload").description("Опция mbstring.func_overload для PHP"),
+                                fieldWithPath("displayErrors").description("Опция display_errors для PHP"),
+                                fieldWithPath("sessionUseTransSid").description("Опция session.use_trans_sid для PHP"),
+                                fieldWithPath("maxInputVars").description("Опция max_input_vars для PHP"),
+                                fieldWithPath("opcacheMaxAcceleratedFiles").description("Опция opcache.max_accelerated_files для PHP"),
+                                fieldWithPath("realpathCacheSize").description("Опция realpath_cache_size для PHP"),
+                                fieldWithPath("requestOrder").description("Опция request_order для PHP"),
+                                fieldWithPath("allowUrlInclude").description("Опция allow_url_include для PHP"),
+                                fieldWithPath("opcacheRevalidateFreq").description("Опция opcache.revalidate_freq для PHP"),
+                                fieldWithPath("memoryLimit").description("Опция memory_limit для PHP"),
                                 fieldWithPath("serviceId").description("serviceId для данного вебсайта"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )

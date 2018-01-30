@@ -234,7 +234,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setCharSet(Enum.valueOf(CharSet.class, charsetAsString));
                         break;
                     case "ssiEnabled":
-                        website.setSsiEnabled((Boolean) entry.getValue());
+                        website.setSsiEnabled(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "ssiFileExtensions":
                         List<String> ssiFileExtensions = new ArrayList<>();
@@ -244,7 +244,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setSsiFileExtensions(ssiFileExtensions);
                         break;
                     case "cgiEnabled":
-                        website.setCgiEnabled((Boolean) entry.getValue());
+                        website.setCgiEnabled(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "cgiFileExtensions":
                         List<String> cgiFileExtensions = new ArrayList<>();
@@ -257,10 +257,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setScriptAlias(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "autoSubDomain":
-                        website.setAutoSubDomain((Boolean) entry.getValue());
+                        website.setAutoSubDomain(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "accessByOldHttpVersion":
-                        website.setAccessByOldHttpVersion((Boolean) entry.getValue());
+                        website.setAccessByOldHttpVersion(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "staticFileExtensions":
                         website.setStaticFileExtensions(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
@@ -269,33 +269,61 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setIndexFileList(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         break;
                     case "accessLogEnabled":
-                        website.setAccessLogEnabled((Boolean) entry.getValue());
+                        website.setAccessLogEnabled(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "errorLogEnabled":
-                        website.setErrorLogEnabled((Boolean) entry.getValue());
+                        website.setErrorLogEnabled(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "allowUrlFopen":
-                        website.setAllowUrlFopen((Boolean) entry.getValue());
+                        website.setAllowUrlFopen(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "mbstringFuncOverload":
-                        website.setMbstringFuncOverload((Integer) entry.getValue());
+                        website.setMbstringFuncOverload(cleaner.cleanInteger(entry.getValue()));
+                        break;
+                    case "displayErrors":
+                        website.setDisplayErrors(cleaner.cleanBoolean(entry.getValue()));
+                        break;
+                    case "sessionUseTransSid":
+                        website.setSessionUseTransSid(cleaner.cleanBoolean(entry.getValue()));
+                        break;
+                    case "maxInputVars":
+                        website.setMaxInputVars(cleaner.cleanInteger(entry.getValue()));
+                        break;
+                    case "opcacheMaxAcceleratedFiles":
+                        website.setOpcacheMaxAcceleratedFiles(cleaner.cleanInteger(entry.getValue()));
+                        break;
+                    case "realpathCacheSize":
+                        website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
+                        break;
+                    case "requestOrder":
+                        website.setRequestOrder(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "allowUrlInclude":
+                        website.setAllowUrlInclude(cleaner.cleanBoolean(entry.getValue()));
+                        break;
+                    case "opcacheRevalidateFreq":
+                        website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
+                        break;
+                    case "memoryLimit":
+                        website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
                         break;
                     case "followSymLinks":
-                        website.setFollowSymLinks((Boolean) entry.getValue());
+                        website.setFollowSymLinks(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "multiViews":
-                        website.setMultiViews((Boolean) entry.getValue());
+                        website.setMultiViews(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "ddosProtection":
-                        website.setDdosProtection((Boolean) entry.getValue());
+                        website.setDdosProtection(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "switchedOn":
-                        website.setSwitchedOn((Boolean) entry.getValue());
+                        website.setSwitchedOn(cleaner.cleanBoolean(entry.getValue()));
                     default:
                         break;
                 }
             }
         } catch (ClassCastException e) {
+            logger.error("WebSite update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 
@@ -349,20 +377,20 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                 charSet = Enum.valueOf(CharSet.class, charsetAsString);
             }
 
-            Boolean ssiEnabled = (Boolean) serviceMessage.getParam("ssiEnabled");
+            Boolean ssiEnabled = cleaner.cleanBoolean(serviceMessage.getParam("ssiEnabled"));
             List<String> ssiFileExtensions = new ArrayList<>();
             if (serviceMessage.getParam("ssiFileExtensions") != null) {
                 ssiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("ssiFileExtensions"));
             }
-            Boolean cgiEnabled = (Boolean) serviceMessage.getParam("cgiEnabled");
+            Boolean cgiEnabled = cleaner.cleanBoolean(serviceMessage.getParam("cgiEnabled"));
             List<String> cgiFileExtensions = new ArrayList<>();
             if (serviceMessage.getParam("cgiFileExtensions") != null) {
                 cgiFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("cgiFileExtensions"));
             }
             String scriptAlias = cleaner.cleanString((String) serviceMessage.getParam("scriptAlias"));
-            Boolean autoSubDomain = (Boolean) serviceMessage.getParam("autoSubDomain");
-            Boolean accessByOldHttpVersion = (Boolean) serviceMessage.getParam("accessByOldHttpVersion");
-            List<String> staticFileExtensions = new ArrayList<>();
+            Boolean autoSubDomain = cleaner.cleanBoolean(serviceMessage.getParam("autoSubDomain"));
+            Boolean accessByOldHttpVersion = cleaner.cleanBoolean(serviceMessage.getParam("accessByOldHttpVersion"));
+            List<String> staticFileExtensions;
             if (serviceMessage.getParam("staticFileExtensions") != null) {
                 staticFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("staticFileExtensions"));
             } else {
@@ -372,11 +400,19 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             if (serviceMessage.getParam("indexFileList") != null) {
                 indexFileList = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("indexFileList"));
             }
-            Boolean accessLogEnabled = (Boolean) serviceMessage.getParam("accessLogEnabled");
-            Boolean errorLogEnabled = (Boolean) serviceMessage.getParam("errorLogEnabled");
-            Boolean allowUrlFopen = (Boolean) serviceMessage.getParam("allowUrlFopen");
-            Integer mbstringFuncOverload = (Integer) serviceMessage.getParam("mbstringFuncOverload");
-
+            Boolean accessLogEnabled = cleaner.cleanBoolean(serviceMessage.getParam("accessLogEnabled"));
+            Boolean errorLogEnabled = cleaner.cleanBoolean(serviceMessage.getParam("errorLogEnabled"));
+            Boolean allowUrlFopen = cleaner.cleanBoolean(serviceMessage.getParam("allowUrlFopen"));
+            Integer mbstringFuncOverload = cleaner.cleanInteger(serviceMessage.getParam("mbstringFuncOverload"));
+            Boolean displayErrors = cleaner.cleanBoolean(serviceMessage.getParam("displayErrors"));
+            Boolean sessionUseTransSid = cleaner.cleanBoolean(serviceMessage.getParam("sessionUseTransSid"));
+            Integer maxInputVars = cleaner.cleanInteger(serviceMessage.getParam("maxInputVars"));
+            Integer opcacheMaxAcceleratedFiles = cleaner.cleanInteger(serviceMessage.getParam("opcacheMaxAcceleratedFiles"));
+            Integer realpathCacheSize = cleaner.cleanInteger(serviceMessage.getParam("realpathCacheSize"));
+            String requestOrder = cleaner.cleanString((String) serviceMessage.getParam("requestOrder"));
+            Boolean allowUrlInclude = cleaner.cleanBoolean(serviceMessage.getParam("allowUrlInclude"));
+            Integer opcacheRevalidateFreq = cleaner.cleanInteger(serviceMessage.getParam("opcacheRevalidateFreq"));
+            Integer memoryLimit = cleaner.cleanInteger(serviceMessage.getParam("memoryLimit"));
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -395,7 +431,17 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setErrorLogEnabled(errorLogEnabled != null ? errorLogEnabled : true);
             webSite.setAllowUrlFopen(allowUrlFopen != null ? allowUrlFopen : true);
             webSite.setMbstringFuncOverload(mbstringFuncOverload);
+            webSite.setDisplayErrors(displayErrors);
+            webSite.setSessionUseTransSid(sessionUseTransSid);
+            webSite.setMaxInputVars(maxInputVars);
+            webSite.setOpcacheMaxAcceleratedFiles(opcacheMaxAcceleratedFiles);
+            webSite.setRealpathCacheSize(realpathCacheSize);
+            webSite.setRequestOrder(requestOrder);
+            webSite.setAllowUrlInclude(allowUrlInclude);
+            webSite.setOpcacheRevalidateFreq(opcacheRevalidateFreq);
+            webSite.setMemoryLimit(memoryLimit);
         } catch (ClassCastException e) {
+            logger.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidateException("Один из параметров указан неверно");
         }
 

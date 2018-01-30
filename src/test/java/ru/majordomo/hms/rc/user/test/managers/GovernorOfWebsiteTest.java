@@ -274,7 +274,7 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
         serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("applicationServiceId", serviceId);
-        serviceMessage.addParam("errorLogEnabled", "Валера");
+        serviceMessage.addParam("mbstringFuncOverload", "Валера");
 
         governor.update(serviceMessage);
 
