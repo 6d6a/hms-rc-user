@@ -296,7 +296,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
                         break;
                     case "requestOrder":
-                        website.setRequestOrder(cleaner.cleanString((String) entry.getValue()));
+                        website.setRequestOrder((String) entry.getValue());
                         break;
                     case "allowUrlInclude":
                         website.setAllowUrlInclude(cleaner.cleanBoolean(entry.getValue()));
@@ -409,7 +409,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Integer maxInputVars = cleaner.cleanInteger(serviceMessage.getParam("maxInputVars"));
             Integer opcacheMaxAcceleratedFiles = cleaner.cleanInteger(serviceMessage.getParam("opcacheMaxAcceleratedFiles"));
             Integer realpathCacheSize = cleaner.cleanInteger(serviceMessage.getParam("realpathCacheSize"));
-            String requestOrder = cleaner.cleanString((String) serviceMessage.getParam("requestOrder"));
+            String requestOrder = (String) serviceMessage.getParam("requestOrder");
             Boolean allowUrlInclude = cleaner.cleanBoolean(serviceMessage.getParam("allowUrlInclude"));
             Integer opcacheRevalidateFreq = cleaner.cleanInteger(serviceMessage.getParam("opcacheRevalidateFreq"));
             Integer memoryLimit = cleaner.cleanInteger(serviceMessage.getParam("memoryLimit"));
