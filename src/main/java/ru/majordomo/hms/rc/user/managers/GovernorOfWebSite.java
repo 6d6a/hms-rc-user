@@ -302,10 +302,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setAllowUrlInclude(cleaner.cleanBoolean(entry.getValue()));
                         break;
                     case "opcacheRevalidateFreq":
-                        website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
+                        website.setOpcacheRevalidateFreq(cleaner.cleanInteger(entry.getValue()));
                         break;
                     case "memoryLimit":
-                        website.setRealpathCacheSize(cleaner.cleanInteger(entry.getValue()));
+                        website.setMemoryLimit(cleaner.cleanInteger(entry.getValue()));
                         break;
                     case "followSymLinks":
                         website.setFollowSymLinks(cleaner.cleanBoolean(entry.getValue()));
