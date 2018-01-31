@@ -239,6 +239,7 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("allowUrlInclude").description("Опция allow_url_include для PHP"),
                                 fieldWithPath("opcacheRevalidateFreq").description("Опция opcache.revalidate_freq для PHP"),
                                 fieldWithPath("memoryLimit").description("Опция memory_limit для PHP"),
+                                fieldWithPath("mbstringInternalEncoding").description("Опция mbstring.internal_encoding для PHP"),
                                 fieldWithPath("serviceId").description("serviceId для данного вебсайта"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения")
                         )

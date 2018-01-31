@@ -106,6 +106,8 @@ public class WebSite extends Resource implements Serviceable {
 
     private Integer memoryLimit;
 
+    private String mbstringInternalEncoding;
+
     public Boolean getFollowSymLinks() {
         return followSymLinks;
     }
@@ -397,6 +399,14 @@ public class WebSite extends Resource implements Serviceable {
         this.memoryLimit = memoryLimit;
     }
 
+    public String getMbstringInternalEncoding() {
+        return mbstringInternalEncoding;
+    }
+
+    public void setMbstringInternalEncoding(String mbstringInternalEncoding) {
+        this.mbstringInternalEncoding = mbstringInternalEncoding;
+    }
+
     @Override
     public String toString() {
         return "WebSite{" +
@@ -433,6 +443,7 @@ public class WebSite extends Resource implements Serviceable {
                 ", allowUrlInclude=" + allowUrlInclude +
                 ", opcacheRevalidateFreq=" + opcacheRevalidateFreq +
                 ", memoryLimit=" + memoryLimit +
+                ", mbstringInternalEncoding=" + mbstringInternalEncoding +
                 "} " + super.toString();
     }
 }

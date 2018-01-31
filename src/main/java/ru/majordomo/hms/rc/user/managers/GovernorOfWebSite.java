@@ -307,6 +307,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "memoryLimit":
                         website.setMemoryLimit(cleaner.cleanInteger(entry.getValue()));
                         break;
+                    case "mbstringInternalEncoding":
+                        website.setMbstringInternalEncoding((String) entry.getValue());
+                        break;
                     case "followSymLinks":
                         website.setFollowSymLinks(cleaner.cleanBoolean(entry.getValue()));
                         break;
@@ -413,6 +416,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Boolean allowUrlInclude = cleaner.cleanBoolean(serviceMessage.getParam("allowUrlInclude"));
             Integer opcacheRevalidateFreq = cleaner.cleanInteger(serviceMessage.getParam("opcacheRevalidateFreq"));
             Integer memoryLimit = cleaner.cleanInteger(serviceMessage.getParam("memoryLimit"));
+            String mbstringInternalEncoding = (String) serviceMessage.getParam("mbstringInternalEncoding");
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -440,6 +444,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setAllowUrlInclude(allowUrlInclude);
             webSite.setOpcacheRevalidateFreq(opcacheRevalidateFreq);
             webSite.setMemoryLimit(memoryLimit);
+            webSite.setMbstringInternalEncoding(mbstringInternalEncoding);
         } catch (ClassCastException e) {
             logger.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidateException("Один из параметров указан неверно");
