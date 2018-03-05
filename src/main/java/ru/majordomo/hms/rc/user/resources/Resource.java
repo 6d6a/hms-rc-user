@@ -93,6 +93,13 @@ public abstract class Resource {
     @JsonIgnore
     private LocalDateTime lockedDateTime;
 
+    @JsonIgnore
+    private LocalDateTime willBeDeletedAfter;
+
+    public Boolean isWillBeDeleted() {
+        return willBeDeletedAfter != null;
+    }
+
     public Boolean isLocked() {
         return (this.lockedDateTime != null
                 && this.lockedDateTime.plusMinutes(20).isAfter(LocalDateTime.now())
@@ -143,6 +150,14 @@ public abstract class Resource {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public LocalDateTime getWillBeDeletedAfter() {
+        return willBeDeletedAfter;
+    }
+
+    public void setWillBeDeletedAfter(LocalDateTime willBeDeletedAfter) {
+        this.willBeDeletedAfter = willBeDeletedAfter;
     }
 
     @Override

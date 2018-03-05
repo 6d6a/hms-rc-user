@@ -163,7 +163,8 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("writable").description("Флаг, указывающий на то, будут ли доставляться новые письма в ящик"),
                                 fieldWithPath("spamFilterAction").description("Действие SPAM-фильтра"),
                                 fieldWithPath("spamFilterMood").description("Придирчивость SPAM-фильтра"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }

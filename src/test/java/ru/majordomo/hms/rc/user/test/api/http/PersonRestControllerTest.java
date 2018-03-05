@@ -118,7 +118,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ))
                 .andDo(print());
@@ -157,7 +158,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ))
                 .andDo(print());
@@ -200,7 +202,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }
@@ -242,7 +245,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }
@@ -290,7 +294,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }
@@ -338,7 +343,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }

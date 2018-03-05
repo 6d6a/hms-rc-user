@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -102,6 +103,13 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
                         break;
                     case "serviceId":
                         database.setServiceId((String) entry.getValue());
+                        break;
+                    case "willBeDeletedAfter":
+                        if (entry.getValue() == null) {
+                            database.setWillBeDeletedAfter(null);
+                        } else {
+                            database.setWillBeDeletedAfter(LocalDateTime.parse((String) entry.getValue()));
+                        }
                         break;
                     default:
                         break;

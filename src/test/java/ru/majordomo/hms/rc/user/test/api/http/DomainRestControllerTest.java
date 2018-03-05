@@ -123,7 +123,8 @@ public class DomainRestControllerTest {
                                 fieldWithPath("autoRenew").description("Флаг автоматического продления"),
                                 fieldWithPath("parentDomainId").description("ID домена-родителя - отличное от null означает, что это поддомен"),
                                 fieldWithPath("synced").description("Дата последней синхронизации домена"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }

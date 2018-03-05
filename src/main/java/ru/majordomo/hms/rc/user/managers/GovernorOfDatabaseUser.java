@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import javax.validation.ConstraintViolation;
@@ -121,6 +122,13 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                         break;
                     case "serviceId":
                         databaseUser.setServiceId((String) entry.getValue());
+                        break;
+                    case "willBeDeletedAfter":
+                        if (entry.getValue() == null) {
+                            databaseUser.setWillBeDeletedAfter(null);
+                        } else {
+                            databaseUser.setWillBeDeletedAfter(LocalDateTime.parse((String) entry.getValue()));
+                        }
                         break;
                     default:
                         break;
