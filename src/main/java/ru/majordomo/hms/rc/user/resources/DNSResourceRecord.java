@@ -1,10 +1,13 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.validation.constraints.NotNull;
 
 import ru.majordomo.hms.rc.user.resources.validation.ValidDnsRecord;
 
 @ValidDnsRecord
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DNSResourceRecord extends Resource {
     private Long domainId;
     private Long recordId;

@@ -120,7 +120,8 @@ public class DatabaseRestControllerTest {
                                 fieldWithPath("quotaUsed").description("Фактический размер базы в килобайтах"),
                                 fieldWithPath("writable").description("Флаг доступности записи."),
                                 fieldWithPath("databaseUsers").description("Список пользователей этой базы"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }

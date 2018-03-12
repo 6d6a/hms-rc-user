@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -234,6 +235,13 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         mailbox.setSwitchedOn(switchedOn);
                         mailbox.setWritable(switchedOn);
                         mailbox.setMailFromAllowed(switchedOn);
+                        break;
+                    case "willBeDeletedAfter":
+                        if (entry.getValue() == null) {
+                            mailbox.setWillBeDeletedAfter(null);
+                        } else {
+                            mailbox.setWillBeDeletedAfter(LocalDateTime.parse((String) entry.getValue()));
+                        }
                         break;
                     default:
                         break;

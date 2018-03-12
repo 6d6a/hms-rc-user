@@ -115,7 +115,8 @@ public class DatabaseUserRestControllerTest {
                                 fieldWithPath("passwordHash").description("Хэш пароля пользователя"),
                                 fieldWithPath("serviceId").description("ID сервиса в RC-STAFF"),
                                 fieldWithPath("allowedIPAddresses").description("IP-адреса, с которых возможен доступ"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }

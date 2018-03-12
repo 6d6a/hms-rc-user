@@ -241,7 +241,8 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("memoryLimit").description("Опция memory_limit для PHP"),
                                 fieldWithPath("mbstringInternalEncoding").description("Опция mbstring.internal_encoding для PHP"),
                                 fieldWithPath("serviceId").description("serviceId для данного вебсайта"),
-                                fieldWithPath("locked").description("Доступность ресурса для изменения")
+                                fieldWithPath("locked").description("Доступность ресурса для изменения"),
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )
                 ));
     }
