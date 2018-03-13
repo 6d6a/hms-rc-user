@@ -232,7 +232,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
         if (hasResourceIdAndAccountId(keyValue)) {
             Map<String, String> domainsKeyValue = new HashMap<>();
-            domainsKeyValue.put("name", record.getName());
+            domainsKeyValue.put("name", IDN.toUnicode(record.getName()));
             domainsKeyValue.put("accountId", keyValue.get("accountId"));
             if (governorOfDomain.build(domainsKeyValue) == null) {
                 throw new ParameterValidateException("Домен, указанный в ДНС-записи, не принадлежит аккаунту " + record.getAccountId());
