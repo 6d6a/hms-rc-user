@@ -1,6 +1,8 @@
 package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.jongo.marshall.jackson.oid.MongoId;
@@ -28,6 +30,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class Resource {
     @Id
     @MongoId
