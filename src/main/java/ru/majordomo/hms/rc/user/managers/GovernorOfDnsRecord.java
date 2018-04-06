@@ -7,13 +7,12 @@ import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 
-import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.util.*;
 
@@ -62,7 +61,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public DNSResourceRecord create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public DNSResourceRecord create(ServiceMessage serviceMessage) throws ParameterValidationException {
         DNSResourceRecord record = buildResourceFromServiceMessage(serviceMessage);
         validate(record);
         store(record);
@@ -71,10 +70,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public DNSResourceRecord update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public DNSResourceRecord update(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId = (String) serviceMessage.getParam("resourceId");
         if (resourceId == null) {
-            throw new ParameterValidateException("Необходимо указать resourceId");
+            throw new ParameterValidationException("Необходимо указать resourceId");
         }
 
         String accountId = serviceMessage.getAccountId();
@@ -104,13 +103,13 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (resourceId == null) {
-            throw new ParameterValidateException("Необходимо указать resourceId");
+            throw new ParameterValidationException("Необходимо указать resourceId");
         }
         Long recordId;
         try {
             recordId = Long.parseLong(resourceId);
         } catch (NumberFormatException e) {
-            throw new ParameterValidateException("ID DNS-записи имеет числовой формат");
+            throw new ParameterValidationException("ID DNS-записи имеет числовой формат");
         }
 
         preDelete(resourceId);
@@ -151,7 +150,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
     }
 
@@ -173,7 +172,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public void validate(DNSResourceRecord record) throws ParameterValidateException {
+    public void validate(DNSResourceRecord record) throws ParameterValidationException {
         Set<ConstraintViolation<DNSResourceRecord>> constraintViolations = validator.validate(record, DnsRecordChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -183,14 +182,14 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    protected DNSResourceRecord construct(DNSResourceRecord record) throws ParameterValidateException {
+    protected DNSResourceRecord construct(DNSResourceRecord record) throws ParameterValidationException {
         record.setRrClass(DNSResourceRecordClass.IN);
         record.setName(dnsResourceRecordDAO.getDomainNameByRecordId(record.getRecordId()));
         record.setOwnerName(IDN.toUnicode(record.getOwnerName()));
         return record;
     }
 
-    private List<DNSResourceRecord> constructByDomain(List<DNSResourceRecord> records) throws ParameterValidateException {
+    private List<DNSResourceRecord> constructByDomain(List<DNSResourceRecord> records) throws ParameterValidationException {
         if (records.size() > 0) {
             String domainName = dnsResourceRecordDAO.getDomainNameByRecordId(records.get(0).getRecordId());
             for (DNSResourceRecord record : records) {
@@ -209,7 +208,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         try {
             recordId = Long.parseLong(resourceId);
         } catch (NumberFormatException e) {
-            throw new ParameterValidateException("ID DNS-записи должен быть в числовом формате");
+            throw new ParameterValidationException("ID DNS-записи должен быть в числовом формате");
         }
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
         return construct(record);
@@ -225,7 +224,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         try {
             recordId = Long.parseLong(keyValue.get("resourceId"));
         } catch (NumberFormatException e) {
-            throw new ParameterValidateException("ID DNS-записи должен быть в числовом формате");
+            throw new ParameterValidationException("ID DNS-записи должен быть в числовом формате");
         }
 
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
@@ -235,7 +234,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             domainsKeyValue.put("name", IDN.toUnicode(record.getName()));
             domainsKeyValue.put("accountId", keyValue.get("accountId"));
             if (governorOfDomain.build(domainsKeyValue) == null) {
-                throw new ParameterValidateException("Домен, указанный в ДНС-записи, не принадлежит аккаунту " + record.getAccountId());
+                throw new ParameterValidationException("Домен, указанный в ДНС-записи, не принадлежит аккаунту " + record.getAccountId());
             }
             record.setAccountId(keyValue.get("accountId"));
         }
@@ -312,7 +311,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         record.setTtl(3600L);
         try {
             record.setData(getServerPrimaryIp(domain.getAccountId()));
-        } catch (ParameterValidateException e) {
+        } catch (ParameterValidationException e) {
             logger.error("[addDefaultARecords] Ошибка: " + e.getMessage());
             return;
         }
@@ -329,13 +328,13 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         if (unixAccounts.iterator().hasNext()) {
             serverId = unixAccounts.iterator().next().getServerId();
         } else {
-            throw new ParameterValidateException("Не удалось получить ID сервера");
+            throw new ParameterValidationException("Не удалось получить ID сервера");
         }
         Map<String, String> serverIpInfo = rcStaffClient.getServerIpInfoByServerId(serverId);
         if (serverIpInfo != null) {
             return serverIpInfo.get("primaryIp");
         } else {
-            throw new ParameterValidateException("Не удалось получить IP сервера");
+            throw new ParameterValidationException("Не удалось получить IP сервера");
         }
     }
 

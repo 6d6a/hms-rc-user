@@ -10,16 +10,16 @@ import java.util.Map;
 
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 public abstract class LordOfResources<T extends Resource> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    public T create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public T create(ServiceMessage serviceMessage) throws ParameterValidationException {
         T resource;
 
         try {
@@ -28,13 +28,13 @@ public abstract class LordOfResources<T extends Resource> {
             validate(resource);
             store(resource);
         } catch (ClassCastException | UnsupportedEncodingException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
 
         return resource;
     }
 
-    public abstract T update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException;
+    public abstract T update(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException;
 
     public abstract void preDelete(String resourceId);
 
@@ -42,7 +42,7 @@ public abstract class LordOfResources<T extends Resource> {
 
     public abstract T buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
 
-    public abstract void validate(T resource) throws ParameterValidateException;
+    public abstract void validate(T resource) throws ParameterValidationException;
 
     public void validateImported(T resource) {}
 
@@ -62,7 +62,7 @@ public abstract class LordOfResources<T extends Resource> {
 
     public void syncWithRedis(T resource) {}
 
-    protected abstract T construct(T resource) throws ParameterValidateException;
+    protected abstract T construct(T resource) throws ParameterValidationException;
 
     public abstract T build(String resourceId) throws ResourceNotFoundException;
 

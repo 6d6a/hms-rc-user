@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.majordomo.hms.rc.user.event.person.SyncPersonsEvent;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificatesRenewEvent;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
 @RestController
 public class SchedulerRestController {
@@ -43,7 +43,7 @@ public class SchedulerRestController {
 
                 break;
             default:
-                throw new ParameterValidateException("Неизвестный параметр scheduleAction");
+                throw new ParameterValidationException("Неизвестный параметр scheduleAction");
         }
 
         return new ResponseEntity<>(HttpStatus.OK);

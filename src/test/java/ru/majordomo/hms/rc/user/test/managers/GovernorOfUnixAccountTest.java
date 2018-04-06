@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
@@ -27,7 +27,6 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -89,14 +88,14 @@ public class GovernorOfUnixAccountTest {
         assertThat(unixAccount.getQuota(), is(10485760L));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void createWithoutQuota() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateServiceMessage();
         serviceMessage.delParam("quota");
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void createWithQuotaAsString() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateQuotaStringServiceMessage();
         governor.create(serviceMessage);
@@ -127,7 +126,7 @@ public class GovernorOfUnixAccountTest {
         assertThat(nameId, is(134035));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void notNumNameToInteger() throws Exception {
         String name = "non-num-name";
         governor.getUnixAccountNameAsInteger(name);

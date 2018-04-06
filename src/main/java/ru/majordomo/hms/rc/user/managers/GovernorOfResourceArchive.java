@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.ResourceArchiveRepository;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchiveType;
@@ -69,7 +69,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     }
 
     @Override
-    public ResourceArchive update(ServiceMessage serviceMessage) throws ParameterValidateException, UnsupportedEncodingException {
+    public ResourceArchive update(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
         throw new NotImplementedException();
     }
 
@@ -113,19 +113,19 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         if (resourceId == null) {
-            throw new ParameterValidateException("Не указан resourceId");
+            throw new ParameterValidationException("Не указан resourceId");
         } else {
             if (repository.findByResourceId(resourceId) != null) {
-                throw new ParameterValidateException("Одновременно может хранитсья только один архив");
+                throw new ParameterValidationException("Одновременно может хранитсья только один архив");
             }
             archive.setResourceId(resourceId);
         }
         if (type == null) {
-            throw new ParameterValidateException("Не указан resourceType");
+            throw new ParameterValidationException("Не указан resourceType");
         } else {
             archive.setResourceType(type);
         }
@@ -139,14 +139,14 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
             LordOfResources governor = getGovernor(archive);
             archive.setServiceId(((Serviceable) governor.build(resourceId)).getServiceId());
         } catch (Exception e) {
-            throw new ParameterValidateException("Ошибка при поиске сервера");
+            throw new ParameterValidationException("Ошибка при поиске сервера");
         }
 
         return archive;
     }
 
     @Override
-    public void validate(ResourceArchive archive) throws ParameterValidateException {
+    public void validate(ResourceArchive archive) throws ParameterValidationException {
         Set<ConstraintViolation<ResourceArchive>> constraintViolations = validator.validate(archive, ResourceArchiveChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -156,9 +156,9 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     }
 
     @Override
-    protected ResourceArchive construct(ResourceArchive archive) throws ParameterValidateException {
+    protected ResourceArchive construct(ResourceArchive archive) throws ParameterValidationException {
         if (archive.getResourceId() == null) {
-            throw new ParameterValidateException("Не указан resourceId");
+            throw new ParameterValidationException("Не указан resourceId");
         }
         archive.setResource(getGovernor(archive).build(archive.getResourceId()));
         return archive;
@@ -166,7 +166,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
     private LordOfResources getGovernor(ResourceArchive archive) {
         if (archive == null) {
-            throw new ParameterValidateException();
+            throw new ParameterValidationException();
         }
         switch (archive.getResourceType()) {
             case WEBSITE:
@@ -174,14 +174,14 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
             case DATABASE:
                 return governorOfDatabase;
             default:
-                throw new ParameterValidateException("Неизвестный тип архива");
+                throw new ParameterValidationException("Неизвестный тип архива");
         }
     }
 
     @Override
     public ResourceArchive build(String resourceId) throws ResourceNotFoundException {
         if (resourceId == null) {
-            throw new ParameterValidateException("Не указан resourceId");
+            throw new ParameterValidationException("Не указан resourceId");
         }
         ResourceArchive archive = repository.findOne(resourceId);
         if (archive == null) {

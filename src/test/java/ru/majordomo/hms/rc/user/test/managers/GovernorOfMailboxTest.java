@@ -12,8 +12,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import redis.embedded.RedisServer;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.repositories.*;
 import ru.majordomo.hms.rc.user.resources.*;
@@ -182,7 +182,7 @@ public class GovernorOfMailboxTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void createWithoutDomain() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
@@ -214,7 +214,7 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getSpamFilterAction(), is(SpamFilterAction.MOVE_TO_SPAM_FOLDER));
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void createWithBadSpamFilterMood() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
@@ -222,7 +222,7 @@ public class GovernorOfMailboxTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void createWithBadSpamFilterAction() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
@@ -328,7 +328,7 @@ public class GovernorOfMailboxTest {
         governor.update(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void updateWithBadFilterMood() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
         serviceMessage.delParam("name");
@@ -338,7 +338,7 @@ public class GovernorOfMailboxTest {
         governor.update(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void updateWithBadFilterAction() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
         serviceMessage.delParam("name");

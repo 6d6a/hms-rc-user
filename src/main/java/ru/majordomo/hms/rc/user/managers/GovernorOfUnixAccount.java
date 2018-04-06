@@ -23,11 +23,11 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectNotifyEvent;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MalwareReportRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.DTO.ObjectContainer;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
@@ -100,13 +100,13 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     @Override
-    public UnixAccount update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public UnixAccount update(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
         } else {
-            throw new ParameterValidateException("Не указан resourceId");
+            throw new ParameterValidationException("Не указан resourceId");
         }
 
         String accountId = serviceMessage.getAccountId();
@@ -124,10 +124,10 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                             try {
                                 unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
                             } catch (JSchException e) {
-                                throw new ParameterValidateException("Невозможно сгенерировать пару ключей:" + e.getMessage());
+                                throw new ParameterValidationException("Невозможно сгенерировать пару ключей:" + e.getMessage());
                             }
                         } else {
-                            throw new ParameterValidateException("Для генерации новой пары ключей необходимо передать \"GENERATE\" в сообщении");
+                            throw new ParameterValidationException("Для генерации новой пары ключей необходимо передать \"GENERATE\" в сообщении");
                         }
                         break;
                     case "crontab":
@@ -153,7 +153,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                         try {
                             unixAccount.setQuota(getLongFromUnexpectedInput(entry.getValue()));
                         } catch (NumberFormatException e) {
-                            throw new ParameterValidateException("Квота имеет неверный формат");
+                            throw new ParameterValidationException("Квота имеет неверный формат");
                         }
                         break;
                     case "solveQuarantine":
@@ -175,7 +175,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                     "ClassCastExceptionMessage: " + e.getMessage() +
                     "ServiceMessageParams: " + serviceMessage.getParams().toString()
             );
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         preValidate(unixAccount);
@@ -201,18 +201,18 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         keyValue.put("unixAccountId", resourceId);
 
         if (governorOfFTPUser.buildAll(keyValue).size() > 0) {
-            throw new ParameterValidateException("У UnixAccount'а есть FTPUser'ы");
+            throw new ParameterValidationException("У UnixAccount'а есть FTPUser'ы");
         }
 
         if (governorOfWebSite.buildAll(keyValue).size() > 0) {
-            throw new ParameterValidateException("У UnixAccount'а есть Website'ы");
+            throw new ParameterValidationException("У UnixAccount'а есть Website'ы");
         }
     }
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (repository.findOne(resourceId) == null) {
-            throw new ParameterValidateException("Не найден UnixAccount с ID: " + resourceId);
+            throw new ParameterValidationException("Не найден UnixAccount с ID: " + resourceId);
         }
 
         preDelete(resourceId);
@@ -255,7 +255,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             }
 
             if (serviceMessage.getParam("quota") == null) {
-                throw new ParameterValidateException("Квота не может быть нуль");
+                throw new ParameterValidationException("Квота не может быть нуль");
             }
 
             quota = ((Number) serviceMessage.getParam("quota")).longValue();
@@ -272,14 +272,14 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                 try {
                     passwordHash = PasswordManager.forUbuntu(password);
                 } catch (UnsupportedEncodingException e) {
-                    throw new ParameterValidateException("Невозможно обработать пароль:" + password);
+                    throw new ParameterValidationException("Невозможно обработать пароль:" + password);
                 }
             }
             if (serviceMessage.getParam("crontab") != null) {
                 cronTasks = (List<CronTask>) serviceMessage.getParam("crontab");
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
         Boolean writable = (Boolean) serviceMessage.getParam("writable");
         if (writable == null) {
@@ -298,7 +298,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         try {
             unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
         } catch (JSchException e) {
-            throw new ParameterValidateException("Невозможно сгенерировать пару ключей:" + e.getMessage());
+            throw new ParameterValidationException("Невозможно сгенерировать пару ключей:" + e.getMessage());
         }
 
         return unixAccount;
@@ -312,7 +312,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     @Override
-    public void validate(UnixAccount unixAccount) throws ParameterValidateException {
+    public void validate(UnixAccount unixAccount) throws ParameterValidationException {
         Set<ConstraintViolation<UnixAccount>> constraintViolations = validator.validate(unixAccount, UnixAccountChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -493,7 +493,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
     public Integer getUnixAccountNameAsInteger(String unixAccountName) {
         if (!nameIsNumerable(unixAccountName)) {
-            throw new ParameterValidateException("Имя " + unixAccountName + " не может быть приведено к числовому виду");
+            throw new ParameterValidationException("Имя " + unixAccountName + " не может быть приведено к числовому виду");
         }
         return Integer.parseInt(unixAccountName.replace("u", ""));
     }
@@ -507,12 +507,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         return (uid <= MAX_UID && uid >= MIN_UID);
     }
 
-    private void validateAndProcessCronTask(CronTask cronTask) throws ParameterValidateException {
+    private void validateAndProcessCronTask(CronTask cronTask) throws ParameterValidationException {
         if (cronTask.getExecTime() == null) {
-            throw new ParameterValidateException("Не указано время исполнения");
+            throw new ParameterValidationException("Не указано время исполнения");
         }
         if (cronTask.getCommand() == null) {
-            throw new ParameterValidateException("Не указана команда для исполнения");
+            throw new ParameterValidationException("Не указана команда для исполнения");
         }
         if (cronTask.getSwitchedOn() == null) {
             cronTask.setSwitchedOn(true);
@@ -521,7 +521,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         try {
             cronTask.setExecTime(cronTask.getExecTime());
         } catch (IllegalArgumentException e) {
-            throw new ParameterValidateException("Неверный формат времени выполнения задания");
+            throw new ParameterValidationException("Неверный формат времени выполнения задания");
         }
     }
 

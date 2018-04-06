@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.LordOfResources;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
@@ -116,7 +116,7 @@ abstract class BaseAMQPController<T extends Resource> {
             try {
                 String teRoutingKey = getTaskExecutorRoutingKey(resource);
                 sender.send(resourceType + ".create", teRoutingKey, report);
-            } catch (ParameterValidateException e) {
+            } catch (ParameterValidationException e) {
                 errorMessage = e.getMessage();
                 serviceMessage.addParam("success", false);
                 report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
@@ -162,17 +162,17 @@ abstract class BaseAMQPController<T extends Resource> {
         try {
             String resourceId = (String) serviceMessage.getParam("resourceId");
             if (resourceId == null || resourceId.equals("")) {
-                throw new ParameterValidateException("Не указан resourceId");
+                throw new ParameterValidationException("Не указан resourceId");
             }
             try {
                 resource = governor.build(resourceId);
             } catch (Exception e) {
-                throw new ParameterValidateException("Не найден ресурс с ID: " + resourceId);
+                throw new ParameterValidationException("Не найден ресурс с ID: " + resourceId);
             }
             if (resource.isLocked()) {
-                throw new ParameterValidateException("Ресурс в процессе обновления");
+                throw new ParameterValidationException("Ресурс в процессе обновления");
             }
-        } catch (ParameterValidateException e) {
+        } catch (ParameterValidationException e) {
             logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
                     " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                     " Обновление ресурса " + resourceType + " не удалось: " + e.getMessage());
@@ -258,7 +258,7 @@ abstract class BaseAMQPController<T extends Resource> {
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
             report.addParam("success", false);
             sender.send(resourceType + ".delete", PM, report);
-        } catch (ParameterValidateException e) {
+        } catch (ParameterValidationException e) {
             errorMessage = "Обработка ресурса " + resourceType + " с ID: " + resourceId + " и accountId: " + accountId + " не удалась";
             ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
             report.addParam("success", false);
@@ -282,7 +282,7 @@ abstract class BaseAMQPController<T extends Resource> {
                 String teRoutingKey = getTaskExecutorRoutingKey(resource);
                 try {
                     governor.preDelete(resourceId);
-                } catch (ParameterValidateException e) {
+                } catch (ParameterValidationException e) {
                     report.addParam("success", false);
                     report.addParam("errorMessage", e.getMessage());
                 }
@@ -292,7 +292,7 @@ abstract class BaseAMQPController<T extends Resource> {
             } else {
                 try {
                     governor.drop(resourceId);
-                } catch (ParameterValidateException e) {
+                } catch (ParameterValidationException e) {
                     report.addParam("success", false);
                     report.addParam("errorMessage", e.getMessage());
                 }
@@ -371,7 +371,7 @@ abstract class BaseAMQPController<T extends Resource> {
         return report;
     }
 
-    private String getTaskExecutorRoutingKey(T resource) throws ParameterValidateException {
+    private String getTaskExecutorRoutingKey(T resource) throws ParameterValidationException {
         try {
             String serverName = null;
             if (resource instanceof ServerStorable) {
@@ -386,7 +386,7 @@ abstract class BaseAMQPController<T extends Resource> {
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("[getTaskExecutorRoutingKey] got exception: " + e.getMessage());
-            throw new ParameterValidateException("Exception: " + e.getMessage());
+            throw new ParameterValidationException("Exception: " + e.getMessage());
         }
     }
 

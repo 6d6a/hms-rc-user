@@ -15,8 +15,8 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.event.ResourceEventListener;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchiveCleanEvent;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import ru.majordomo.hms.rc.user.schedulers.ResourceArchiveScheduler;
@@ -64,7 +64,7 @@ public class ResourceArchiveEventListener extends ResourceEventListener<Resource
 
             try {
                 archive = governor.build(keyValue);
-            } catch (ResourceNotFoundException | ParameterValidateException e) {
+            } catch (ResourceNotFoundException | ParameterValidationException e) {
                 logger.error("[ResourceArchiveCleanEvent] ResourceArchive not found or not valid (id: " + event.getSource() + ") exception: " + e.getMessage());
 
                 return;

@@ -14,8 +14,8 @@ import org.springframework.util.Assert;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.resources.CharSet;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -206,7 +206,7 @@ public class GovernorOfWebsiteTest {
         governor.create(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void createWithoutAccountId() {
         String emptyString = "";
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, emptyString);
@@ -263,7 +263,7 @@ public class GovernorOfWebsiteTest {
         governor.update(serviceMessage);
     }
 
-    @Test(expected = ParameterValidateException.class)
+    @Test(expected = ParameterValidationException.class)
     public void updateBadParameter() {
         List<String> domainIdsLocal = batchOfWebsites.get(0).getDomainIds();
         String accountIdLocal = batchOfWebsites.get(0).getAccountId();

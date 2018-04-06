@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
@@ -13,7 +13,6 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.resources.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 public class AccountRestController {
@@ -57,7 +56,7 @@ public class AccountRestController {
         String desiredServerId = params.get("serverId");
         Server desiredServer = staffResourceControllerClient.getServerById(desiredServerId);
         if (desiredServer == null) {
-            throw new ParameterValidateException("Не найден сервер " + desiredServerId);
+            throw new ParameterValidationException("Не найден сервер " + desiredServerId);
         }
         List<Service> desiredServerServices = desiredServer.getServices();
 
@@ -69,7 +68,7 @@ public class AccountRestController {
             unixAccount = unixAccounts.iterator().next();
         }
         if (unixAccount == null) {
-            throw new ParameterValidateException("Не найден UnixAccount для аккаунта " + accountId);
+            throw new ParameterValidationException("Не найден UnixAccount для аккаунта " + accountId);
         }
 
         String currentServerId = unixAccount.getServerId();
@@ -85,7 +84,7 @@ public class AccountRestController {
                     .filter(s -> s.getId().equals(currentServiceId))
                     .findFirst().orElse(new Service()).getName();
             if (currentServiceName == null) {
-                throw new ParameterValidateException("Не вышло");
+                throw new ParameterValidationException("Не вышло");
             }
 
             String template = currentServiceName.split("@")[0];
@@ -94,7 +93,7 @@ public class AccountRestController {
                     .filter(s -> s.getName().split("@")[0].equals(template))
                     .findFirst().orElse(new Service()).getId();
             if (desiredServiceId == null) {
-                throw new ParameterValidateException("Не вышло");
+                throw new ParameterValidationException("Не вышло");
             }
 
             serviceable.setServiceId(desiredServiceId);

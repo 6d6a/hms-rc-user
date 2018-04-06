@@ -33,14 +33,14 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 
@@ -138,13 +138,13 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
-    public Mailbox create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Mailbox create(ServiceMessage serviceMessage) throws ParameterValidationException {
         Mailbox mailbox;
         try {
             mailbox = buildResourceFromServiceMessage(serviceMessage);
             validateAndStore(mailbox);
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
         return mailbox;
     }
@@ -159,7 +159,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     @Override
     public Mailbox update(ServiceMessage serviceMessage)
-            throws ParameterValidateException, UnsupportedEncodingException {
+            throws ParameterValidationException, UnsupportedEncodingException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -216,7 +216,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         try {
                             mailbox.setSpamFilterAction(Enum.valueOf(SpamFilterAction.class, spamFilterActionAsString));
                         } catch (IllegalArgumentException e) {
-                            throw new ParameterValidateException("Недопустимый тип действия");
+                            throw new ParameterValidationException("Недопустимый тип действия");
                         }
                         break;
                     case "spamFilterMood":
@@ -224,7 +224,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         try {
                             mailbox.setSpamFilterMood(Enum.valueOf(SpamFilterMood.class, spamFilterMoodAsString));
                         } catch (IllegalArgumentException e) {
-                            throw new ParameterValidateException("Недопустимый тип придирчивости");
+                            throw new ParameterValidationException("Недопустимый тип придирчивости");
                         }
                         break;
                     case "writable":
@@ -248,7 +248,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         validateAndStore(mailbox);
@@ -301,7 +301,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
         try {
             if (serviceMessage.getParam("domainId") == null) {
-                throw new ParameterValidateException("Не указан domainId");
+                throw new ParameterValidationException("Не указан domainId");
             }
 
             domainId = cleaner.cleanString((String) serviceMessage.getParam("domainId"));
@@ -343,7 +343,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                 try {
                     spamFilterAction = Enum.valueOf(SpamFilterAction.class, asString);
                 } catch (IllegalArgumentException e) {
-                    throw new ParameterValidateException("Недопустимый тип действия");
+                    throw new ParameterValidationException("Недопустимый тип действия");
                 }
             }
 
@@ -352,11 +352,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                 try {
                     spamFilterMood = Enum.valueOf(SpamFilterMood.class, asString);
                 } catch (IllegalArgumentException e) {
-                    throw new ParameterValidateException("Недопустимый тип придирчивости SPAM-фильтра");
+                    throw new ParameterValidationException("Недопустимый тип придирчивости SPAM-фильтра");
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         Map<String, String> keyValue = new HashMap<>();
@@ -364,7 +364,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
         List<UnixAccount> unixAccounts = (List<UnixAccount>) governorOfUnixAccount.buildAll(keyValue);
         if (unixAccounts.isEmpty()) {
-            throw new ParameterValidateException("Не найдено UnixAccount для AccountID: " + mailbox.getAccountId());
+            throw new ParameterValidationException("Не найдено UnixAccount для AccountID: " + mailbox.getAccountId());
         }
 
         Integer uid = unixAccounts.get(0).getUid();
@@ -375,7 +375,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         try {
             mailbox.setPasswordHashByPlainPassword(plainPassword);
         } catch (UnsupportedEncodingException e) {
-            throw new ParameterValidateException("Недопустимые символы в пароле");
+            throw new ParameterValidationException("Недопустимые символы в пароле");
         }
 
         String serverId = findMailStorageServer(domainId);
@@ -389,7 +389,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         }
 
         if (mailSpool == null) {
-            throw new ParameterValidateException("Внутренняя ошибка: не удалось сформировать mailSpool");
+            throw new ParameterValidationException("Внутренняя ошибка: не удалось сформировать mailSpool");
         }
 
         mailSpool = mailSpool + "/" + governorOfDomain.build(domainId).getName();
@@ -426,7 +426,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             try {
                 serverId = staffRcClient.getActiveMailboxServer().getId();
             } catch (FeignException e) {
-                throw new ParameterValidateException("Внутренняя ошибка: не удалось найти подходящий сервер");
+                throw new ParameterValidationException("Внутренняя ошибка: не удалось найти подходящий сервер");
             }
         }
 
@@ -449,7 +449,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
-    public void validate(Mailbox mailbox) throws ParameterValidateException {
+    public void validate(Mailbox mailbox) throws ParameterValidationException {
         Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -469,7 +469,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
-    public Mailbox construct(Mailbox mailbox) throws ParameterValidateException {
+    public Mailbox construct(Mailbox mailbox) throws ParameterValidationException {
         Domain domain;
         try {
             if (mailbox.getDomainId() != null) {

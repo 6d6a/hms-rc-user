@@ -13,8 +13,8 @@ import javax.validation.Validator;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
@@ -50,13 +50,13 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
 
     @Override
     public FTPUser update(ServiceMessage serviceMessage)
-            throws ParameterValidateException, UnsupportedEncodingException {
+            throws ParameterValidationException, UnsupportedEncodingException {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
         } else {
-            throw new ParameterValidateException("Не указан resourceId");
+            throw new ParameterValidationException("Не указан resourceId");
         }
 
         String accountId = serviceMessage.getAccountId();
@@ -82,14 +82,14 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                         try {
                             ftpUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         } catch (NumberFormatException e) {
-                            throw new ParameterValidateException("Неверный формат IP-адреса");
+                            throw new ParameterValidationException("Неверный формат IP-адреса");
                         }
                         break;
                     case "allowWebFtp":
                         try {
                             ftpUser.setAllowWebFtp((Boolean) entry.getValue());
                         } catch (Exception e) {
-                            throw new ParameterValidateException("Неверный формат allowWebFtp");
+                            throw new ParameterValidationException("Неверный формат allowWebFtp");
                         }
                     case "switchedOn":
                         ftpUser.setSwitchedOn((Boolean) entry.getValue());
@@ -99,7 +99,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         validate(ftpUser);
@@ -151,7 +151,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                 allowedAddressListAsString = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedIPAddresses"));
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
@@ -160,14 +160,14 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         try {
             ftpUser.setAllowedIpsAsCollectionOfString(allowedAddressListAsString);
         } catch (NumberFormatException e) {
-            throw new ParameterValidateException("Неверный формат IP-адреса");
+            throw new ParameterValidationException("Неверный формат IP-адреса");
         }
 
         return ftpUser;
     }
 
     @Override
-    public void validate(FTPUser ftpUser) throws ParameterValidateException {
+    public void validate(FTPUser ftpUser) throws ParameterValidationException {
         Set<ConstraintViolation<FTPUser>> constraintViolations = validator.validate(ftpUser, FTPUserChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -221,7 +221,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     }
 
     @Override
-    public Collection<FTPUser> buildAll(Map<String, String> keyValue) throws ParameterValidateException {
+    public Collection<FTPUser> buildAll(Map<String, String> keyValue) throws ParameterValidationException {
         List<FTPUser> buildedFTPUsers = new ArrayList<>();
 
         if (keyValue.get("accountId") != null) {

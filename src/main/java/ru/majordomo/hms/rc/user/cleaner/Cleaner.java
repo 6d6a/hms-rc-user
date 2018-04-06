@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
 @Component
 public class Cleaner {
@@ -51,7 +51,7 @@ public class Cleaner {
             try {
                 return Integer.parseInt((String) integerObject);
             } catch (NumberFormatException e) {
-                throw new ParameterValidateException("Один из параметров не является числом");
+                throw new ParameterValidationException("Один из параметров не является числом");
             }
         } else {
             return (Integer) integerObject;

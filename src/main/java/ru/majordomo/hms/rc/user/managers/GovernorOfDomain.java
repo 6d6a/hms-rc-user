@@ -18,11 +18,11 @@ import javax.validation.Validator;
 
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
 @Service
@@ -84,7 +84,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    public Domain create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Domain create(ServiceMessage serviceMessage) throws ParameterValidationException {
         Domain domain;
         try {
             Boolean needRegister = null;
@@ -104,13 +104,13 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     registrar.registerDomain(person.getNicHandle(), domain.getName());
                     domain.setRegSpec(registrar.getRegSpec(domain.getName()));
                 } catch (Exception e) {
-                    throw new ParameterValidateException(e.getMessage());
+                    throw new ParameterValidationException(e.getMessage());
                 }
             }
             store(domain);
 
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
 
         try {
@@ -125,13 +125,13 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    public Domain update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Domain update(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
         } else {
-            throw new ParameterValidateException("Не указан resourceId");
+            throw new ParameterValidationException("Не указан resourceId");
         }
 
         String accountId = serviceMessage.getAccountId();
@@ -153,7 +153,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                     ResponseEntity responseEntity = registrar.renewDomain(domain.getName(),
                                             domain.getRegSpec().getRegistrar());
                                     if (!responseEntity.getStatusCode().equals(HttpStatus.ACCEPTED)) {
-                                        throw new ParameterValidateException("Ошибка при продлении домена");
+                                        throw new ParameterValidationException("Ошибка при продлении домена");
                                     }
                                     RegSpec regSpec = registrar.getRegSpec(domain.getName());
                                     //TODO надо переделать на получении id заявки на продление домена от reg-rpc
@@ -186,7 +186,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                     }
                                     domain.setRegSpec(regSpec);
                                 } catch (Exception e) {
-                                    throw new ParameterValidateException(e.getMessage());
+                                    throw new ParameterValidationException(e.getMessage());
                                 }
                             }
                             break;
@@ -199,7 +199,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     }
                 }
             } catch (ClassCastException e) {
-                throw new ParameterValidateException("Один из параметров указан неверно");
+                throw new ParameterValidationException("Один из параметров указан неверно");
             }
         }
 
@@ -248,7 +248,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         try {
             webSite = governorOfWebSite.build(keyValue);
             if (webSite != null) {
-                throw new ParameterValidateException("Домен используется в вебсайте с ID " + webSite.getId());
+                throw new ParameterValidationException("Домен используется в вебсайте с ID " + webSite.getId());
             }
         } catch (ResourceNotFoundException e) {
             logger.debug("Вебсайтов использующих домен с ID " + resourceId + " не обнаружено");
@@ -261,7 +261,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             for (Mailbox mailbox : mailboxes) {
                 message.append(mailbox.getFullName()).append(", ");
             }
-            throw new ParameterValidateException(message.substring(0, message.length() - 2));
+            throw new ParameterValidationException(message.substring(0, message.length() - 2));
         }
 
         Domain domain = repository.findOne(resourceId);
@@ -287,18 +287,18 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 domain.setPerson(domainPerson);
                 governorOfPerson.validate(domainPerson);
             } else {
-                throw new ParameterValidateException("Персона должна быть указана");
+                throw new ParameterValidationException("Персона должна быть указана");
             }
             
             domain.setAutoRenew(true);
         } else if (serviceMessage.getParam("parentDomainId") != null) {
             Domain parent = repository.findOne((String) serviceMessage.getParam("parentDomainId"));
             if (parent == null) {
-                throw new ParameterValidateException("Не найден домен-родитель с id: " + serviceMessage.getParam("parentDomainId"));
+                throw new ParameterValidationException("Не найден домен-родитель с id: " + serviceMessage.getParam("parentDomainId"));
             }
 
             if (parent.getParentDomainId() != null) {
-                throw new ParameterValidateException("Домен-родитель не может быть поддоменом");
+                throw new ParameterValidationException("Домен-родитель не может быть поддоменом");
             }
 
             domain.setAutoRenew(false);
@@ -310,7 +310,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    public void validate(Domain domain) throws ParameterValidateException {
+    public void validate(Domain domain) throws ParameterValidationException {
         Set<ConstraintViolation<Domain>> constraintViolations = validator.validate(domain, DomainChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -330,7 +330,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    protected Domain construct(Domain domain) throws ParameterValidateException {
+    protected Domain construct(Domain domain) throws ParameterValidationException {
 
         if (domain.getPersonId() != null) {
             Person domainPerson = governorOfPerson.build(domain.getPersonId());
@@ -347,7 +347,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         if (domain.getParentDomainId() != null) {
             Domain parent = repository.findOne(domain.getParentDomainId());
             if (parent == null) {
-                throw new ParameterValidateException("Не найден домен-родитель с id: " + domain.getParentDomainId());
+                throw new ParameterValidationException("Не найден домен-родитель с id: " + domain.getParentDomainId());
             }
             domain.setRegSpec(parent.getRegSpec());
         }
@@ -434,7 +434,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     buildedDomains.add(construct(domain));
                 }
             } catch (DateTimeParseException e) {
-                throw new ParameterValidateException("Одна из дат указана неверно");
+                throw new ParameterValidationException("Одна из дат указана неверно");
             }
         } else if (byAccountId && byPersonId) {
             for (Domain domain : repository.findByPersonIdAndAccountId(keyValue.get("personId"), keyValue.get("accountId"))) {
@@ -460,7 +460,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     buildedDomains.add(construct(domain));
                 }
             } catch (DateTimeParseException e) {
-                throw new ParameterValidateException("Одна из дат указана неверно");
+                throw new ParameterValidationException("Одна из дат указана неверно");
             }
         } else if (byAccountId) {
             for (Domain domain : repository.findByAccountId(keyValue.get("accountId"))) {

@@ -8,14 +8,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 @RestController
@@ -78,7 +75,7 @@ public class PersonRestController {
         String nicHandle = requestBody.get("nicHandle");
 
         if (nicHandle == null || nicHandle.equals("")) {
-            throw new ParameterValidateException("Для добавления персоны необходимо указать её nicHandle");
+            throw new ParameterValidationException("Для добавления персоны необходимо указать её nicHandle");
         }
 
         return governor.addByNicHandle(accountId, nicHandle);

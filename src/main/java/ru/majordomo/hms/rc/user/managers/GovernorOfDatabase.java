@@ -20,8 +20,8 @@ import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
@@ -76,7 +76,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
-    public Database update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Database update(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -116,7 +116,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         preValidate(database);
@@ -195,7 +195,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
-    public void validate(Database database) throws ParameterValidateException {
+    public void validate(Database database) throws ParameterValidationException {
         Set<ConstraintViolation<Database>> constraintViolations = validator.validate(database, DatabaseChecks.class);
 
         if (!constraintViolations.isEmpty()) {
