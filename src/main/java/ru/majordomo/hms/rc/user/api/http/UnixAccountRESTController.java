@@ -24,12 +24,12 @@ public class UnixAccountRESTController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/unix-account/{unixAccountId}", "/unix-account/{unixAccountId}/"}, method = RequestMethod.GET)
+    @GetMapping("/unix-account/{unixAccountId}")
     public UnixAccount readOne(@PathVariable String unixAccountId) {
         return governor.build(unixAccountId);
     }
 
-    @RequestMapping(value = {"{accountId}/unix-account/{unixAccountId}", "{accountId}/unix-account/{unixAccountId}/"}, method = RequestMethod.GET)
+    @GetMapping("{accountId}/unix-account/{unixAccountId}")
     public UnixAccount readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("unixAccountId") String unixAccountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", unixAccountId);
@@ -37,17 +37,17 @@ public class UnixAccountRESTController {
         return governor.build(keyValue);
     }
 
-    @RequestMapping(value = {"/unix-account/","/unix-account"}, method = RequestMethod.GET)
+    @GetMapping("/unix-account")
     public Collection<UnixAccount> readAll() {
         return governor.buildAll();
     }
 
-    @RequestMapping(value = {"/unix-account/filter"}, method = RequestMethod.GET)
+    @GetMapping("/unix-account/filter")
     public Collection<UnixAccount> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
     }
 
-    @RequestMapping(value = {"/unix-account/{unixAccountId}/quota-report"}, method = RequestMethod.POST)
+    @PostMapping("/unix-account/{unixAccountId}/quota-report")
     public ResponseEntity<Void> updateQuota(@PathVariable String unixAccountId, @RequestBody QuotaReport report) {
         try {
             governor.updateQuotaUsed(unixAccountId, report.getQuotaUsed());
@@ -58,12 +58,12 @@ public class UnixAccountRESTController {
         }
     }
 
-    @RequestMapping(value = {"{accountId}/unix-account/{unixAccountId}/malware-report"}, method = RequestMethod.GET)
+    @GetMapping("{accountId}/unix-account/{unixAccountId}/malware-report")
     public MalwareReport getMalwareReport(@PathVariable String accountId, @PathVariable String unixAccountId) {
         return governor.getMalwareReport(accountId, unixAccountId);
     }
 
-    @RequestMapping(value = {"/unix-account/{unixAccountId}/malware-report"}, method = RequestMethod.POST)
+    @PostMapping("/unix-account/{unixAccountId}/malware-report")
     public ResponseEntity<Void> reportMalware(@PathVariable String unixAccountId, @RequestBody MalwareReport report) {
         report.setUnixAccountId(unixAccountId);
         try {
@@ -75,7 +75,7 @@ public class UnixAccountRESTController {
         }
     }
 
-    @RequestMapping(value = {"/{accountId}/unix-account", "/{accountId}/unix-account/"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/unix-account")
     public Collection<UnixAccount> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);

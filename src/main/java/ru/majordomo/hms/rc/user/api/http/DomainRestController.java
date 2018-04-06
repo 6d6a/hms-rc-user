@@ -26,29 +26,34 @@ public class DomainRestController {
 
     private GovernorOfDomain governor;
     private ApplicationEventPublisher publisher;
+    private GovernorOfDnsRecord governorOfDnsRecord;
+    private final static Logger logger = LoggerFactory.getLogger(DomainRestController.class);
 
     @Autowired
-    private GovernorOfDnsRecord governorOfDnsRecord;
+    public void setGovernorOfDnsRecord(GovernorOfDnsRecord governorOfDnsRecord) {
+        this.governorOfDnsRecord = governorOfDnsRecord;
+    }
 
     @Autowired
     public void setPublisher(ApplicationEventPublisher publisher) {
         this.publisher = publisher;
     }
 
-    private final static Logger logger = LoggerFactory.getLogger(DomainRestController.class);
-
     @Autowired
     public void setGovernor(GovernorOfDomain governor) {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/domain/{domainId}", "/domain/{domainId}/"}, method = RequestMethod.GET)
+    @GetMapping("/domain/{domainId}")
     public Domain readOne(@PathVariable String domainId) {
         return governor.build(domainId);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/domain/{domain-name}/add-dns-record")
-    public ResponseEntity<DNSResourceRecord> addDnsRecord(@PathVariable("domain-name") String domainName, @RequestBody DNSResourceRecord record) {
+    @PostMapping("/domain/{domain-name}/add-dns-record")
+    public ResponseEntity<DNSResourceRecord> addDnsRecord(
+            @PathVariable("domain-name") String domainName,
+            @RequestBody DNSResourceRecord record
+    ) {
         try {
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", domainName);
@@ -66,7 +71,7 @@ public class DomainRestController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/domain/process-sync")
+    @PostMapping("/domain/process-sync")
     public ResponseEntity<Void> processDomainsSync(@RequestBody Map<String, RegSpec> domains) {
         try {
             //Синхронизируем существующие
@@ -82,7 +87,7 @@ public class DomainRestController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/domain/{domain-name}/delete-dns-record")
+    @PostMapping("/domain/{domain-name}/delete-dns-record")
     public ResponseEntity deleteDnsRecord(@PathVariable("domain-name") String domainName, @RequestBody DNSResourceRecord record) {
         try {
             governorOfDnsRecord.drop(record.getRecordId().toString());
@@ -92,7 +97,7 @@ public class DomainRestController {
         }
     }
 
-    @RequestMapping(value = {"{accountId}/domain/{domainId}", "{accountId}/domain/{domainId}/"}, method = RequestMethod.GET)
+    @GetMapping("{accountId}/domain/{domainId}")
     public Domain readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("domainId") String domainId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", domainId);
@@ -100,35 +105,35 @@ public class DomainRestController {
         return governor.build(keyValue);
     }
 
-    @RequestMapping(value = {"/domain/","/domain"}, method = RequestMethod.GET)
+    @GetMapping("/domain")
     public Collection<Domain> readAll() {
         return governor.buildAll();
     }
 
-    @RequestMapping(value = {"/{accountId}/domain", "/{accountId}/domain/"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/domain")
     public Collection<Domain> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
     }
 
-    @RequestMapping(value = {"/domain/filter"}, method = RequestMethod.GET)
+    @GetMapping("/domain/filter")
     public Collection<Domain> readAllWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 
-    @RequestMapping(value = {"{accountId}/domain/filter"}, method = RequestMethod.GET)
+    @GetMapping("{accountId}/domain/filter")
     public Collection<Domain> readAllWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
-    @RequestMapping(value = {"/domain/find"}, method = RequestMethod.GET)
+    @GetMapping("/domain/find")
     public Domain readOneWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.build(requestParams);
     }
 
-    @RequestMapping(value = {"{accountId}/domain/find"}, method = RequestMethod.GET)
+    @GetMapping("{accountId}/domain/find")
     public Domain readOneWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.build(requestParams);

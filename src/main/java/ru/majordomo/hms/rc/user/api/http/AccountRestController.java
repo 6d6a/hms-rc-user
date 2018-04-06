@@ -24,31 +24,21 @@ public class AccountRestController {
     private GovernorOfWebSite governorOfWebSite;
 
     @Autowired
-    public void setStaffResourceControllerClient(StaffResourceControllerClient staffResourceControllerClient) {
+    public AccountRestController(
+            StaffResourceControllerClient staffResourceControllerClient,
+            GovernorOfUnixAccount governorOfUnixAccount,
+            GovernorOfDatabase governorOfDatabase,
+            GovernorOfDatabaseUser governorOfDatabaseUser,
+            GovernorOfWebSite governorOfWebSite
+    ) {
         this.staffResourceControllerClient = staffResourceControllerClient;
-    }
-
-    @Autowired
-    public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
         this.governorOfUnixAccount = governorOfUnixAccount;
-    }
-
-    @Autowired
-    public void setGovernorOfDatabase(GovernorOfDatabase governorOfDatabase) {
         this.governorOfDatabase = governorOfDatabase;
-    }
-
-    @Autowired
-    public void setGovernorOfDatabaseUser(GovernorOfDatabaseUser governorOfDatabaseUser) {
         this.governorOfDatabaseUser = governorOfDatabaseUser;
-    }
-
-    @Autowired
-    public void setGovernorOfWebSite(GovernorOfWebSite governorOfWebSite) {
         this.governorOfWebSite = governorOfWebSite;
     }
 
-    @RequestMapping(value = {"/{accountId}/account-move"}, method = RequestMethod.POST)
+    @PostMapping("/{accountId}/account-move")
     public Boolean moveAccount(
             @PathVariable("accountId") String accountId,
             @RequestBody Map<String, String> params
