@@ -20,6 +20,8 @@ import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
 
+import static ru.majordomo.hms.rc.user.common.Utils.mapContains;
+
 @Service
 public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
 
@@ -210,7 +212,11 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         if (hasResourceIdAndAccountId(keyValue)) {
             ftpUser = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         } else if (keyValue.get("name") != null && !keyValue.get("name").equals("")) {
-            ftpUser = repository.findOneByName(keyValue.get("name"));
+            if (mapContains(keyValue, "accountId")) {
+                ftpUser = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+            } else {
+                ftpUser = repository.findOneByName(keyValue.get("name"));
+            }
         }
 
         if (ftpUser == null) {

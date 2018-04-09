@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.common;
 
+import java.util.Map;
+
 public class Utils {
     public static Long getLongFromUnexpectedInput(Object input){
         Long longValue;
@@ -17,5 +19,9 @@ public class Utils {
         }
 
         return longValue;
+    }
+
+    public static boolean mapContains(Map<String, String> map, String key) {
+        return map.get(key) != null && !map.get(key).isEmpty();
     }
 }
