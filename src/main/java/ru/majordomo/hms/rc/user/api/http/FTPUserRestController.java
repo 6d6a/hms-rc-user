@@ -28,6 +28,7 @@ public class FTPUserRestController {
 
     @RequestMapping(value = "/{accountId}/ftp-user/filter", method = RequestMethod.GET)
     public FTPUser filter(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
         return governor.build(requestParams);
     }
 

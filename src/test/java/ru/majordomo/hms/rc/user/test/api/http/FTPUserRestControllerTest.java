@@ -173,6 +173,45 @@ public class FTPUserRestControllerTest {
     }
 
     @Test
+    public void readByUnavailableName() throws Exception {
+        FTPUser ftpUser = batchOfFTPUsers.get(0);
+        String accountId = ftpUser.getAccountId();
+        String name = ftpUser.getName();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/filter?name=ksjdgasgkj" + name).accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void readByAlienAccountIdAndOwnName() throws Exception {
+        FTPUser ftpUser = batchOfFTPUsers.get(0);
+        FTPUser alienFtpUser = batchOfFTPUsers.get(1);
+        String name = ftpUser.getName();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(
+                "/" + alienFtpUser.getAccountId() + "/" + resourceName + "/filter?name=" + name)
+                .accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void readByOwnAccountIdAndOwnName() throws Exception {
+        FTPUser ftpUser = batchOfFTPUsers.get(0);
+        String name = ftpUser.getName();
+
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(
+                "/" + ftpUser.getAccountId() + "/" + resourceName + "/filter?name=" + name)
+                .accept(APPLICATION_JSON_UTF8);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("name").value(ftpUser.getName()))
+                .andExpect(jsonPath("switchedOn").value(ftpUser.getSwitchedOn()))
+                .andExpect(jsonPath("passwordHash").value(ftpUser.getPasswordHash()))
+                .andExpect(jsonPath("homeDir").value(ftpUser.getHomeDir()))
+                .andExpect(jsonPath("unixAccount.id").value(ftpUser.getUnixAccountId()));
+    }
+
+    @Test
     public void countByAccountId() throws Exception {
         String accountId = batchOfFTPUsers.get(0).getAccountId();
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/" + accountId + "/" + resourceName + "/count").accept(APPLICATION_JSON_UTF8);
