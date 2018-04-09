@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.common;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class Utils {
