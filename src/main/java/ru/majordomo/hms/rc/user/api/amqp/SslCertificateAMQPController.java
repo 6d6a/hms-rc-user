@@ -275,6 +275,10 @@ public class SslCertificateAMQPController {
         }
 
         report.addParam("errorMessage", errorMessage);
+        
+        if (serviceMessage.getParams().containsKey("isSafeBrowsing")) {
+            report.addParam("isSafeBrowsing", serviceMessage.getParam("isSafeBrowsing"));
+        }
 
         return report;
     }
