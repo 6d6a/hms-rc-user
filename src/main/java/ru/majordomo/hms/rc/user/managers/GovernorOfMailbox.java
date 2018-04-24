@@ -418,19 +418,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     private String findMailStorageServer(String domainId) {
         List<Mailbox> mailboxes = repository.findByDomainId(domainId);
-        String serverId;
 
-        if (mailboxes != null && !mailboxes.equals(Collections.emptyList())) {
-            serverId = mailboxes.get(0).getServerId();
-        } else {
-            try {
-                serverId = staffRcClient.getActiveMailboxServer().getId();
-            } catch (FeignException e) {
-                throw new ParameterValidationException("Внутренняя ошибка: не удалось найти подходящий сервер");
-            }
+        try {
+            return staffRcClient.getActiveMailboxServer().getId();
+        } catch (FeignException e) {
+            throw new ParameterValidationException("Внутренняя ошибка: не удалось найти подходящий сервер");
         }
-
-        return serverId;
     }
 
     @Override
