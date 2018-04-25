@@ -16,8 +16,8 @@ import javax.validation.Validator;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
@@ -65,7 +65,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
-    public DatabaseUser create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public DatabaseUser create(ServiceMessage serviceMessage) throws ParameterValidationException {
         DatabaseUser databaseUser;
         try {
             databaseUser = buildResourceFromServiceMessage(serviceMessage);
@@ -84,14 +84,14 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             }
 
         } catch (UnsupportedEncodingException e) {
-            throw new ParameterValidateException("В пароле используются некорретные символы");
+            throw new ParameterValidationException("В пароле используются некорретные символы");
         }
         return databaseUser;
     }
 
     @Override
     public DatabaseUser update(ServiceMessage serviceMessage)
-            throws ParameterValidateException, UnsupportedEncodingException {
+            throws ParameterValidationException, UnsupportedEncodingException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -114,7 +114,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                         try {
                             databaseUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         } catch (NumberFormatException e) {
-                            throw new ParameterValidateException("Неверный формат IP-адреса");
+                            throw new ParameterValidationException("Неверный формат IP-адреса");
                         }
                         break;
                     case "switchedOn":
@@ -135,7 +135,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         preValidate(databaseUser);
@@ -182,7 +182,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                 try {
                     userType = Enum.valueOf(DBType.class, userTypeAsString);
                 } catch (IllegalArgumentException e) {
-                    throw new ParameterValidateException("Недопустимый тип баз данных");
+                    throw new ParameterValidationException("Недопустимый тип баз данных");
                 }
             }
 
@@ -198,7 +198,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                 allowedIps = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedAddressList"));
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         databaseUser.setDatabaseIds(databaseIds);
@@ -207,12 +207,12 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         try {
             databaseUser.setPasswordHashByPlainPassword(password);
         } catch (IllegalArgumentException e) {
-            throw new ParameterValidateException(e.getMessage());
+            throw new ParameterValidationException(e.getMessage());
         }
         try {
             databaseUser.setAllowedIpsAsCollectionOfString(allowedIps);
         } catch (NumberFormatException e) {
-            throw new ParameterValidateException("Неверный формат IP-адреса");
+            throw new ParameterValidationException("Неверный формат IP-адреса");
         }
 
 
@@ -225,7 +225,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
-    public void validate(DatabaseUser databaseUser) throws ParameterValidateException {
+    public void validate(DatabaseUser databaseUser) throws ParameterValidationException {
         Set<ConstraintViolation<DatabaseUser>> constraintViolations = validator.validate(databaseUser, DatabaseUserChecks.class);
 
         if (!constraintViolations.isEmpty()) {

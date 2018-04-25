@@ -1,11 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 
@@ -23,38 +19,41 @@ public class ResourceArchiveRestController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/resource-archive/{resourceArchiveId}", "/resource-archive/{resourceArchiveId}/"}, method = RequestMethod.GET)
+    @GetMapping("/resource-archive/{resourceArchiveId}")
     public ResourceArchive readOne(@PathVariable String resourceArchiveId) {
         return governor.build(resourceArchiveId);
     }
 
-    @RequestMapping(value = {"{accountId}/resource-archive/{resourceArchiveId}", "{accountId}/resource-archive/{resourceArchiveId}/"}, method = RequestMethod.GET)
-    public ResourceArchive readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("resourceArchiveId") String resourceArchiveId) {
+    @GetMapping("{accountId}/resource-archive/{resourceArchiveId}")
+    public ResourceArchive readOneByAccountId(
+            @PathVariable("accountId") String accountId,
+            @PathVariable("resourceArchiveId") String resourceArchiveId
+    ) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", resourceArchiveId);
         keyValue.put("accountId", accountId);
         return governor.build(keyValue);
     }
 
-    @RequestMapping(value = {"/resource-archive/","/resource-archive"}, method = RequestMethod.GET)
+    @GetMapping("/resource-archive")
     public Collection<ResourceArchive> readAll() {
         return governor.buildAll();
     }
 
-    @RequestMapping(value = {"/{accountId}/resource-archive", "/{accountId}/resource-archive/"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/resource-archive")
     public Collection<ResourceArchive> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
     }
 
-    @RequestMapping(value = {"/{accountId}/resource-archive/filter"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/resource-archive/filter")
     public Collection<ResourceArchive> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
-    @RequestMapping(value = {"/resource-archive/filter"}, method = RequestMethod.GET)
+    @GetMapping("/resource-archive/filter")
     public Collection<ResourceArchive> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }

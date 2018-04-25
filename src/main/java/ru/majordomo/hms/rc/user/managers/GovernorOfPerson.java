@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
@@ -17,14 +16,14 @@ import javax.validation.Validator;
 
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.Address;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.PersonType;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
@@ -64,7 +63,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     @Override
-    public Person create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Person create(ServiceMessage serviceMessage) throws ParameterValidationException {
         Person person;
         try {
             person = buildResourceFromServiceMessage(serviceMessage);
@@ -77,7 +76,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
             store(person);
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
 
         return person;
@@ -117,18 +116,18 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 //                errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
 //            }
             logger.debug("Ошибка при создании персоны: " + errorContent);
-            throw new ParameterValidateException(errorContent);
+            throw new ParameterValidationException(errorContent);
         }
     }
 
     @Override
-    public Person update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public Person update(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
             resourceId = (String) serviceMessage.getParam("resourceId");
         } else {
-            throw new ParameterValidateException("Не указан resourceId");
+            throw new ParameterValidationException("Не указан resourceId");
         }
 
         String accountId = serviceMessage.getAccountId();
@@ -138,7 +137,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
         Person person = build(keyValue);
         if (person.getNicHandle() != null && !person.getNicHandle().equals("")) {
-            throw new ParameterValidateException("Данная персона синхронизирована с Регистратором, для изменения любых данных напишите, пожалуйста, письмо на domain@majordomo.ru");
+            throw new ParameterValidationException("Данная персона синхронизирована с Регистратором, для изменения любых данных напишите, пожалуйста, письмо на domain@majordomo.ru");
         }
 
         try {
@@ -205,7 +204,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         preValidate(person);
@@ -246,7 +245,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         keyValue.put("personId", resourceId);
 
         if (governorOfDomain.buildAll(keyValue).size() > 0) {
-            throw new ParameterValidateException("Имеются домены, зарегистрированные на данную персону. Удаление персоны невозможно");
+            throw new ParameterValidationException("Имеются домены, зарегистрированные на данную персону. Удаление персоны невозможно");
         }
     }
 
@@ -338,7 +337,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     @Override
-    public void validate(Person person) throws ParameterValidateException {
+    public void validate(Person person) throws ParameterValidationException {
         PersonGroupSequenceProvider personGroupSequenceProvider = new PersonGroupSequenceProvider();
 
         Set<ConstraintViolation<Person>> constraintViolations = validator.validate(
@@ -371,7 +370,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     public Person build(String resourceId) throws ResourceNotFoundException {
         Person person = repository.findOne(resourceId);
         if (person == null) {
-            throw new ParameterValidateException("Person с ID:" + resourceId + " не найдена");
+            throw new ParameterValidationException("Person с ID:" + resourceId + " не найдена");
         }
 
         return person;
@@ -506,7 +505,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                 prepareAndStore(person, personFromDomainRegistrar);
                 return;
 
-            } catch (ParameterValidateException | ConstraintViolationException e) {
+            } catch (ParameterValidationException | ConstraintViolationException e) {
                 e.printStackTrace();
             }
         }
@@ -526,7 +525,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                 preValidate(personFromDomainRegistrar);
                 validate(personFromDomainRegistrar);
                 store(personFromDomainRegistrar);
-            } catch (ParameterValidateException | ConstraintViolationException e) {
+            } catch (ParameterValidationException | ConstraintViolationException e) {
                 e.printStackTrace();
                 throw e;
             }

@@ -5,15 +5,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ru.majordomo.hms.rc.user.event.person.SyncPersonsEvent;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificatesRenewEvent;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
 @RestController
 public class SchedulerRestController {
@@ -25,7 +22,7 @@ public class SchedulerRestController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value = "/scheduler/{scheduleAction}", method = RequestMethod.POST)
+    @PostMapping("/scheduler/{scheduleAction}")
     public ResponseEntity<Void> processScheduleAction(@PathVariable(value = "scheduleAction") String scheduleAction) {
         switch (scheduleAction) {
             case "sync_persons":
@@ -43,7 +40,7 @@ public class SchedulerRestController {
 
                 break;
             default:
-                throw new ParameterValidateException("Неизвестный параметр scheduleAction");
+                throw new ParameterValidationException("Неизвестный параметр scheduleAction");
         }
 
         return new ResponseEntity<>(HttpStatus.OK);

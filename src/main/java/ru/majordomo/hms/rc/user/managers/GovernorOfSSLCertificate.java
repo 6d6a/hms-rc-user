@@ -17,8 +17,8 @@ import javax.validation.Validator;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
@@ -81,7 +81,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     }
 
     @Override
-    public SSLCertificate update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public SSLCertificate update(ServiceMessage serviceMessage) throws ParameterValidationException {
         String name = (String) serviceMessage.getParam("name");
         SSLCertificate sslCertificate = repository.findByName(name);
         if (sslCertificate == null) {
@@ -92,10 +92,10 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         return sslCertificate;
     }
 
-    public SSLCertificate update(Map<String, Object> params) throws ParameterValidateException, ResourceNotFoundException {
+    public SSLCertificate update(Map<String, Object> params) throws ParameterValidationException, ResourceNotFoundException {
         String resourceId = (String) params.get("resourceId");
         if (resourceId == null || resourceId.equals("")) {
-            throw new ParameterValidateException("Необходимо указать resourceId");
+            throw new ParameterValidationException("Необходимо указать resourceId");
         }
 
         SSLCertificate certificate = repository.findOne(resourceId);
@@ -118,7 +118,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
                 }
             }
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         validate(certificate);
@@ -128,7 +128,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     }
 
     @Override
-    public SSLCertificate create(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public SSLCertificate create(ServiceMessage serviceMessage) throws ParameterValidationException {
         SSLCertificate sslCertificate;
         try {
 
@@ -145,7 +145,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
             governorOfDomain.store(domain);
 
         } catch (ClassCastException e) {
-            throw new ParameterValidateException("Один из параметров указан неверно:" + e.getMessage());
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
 
         return sslCertificate;
@@ -179,7 +179,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
             String json = (String) serviceMessage.getParam("sslCertificate");
             sslCertificate = mapper.readValue(json, SSLCertificate.class);
         } catch (IOException e) {
-            throw new ParameterValidateException(e.getMessage());
+            throw new ParameterValidationException(e.getMessage());
         }
 
         sslCertificate.setAccountId(serviceMessage.getAccountId());
@@ -188,12 +188,12 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     }
 
     @Override
-    protected SSLCertificate construct(SSLCertificate sslCertificate) throws ParameterValidateException {
+    protected SSLCertificate construct(SSLCertificate sslCertificate) throws ParameterValidationException {
         throw new NotImplementedException();
     }
 
     @Override
-    public void validate(SSLCertificate sslCertificate) throws ParameterValidateException {
+    public void validate(SSLCertificate sslCertificate) throws ParameterValidationException {
         Set<ConstraintViolation<SSLCertificate>> constraintViolations = validator.validate(sslCertificate, SSLCertificateChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -283,7 +283,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         repository.save(sslCertificate);
     }
 
-    public String getTERoutingKey(String sslCertificateId) throws ParameterValidateException {
+    public String getTERoutingKey(String sslCertificateId) throws ParameterValidationException {
         SSLCertificate sslCertificate = build(sslCertificateId);
         if (sslCertificate == null) {
             return null;
@@ -300,7 +300,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
             String serverName = staffRcClient.getServerByServiceId(webSite.getServiceId()).getName();
             return TE + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
-            throw new ParameterValidateException("Exception: " + e.getMessage());
+            throw new ParameterValidationException("Exception: " + e.getMessage());
         }
     }
 

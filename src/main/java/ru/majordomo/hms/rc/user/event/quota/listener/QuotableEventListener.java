@@ -10,7 +10,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.*;
 
 import java.util.HashMap;
@@ -111,7 +111,7 @@ public class QuotableEventListener {
         } else if (resource instanceof Database || resource instanceof UnixAccount) {
             name = resource.getName();
         } else {
-            throw new ParameterValidateException("Not implemented " + resource.toString());
+            throw new ParameterValidationException("Not implemented " + resource.toString());
         }
         return name;
     }

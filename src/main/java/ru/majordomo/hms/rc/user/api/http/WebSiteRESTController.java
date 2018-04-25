@@ -21,12 +21,12 @@ public class WebSiteRESTController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = {"/website/{websiteId}", "/website/{websiteId}/"}, method = RequestMethod.GET)
+    @GetMapping("/website/{websiteId}")
     public WebSite readOne(@PathVariable String websiteId) {
         return governor.build(websiteId);
     }
 
-    @RequestMapping(value = {"{accountId}/website/{websiteId}", "{accountId}/website/{websiteId}/"}, method = RequestMethod.GET)
+    @GetMapping("{accountId}/website/{websiteId}")
     public WebSite readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("websiteId") String websiteId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", websiteId);
@@ -34,41 +34,41 @@ public class WebSiteRESTController {
         return governor.build(keyValue);
     }
 
-    @RequestMapping(value = {"/website/", "/website"}, method = RequestMethod.GET)
+    @GetMapping("/website")
     public Collection<WebSite> readAll() {
         return governor.buildAll();
     }
 
-    @RequestMapping(value = {"/{accountId}/website", "/{accountId}/website/"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/website")
     public Collection<WebSite> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
     }
 
-    @RequestMapping(value = {"/{accountId}/website/count", "/{accountId}/website/count/"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/website/count")
     public Count countByAccountId(@PathVariable String accountId) {
         return governor.countByAccountId(accountId);
     }
 
-    @RequestMapping(value = "/{accountId}/website/find", method = RequestMethod.GET)
+    @GetMapping("/{accountId}/website/find")
     public WebSite readOneWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.build(requestParams);
     }
 
-    @RequestMapping(value = "/website/find", method = RequestMethod.GET)
+    @GetMapping("/website/find")
     public WebSite readOneWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.build(requestParams);
     }
 
-    @RequestMapping(value = {"/{accountId}/website/filter"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/website/filter")
     public Collection<WebSite> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
-    @RequestMapping(value = {"/website/filter"}, method = RequestMethod.GET)
+    @GetMapping("/website/filter")
     public Collection<WebSite> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }

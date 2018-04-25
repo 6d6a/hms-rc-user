@@ -13,11 +13,11 @@ import javax.validation.Validator;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.exception.ResourceNotFoundException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.resources.CharSet;
-import ru.majordomo.hms.rc.user.exception.ParameterValidateException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
@@ -192,7 +192,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     @Override
-    public WebSite update(ServiceMessage serviceMessage) throws ParameterValidateException {
+    public WebSite update(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -327,7 +327,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             }
         } catch (ClassCastException e) {
             logger.error("WebSite update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         preValidate(website);
@@ -447,7 +447,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setMbstringInternalEncoding(mbstringInternalEncoding);
         } catch (ClassCastException e) {
             logger.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
-            throw new ParameterValidateException("Один из параметров указан неверно");
+            throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
         return webSite;
@@ -472,7 +472,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             keyValue.put("accountId", webSite.getAccountId());
             List<UnixAccount> unixAccounts = (List<UnixAccount>) governorOfUnixAccount.buildAll(keyValue);
             if (unixAccounts == null || unixAccounts.isEmpty()) {
-                throw new ParameterValidateException("Для создания WebSite необходим UnixAccount");
+                throw new ParameterValidationException("Для создания WebSite необходим UnixAccount");
             }
             webSite.setUnixAccount(unixAccounts.get(0));
         } else {
@@ -568,7 +568,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     @Override
-    public void validate(WebSite webSite) throws ParameterValidateException {
+    public void validate(WebSite webSite) throws ParameterValidationException {
         Set<ConstraintViolation<WebSite>> constraintViolations = validator.validate(webSite, WebSiteChecks.class);
 
         if (!constraintViolations.isEmpty()) {
@@ -588,7 +588,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     @Override
-    protected WebSite construct(WebSite webSite) throws ParameterValidateException {
+    protected WebSite construct(WebSite webSite) throws ParameterValidationException {
         for (String domainId : webSite.getDomainIds()) {
             Domain domain = governorOfDomain.build(domainId);
             webSite.addDomain(domain);

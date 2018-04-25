@@ -21,23 +21,23 @@ public class FTPUserRestController {
         this.governor = governor;
     }
 
-    @RequestMapping(value = "/ftp-user/filter", method = RequestMethod.GET)
+    @GetMapping("/ftp-user/filter")
     public FTPUser filter(@RequestParam Map<String, String> requestParams) {
         return governor.build(requestParams);
     }
 
-    @RequestMapping(value = "/{accountId}/ftp-user/filter", method = RequestMethod.GET)
+    @GetMapping("/{accountId}/ftp-user/filter")
     public FTPUser filter(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.build(requestParams);
     }
 
-    @RequestMapping(value = {"/ftp-user/{ftpUserId}", "/ftp-user/{ftpUserId}/"}, method = RequestMethod.GET)
+    @GetMapping("/ftp-user/{ftpUserId}")
     public FTPUser readOne(@PathVariable String ftpUserId) {
         return governor.build(ftpUserId);
     }
 
-    @RequestMapping(value = {"{accountId}/ftp-user/{ftpUserId}", "{accountId}/ftp-user/{ftpUserId}/"}, method = RequestMethod.GET)
+    @GetMapping("{accountId}/ftp-user/{ftpUserId}")
     public FTPUser readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("ftpUserId") String ftpUserId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", ftpUserId);
@@ -45,19 +45,19 @@ public class FTPUserRestController {
         return governor.build(keyValue);
     }
 
-    @RequestMapping(value = {"/ftp-user/","/ftp-user"}, method = RequestMethod.GET)
+    @GetMapping("/ftp-user")
     public Collection<FTPUser> readAll() {
         return governor.buildAll();
     }
 
-    @RequestMapping(value = {"/{accountId}/ftp-user", "/{accountId}/ftp-user/"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/ftp-user")
     public Collection<FTPUser> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
     }
 
-    @RequestMapping(value = {"/{accountId}/ftp-user/count", "/{accountId}/ftp-user/count/"}, method = RequestMethod.GET)
+    @GetMapping("/{accountId}/ftp-user/count")
     public Count countByAccountId(@PathVariable String accountId) {
         return governor.countByAccountId(accountId);
     }
