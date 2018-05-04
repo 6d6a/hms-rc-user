@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -316,5 +317,12 @@ public class GovernorOfPersonTest {
         serviceMessage.addParam("name", "НОШ 'ВФЫВ' № 95, +! шк. «»/\"");
         System.out.println(serviceMessage.toString());
         governor.create(serviceMessage);
+    }
+
+    @Test(expected = DuplicateKeyException.class)
+    public void createTwoPersonWithEqualsAccountIdAndNicHandle() throws Exception {
+        List<Person> persons = ResourceGenerator.generateTwoPersonWithEqualsAccountIdAndNicHandle();
+        governor.store(persons.get(0));
+        governor.store(persons.get(1));
     }
 }

@@ -157,6 +157,59 @@ public class ResourceGenerator {
         return batchOfPersons;
     }
 
+    public static List<Person> generateTwoPersonWithEqualsAccountIdAndNicHandle() {
+        List<Person> batchOfPersons = new ArrayList<>();
+
+        String accountId = ObjectId.get().toString();
+        String nicHandle = "NKD-134134";
+
+        Person individual = new Person();
+        individual.setId(ObjectId.get().toString());
+        individual.setAccountId(accountId);
+        individual.setType(PersonType.INDIVIDUAL);
+        individual.setNicHandle(nicHandle);
+        individual.setName("Паровозов Аркадий Локомотивович");
+        individual.addEmailAddress("arkady@parovozov.ru");
+        individual.addEmailAddress("parovozov@gmail.com");
+        individual.addPhoneNumber("+79110000911");
+        individual.addPhoneNumber("+79110000001");
+        individual.setPostalAddress(new Address("195000","Торфяная дор. 7, лит. Ф, оф. 1323", "Санкт-Петербург"));
+        individual.setCountry("RU");
+
+        Passport passport = generatePassportIndividual();
+        individual.setPassport(passport);
+
+        individual.setFirstname("Аркадий");
+        individual.setLastname("Паровозов");
+        individual.setMiddlename("Локомотивович");
+
+        batchOfPersons.add(individual);
+
+        Person individual2 = new Person();
+        individual2.setId(ObjectId.get().toString());
+        individual2.setAccountId(accountId);
+        individual2.setNicHandle(nicHandle);
+        individual2.setType(PersonType.INDIVIDUAL);
+        individual2.setName("Паровозов Аркадий Локомотивович");
+        individual2.addEmailAddress("arkady@parovozov.ru");
+        individual2.addEmailAddress("parovozov@gmail.com");
+        individual2.addPhoneNumber("+79110000911");
+        individual2.addPhoneNumber("+79110000001");
+        individual2.setPostalAddress(new Address("195000","Торфяная дор. 7, лит. Ф, оф. 1323", "Санкт-Петербург"));
+        individual2.setCountry("RU");
+
+        Passport passport2 = generatePassportIndividual();
+        individual2.setPassport(passport);
+
+        individual2.setFirstname("Аркадий");
+        individual2.setLastname("Паровозов");
+        individual2.setMiddlename("Локомотивович");
+
+        batchOfPersons.add(individual2);
+
+        return batchOfPersons;
+    }
+
     public static LegalEntity generateLegalEntityCompany() {
         LegalEntity legalEntity = new LegalEntity();
         legalEntity.setInn("7814522538");
