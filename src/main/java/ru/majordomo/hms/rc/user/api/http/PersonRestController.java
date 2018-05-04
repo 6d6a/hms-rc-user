@@ -80,4 +80,11 @@ public class PersonRestController {
 
         return governor.addByNicHandle(accountId, nicHandle);
     }
+
+    @GetMapping("/{accountId}/person/find")
+    public Collection<Person> find(@PathVariable String accountId, @RequestParam Map<String, String> keyValue) {
+        keyValue.put("accountId", accountId);
+        return governor.buildAll(keyValue);
+    }
+
 }

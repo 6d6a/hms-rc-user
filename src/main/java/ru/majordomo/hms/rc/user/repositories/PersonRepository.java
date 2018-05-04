@@ -15,4 +15,5 @@ public interface PersonRepository extends MongoRepository<Person,String> {
     Person findByIdAndLinkedAccountIds(String personId, String accountId);
     @Query(value="{ 'nicHandle' : {$ne : ''} }")
     Stream<Person> findPersonsWithNicHandlesByNicHandleNotBlank();
+    List<Person> findByAccountIdAndNicHandle(String accountId, String nicHandle);
 }
