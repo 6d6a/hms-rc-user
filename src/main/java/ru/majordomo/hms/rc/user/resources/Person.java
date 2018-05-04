@@ -8,6 +8,8 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.group.GroupSequenceProvider;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -33,6 +35,13 @@ import static ru.majordomo.hms.rc.user.resources.Constants.COUNTRY_FOREIGN_PATTE
 
 @Document(collection = "persons")
 @GroupSequenceProvider(value = PersonGroupSequenceProvider.class)
+@CompoundIndexes({
+        @CompoundIndex(
+                name = "accountId_nicHandle",
+                def = "{'accountId' : 1, 'nicHandle': 1}",
+                unique = true
+        )
+})
 public class Person extends Resource {
     @NotNull(message = "Должен быть указан тип персоны")
     private PersonType type;
