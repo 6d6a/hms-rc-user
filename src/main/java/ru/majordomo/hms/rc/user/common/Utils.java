@@ -1,5 +1,8 @@
 package ru.majordomo.hms.rc.user.common;
 
+import org.hibernate.validator.constraints.NotEmpty;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+
 import java.util.Map;
 
 public class Utils {
@@ -21,7 +24,15 @@ public class Utils {
         return longValue;
     }
 
-    public static boolean mapContains(Map<String, String> map, String key) {
-        return map.get(key) != null && !map.get(key).isEmpty();
+    public static boolean mapContains(Map<String, String> map, @NotEmpty String... keys) throws ParameterValidationException {
+        if (keys.length == 0) {
+            throw new ParameterValidationException("Необходимо передать список ключей для проверки");
+        }
+        for (String key : keys) {
+            if (map.get(key) == null || map.get(key).isEmpty()){
+                return false;
+            }
+        }
+        return true;
     }
 }

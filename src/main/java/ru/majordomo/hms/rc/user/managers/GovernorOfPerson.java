@@ -28,6 +28,8 @@ import ru.majordomo.hms.rc.user.resources.PersonType;
 import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
 import ru.majordomo.hms.rc.user.resources.validation.groupSequenceProvider.PersonGroupSequenceProvider;
 
+import static ru.majordomo.hms.rc.user.common.Utils.mapContains;
+
 @Service
 public class GovernorOfPerson extends LordOfResources<Person> {
     private PersonRepository repository;
@@ -399,7 +401,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     public Collection<Person> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Person> buildedPersons = new ArrayList<>();
 
-        if (keyValue.get("accountId") != null) {
+        if (mapContains(keyValue, "accountId", "nicHandle")) {
+            buildedPersons = repository.findByAccountIdAndNicHandle(keyValue.get("accountId"), keyValue.get("nicHandle"));
+        } else if (mapContains(keyValue, "accountId")) {
             buildedPersons = repository.findByAccountId(keyValue.get("accountId"));
             buildedPersons.addAll(repository.findByLinkedAccountIds(keyValue.get("accountId")));
         }
