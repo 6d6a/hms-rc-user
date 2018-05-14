@@ -138,7 +138,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
     @Override
     public void validateImported(Redirect redirect) {
-        throw new NotImplementedException("Новая услуга");
+        throw new NotImplementedException();
     }
 
     @Override

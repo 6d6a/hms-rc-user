@@ -69,4 +69,9 @@ public class RedirectRESTController {
     public Collection<Redirect> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
+
+    @GetMapping("/{accountId}/redirect/{domainId}/count")
+    public Count countByAccountIdAndDomainId(@PathVariable String accountId, @PathVariable String domainId) {
+        return governor.countByAccountIdAndDomainId(accountId, domainId);
+    }
 }

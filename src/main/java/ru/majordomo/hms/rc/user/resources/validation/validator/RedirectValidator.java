@@ -13,6 +13,8 @@ import javax.validation.ConstraintValidatorContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
@@ -49,9 +51,20 @@ public class RedirectValidator implements ConstraintValidator<ValidRedirect, Red
             isValid = !operations.exists(query, Redirect.class);
 
             if (isValid) {
+                Set<String> sourcePaths = new HashSet<>();
                 for (RedirectItem item : redirect.getRedirectItems()) {
                     try {
-                        new URL("http", "localhost", item.getSourcePath());
+                        URL sourceURL = new URL("http", "localhost", item.getSourcePath());
+                        item.setSourcePath(sourceURL.getPath());
+
+                        if (!sourcePaths.add(item.getSourcePath())) {
+                            constraintValidatorContext.disableDefaultConstraintViolation();
+                            constraintValidatorContext
+                                    .buildConstraintViolationWithTemplate(
+                                            "Исходный адрес " + item.getSourcePath() + " используется более одного раза"
+                                    ).addConstraintViolation();
+                            return false;
+                        }
                     } catch (MalformedURLException e) {
                         constraintValidatorContext.disableDefaultConstraintViolation();
                         constraintValidatorContext
