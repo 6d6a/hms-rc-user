@@ -30,6 +30,12 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     private Cleaner cleaner;
     private Validator validator;
     private GovernorOfUnixAccount governorOfUnixAccount;
+    private GovernorOfDnsRecord governorOfDnsRecord;
+
+    @Autowired
+    public void setGovernorOfDnsRecord(GovernorOfDnsRecord governorOfDnsRecord) {
+        this.governorOfDnsRecord = governorOfDnsRecord;
+    }
 
     @Autowired
     public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
@@ -162,6 +168,23 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
                             + " для сервера: " + unixAccount.getServerId());
                 }
             }
+        }
+
+        if (redirect.getDomain() != null) {
+            String domainName = redirect.getDomain().getName();
+            Map<String, String> keyValue = new HashMap<>();
+            keyValue.put("name", domainName);
+            keyValue.put("accountId", redirect.getAccountId());
+
+            Collection<DNSResourceRecord> dnsResourceRecords = governorOfDnsRecord.buildAll(keyValue);
+
+            dnsResourceRecords.forEach(dnsResourceRecord -> {
+                if (dnsResourceRecord.getOwnerName().equals(domainName)
+                        || dnsResourceRecord.getOwnerName().equals("*." + domainName)) {
+                    governorOfDnsRecord.drop(dnsResourceRecord.getId());
+                }
+                governorOfDnsRecord.addDefaultARecords(redirect.getDomain());
+            });
         }
     }
 
