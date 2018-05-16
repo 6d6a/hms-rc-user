@@ -1,12 +1,13 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.repositories.RedirectRepository;
@@ -25,9 +26,30 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
     private RedirectRepository repository;
     private GovernorOfDomain governorOfDomain;
+    private StaffResourceControllerClient staffRcClient;
     private Cleaner cleaner;
     private Validator validator;
-    private ObjectMapper mapper = new ObjectMapper();
+    private GovernorOfUnixAccount governorOfUnixAccount;
+
+    @Autowired
+    public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
+        this.governorOfUnixAccount = governorOfUnixAccount;
+    }
+
+    @Autowired
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+
+    @Autowired
+    public void setCleaner(Cleaner cleaner) {
+        this.cleaner = cleaner;
+    }
+
+    @Autowired
+    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
+        this.staffRcClient = staffRcClient;
+    }
 
     @Autowired
     public void setGovernorOfDomain(GovernorOfDomain governorOfDomain) {
@@ -37,16 +59,6 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     @Autowired
     public void setRepository(RedirectRepository repository) {
         this.repository = repository;
-    }
-
-    @Autowired
-    public void setCleaner(Cleaner cleaner) {
-        this.cleaner = cleaner;
-    }
-
-    @Autowired
-    public void setValidator(Validator validator) {
-        this.validator = validator;
     }
 
     @Override
@@ -123,6 +135,33 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
         if (redirect.getSwitchedOn() == null) {
             redirect.setSwitchedOn(true);
+        }
+
+        if (redirect.getServiceId() == null || (redirect.getServiceId().equals(""))) {
+            Map<String, String> keyValue = new HashMap<>();
+            keyValue.put("accountId", redirect.getAccountId());
+            Collection<UnixAccount> unixAccounts = governorOfUnixAccount.buildAll(keyValue);
+
+            //пока что unixAccount должен быть у всех
+            if (unixAccounts.isEmpty()) {
+                logger.error("UnixAccount с accountId " + redirect.getAccountId() + " не найден");
+            } else {
+                UnixAccount unixAccount = unixAccounts.iterator().next();
+                //Должен быть только один nginx на сервере
+                List<Service> nginxServices = staffRcClient
+                        .getNginxServicesByServerId(unixAccount.getServerId());
+
+                for (Service service : nginxServices) {
+                    if (service.getServiceTemplate().getServiceType().getName().equals("STAFF_NGINX")) {
+                        redirect.setServiceId(service.getId());
+                        break;
+                    }
+                }
+                if (redirect.getServiceId() == null || (redirect.getServiceId().equals(""))) {
+                    logger.error("Не найдено serviceType: STAFF_NGINX "
+                            + " для сервера: " + unixAccount.getServerId());
+                }
+            }
         }
     }
 
@@ -230,7 +269,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
         for (Map.Entry<Object, Object> entry : keyValue.entrySet()) {
             switch (entry.getKey().toString()) {
                 case "redirectItems":
-                    redirect.setRedirectItems((Set<RedirectItem>) entry.getValue());
+                    redirect.setRedirectItems(mapRedirectItems((List<Map>) entry.getValue()));
 
                     break;
                 case "name":
@@ -255,5 +294,16 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
                     break;
             }
         }
+    }
+
+    private Set<RedirectItem> mapRedirectItems(List<Map> list) {
+        Set<RedirectItem> redirectItems = new HashSet<>();
+        for (Map map: list) {
+            RedirectItem item = new RedirectItem();
+            item.setSourcePath((String) map.get("sourcePath"));
+            item.setTargetUrl((String) map.get("targetUrl"));
+            redirectItems.add(item);
+        }
+        return redirectItems;
     }
 }

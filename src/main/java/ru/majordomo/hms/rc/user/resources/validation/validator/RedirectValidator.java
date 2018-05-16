@@ -74,7 +74,15 @@ public class RedirectValidator implements ConstraintValidator<ValidRedirect, Red
                         return false;
                     }
                     try {
-                        new URL("http://" + item.getTargetUrl());
+                        URL url = new URL(item.getTargetUrl());
+                        if (!url.getProtocol().equals("http") && !url.getProtocol().equals("https")) {
+                            constraintValidatorContext.disableDefaultConstraintViolation();
+                            constraintValidatorContext
+                                    .buildConstraintViolationWithTemplate(
+                                            "Протокол адреса назначения должен быть 'http' или 'https'" + item.getTargetUrl()
+                                    ).addConstraintViolation();
+                            return false;
+                        }
                     } catch (MalformedURLException e) {
                         constraintValidatorContext.disableDefaultConstraintViolation();
                         constraintValidatorContext

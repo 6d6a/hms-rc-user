@@ -35,6 +35,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     private GovernorOfDnsRecord governorOfDnsRecord;
     private GovernorOfMailbox governorOfMailbox;
     private GovernorOfWebSite governorOfWebSite;
+    private GovernorOfRedirect governorOfRedirect;
     private DomainRegistrarClient registrar;
     private Validator validator;
 
@@ -81,6 +82,11 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Autowired
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    @Autowired
+    public void setGovernorOfRedirect(GovernorOfRedirect governorOfRedirect) {
+        this.governorOfRedirect = governorOfRedirect;
     }
 
     @Override
@@ -262,6 +268,16 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 message.append(mailbox.getFullName()).append(", ");
             }
             throw new ParameterValidationException(message.substring(0, message.length() - 2));
+        }
+
+        Redirect redirect;
+        try {
+            redirect = governorOfRedirect.build(keyValue);
+            if (redirect != null) {
+                throw new ParameterValidationException("Домен используется в перенаправлении с ID " + redirect.getId());
+            }
+        } catch (ResourceNotFoundException e) {
+            logger.debug("Редиректов, использующих домен с ID " + resourceId + " не обнаружено");
         }
 
         Domain domain = repository.findOne(resourceId);

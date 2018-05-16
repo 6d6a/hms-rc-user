@@ -47,4 +47,7 @@ public interface StaffResourceControllerClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/service")
     List<Service> getServices();
+
+    @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type=STAFF_NGINX")
+    List<Service> getNginxServicesByServerId(@PathVariable("serverId") String serverId);
 }

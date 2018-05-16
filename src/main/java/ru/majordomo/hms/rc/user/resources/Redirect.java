@@ -11,6 +11,7 @@ import ru.majordomo.hms.rc.user.resources.validation.ValidRedirect;
 import ru.majordomo.hms.rc.user.resources.validation.group.RedirectChecks;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
