@@ -105,6 +105,26 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     }
 
     @Override
+    public void postValidate(Redirect redirect) {
+        String domainName = redirect.getDomain().getName();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("name", domainName);
+        keyValue.put("accountId", redirect.getAccountId());
+
+        Collection<DNSResourceRecord> dnsResourceRecords = governorOfDnsRecord.buildAll(keyValue);
+
+        dnsResourceRecords
+                .stream()
+                .filter(record -> record.getRrType().equals(DNSResourceRecordType.A))
+                .filter(record ->
+                        record.getOwnerName().equals(domainName)
+                                || record.getOwnerName().equals("*." + domainName)
+                ).forEach(record -> governorOfDnsRecord.drop(record.getId()));
+
+        governorOfDnsRecord.addDefaultARecords(redirect.getDomain());
+    }
+
+    @Override
     public void preDelete(String resourceId) {}
 
     @Override
@@ -168,23 +188,6 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
                             + " для сервера: " + unixAccount.getServerId());
                 }
             }
-        }
-
-        if (redirect.getDomain() != null) {
-            String domainName = redirect.getDomain().getName();
-            Map<String, String> keyValue = new HashMap<>();
-            keyValue.put("name", domainName);
-            keyValue.put("accountId", redirect.getAccountId());
-
-            Collection<DNSResourceRecord> dnsResourceRecords = governorOfDnsRecord.buildAll(keyValue);
-
-            dnsResourceRecords.forEach(dnsResourceRecord -> {
-                if (dnsResourceRecord.getOwnerName().equals(domainName)
-                        || dnsResourceRecord.getOwnerName().equals("*." + domainName)) {
-                    governorOfDnsRecord.drop(dnsResourceRecord.getId());
-                }
-                governorOfDnsRecord.addDefaultARecords(redirect.getDomain());
-            });
         }
     }
 
