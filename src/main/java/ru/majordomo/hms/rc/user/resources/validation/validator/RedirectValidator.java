@@ -55,7 +55,12 @@ public class RedirectValidator implements ConstraintValidator<ValidRedirect, Red
                 for (RedirectItem item : redirect.getRedirectItems()) {
                     try {
                         URL sourceURL = new URL("http", "localhost", item.getSourcePath());
-                        item.setSourcePath(sourceURL.getPath());
+                        String sourcePath = sourceURL.getPath();
+                        if (sourcePath.startsWith("/")) {
+                            item.setSourcePath(sourcePath);
+                        } else {
+                            item.setSourcePath("/" + sourcePath);
+                        }
 
                         if (!sourcePaths.add(item.getSourcePath())) {
                             constraintValidatorContext.disableDefaultConstraintViolation();

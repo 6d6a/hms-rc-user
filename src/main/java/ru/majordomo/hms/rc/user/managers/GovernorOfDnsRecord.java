@@ -291,6 +291,38 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
     }
 
+    public void addARecords(Domain domain) {
+        String ownerDomainName = IDN.toASCII(domain.getName());
+
+        String domainName;
+        if (domain.getParentDomainId() != null) {
+            try {
+                Domain parentDomain = governorOfDomain.build(domain.getParentDomainId());
+                domainName = IDN.toASCII(parentDomain.getName());
+            } catch (ResourceNotFoundException e) {
+                logger.error("[addARecords] Ошибка: " + e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+        } else {
+            domainName = ownerDomainName;
+        }
+        DNSResourceRecord record = new DNSResourceRecord();
+        record.setRrType(DNSResourceRecordType.A);
+        record.setOwnerName(ownerDomainName);
+        record.setTtl(3600L);
+        try {
+            record.setData(getServerPrimaryIp(domain.getAccountId()));
+        } catch (ParameterValidationException e) {
+            logger.error("[addARecords] Ошибка: " + e.getMessage());
+            e.printStackTrace();
+            return;
+        }
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        record.setOwnerName("*." + ownerDomainName);
+        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+    }
+
     public void addSoaRecord(Domain domain) {
         String domainName = IDN.toASCII(domain.getName());
 

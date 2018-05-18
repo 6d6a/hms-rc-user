@@ -106,7 +106,13 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
     @Override
     public void postValidate(Redirect redirect) {
-        String domainName = redirect.getDomain().getName();
+        String domainName;
+        if (redirect.getDomain().getParentDomainId() != null) {
+            Domain parentDomain = governorOfDomain.build(redirect.getDomain().getParentDomainId());
+            domainName = parentDomain.getName();
+        } else {
+            domainName = redirect.getDomain().getName();
+        }
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("name", domainName);
         keyValue.put("accountId", redirect.getAccountId());
@@ -117,11 +123,11 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
                 .stream()
                 .filter(record -> record.getRrType().equals(DNSResourceRecordType.A))
                 .filter(record ->
-                        record.getOwnerName().equals(domainName)
-                                || record.getOwnerName().equals("*." + domainName)
-                ).forEach(record -> governorOfDnsRecord.drop(record.getId()));
+                        record.getOwnerName().equals(redirect.getDomain().getName())
+                                || record.getOwnerName().equals("*." + redirect.getDomain().getName())
+                ).forEach(record -> governorOfDnsRecord.drop(record.getRecordId().toString()));
 
-        governorOfDnsRecord.addDefaultARecords(redirect.getDomain());
+        governorOfDnsRecord.addARecords(redirect.getDomain());
     }
 
     @Override
@@ -234,6 +240,12 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
             } else {
                 redirect = repository.findByDomainId(keyValue.get("domainId"));
             }
+        } else if (mapContains(keyValue, "accountId", "domainName")) {
+            Map<String, String> domainKeyValue = new HashMap<>();
+            domainKeyValue.put("accountId", keyValue.get("accountId"));
+            domainKeyValue.put("name", keyValue.get("domainName"));
+            Domain domain = governorOfDomain.build(domainKeyValue);
+            redirect = repository.findByDomainIdAndAccountId(domain.getId(), keyValue.get("accountId"));
         }
 
         if (redirect == null) {
@@ -323,13 +335,17 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     }
 
     private Set<RedirectItem> mapRedirectItems(List<Map> list) {
-        Set<RedirectItem> redirectItems = new HashSet<>();
-        for (Map map: list) {
-            RedirectItem item = new RedirectItem();
-            item.setSourcePath((String) map.get("sourcePath"));
-            item.setTargetUrl((String) map.get("targetUrl"));
-            redirectItems.add(item);
+        if (list == null) {
+            return new HashSet<>();
+        } else {
+            Set<RedirectItem> redirectItems = new HashSet<>();
+            for (Map map : list) {
+                RedirectItem item = new RedirectItem();
+                item.setSourcePath((String) map.get("sourcePath"));
+                item.setTargetUrl((String) map.get("targetUrl"));
+                redirectItems.add(item);
+            }
+            return redirectItems;
         }
-        return redirectItems;
     }
 }
