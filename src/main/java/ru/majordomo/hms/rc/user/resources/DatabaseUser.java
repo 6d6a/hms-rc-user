@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.resources;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,8 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
 
     @Transient
     private List<String> databaseIds;
+
+    private BigDecimal maxCpuTimePerSecond;
 
     @JsonIgnore
     public List<String> getDatabaseIds() {
@@ -141,5 +144,13 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
                 ", allowedIPAddresses=" + allowedIPAddresses +
                 ", databaseIds=" + databaseIds +
                 "} " + super.toString();
+    }
+
+    public BigDecimal getMaxCpuTimePerSecond() {
+        return maxCpuTimePerSecond;
+    }
+
+    public void setMaxCpuTimePerSecond(BigDecimal maxCpuTimePerSecond) {
+        this.maxCpuTimePerSecond = maxCpuTimePerSecond;
     }
 }
