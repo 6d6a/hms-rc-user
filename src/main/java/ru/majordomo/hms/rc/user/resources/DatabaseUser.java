@@ -14,6 +14,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 
 import ru.majordomo.hms.rc.staff.resources.Network;
@@ -42,6 +43,7 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     @Transient
     private List<String> databaseIds;
 
+    @DecimalMin(value = "0", message = "maxCpuTimePerSecond должно быть больше либо равно нулю или null")
     private BigDecimal maxCpuTimePerSecond;
 
     @JsonIgnore
