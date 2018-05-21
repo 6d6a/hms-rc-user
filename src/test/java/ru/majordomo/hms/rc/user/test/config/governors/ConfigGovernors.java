@@ -64,6 +64,11 @@ public class ConfigGovernors {
     }
 
     @Bean
+    public GovernorOfRedirect getGovernorOfRedirect() {
+        return new GovernorOfRedirect();
+    }
+
+    @Bean
     public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
         return new JettyEmbeddedServletContainerFactory(0);
     }

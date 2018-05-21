@@ -8,9 +8,16 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import ru.majordomo.hms.rc.user.common.PathManager;
+import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.Redirect;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
 import ru.majordomo.hms.rc.user.resources.validation.ValidWebSite;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 public class WebSiteValidator implements ConstraintValidator<ValidWebSite, WebSite> {
@@ -40,6 +47,31 @@ public class WebSiteValidator implements ConstraintValidator<ValidWebSite, WebSi
             }
 
             isValid = !operations.exists(query, WebSite.class);
+
+//            if (isValid) {
+//                List<Redirect> redirects = operations.find(new Query(where("domainId").in(webSite.getDomainIds())), Redirect.class);
+//                if (!redirects.isEmpty()) {
+//                    isValid = false;
+////
+//                    Set<String> domainIds = redirects.stream().map(Redirect::getDomainId).collect(Collectors.toSet());
+//                    List<Domain> domains = operations.find(new Query(where("_id").in(domainIds)), Domain.class);
+//                    constraintValidatorContext.disableDefaultConstraintViolation();
+//                    constraintValidatorContext
+//                            .buildConstraintViolationWithTemplate(
+//                                    "Для добавления следующих доменов на сайт необходимо удалить использующие их редиректы "
+//                                            + String.join(", ", domains.stream().map(Domain::getName).collect(Collectors.toList())))
+//                            .addConstraintViolation();
+//                }
+//            }
+            if (isValid) {
+                isValid = !operations.exists(new Query(where("domainId").in(webSite.getDomainIds())), Redirect.class);
+                if (!isValid) {
+                    constraintValidatorContext.disableDefaultConstraintViolation();
+                    constraintValidatorContext.buildConstraintViolationWithTemplate(
+                            "{ru.majordomo.hms.rc.user.resources.validation.ConcurrentWebSiteAndRedirect.message}"
+                    ).addConstraintViolation();
+                }
+            }
         } catch (RuntimeException e) {
             return false;
         }
