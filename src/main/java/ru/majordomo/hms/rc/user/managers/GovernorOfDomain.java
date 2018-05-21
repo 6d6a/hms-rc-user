@@ -277,7 +277,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 throw new ParameterValidationException("Домен используется в перенаправлении с ID " + redirect.getId());
             }
         } catch (ResourceNotFoundException e) {
-            logger.debug("Редиректов, использующих домен с ID " + resourceId + " не обнаружено");
+            logger.debug("Перенаправлений, использующих домен с ID " + resourceId + " не обнаружено");
         }
 
         Domain domain = repository.findOne(resourceId);

@@ -229,7 +229,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     public Redirect build(String resourceId) throws ResourceNotFoundException {
         Redirect redirect = repository.findOne(resourceId);
         if (redirect == null) {
-            throw new ResourceNotFoundException("Редирект с ID " + resourceId + " не найден");
+            throw new ResourceNotFoundException("Перенаправление с ID " + resourceId + " не найдено");
         }
         return construct(redirect);
     }
@@ -255,7 +255,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
         }
 
         if (redirect == null) {
-            throw new ResourceNotFoundException("Не найден редирект по параметрам: " + keyValue.toString());
+            throw new ResourceNotFoundException("Не найдено перенаправление по параметрам: " + keyValue.toString());
         }
 
         return construct(redirect);
