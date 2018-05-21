@@ -165,6 +165,12 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
             redirect.setName(redirect.getDomain().getName());
         }
 
+        for (RedirectItem item : redirect.getRedirectItems()) {
+            if (!item.getSourcePath().startsWith("/")) {
+                item.setSourcePath("/" + item.getSourcePath());
+            }
+        }
+
         if (redirect.getSwitchedOn() == null) {
             redirect.setSwitchedOn(true);
         }
