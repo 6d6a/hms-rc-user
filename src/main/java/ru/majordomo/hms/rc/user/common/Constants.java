@@ -63,6 +63,10 @@ public class Constants {
         public static final String WEBSITE_UPDATE = "website.update";
         public static final String WEBSITE_DELETE = "website.delete";
 
+        public static final String REDIRECT_CREATE = "redirect.create";
+        public static final String REDIRECT_UPDATE = "redirect.update";
+        public static final String REDIRECT_DELETE = "redirect.delete";
+
         public static Set<String> ALL_EXCHANGES;
 
         static {
@@ -104,7 +108,10 @@ public class Constants {
                     UNIX_ACCOUNT_DELETE,
                     WEBSITE_CREATE,
                     WEBSITE_UPDATE,
-                    WEBSITE_DELETE
+                    WEBSITE_DELETE,
+                    REDIRECT_CREATE,
+                    REDIRECT_UPDATE,
+                    REDIRECT_DELETE
             ));
         }
     }

@@ -10,4 +10,10 @@ public class Count {
     public void setCount(Long count) {
         this.count = count;
     }
+
+    public static Count zero() {
+        Count count = new Count();
+        count.setCount(0L);
+        return count;
+    }
 }

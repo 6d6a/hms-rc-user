@@ -19,6 +19,7 @@ import java.util.*;
 public class ConfigStaffResourceControllerClient {
 
     private final String mockedServiceId = "583300c5a94c541d14d58c84";
+    private final String mockedNginxServiceId = "583300c5a94c541d14d58c86";
     private final String mockedDBServiceId = "583300c5a94c541d14d58c85";
 
     private Server mockedMailboxServer;
@@ -158,6 +159,26 @@ public class ConfigStaffResourceControllerClient {
             @Override
             public List<Service> getServices() {
                 return null;
+            }
+
+            @Override
+            public List<Service> getNginxServicesByServerId(String serverId) {
+                List<Service> services = new ArrayList<>();
+
+                Service service = new Service();
+                service.setId(mockedNginxServiceId);
+
+                ServiceType serviceType = new ServiceType();
+                serviceType.setName("STAFF_NGINX");
+
+                ServiceTemplate serviceTemplate = new ServiceTemplate();
+                serviceTemplate.setServiceType(serviceType);
+
+                service.setServiceTemplate(serviceTemplate);
+
+                services.add(service);
+
+                return services;
             }
         };
     }

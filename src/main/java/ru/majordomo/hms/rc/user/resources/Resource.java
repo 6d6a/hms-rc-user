@@ -10,23 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import ru.majordomo.hms.rc.user.resources.validation.*;
-import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseImportChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserImportChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.PersonChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.PersonImportChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.SSLCertificateImportChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.*;
 
 import java.time.LocalDateTime;
 
@@ -84,6 +68,7 @@ public abstract class Resource {
                               SSLCertificateChecks.class,
                               SSLCertificateImportChecks.class,
                               UnixAccountChecks.class,
+                              RedirectChecks.class,
                               WebSiteChecks.class,
                               WebSiteImportChecks.class
                       })

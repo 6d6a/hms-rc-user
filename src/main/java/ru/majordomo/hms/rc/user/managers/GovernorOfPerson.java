@@ -527,7 +527,8 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
             try {
                 preValidate(personFromDomainRegistrar);
-                validate(personFromDomainRegistrar);
+                //при добавлении существующей в регистранте персоны, считаем, что она валидна
+                //validate(personFromDomainRegistrar);
                 store(personFromDomainRegistrar);
             } catch (ParameterValidationException | ConstraintViolationException e) {
                 e.printStackTrace();

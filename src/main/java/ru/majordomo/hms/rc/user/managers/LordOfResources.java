@@ -26,6 +26,7 @@ public abstract class LordOfResources<T extends Resource> {
             resource = buildResourceFromServiceMessage(serviceMessage);
             preValidate(resource);
             validate(resource);
+            postValidate(resource);
             store(resource);
         } catch (ClassCastException | UnsupportedEncodingException e) {
             throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
@@ -48,15 +49,19 @@ public abstract class LordOfResources<T extends Resource> {
 
     public void preValidate(T resource) {}
 
+    public void postValidate(T resource) {}
+
     public void validateAndStore(T resource) {
         preValidate(resource);
         validate(resource);
+        postValidate(resource);
         store(resource);
     }
 
     public void validateAndStoreImported(T resource) {
         preValidate(resource);
         validateImported(resource);
+        postValidate(resource);
         store(resource);
     }
 
