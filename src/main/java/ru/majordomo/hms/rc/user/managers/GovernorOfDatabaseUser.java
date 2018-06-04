@@ -133,10 +133,9 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                         }
                         break;
                     case "maxCpuTimePerSecond":
-                        BigDecimal maxCpuTimePerSecond = null;
-                        try {
-                            maxCpuTimePerSecond = Utils.getBigDecimalFromUnexpectedInput(serviceMessage.getParam("maxCpuTimePerSecond"));
-                        } catch (ParameterValidationException ignore) {} //this means that there is no limit
+                        BigDecimal maxCpuTimePerSecond = Utils.getBigDecimalFromUnexpectedInput(
+                                serviceMessage.getParam("maxCpuTimePerSecond")
+                        );
                         databaseUser.setMaxCpuTimePerSecond(maxCpuTimePerSecond);
 
                         break;

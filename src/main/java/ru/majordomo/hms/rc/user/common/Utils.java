@@ -38,7 +38,9 @@ public class Utils {
     }
 
     public static BigDecimal getBigDecimalFromUnexpectedInput(Object input) throws ParameterValidationException {
-
+        if (input == null) {
+            return null;
+        }
         BigDecimal bigDecimal;
 
         if (input instanceof Integer) {
