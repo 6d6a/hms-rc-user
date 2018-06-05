@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -18,6 +19,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.Utils;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
@@ -130,6 +132,13 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                             databaseUser.setWillBeDeletedAfter(LocalDateTime.parse((String) entry.getValue()));
                         }
                         break;
+                    case "maxCpuTimePerSecond":
+                        BigDecimal maxCpuTimePerSecond = Utils.getBigDecimalFromUnexpectedInput(
+                                serviceMessage.getParam("maxCpuTimePerSecond")
+                        );
+                        databaseUser.setMaxCpuTimePerSecond(maxCpuTimePerSecond);
+
+                        break;
                     default:
                         break;
                 }
@@ -196,6 +205,14 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
             if (serviceMessage.getParam("allowedAddressList") != null) {
                 allowedIps = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedAddressList"));
+            }
+
+            if (serviceMessage.getParams().containsKey("maxCpuTimePerSecond")) {
+                BigDecimal maxCpuTimePerSecond = null;
+                try {
+                    maxCpuTimePerSecond = Utils.getBigDecimalFromUnexpectedInput(serviceMessage.getParam("maxCpuTimePerSecond"));
+                } catch (ParameterValidationException ignore) {} //this means that there is no limit
+                databaseUser.setMaxCpuTimePerSecond(maxCpuTimePerSecond);
             }
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно");

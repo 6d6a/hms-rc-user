@@ -116,7 +116,8 @@ public class DatabaseUserRestControllerTest {
                                 fieldWithPath("serviceId").description("ID сервиса в RC-STAFF"),
                                 fieldWithPath("allowedIPAddresses").description("IP-адреса, с которых возможен доступ"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("maxCpuTimePerSecond").description("Количество процессорного времени в секунду")
                         )
                 ));
     }
