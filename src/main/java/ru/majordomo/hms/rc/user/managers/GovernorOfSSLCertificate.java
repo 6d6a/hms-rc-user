@@ -168,6 +168,17 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         repository.save(certificate);
     }
 
+    public void realDrop(String resourceId) throws ResourceNotFoundException {
+        SSLCertificate certificate = repository.findOne(resourceId);
+
+        if (certificate == null) {
+            throw new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId);
+        }
+
+        preDelete(resourceId);
+        repository.delete(certificate);
+    }
+
     @Override
     public SSLCertificate buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         SSLCertificate sslCertificate;
