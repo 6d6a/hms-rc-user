@@ -87,7 +87,7 @@ public class SSLCertificateScheduler {
                 logger.info("Found certificate without domain. Id: " + sslCertificate.getId() +
                         " AccountId: " + sslCertificate.getAccountId());
                 //SSL сертификат никому не принадлежит -> дропаем
-                governorOfSSLCertificate.drop(sslCertificate.getId());
+                governorOfSSLCertificate.realDrop(sslCertificate.getId());
                 return false;
             }
 
@@ -112,7 +112,7 @@ public class SSLCertificateScheduler {
                         domain.setSslCertificateId(null);
                         domain.setSslCertificate(null);
                         governorOfDomain.store(domain);
-                        governorOfSSLCertificate.drop(sslCertificate.getId());
+                        governorOfSSLCertificate.realDrop(sslCertificate.getId());
 
                         return false;
                     }
