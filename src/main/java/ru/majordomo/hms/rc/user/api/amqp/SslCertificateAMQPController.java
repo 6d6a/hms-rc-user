@@ -209,9 +209,7 @@ public class SslCertificateAMQPController {
                 if (domain != null) {
                     logger.info("Fail on renew SSL. Certificate with domain. Id: " + resourceId + ". Dropping ssl and removing it in domain.");
 
-                    domain.setSslCertificateId(null);
-                    domain.setSslCertificate(null);
-                    governorOfDomain.store(domain);
+                    governorOfDomain.removeSslCertificateId(domain);
                     governor.drop(resourceId);
                 }
             }

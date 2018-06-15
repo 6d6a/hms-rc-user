@@ -1,6 +1,10 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -38,6 +42,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     private GovernorOfRedirect governorOfRedirect;
     private DomainRegistrarClient registrar;
     private Validator validator;
+    private MongoOperations mongoOperations;
 
     @Autowired
     public void setGovernorOfPerson(GovernorOfPerson governorOfPerson) {
@@ -87,6 +92,11 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Autowired
     public void setGovernorOfRedirect(GovernorOfRedirect governorOfRedirect) {
         this.governorOfRedirect = governorOfRedirect;
+    }
+
+    @Autowired
+    public void setMongoOperations(MongoOperations mongoOperations) {
+        this.mongoOperations = mongoOperations;
     }
 
     @Override
@@ -215,13 +225,27 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         return domain;
     }
 
+    public void setSslCertificateId(Domain domain, String sslCertificateId) {
+        Query query = new Query(new Criteria("_id").is(domain.getId()));
+        Update update = new Update().set("sslCertificateId", sslCertificateId);
+        mongoOperations.updateFirst(query, update, Domain.class);
+    }
+
+    public void removeSslCertificateId(Domain domain) {
+        Query query = new Query(new Criteria("_id").is(domain.getId()));
+        Update update = new Update().unset("sslCertificateId");
+        mongoOperations.updateFirst(query, update, Domain.class);
+    }
+
     public void updateRegSpec(String domainName, RegSpec regSpec) {
         domainName = IDN.toUnicode(domainName.toLowerCase());
-        Domain domain = repository.findByName(domainName);
+        Domain domain = repository.findOneByNameIncludeId(domainName);
+
         if (domain != null) {
-            domain.setRegSpec(regSpec);
-            domain.setSynced(LocalDateTime.now());
-            repository.save(domain);
+            Query query = new Query(new Criteria("_id").is(domain.getId()));
+            Update update = new Update().set("regSpec", regSpec);
+            update.currentDate("synced");
+            mongoOperations.updateFirst(query, update, Domain.class);
         }
     }
 
@@ -229,11 +253,18 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         Stream<Domain> domainStream = repository.findAllStream();
         domainStream.forEach(domain -> {
             if (domain.getSynced() != null && domain.getRegSpec() != null && domain.getSynced().isBefore(LocalDateTime.now().minusHours(4))) {
-                domain.setRegSpec(null);
-                repository.save(domain);
+
+                Query query = new Query(new Criteria("_id").is(domain.getId()));
+                Update update = new Update().unset("regSpec");
+                mongoOperations.updateFirst(query, update, Domain.class);
+
             } else if (domain.getSynced() == null) {
-                domain.setSynced(LocalDateTime.now());
-                repository.save(domain);
+
+                Query query = new Query(new Criteria("_id").is(domain.getId()));
+                Update update = new Update();
+                update.currentDate("synced");
+                mongoOperations.updateFirst(query, update, Domain.class);
+
             }
         });
     }
