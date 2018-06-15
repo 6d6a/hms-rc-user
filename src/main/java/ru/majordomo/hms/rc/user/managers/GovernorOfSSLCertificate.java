@@ -140,9 +140,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
             keyValue.put("name", sslCertificate.getName());
             keyValue.put("accountId", serviceMessage.getAccountId());
             Domain domain = governorOfDomain.build(keyValue);
-            domain.setSslCertificateId(sslCertificate.getId());
-            governorOfDomain.validate(domain);
-            governorOfDomain.store(domain);
+            governorOfDomain.setSslCertificateId(domain, sslCertificate.getId());
 
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());

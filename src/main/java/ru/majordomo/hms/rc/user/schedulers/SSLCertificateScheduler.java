@@ -109,9 +109,7 @@ public class SSLCertificateScheduler {
                                 " name: " + sslCertificate.getName() +
                                 " AccountId: " + sslCertificate.getAccountId());
 
-                        domain.setSslCertificateId(null);
-                        domain.setSslCertificate(null);
-                        governorOfDomain.store(domain);
+                        governorOfDomain.removeSslCertificateId(domain);
                         governorOfSSLCertificate.realDrop(sslCertificate.getId());
 
                         return false;
