@@ -94,6 +94,7 @@ public class PersonRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),
@@ -134,6 +135,7 @@ public class PersonRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),
@@ -174,6 +176,7 @@ public class PersonRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),
@@ -217,6 +220,7 @@ public class PersonRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),
@@ -260,6 +264,7 @@ public class PersonRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),
@@ -309,6 +314,7 @@ public class PersonRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("ФИО или название организации"),

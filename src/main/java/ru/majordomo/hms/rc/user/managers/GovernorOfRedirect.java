@@ -303,9 +303,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
         if (redirect == null) {
             return Count.zero();
         } else {
-            Count count = new Count();
-            count.setCount((long) redirect.getRedirectItems().size());
-            return count;
+            return new Count((long) redirect.getRedirectItems().size());
         }
     }
 

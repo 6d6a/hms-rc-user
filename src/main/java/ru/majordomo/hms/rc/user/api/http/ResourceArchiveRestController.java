@@ -2,6 +2,8 @@ package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 
@@ -51,6 +53,12 @@ public class ResourceArchiveRestController {
     public Collection<ResourceArchive> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
+    }
+
+    @GetMapping("/{accountId}/resource-archive/count")
+    public Count countByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
+        requestParams.put("accountId", accountId);
+        return governor.count(requestParams);
     }
 
     @GetMapping("/resource-archive/filter")

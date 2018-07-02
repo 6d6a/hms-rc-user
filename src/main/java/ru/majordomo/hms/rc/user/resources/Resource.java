@@ -2,6 +2,8 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
@@ -15,6 +17,22 @@ import ru.majordomo.hms.rc.user.resources.validation.group.*;
 import java.time.LocalDateTime;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+@JsonSubTypes(
+        {
+                @JsonSubTypes.Type(value = Database.class),
+                @JsonSubTypes.Type(value = DatabaseUser.class),
+                @JsonSubTypes.Type(value = DNSResourceRecord.class),
+                @JsonSubTypes.Type(value = Domain.class),
+                @JsonSubTypes.Type(value = FTPUser.class),
+                @JsonSubTypes.Type(value = Mailbox.class),
+                @JsonSubTypes.Type(value = Person.class),
+                @JsonSubTypes.Type(value = Redirect.class),
+                @JsonSubTypes.Type(value = ResourceArchive.class),
+                @JsonSubTypes.Type(value = SSLCertificate.class),
+                @JsonSubTypes.Type(value = UnixAccount.class),
+                @JsonSubTypes.Type(value = WebSite.class)
+        })
 public abstract class Resource {
     @Id
     @MongoId

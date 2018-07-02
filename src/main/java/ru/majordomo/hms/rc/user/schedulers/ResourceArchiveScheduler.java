@@ -36,7 +36,7 @@ public class ResourceArchiveScheduler {
     public void cleanResourceArchives() {
         logger.info("Started cleanResourceArchives");
         final AtomicInteger archivesCount = new AtomicInteger(0);
-        try (Stream<ResourceArchive> stream = governorOfResourceArchive.findByCreatedAtBefore(LocalDateTime.now().minusMonths(3))) {
+        try (Stream<ResourceArchive> stream = governorOfResourceArchive.findByWillBeDeletedAfterBefore(LocalDateTime.now())) {
             stream
                     .peek(archive -> {
                         logger.info("found archive: " + archive);

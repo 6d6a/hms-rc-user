@@ -197,7 +197,7 @@ public class GovernorOfResourceArchiveTest {
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(batchOfWebsites.get(0).getAccountId());
-        serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
+        serviceMessage.addParam("archivedResourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("resourceType", "WEBSITE");
         ResourceArchive createdArchive = governor.create(serviceMessage);
 
@@ -206,6 +206,7 @@ public class GovernorOfResourceArchiveTest {
         assertNotNull(archive.getResource());
         assertThat(archive.getResourceType(), is(ResourceArchiveType.WEBSITE));
         assertThat(archive.getServiceId(), is(batchOfWebsites.get(0).getServiceId()));
+        assertThat(archive.getArchivedResourceId(), is(batchOfWebsites.get(0).getId()));
     }
 
     @Test
@@ -214,7 +215,7 @@ public class GovernorOfResourceArchiveTest {
         serviceMessage.setOperationIdentity(ObjectId.get().toString());
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(batchOfDatabases.get(0).getAccountId());
-        serviceMessage.addParam("resourceId", batchOfDatabases.get(0).getId());
+        serviceMessage.addParam("archivedResourceId", batchOfDatabases.get(0).getId());
         serviceMessage.addParam("resourceType", "DATABASE");
         ResourceArchive createdArchive = governor.create(serviceMessage);
 
@@ -223,12 +224,7 @@ public class GovernorOfResourceArchiveTest {
         assertNotNull(archive.getResource());
         assertThat(archive.getResourceType(), is(ResourceArchiveType.DATABASE));
         assertThat(archive.getServiceId(), is(batchOfDatabases.get(0).getServiceId()));
-    }
-
-    @Test(expected = NotImplementedException.class)
-    public void update() throws Exception {
-        ServiceMessage serviceMessage = new ServiceMessage();
-        governor.update(serviceMessage);
+        assertThat(archive.getArchivedResourceId(), is(batchOfDatabases.get(0).getId()));
     }
 
     @After

@@ -141,6 +141,7 @@ public class MailboxRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("domainId").description("ID домена"),
