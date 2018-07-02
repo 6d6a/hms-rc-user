@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public interface ResourceArchiveRepository extends MongoRepository<ResourceArchive, String> {
-    ResourceArchive findByResourceId(String resourceId);
+    ResourceArchive findByArchivedResourceId(String resourceId);
     ResourceArchive findByIdAndAccountId(String resourceId, String accountId);
     List<ResourceArchive> findByAccountId(String accountId);
-    List<ResourceArchive> findByServiceId(String serviceId);
-    List<ResourceArchive> findByServiceIdAndAccountId(String serviceId, String accountId);
-    Stream<ResourceArchive> findByCreatedAtBefore(LocalDateTime created);
+    Stream<ResourceArchive> findByWillBeDeletedAfterBefore(LocalDateTime willBeDeletedAfter);
 }

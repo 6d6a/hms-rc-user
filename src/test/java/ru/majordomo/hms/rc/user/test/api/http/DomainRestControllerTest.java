@@ -112,6 +112,7 @@ public class DomainRestControllerTest {
                 .andDo(doc)
                 .andDo(doc.document(
                         responseFields(
+                                fieldWithPath("@type").description("ClassName ресурса"),
                                 fieldWithPath("id").description("Внутренний ID ресурса"),
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("FQDN"),

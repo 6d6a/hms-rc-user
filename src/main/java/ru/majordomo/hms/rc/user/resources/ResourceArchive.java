@@ -1,10 +1,12 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +19,7 @@ public class ResourceArchive extends Resource implements Serviceable {
 
     @NotNull(message = "Необходимо указать id ресурса")
     @Indexed
-    private String resourceId;
+    private String archivedResourceId;
 
     @Transient
     private Resource resource;
@@ -27,6 +29,9 @@ public class ResourceArchive extends Resource implements Serviceable {
     private String serviceId;
 
     @CreatedDate
+    @JsonFormat
+            (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     public ResourceArchiveType getResourceType() {
@@ -38,12 +43,12 @@ public class ResourceArchive extends Resource implements Serviceable {
     }
 
     @JsonIgnore
-    public String getResourceId() {
-        return resourceId;
+    public String getArchivedResourceId() {
+        return archivedResourceId;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setArchivedResourceId(String archivedResourceId) {
+        this.archivedResourceId = archivedResourceId;
     }
 
     public Resource getResource() {
@@ -70,6 +75,10 @@ public class ResourceArchive extends Resource implements Serviceable {
         this.createdAt = createdAt;
     }
 
+    public String getFileExtension() {
+        return resourceType != null ? ResourceArchiveType.FILE_EXTENSION.get(resourceType) : ResourceArchiveType.DEFAULT_FILE_EXTENSION;
+    }
+
     @Override
     public void switchResource() {
         this.switchedOn = !this.switchedOn;
@@ -89,7 +98,7 @@ public class ResourceArchive extends Resource implements Serviceable {
     public String toString() {
         return "ResourceArchive{" +
                 "resourceType=" + resourceType +
-                ", resourceId='" + resourceId + '\'' +
+                ", archivedResourceId='" + archivedResourceId + '\'' +
                 ", resource=" + resource +
                 ", fileLink='" + fileLink + '\'' +
                 ", serviceId='" + serviceId + '\'' +

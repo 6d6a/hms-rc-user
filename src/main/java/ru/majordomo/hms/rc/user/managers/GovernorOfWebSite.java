@@ -339,7 +339,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
     @Override
     public void preDelete(String resourceId) {
-        governorOfResourceArchive.dropByResourceId(resourceId);
+        governorOfResourceArchive.dropByArchivedResourceId(resourceId);
     }
 
     @Override
@@ -672,9 +672,6 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     public Count countByAccountId(String accountId) {
-        Count count = new Count();
-        count.setCount(repository.countByAccountId(accountId));
-        return count;
+        return new Count(repository.countByAccountId(accountId));
     }
-
 }

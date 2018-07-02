@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.RESOURCE_ARCHIVE_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.RESOURCE_ARCHIVE_DELETE;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.RESOURCE_ARCHIVE_UPDATE;
 import static ru.majordomo.hms.rc.user.common.Constants.PM;
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
@@ -39,21 +40,21 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
         }
     }
 
-//    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_UPDATE)
-//    public void handleUpdateEvent(
-//Message amqpMessage,
-//    @Header(value = "provider") String eventProvider,
-//    @Payload ServiceMessage serviceMessage
-//    ) {
-//        switch (getRealProviderName(eventProvider)) {
-//            case PM:
-//                handleUpdateEventFromPM("resource-archive", serviceMessage);
-//                break;
-//            case TE:
-//                handleUpdateEventFromTE("resource-archive", serviceMessage);
-//                break;
-//        }
-//    }
+    @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_UPDATE)
+    public void handleUpdateEvent(
+            Message amqpMessage,
+            @Header(value = "provider") String eventProvider,
+            @Payload ServiceMessage serviceMessage
+    ) {
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
+                handleUpdateEventFromPM("resource-archive", serviceMessage);
+                break;
+            case TE:
+                handleUpdateEventFromTE("resource-archive", serviceMessage);
+                break;
+        }
+    }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_DELETE)
     public void handleDeleteEvent(

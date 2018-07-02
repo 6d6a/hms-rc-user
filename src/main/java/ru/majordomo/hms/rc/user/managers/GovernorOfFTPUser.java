@@ -258,8 +258,6 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     }
 
     public Count countByAccountId(String accountId) {
-        Count count = new Count();
-        count.setCount(repository.countByAccountId(accountId));
-        return count;
+        return new Count(repository.countByAccountId(accountId));
     }
 }

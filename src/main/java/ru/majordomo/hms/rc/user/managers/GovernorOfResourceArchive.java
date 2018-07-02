@@ -1,33 +1,38 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
-import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.repositories.ResourceArchiveRepository;
-import ru.majordomo.hms.rc.user.resources.ResourceArchive;
-import ru.majordomo.hms.rc.user.resources.ResourceArchiveType;
-import ru.majordomo.hms.rc.user.resources.Serviceable;
-import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.api.DTO.Count;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.repositories.ResourceArchiveRepository;
+import ru.majordomo.hms.rc.user.resources.Resource;
+import ru.majordomo.hms.rc.user.resources.ResourceArchive;
+import ru.majordomo.hms.rc.user.resources.ResourceArchiveType;
+import ru.majordomo.hms.rc.user.resources.Serviceable;
+import ru.majordomo.hms.rc.user.resources.validation.group.ResourceArchiveChecks;
+
+import static org.springframework.data.domain.ExampleMatcher.matchingAll;
 
 @Service
 public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> {
@@ -69,12 +74,51 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     }
 
     @Override
-    public ResourceArchive update(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
-        throw new NotImplementedException();
+    public ResourceArchive update(ServiceMessage serviceMessage) throws ParameterValidationException {
+        String resourceId = null;
+
+        if (serviceMessage.getParam("resourceId") != null) {
+            resourceId = (String) serviceMessage.getParam("resourceId");
+        }
+
+        String accountId = serviceMessage.getAccountId();
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("resourceArchiveId", resourceId);
+        keyValue.put("accountId", accountId);
+
+        ResourceArchive resourceArchive = build(keyValue);
+
+        try {
+            for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
+                switch (entry.getKey().toString()) {
+                    case "switchedOn":
+                        resourceArchive.setSwitchedOn((Boolean) entry.getValue());
+                        break;
+                    case "willBeDeletedAfter":
+                        if (entry.getValue() == null) {
+                            resourceArchive.setWillBeDeletedAfter(null);
+                        } else {
+                            resourceArchive.setWillBeDeletedAfter(LocalDateTime.parse((String) entry.getValue()));
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (ClassCastException e) {
+            logger.error("ResourceArchive update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+            throw new ParameterValidationException("Один из параметров указан неверно");
+        }
+
+        preValidate(resourceArchive);
+        validate(resourceArchive);
+        store(resourceArchive);
+
+        return resourceArchive;
     }
 
-    public void dropByResourceId(String resourceId) {
-        ResourceArchive archive = repository.findByResourceId(resourceId);
+    public void dropByArchivedResourceId(String resourceId) {
+        ResourceArchive archive = repository.findByArchivedResourceId(resourceId);
         if (archive != null) {
             repository.delete(archive);
         }
@@ -99,11 +143,11 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     public ResourceArchive buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         ResourceArchive archive = new ResourceArchive();
         setResourceParams(archive, serviceMessage, cleaner);
-        String resourceId;
+        String archivedResourceId;
         ResourceArchiveType type = null;
 
         try {
-            resourceId = cleaner.cleanString((String) serviceMessage.getParam("resourceId"));
+            archivedResourceId = cleaner.cleanString((String) serviceMessage.getParam("archivedResourceId"));
             if (serviceMessage.getParam("resourceType") != null) {
                 for (ResourceArchiveType resourceArchiveType : ResourceArchiveType.values()) {
                     if (resourceArchiveType.name().equals(serviceMessage.getParam("resourceType").toString())) {
@@ -116,31 +160,41 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
-        if (resourceId == null) {
-            throw new ParameterValidationException("Не указан resourceId");
+        if (archivedResourceId == null) {
+            throw new ParameterValidationException("Не указан archivedResourceId");
         } else {
-            if (repository.findByResourceId(resourceId) != null) {
-                throw new ParameterValidationException("Одновременно может хранитсья только один архив");
-            }
-            archive.setResourceId(resourceId);
+            archive.setArchivedResourceId(archivedResourceId);
         }
+
         if (type == null) {
             throw new ParameterValidationException("Не указан resourceType");
         } else {
             archive.setResourceType(type);
         }
 
-        SecureRandom random = new SecureRandom();
-        String filename = new BigInteger(260, random).toString(32);
-        String fileLink = "https://" + archiveHostname + "/" + filename;
-        archive.setFileLink(fileLink);
+        Resource resource;
 
         try {
-            LordOfResources governor = getGovernor(archive);
-            archive.setServiceId(((Serviceable) governor.build(resourceId)).getServiceId());
+            LordOfResources<? extends Resource> governor = getGovernor(archive);
+            resource = governor.build(archivedResourceId);
         } catch (Exception e) {
+            e.getMessage();
+            e.printStackTrace();
             throw new ParameterValidationException("Ошибка при поиске сервера");
         }
+
+        if (resource instanceof Serviceable) {
+            Serviceable serviceable = (Serviceable) resource;
+
+            archive.setServiceId(serviceable.getServiceId());
+        } else {
+            throw new ParameterValidationException("Для указанного ресурса не может быть создан архив");
+        }
+
+        SecureRandom random = new SecureRandom();
+        String dirName = new BigInteger(260, random).toString(32);
+        String fileLink = (!archiveHostname.matches("^http[s]?://.*") ? "https://" : "") + archiveHostname + "/" + dirName + "/" + resource.getName() + "." + ResourceArchiveType.FILE_EXTENSION.get(type);
+        archive.setFileLink(fileLink);
 
         return archive;
     }
@@ -157,15 +211,15 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
     @Override
     protected ResourceArchive construct(ResourceArchive archive) throws ParameterValidationException {
-        if (archive.getResourceId() == null) {
-            throw new ParameterValidationException("Не указан resourceId");
+        if (archive.getArchivedResourceId() == null) {
+            throw new ParameterValidationException("Не указан archivedResourceId");
         }
-        archive.setResource(getGovernor(archive).build(archive.getResourceId()));
+        archive.setResource(getGovernor(archive).build(archive.getArchivedResourceId()));
         return archive;
     }
 
-    private LordOfResources getGovernor(ResourceArchive archive) {
-        if (archive == null) {
+    private LordOfResources<? extends Resource> getGovernor(ResourceArchive archive) {
+        if (archive == null || archive.getResourceType() == null) {
             throw new ParameterValidationException();
         }
         switch (archive.getResourceType()) {
@@ -192,13 +246,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
     @Override
     public ResourceArchive build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        ResourceArchive archive = null;
-
-        if (hasResourceIdAndAccountId(keyValue)) {
-            archive = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
-        } else if (keyValue.get("resourceId") != null) {
-            archive = repository.findOne(keyValue.get("resourceId"));
-        }
+        ResourceArchive archive = repository.findOne(createResourceArchiveExample(keyValue));
 
         if (archive == null) {
             throw new ResourceNotFoundException();
@@ -209,23 +257,10 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
     @Override
     public Collection<ResourceArchive> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
-        List<ResourceArchive> archives = new ArrayList<>();
-
-        if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
-            for (ResourceArchive archive : repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"))) {
-                archives.add(construct(archive));
-            }
-        } else if (keyValue.get("accountId") != null) {
-            for (ResourceArchive archive : repository.findByAccountId(keyValue.get("accountId"))) {
-                archives.add(construct(archive));
-            }
-        } else if (keyValue.get("serviceId") != null) {
-            for (ResourceArchive archive : repository.findByServiceId(keyValue.get("serviceId"))) {
-                archives.add(construct(archive));
-            }
-        }
-
-        return archives;
+        return repository.findAll(createResourceArchiveExample(keyValue))
+                .stream()
+                .map(this::construct)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -238,7 +273,37 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
         repository.save(archive);
     }
 
-    public Stream<ResourceArchive> findByCreatedAtBefore(LocalDateTime created) {
-        return repository.findByCreatedAtBefore(created);
+    public Stream<ResourceArchive> findByWillBeDeletedAfterBefore(LocalDateTime willBeDeletedAfter) {
+        return repository.findByWillBeDeletedAfterBefore(willBeDeletedAfter);
+    }
+
+    public Count count(Map<String, String> keyValue) {
+        return new Count(repository.count(createResourceArchiveExample(keyValue)));
+    }
+
+    private Example<ResourceArchive> createResourceArchiveExample(Map<String, String> keyValue) {
+        ResourceArchive resourceArchive = new ResourceArchive();
+
+        if (keyValue.get("accountId") != null) {
+            resourceArchive.setAccountId(keyValue.get("accountId"));
+        }
+
+        if (keyValue.get("archivedResourceId") != null) {
+            resourceArchive.setArchivedResourceId(keyValue.get("archivedResourceId"));
+        }
+
+        if (keyValue.get("resourceId") != null) {
+            resourceArchive.setId(keyValue.get("resourceId"));
+        }
+
+        if (keyValue.get("resourceType") != null) {
+            resourceArchive.setResourceType(ResourceArchiveType.valueOf(keyValue.get("resourceType")));
+        }
+
+        if (keyValue.get("serviceId") != null) {
+            resourceArchive.setServiceId(keyValue.get("serviceId"));
+        }
+
+        return Example.of(resourceArchive, matchingAll().withIgnorePaths("switchedOn"));
     }
 }
