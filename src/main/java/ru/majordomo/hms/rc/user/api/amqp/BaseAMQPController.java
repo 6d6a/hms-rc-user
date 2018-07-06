@@ -385,7 +385,8 @@ abstract class BaseAMQPController<T extends Resource> {
             return TE + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("[getTaskExecutorRoutingKey] got exception: " + e.getMessage());
+            logger.error("[getTaskExecutorRoutingKey] got exception: %s ; resource id: %s class: %s"
+                    , e.getMessage(), resource.getId(), resource.getClass().getSimpleName());
             throw new ParameterValidationException("Exception: " + e.getMessage());
         }
     }
