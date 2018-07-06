@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 
-import feign.FeignException;
-
+import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.jongo.MongoCursor;
@@ -21,26 +20,35 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import feign.FeignException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
-import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
-import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
-import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.Mailbox;
+import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
+import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
+import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 
@@ -475,13 +483,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         return mailbox;
     }
 
-    private Mailbox constructForTe(Map<String, Domain> domainMap, Mailbox mailbox) {
-        if (domainMap.containsKey(mailbox.getDomainId())) {
-            mailbox.setDomain(domainMap.get(mailbox.getDomainId()));
-        }
-        return mailbox;
-    }
-
     @Override
     public Mailbox build(String resourceId) throws ResourceNotFoundException {
         Mailbox mailbox = repository.findOne(resourceId);
@@ -530,51 +531,42 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     public Collection<Mailbox> buildAllForTe(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<Mailbox> mailboxes = new ArrayList<>();
 
-        logger.info("[start] searchForDomains");
-
         DB db = mongoClient.getDB(springDataMongodbDatabase);
 
         Jongo jongo = new Jongo(db);
-        MongoCollection domainsCollection = jongo.getCollection("domains");
-
-        List<Domain> domains = new ArrayList<>();
-
-        try (MongoCursor<Domain> domainsCursor = domainsCollection
-                .find()
-                .projection("{name: 1}")
-                .as(Domain.class)
-        ) {
-            while (domainsCursor.hasNext()) {
-                domains.add(domainsCursor.next());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        logger.debug("[end] searchForDomains");
-
-        Map<String, Domain> domainMap = domains.stream().collect(Collectors.toMap(Resource::getId, d -> d));
 
         if (keyValue.get("serverId") != null) {
-            logger.debug("[start] searchForMailbox");
+            logger.info("[start] searchForMailbox");
 
             MongoCollection mailboxesCollection = jongo.getCollection("mailboxes");
 
             try (MongoCursor<Mailbox> mailboxCursor = mailboxesCollection
                     .find("{serverId:#}", keyValue.get("serverId"))
-                    .as(Mailbox.class)
+                    .projection("{name: 1, uid: 1, mailSpool: 1, serverId: 1}")
+                    .map(
+                            result -> {
+                                Mailbox mailbox = new Mailbox();
+                                mailbox.setId(((ObjectId) result.get("_id")).toString());
+                                mailbox.setName((String) result.get("name"));
+                                mailbox.setUid((Integer) result.get("uid"));
+                                mailbox.setMailSpool((String) result.get("mailSpool"));
+                                mailbox.setServerId((String) result.get("serverId"));
+                                return mailbox;
+                            }
+                    )
             ) {
                 while (mailboxCursor.hasNext()) {
-                    mailboxes.add(constructForTe(domainMap, mailboxCursor.next()));
+                    mailboxes.add(mailboxCursor.next());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            logger.debug("[end] searchForMailbox");
+            logger.info("[end] searchForMailbox");
         }
 
         return mailboxes;
+
     }
 
     @Override
