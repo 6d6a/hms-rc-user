@@ -1,12 +1,16 @@
 package ru.majordomo.hms.rc.user.api.http;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
@@ -15,6 +19,7 @@ import ru.majordomo.hms.rc.user.resources.FTPUser;
 public class FTPUserRestController {
 
     private GovernorOfFTPUser governor;
+    private final static Logger log = LoggerFactory.getLogger(FTPUserRestController.class);
 
     @Autowired
     public void setGovernor(GovernorOfFTPUser governor) {
@@ -22,8 +27,14 @@ public class FTPUserRestController {
     }
 
     @GetMapping("/ftp-user/filter")
-    public FTPUser filter(@RequestParam Map<String, String> requestParams) {
-        return governor.build(requestParams);
+    public ResponseEntity<FTPUser> filter(@RequestParam Map<String, String> requestParams) {
+        try {
+            FTPUser ftpUser = governor.build(requestParams);
+            return ResponseEntity.ok(ftpUser);
+        } catch (ResourceNotFoundException e) {
+            log.error("ftp-user not found by requestParams: " + requestParams.toString());
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{accountId}/ftp-user/filter")
