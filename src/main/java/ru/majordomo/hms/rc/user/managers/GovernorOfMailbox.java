@@ -535,6 +535,36 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
         Jongo jongo = new Jongo(db);
 
+        MongoCollection domainsCollection = jongo.getCollection("domains");
+
+        logger.info("[start] searchForDomains");
+
+        Map<String, String> domainNames = new HashMap<>();
+
+
+        try (MongoCursor<Domain> domainsCursor = domainsCollection
+                .find()
+                .projection("{name: 1}")
+                .map(
+                        result -> {
+                            Domain domain = new Domain();
+                            domain.setId(((ObjectId) result.get("_id")).toString());
+                            domain.setName((String) result.get("name"));
+                            return domain;
+                        }
+                )
+
+        ) {
+            while (domainsCursor.hasNext()) {
+                Domain domain = domainsCursor.next();
+                domainNames.put(domain.getId(), domain.getName());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("[end] searchForDomains");
+
         if (keyValue.get("serverId") != null) {
             logger.info("[start] searchForMailbox");
 
@@ -542,7 +572,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
             try (MongoCursor<Mailbox> mailboxCursor = mailboxesCollection
                     .find("{serverId:#}", keyValue.get("serverId"))
-                    .projection("{name: 1, uid: 1, mailSpool: 1, serverId: 1}")
+                    .projection("{name: 1, uid: 1, mailSpool: 1, serverId: 1, domainId: 1}")
                     .map(
                             result -> {
                                 Mailbox mailbox = new Mailbox();
@@ -551,6 +581,16 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                                 mailbox.setUid((Integer) result.get("uid"));
                                 mailbox.setMailSpool((String) result.get("mailSpool"));
                                 mailbox.setServerId((String) result.get("serverId"));
+                                mailbox.setDomainId((String) result.get("domainId"));
+
+                                if (domainNames.get(mailbox.getDomainId()) != null) {
+                                    Domain domain = new Domain();
+                                    domain.setId(mailbox.getDomainId());
+                                    domain.setName(domainNames.get(mailbox.getDomainId()));
+
+                                    mailbox.setDomain(domain);
+                                }
+
                                 return mailbox;
                             }
                     )
