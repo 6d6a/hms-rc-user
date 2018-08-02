@@ -47,6 +47,9 @@ public class Domain extends Resource {
 
     private LocalDateTime synced;
 
+    @JsonIgnore
+    private LocalDateTime needSync;
+
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
@@ -138,6 +141,14 @@ public class Domain extends Resource {
 
     public void setSynced(LocalDateTime synced) {
         this.synced = synced;
+    }
+
+    public LocalDateTime getNeedSync() {
+        return needSync;
+    }
+
+    public void setNeedSync(LocalDateTime needSync) {
+        this.needSync = needSync;
     }
 
     @Override
