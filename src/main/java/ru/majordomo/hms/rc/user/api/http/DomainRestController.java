@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.event.domain.DomainClearSyncEvent;
-import ru.majordomo.hms.rc.user.event.domain.DomainSyncEvent;
+import ru.majordomo.hms.rc.user.event.domain.RegSpecUpdateEvent;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
@@ -75,7 +75,7 @@ public class DomainRestController {
     public ResponseEntity<Void> processDomainsSync(@RequestBody Map<String, RegSpec> domains) {
         try {
             //Синхронизируем существующие
-            domains.forEach((key, value) -> publisher.publishEvent(new DomainSyncEvent(key, value)));
+            domains.forEach((key, value) -> publisher.publishEvent(new RegSpecUpdateEvent(key, value)));
 
             //Удаляем reg-spec у необновляющихся более 4 часов.
             publisher.publishEvent(new DomainClearSyncEvent("DomainClearSyncEvent"));

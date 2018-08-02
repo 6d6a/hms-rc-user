@@ -2,6 +2,9 @@ package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.net.IDN;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Stream;
@@ -20,6 +24,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import ru.majordomo.hms.rc.user.api.DTO.StringsContainer;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
@@ -119,6 +124,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 try {
                     registrar.registerDomain(person.getNicHandle(), domain.getName());
                     domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                    domain.setNeedSync(LocalDateTime.now());
                 } catch (Exception e) {
                     throw new ParameterValidationException(e.getMessage());
                 }
@@ -201,6 +207,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                         //NullPointer может быть в случае, если RegSpec в домене содержит null вместо дат PaidTill или FreeDate
                                     }
                                     domain.setRegSpec(regSpec);
+                                    domain.setNeedSync(LocalDateTime.now());
                                 } catch (Exception e) {
                                     throw new ParameterValidationException(e.getMessage());
                                 }
@@ -245,6 +252,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             Query query = new Query(new Criteria("_id").is(domain.getId()));
             Update update = new Update().set("regSpec", regSpec);
             update.currentDate("synced");
+            update.unset("needSync");
             mongoOperations.updateFirst(query, update, Domain.class);
         }
     }
@@ -550,5 +558,54 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Override
     public void store(Domain domain) {
         repository.save(domain);
+    }
+
+    public List<String> findDomainNamesNeedSync() {
+        MatchOperation match = Aggregation.match(
+                Criteria.where("needSync").exists(true));
+
+        GroupOperation group = Aggregation.group().addToSet("name").as("strings");
+
+        Aggregation aggregation = Aggregation.newAggregation(match, group);
+
+        List<StringsContainer> stringsContainers =
+                mongoOperations.aggregate(aggregation, Domain.class, StringsContainer.class).getMappedResults();
+
+        if (stringsContainers == null || stringsContainers.isEmpty()) {
+            return Collections.emptyList();
+        } else {
+            return stringsContainers.get(0).getStrings();
+        }
+    }
+
+    public void syncRegSpec(String name) {
+        logger.info("Sync " + name);
+        RegSpec regSpec = null;
+        try {
+            regSpec = registrar.getRegSpec(name);
+        } catch (Exception e) {
+            logger.error("Can't getRegSpec, domainName: " + name + " " + e.getClass().toString() + " e.message: " + e.getMessage());
+        }
+
+        if (regSpec == null
+                || regSpec.getFreeDate() == null
+                || regSpec.getPaidTill() == null
+                || regSpec.getRegistrar() == null
+        ) {
+            Map<String, String> params = new HashMap<>();
+            params.put("name", name);
+
+            Domain domain = build(params);
+
+            if (domain.getNeedSync().isBefore(LocalDateTime.now().plusHours(1))) {
+                logger.error("Can't syncRegSpec " + domain.getName() + " after register or renew more than one hour");
+                mongoOperations.updateFirst(
+                        new Query(new Criteria("_id").is(domain.getId())),
+                        new Update().unset("needSync"), Domain.class
+                );
+            }
+        } else {
+            updateRegSpec(name, regSpec);
+        }
     }
 }

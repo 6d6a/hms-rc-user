@@ -3,15 +3,15 @@ package ru.majordomo.hms.rc.user.event.domain;
 import org.springframework.context.ApplicationEvent;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 
-public class DomainSyncEvent extends ApplicationEvent {
+public class RegSpecUpdateEvent extends ApplicationEvent {
     private RegSpec regSpec;
 
-    public DomainSyncEvent(String source, RegSpec regSpec) {
+    public RegSpecUpdateEvent(String source, RegSpec regSpec) {
         super(source);
         this.regSpec = regSpec;
     }
 
-    public DomainSyncEvent(String source) {
+    public RegSpecUpdateEvent(String source) {
         super(source);
     }
 

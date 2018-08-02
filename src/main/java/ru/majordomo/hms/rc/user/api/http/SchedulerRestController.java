@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import ru.majordomo.hms.rc.user.event.domain.DomainsSyncAfterRegisterEvent;
 import ru.majordomo.hms.rc.user.event.person.SyncPersonsEvent;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
 import ru.majordomo.hms.rc.user.event.sslCertificate.SSLCertificatesRenewEvent;
@@ -37,6 +38,10 @@ public class SchedulerRestController {
 
             case "resource_archives_clean":
                 publisher.publishEvent(new ResourceArchivesCleanEvent());
+
+                break;
+            case "domains_sync_after_register":
+                publisher.publishEvent(new DomainsSyncAfterRegisterEvent());
 
                 break;
             default:
