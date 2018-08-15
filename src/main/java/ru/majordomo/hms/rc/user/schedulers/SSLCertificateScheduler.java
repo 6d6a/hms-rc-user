@@ -14,6 +14,7 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,13 +78,11 @@ public class SSLCertificateScheduler {
 
     private boolean SSLCertificateProcess(SSLCertificate sslCertificate) {
         try {
+            logger.info("start process cert for " + sslCertificate.getName());
 
-            Domain domain;
-            try {
-                Map<String, String> buildParams = new HashMap<>();
-                buildParams.put("sslCertificateId", sslCertificate.getId());
-                domain = governorOfDomain.build(buildParams);
-            } catch (ResourceNotFoundException e) {
+            Domain domain = getDomain(sslCertificate);
+
+            if (domain == null) {
                 logger.info("Found certificate without domain. Id: " + sslCertificate.getId() +
                         " AccountId: " + sslCertificate.getAccountId());
                 //SSL сертификат никому не принадлежит -> дропаем
@@ -91,53 +90,68 @@ public class SSLCertificateScheduler {
                 return false;
             }
 
-            if (sslCertificate.getCert() != null && !sslCertificate.getCert().equals("")) {
-                X509Certificate myCert = (X509Certificate) CertificateFactory
-                        .getInstance("X509")
-                        .generateCertificate(
-                                // string encoded with default charset
-                                new ByteArrayInputStream(sslCertificate.getCert().getBytes())
-                        );
-
-                LocalDateTime notAfter = LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(myCert.getNotAfter().getTime()), ZoneId.systemDefault());
-
-                if (domain != null) {
-                    //Еcли сертификат выключен и просрочен
-                    if (!sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now())) {
-                        logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() +
-                                " name: " + sslCertificate.getName() +
-                                " AccountId: " + sslCertificate.getAccountId());
-
-                        governorOfDomain.removeSslCertificateId(domain);
-                        governorOfSSLCertificate.realDrop(sslCertificate.getId());
-
-                        return false;
-                    }
-
-                    //Надо продлить
-                    if (sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now().plusDays(5))) {
-                        logger.info("Found active expiring certificate. Id: " + sslCertificate.getId() +
-                                " name: " + sslCertificate.getName() +
-                                " AccountId: " + sslCertificate.getAccountId());
-
-                        ServiceMessage serviceMessage = new ServiceMessage();
-                        ObjectMapper mapper = new ObjectMapper();
-                        String json = mapper.writeValueAsString(sslCertificate);
-                        serviceMessage.addParam("sslCertificate", json);
-                        serviceMessage.addParam("resourceId", sslCertificate.getId());
-                        serviceMessage.setAccountId(sslCertificate.getAccountId());
-                        sender.send(SSL_CERTIFICATE_UPDATE, LETSENCRYPT, serviceMessage);
-
-                        return true;
-                    }
-                }
+            if (sslCertificate.getCert() == null || sslCertificate.getCert().equals("")) {
+                logger.error("ssl.name: " + sslCertificate.getName() + " ssl.cert is null or empty");
+                return false;
             }
 
+            X509Certificate myCert = (X509Certificate) CertificateFactory
+                    .getInstance("X509")
+                    .generateCertificate(
+                            // string encoded with default charset
+                            new ByteArrayInputStream(sslCertificate.getCert().getBytes())
+                    );
+
+            LocalDateTime notAfter = LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(myCert.getNotAfter().getTime()), ZoneId.systemDefault());
+
+            logger.info("name " + sslCertificate.getName() + " notAfter " + notAfter.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+            //Еcли сертификат выключен и просрочен
+            if (!sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now())) {
+                logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() +
+                        " name: " + sslCertificate.getName() +
+                        " AccountId: " + sslCertificate.getAccountId());
+
+                governorOfDomain.removeSslCertificateId(domain);
+                governorOfSSLCertificate.realDrop(sslCertificate.getId());
+
+                return false;
+            }
+
+            //Надо продлить
+            if (sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now().plusDays(5))) {
+                logger.info("Found active expiring certificate. Id: " + sslCertificate.getId() +
+                        " name: " + sslCertificate.getName() +
+                        " AccountId: " + sslCertificate.getAccountId());
+
+                ServiceMessage serviceMessage = new ServiceMessage();
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(sslCertificate);
+                serviceMessage.addParam("sslCertificate", json);
+                serviceMessage.addParam("resourceId", sslCertificate.getId());
+                serviceMessage.setAccountId(sslCertificate.getAccountId());
+                sender.send(SSL_CERTIFICATE_UPDATE, LETSENCRYPT, serviceMessage);
+
+                return true;
+            }
+
+            logger.info("end process cert for " + sslCertificate.getName() + " certificate is not expired");
             return false;
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error("e " + e.getClass() + " e.message: " + e.getMessage() + " ssl: " + sslCertificate);
             return false;
         }
+    }
+
+    private Domain getDomain(SSLCertificate sslCertificate) {
+        Domain domain = null;
+        try {
+            Map<String, String> buildParams = new HashMap<>();
+            buildParams.put("sslCertificateId", sslCertificate.getId());
+            domain = governorOfDomain.build(buildParams);
+        } catch (ResourceNotFoundException ignore) {}
+        return domain;
     }
 }
