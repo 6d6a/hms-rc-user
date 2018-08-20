@@ -3,14 +3,23 @@ package ru.majordomo.hms.rc.user.managers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.JSchException;
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.bson.types.ObjectId;
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
+import org.jongo.MongoCursor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -53,6 +62,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private Validator validator;
     private ApplicationEventPublisher publisher;
     private MongoOperations mongoOperations;
+    private String springDataMongodbDatabase;
+    private MongoClient mongoClient;
 
     @Autowired
     public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
@@ -97,6 +108,16 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     @Autowired
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    @Value("${spring.data.mongodb.database}")
+    public void setSpringDataMongodbDatabase(String springDataMongodbDatabase) {
+        this.springDataMongodbDatabase = springDataMongodbDatabase;
+    }
+
+    @Autowired
+    public void setMongoClient(@Qualifier("jongoMongoClient") MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
     }
 
     @Override
@@ -378,6 +399,51 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         }
 
         return buildedUnixAccounts;
+    }
+
+    public Collection<UnixAccount> buildAllPm(Map<String, String> keyValue) throws ResourceNotFoundException {
+        List<UnixAccount> unixAccounts = new ArrayList<>();
+
+        DB db = mongoClient.getDB(springDataMongodbDatabase);
+
+        Jongo jongo = new Jongo(db);
+
+        if (keyValue.get("serverId") != null) {
+            logger.info("[start] searchForUnixAccount");
+
+            MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
+
+            try (MongoCursor<UnixAccount> unixAccountCursor = unixAccountsCollection
+                    .find("{serverId:#}", keyValue.get("serverId"))
+                    .projection("{accountId: 1, serverId: 1}")
+                    .map(
+                            result -> {
+                                UnixAccount unixAccount = new UnixAccount();
+
+                                if (result.get("_id") instanceof ObjectId) {
+                                    unixAccount.setId(((ObjectId) result.get("_id")).toString());
+                                } else if (result.get("_id") instanceof String) {
+                                    unixAccount.setId((String) result.get("_id"));
+                                }
+
+                                unixAccount.setAccountId((String) result.get("accountId"));
+                                unixAccount.setServerId((String) result.get("serverId"));
+
+                                return unixAccount;
+                            }
+                    )
+            ) {
+                while (unixAccountCursor.hasNext()) {
+                    unixAccounts.add(unixAccountCursor.next());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            logger.info("[end] searchForUnixAccount");
+        }
+
+        return unixAccounts;
     }
 
     @Override
