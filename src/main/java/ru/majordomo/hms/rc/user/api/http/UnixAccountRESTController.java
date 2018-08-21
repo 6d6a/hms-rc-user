@@ -42,6 +42,11 @@ public class UnixAccountRESTController {
         return governor.buildAll();
     }
 
+    @GetMapping(value = "/unix-account/filter", headers = {"X-HMS-Projection=pm"})
+    public Collection<UnixAccount> filterForPm(@RequestParam Map<String, String> keyValue) {
+        return governor.buildAllPm(keyValue);
+    }
+
     @GetMapping("/unix-account/filter")
     public Collection<UnixAccount> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
