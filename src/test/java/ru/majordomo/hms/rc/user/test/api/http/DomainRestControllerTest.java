@@ -20,6 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -31,6 +32,7 @@ import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
+import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
@@ -61,7 +63,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
                 ConfigRestControllers.class,
 
-                ConfigGovernors.class
+                ConfigGovernors.class,
+                AMQPBrokerConfig.class
         },
         webEnvironment = RANDOM_PORT,
         properties = {
@@ -87,6 +90,8 @@ public class DomainRestControllerTest {
     private PersonRepository personRepository;
     @Autowired
     private GovernorOfDnsRecord governorOfDnsRecord;
+    @Autowired
+    private Sender sender;
 
     @Before
     public void setUp() {

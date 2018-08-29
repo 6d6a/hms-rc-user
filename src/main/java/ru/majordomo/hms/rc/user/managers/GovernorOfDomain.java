@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
@@ -25,7 +26,9 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
 import ru.majordomo.hms.rc.user.api.DTO.StringsContainer;
+import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
@@ -33,6 +36,8 @@ import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
+
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class GovernorOfDomain extends LordOfResources<Domain> {
@@ -48,6 +53,9 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     private DomainRegistrarClient registrar;
     private Validator validator;
     private MongoOperations mongoOperations;
+    private Sender sender;
+    private StaffResourceControllerClient staffRcClient;
+    protected String applicationName;
 
     @Autowired
     public void setGovernorOfPerson(GovernorOfPerson governorOfPerson) {
@@ -102,6 +110,21 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Autowired
     public void setMongoOperations(MongoOperations mongoOperations) {
         this.mongoOperations = mongoOperations;
+    }
+
+    @Autowired
+    public void setSender(Sender sender) {
+        this.sender = sender;
+    }
+
+    @Autowired
+    public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
+        this.staffRcClient = staffRcClient;
+    }
+
+    @Value("${spring.application.name}")
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 
     @Override
@@ -161,6 +184,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
+        boolean updateWebSite = false;
+
         Domain domain = build(keyValue);
         if (domain.getParentDomainId() == null) {
             try {
@@ -216,6 +241,11 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                         case "switchedOn":
                             Boolean switchedOn = (Boolean) entry.getValue();
                             governorOfDnsRecord.setZoneStatus(domain, switchedOn);
+
+                            domain.setSwitchedOn(switchedOn);
+
+                            updateWebSite = true;
+
                             break;
                         default:
                             break;
@@ -228,6 +258,36 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
         validate(domain);
         store(domain);
+
+        if (updateWebSite) {
+            Map<String, String> webSiteSearch = new HashMap<>();
+            webSiteSearch.put("domainId", resourceId);
+            WebSite webSite;
+            try {
+                webSite = governorOfWebSite.build(webSiteSearch);
+                if (webSite != null) {
+                    ServiceMessage report = new ServiceMessage();
+                    report.setActionIdentity(serviceMessage.getActionIdentity());
+                    report.setOperationIdentity(serviceMessage.getOperationIdentity());
+                    report.setAccountId(serviceMessage.getAccountId());
+                    report.setObjRef("http://" + applicationName + "/website/" + webSite.getId());
+                    report.addParam("name", webSite.getName());
+
+                    if (report.getAccountId() == null || report.getAccountId().equals("")) {
+                        report.setAccountId(webSite.getAccountId());
+                    }
+
+                    report.addParam("success", true);
+
+                    String teRoutingKey = getTaskExecutorRoutingKey(webSite);
+                    sender.send("website.update", teRoutingKey, report);
+                    webSite.setLocked(true);
+                    governorOfWebSite.store(webSite);
+                }
+            } catch (ResourceNotFoundException ignored) {
+            }
+
+        }
 
         return domain;
     }
@@ -606,6 +666,22 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             }
         } else {
             updateRegSpec(name, regSpec);
+        }
+    }
+
+    private String getTaskExecutorRoutingKey(WebSite webSite) throws ParameterValidationException {
+        try {
+            String serverName = null;
+            if (webSite != null) {
+                serverName = staffRcClient.getServerByServiceId(webSite.getServiceId()).getName();
+            }
+
+            return TE + "." + serverName.split("\\.")[0];
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("[getTaskExecutorRoutingKey] got exception: %s ; resource id: %s class: %s"
+                    , e.getMessage(), webSite != null ? webSite.getId() : null, webSite != null ? webSite.getClass().getSimpleName() : null);
+            throw new ParameterValidationException("Exception: " + e.getMessage());
         }
     }
 }
