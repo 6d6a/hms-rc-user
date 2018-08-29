@@ -25,6 +25,7 @@ import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
 import ru.majordomo.hms.rc.user.test.config.FongoConfig;
 import ru.majordomo.hms.rc.user.test.config.RedisConfig;
 import ru.majordomo.hms.rc.user.test.config.ValidationConfig;
+import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
@@ -52,7 +53,8 @@ import static org.hamcrest.CoreMatchers.is;
                 DatabaseConfig.class,
                 ValidationConfig.class,
 
-                ConfigGovernors.class
+                ConfigGovernors.class,
+                AMQPBrokerConfig.class
         },
         webEnvironment = NONE,
         properties = {

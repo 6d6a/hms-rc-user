@@ -19,6 +19,7 @@ import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.*;
+import ru.majordomo.hms.rc.user.test.config.amqp.AMQPBrokerConfig;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
@@ -47,7 +48,8 @@ import static ru.majordomo.hms.rc.user.resources.PersonType.INDIVIDUAL_FOREIGN;
                 DatabaseConfig.class,
                 ValidationConfig.class,
 
-                ConfigGovernors.class
+                ConfigGovernors.class,
+                AMQPBrokerConfig.class
         },
         webEnvironment = NONE,
         properties = {
