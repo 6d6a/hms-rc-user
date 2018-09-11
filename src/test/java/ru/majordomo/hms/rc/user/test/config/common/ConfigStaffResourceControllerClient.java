@@ -180,6 +180,16 @@ public class ConfigStaffResourceControllerClient {
 
                 return services;
             }
+
+            @Override
+            public List<Service> getServicesOnlyIdAndName() {
+                return null;
+            }
+
+            @Override
+            public List<Server> getServersOnlyIdAndName() {
+                return null;
+            }
         };
     }
 

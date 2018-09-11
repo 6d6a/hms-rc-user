@@ -8,5 +8,6 @@ import lombok.EqualsAndHashCode;
 public class BaseResourceIdCount extends BaseCount {
     private String resourceId;
     private boolean active;
+    private String name;
 }
 

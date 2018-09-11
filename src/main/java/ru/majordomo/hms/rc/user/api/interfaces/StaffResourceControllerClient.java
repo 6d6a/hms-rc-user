@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.api.interfaces;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -50,4 +51,10 @@ public interface StaffResourceControllerClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type=STAFF_NGINX")
     List<Service> getNginxServicesByServerId(@PathVariable("serverId") String serverId);
+
+    @GetMapping(value = "/service", headers = "X-HMS-Projection=OnlyIdAndName")
+    List<Service> getServicesOnlyIdAndName();
+
+    @GetMapping(value = "/server", headers = "X-HMS-Projection=OnlyIdAndName")
+    List<Server> getServersOnlyIdAndName();
 }

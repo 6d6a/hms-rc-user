@@ -6,12 +6,16 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.DTO.stat.BaseResourceIdCount;
 import ru.majordomo.hms.rc.user.api.DTO.stat.QuotableResourceCount;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
@@ -20,15 +24,20 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.proj
 public class Aggregator {
 
     private MongoOperations mongoOperations;
+    private StaffResourceControllerClient rcStaffClient;
 
     @Autowired
-    public Aggregator(MongoOperations mongoOperations) {
+    public Aggregator(
+            MongoOperations mongoOperations,
+            StaffResourceControllerClient rcStaffClient
+    ) {
         this.mongoOperations = mongoOperations;
+        this.rcStaffClient = rcStaffClient;
     }
 
     public <T extends Resource> Collection getStat(Class<T> tClass) {
         GroupOperation group = group();
-        Class<?> resultClass = BaseResourceIdCount.class;
+        Class<? extends BaseResourceIdCount> resultClass = BaseResourceIdCount.class;
 
         if (Serviceable.class.isAssignableFrom(tClass)) {
             group = group("serviceId", "switchedOn")
@@ -48,9 +57,26 @@ public class Aggregator {
 
         Aggregation aggregation = Aggregation.newAggregation(group);
 
-        return mongoOperations.aggregate(
+        List<? extends BaseResourceIdCount> result = mongoOperations.aggregate(
                 aggregation, tClass, resultClass
         ).getMappedResults();
+
+        Map<String, String> idAndName = new HashMap<>();
+
+        if (Serviceable.class.isAssignableFrom(tClass)) {
+            idAndName = rcStaffClient
+                    .getServicesOnlyIdAndName().stream().collect(Collectors.toMap(s -> s.getId(), s -> s.getName()));
+
+        } else if (ServerStorable.class.isAssignableFrom(tClass)) {
+            idAndName = rcStaffClient
+                    .getServersOnlyIdAndName().stream().collect(Collectors.toMap(s -> s.getId(), s -> s.getName()));
+        }
+
+        for (BaseResourceIdCount c : result) {
+            c.setName(idAndName.get(c.getResourceId()));
+        }
+
+        return result;
     }
 
     public List<AccountIdAndField> getAccountIdAndField(String resource, String fieldName) {
