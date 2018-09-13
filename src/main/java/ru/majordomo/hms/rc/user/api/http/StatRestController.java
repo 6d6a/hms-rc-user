@@ -12,7 +12,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/stat")
@@ -52,7 +52,7 @@ public class StatRestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/account-id-and-field/{resource}/{fieldName}")
-    public List<Aggregator.AccountIdAndField> getAccountIdAndServerId(
+    public Map<String, String> getAccountIdAndServerId(
             @Valid @PathVariable @Pattern(regexp = "^(unix-account|mailbox)$") String resource,
             @Valid @PathVariable @Pattern(regexp = "^(serverId|serviceId)$") String fieldName
     ) {
