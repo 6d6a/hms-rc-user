@@ -79,7 +79,7 @@ public class Aggregator {
         return result;
     }
 
-    public List<AccountIdAndField> getAccountIdAndField(String resource, String fieldName) {
+    public Map<String, String> getAccountIdAndField(String resource, String fieldName) {
         Class tClass;
         switch (resource) {
             case "unix-account":
@@ -93,12 +93,18 @@ public class Aggregator {
         }
 
         Aggregation aggregation = Aggregation.newAggregation(
+                group("accountId", fieldName)
+                        .last("accountId")
+                        .as("accountId")
+                        .last(fieldName).as(fieldName),
                 project("accountId").and(fieldName).as("field")
         );
 
         return mongoOperations
                 .aggregate(aggregation, tClass, AccountIdAndField.class)
-                .getMappedResults();
+                .getMappedResults()
+                .stream()
+                .collect(Collectors.toMap(l -> l.getAccountId(), l -> l.getField()));
     }
 
     public class AccountIdAndField {
