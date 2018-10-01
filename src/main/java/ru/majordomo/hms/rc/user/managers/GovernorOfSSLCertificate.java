@@ -6,7 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -174,6 +181,9 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         }
 
         preDelete(resourceId);
+
+        governorOfDomain.removeSslCertificateId(certificate);
+
         repository.delete(certificate);
     }
 
@@ -182,9 +192,6 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         SSLCertificate sslCertificate;
         ObjectMapper mapper = new ObjectMapper();
         try {
-//            sslCertificate = (SSLCertificate) serviceMessage.getParam("sslCertificate");
-//            LinkedHashMap<String, String> map = (LinkedHashMap<String, String>) serviceMessage.getParam("sslCertificate");
-//            String json = mapper.writeValueAsString(map);
             String json = (String) serviceMessage.getParam("sslCertificate");
             sslCertificate = mapper.readValue(json, SSLCertificate.class);
         } catch (IOException e) {
@@ -313,4 +320,16 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         }
     }
 
+    public LocalDateTime getNotAfterFromCert(SSLCertificate certificate) throws CertificateException {
+        X509Certificate x509Certificate = (X509Certificate) CertificateFactory
+                .getInstance("X509")
+                .generateCertificate(
+                        // string encoded with default charset
+                        new ByteArrayInputStream(certificate.getCert().getBytes())
+                );
+
+        Instant instant = Instant.ofEpochMilli(x509Certificate.getNotAfter().getTime());
+
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    }
 }

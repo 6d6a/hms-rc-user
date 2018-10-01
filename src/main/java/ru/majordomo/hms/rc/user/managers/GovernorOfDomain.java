@@ -37,6 +37,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.WEBSITE_UPDATE;
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
@@ -280,7 +281,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     report.addParam("success", true);
 
                     String teRoutingKey = getTaskExecutorRoutingKey(webSite);
-                    sender.send("website.update", teRoutingKey, report);
+                    sender.send(WEBSITE_UPDATE, teRoutingKey, report);
                     webSite.setLocked(true);
                     governorOfWebSite.store(webSite);
                 }
@@ -298,10 +299,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         mongoOperations.updateFirst(query, update, Domain.class);
     }
 
-    public void removeSslCertificateId(Domain domain) {
-        Query query = new Query(new Criteria("_id").is(domain.getId()));
+    public void removeSslCertificateId(SSLCertificate certificate) {
+        Query query = new Query(new Criteria("sslCertificateId").is(certificate.getId()));
         Update update = new Update().unset("sslCertificateId");
-        mongoOperations.updateFirst(query, update, Domain.class);
+        mongoOperations.updateMulti(query, update, Domain.class);
     }
 
     public void updateRegSpec(String domainName, RegSpec regSpec) {
