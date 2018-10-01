@@ -8,12 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -80,43 +75,38 @@ public class SSLCertificateScheduler {
         try {
             logger.info("start process cert for " + sslCertificate.getName());
 
-            Domain domain = getDomain(sslCertificate);
-
-            if (domain == null) {
-                logger.info("Found certificate without domain. Id: " + sslCertificate.getId() +
-                        " AccountId: " + sslCertificate.getAccountId());
-                //SSL сертификат никому не принадлежит -> дропаем
-                governorOfSSLCertificate.realDrop(sslCertificate.getId());
-                return false;
-            }
-
             if (sslCertificate.getCert() == null || sslCertificate.getCert().equals("")) {
                 logger.error("ssl.name: " + sslCertificate.getName() + " ssl.cert is null or empty");
                 return false;
             }
 
-            X509Certificate myCert = (X509Certificate) CertificateFactory
-                    .getInstance("X509")
-                    .generateCertificate(
-                            // string encoded with default charset
-                            new ByteArrayInputStream(sslCertificate.getCert().getBytes())
-                    );
-
-            LocalDateTime notAfter = LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(myCert.getNotAfter().getTime()), ZoneId.systemDefault());
+            LocalDateTime notAfter = governorOfSSLCertificate.getNotAfterFromCert(sslCertificate);
 
             logger.info("name " + sslCertificate.getName() + " notAfter " + notAfter.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
-            //Еcли сертификат выключен и просрочен
-            if (!sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now())) {
-                logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() +
-                        " name: " + sslCertificate.getName() +
-                        " AccountId: " + sslCertificate.getAccountId());
+            if (notAfter.isBefore(LocalDateTime.now())) {
+                //Еcли сертификат выключен и просрочен
+                if (!sslCertificate.isSwitchedOn()) {
+                    logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() +
+                            " name: " + sslCertificate.getName() +
+                            " AccountId: " + sslCertificate.getAccountId());
 
-                governorOfDomain.removeSslCertificateId(domain);
-                governorOfSSLCertificate.realDrop(sslCertificate.getId());
+                    governorOfSSLCertificate.realDrop(sslCertificate.getId());
 
-                return false;
+                    return false;
+                }
+
+                Domain domain = getDomain(sslCertificate);
+
+                //SSL сертификат никому не принадлежит и истек
+                if (domain == null) {
+                    logger.info("Found certificate without domain. Id: " + sslCertificate.getId() +
+                            " AccountId: " + sslCertificate.getAccountId());
+
+                    governorOfSSLCertificate.realDrop(sslCertificate.getId());
+
+                    return false;
+                }
             }
 
             //Надо продлить

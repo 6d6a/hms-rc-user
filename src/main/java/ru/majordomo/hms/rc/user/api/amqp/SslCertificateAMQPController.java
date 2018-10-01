@@ -13,14 +13,13 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
-import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,19 +52,16 @@ public class SslCertificateAMQPController {
 
     private GovernorOfSSLCertificate governor;
 
-    private GovernorOfDomain governorOfDomain;
+    private Sender sender;
 
     @Autowired
-    private Sender sender;
+    public void setSender(Sender sender) {
+        this.sender = sender;
+    }
 
     @Autowired
     public void setGovernor(GovernorOfSSLCertificate governor) {
         this.governor = governor;
-    }
-
-    @Autowired
-    public void setGovernorOfDomain(GovernorOfDomain governorOfDomain) {
-        this.governorOfDomain = governorOfDomain;
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + SSL_CERTIFICATE_CREATE)
@@ -165,9 +161,10 @@ public class SslCertificateAMQPController {
     private void handleCreateSslEventFromLetsEncrypt(ServiceMessage serviceMessage) {
         Boolean success = (Boolean) serviceMessage.getParam("success");
         ServiceMessage report;
+        SSLCertificate certificate = null;
         if (success) {
             try {
-                SSLCertificate certificate = governor.create(serviceMessage);
+                certificate = governor.create(serviceMessage);
                 String teRoutingKey = governor.getTERoutingKey(certificate.getId());
 
                 report = createReport(serviceMessage, certificate, (String) serviceMessage.getParam("errorMessage"));
@@ -196,22 +193,13 @@ public class SslCertificateAMQPController {
             String resourceId = (String) serviceMessage.getParam("resourceId");
 
             if (resourceId != null) {
-                Domain domain = null;
                 try {
-                    Map<String, String> buildParams = new HashMap<>();
-                    buildParams.put("sslCertificateId", resourceId);
-                    domain = governorOfDomain.build(buildParams);
-                } catch (Exception e) {
-                    logger.info("Fail on renew SSL. Certificate without domain. Id: " + resourceId + ". Dropping ssl.");
-                    //SSL сертификат никому не принадлежит -> дропаем
-                    governor.drop(resourceId);
-                }
-                if (domain != null) {
-                    logger.info("Fail on renew SSL. Certificate with domain. Id: " + resourceId + ". Dropping ssl and removing it in domain.");
-
-                    governorOfDomain.removeSslCertificateId(domain);
-                    governor.drop(resourceId);
-                }
+                    certificate = governor.build(resourceId);
+                    LocalDateTime notAfter = governor.getNotAfterFromCert(certificate);
+                    if (notAfter.isBefore(LocalDateTime.now())) {
+                        governor.realDrop(resourceId);
+                    }
+                } catch (Exception ignore) {}
             }
 
             report = createReport(serviceMessage, null, "");
@@ -237,7 +225,7 @@ public class SslCertificateAMQPController {
             ServiceMessage report = createReport(serviceMessage, null, errorMessage);
             report.delParam("success");
             report.addParam("success", false);
-            sender.send(SSL_CERTIFICATE_CREATE, PM, report);
+            sender.send(SSL_CERTIFICATE_DELETE, PM, report);
         } catch (Exception e) {
             ServiceMessage report = createReport(serviceMessage, null, e.getMessage());
             sender.send(SSL_CERTIFICATE_DELETE, PM, report);
