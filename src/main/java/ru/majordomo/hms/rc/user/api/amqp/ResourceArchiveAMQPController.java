@@ -13,8 +13,6 @@ import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.RESOURCE_ARCHIVE_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.RESOURCE_ARCHIVE_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.RESOURCE_ARCHIVE_UPDATE;
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceArchive> {
@@ -30,14 +28,7 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleCreateEventFromPM("resource-archive", serviceMessage);
-                break;
-            case TE:
-                handleCreateEventFromTE("resource-archive", serviceMessage);
-                break;
-        }
+        handleCreate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_UPDATE)
@@ -46,14 +37,7 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleUpdateEventFromPM("resource-archive", serviceMessage);
-                break;
-            case TE:
-                handleUpdateEventFromTE("resource-archive", serviceMessage);
-                break;
-        }
+        handleUpdate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + RESOURCE_ARCHIVE_DELETE)
@@ -62,13 +46,11 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleDeleteEventFromPM("resource-archive", serviceMessage);
-                break;
-            case TE:
-                handleDeleteEventFromTE("resource-archive", serviceMessage);
-                break;
-        }
+        handleDelete(eventProvider, serviceMessage);
+    }
+
+    @Override
+    public String getResourceType() {
+        return "resource-archive";
     }
 }

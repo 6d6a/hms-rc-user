@@ -14,8 +14,6 @@ import ru.majordomo.hms.rc.user.resources.Mailbox;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.MAILBOX_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.MAILBOX_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.MAILBOX_UPDATE;
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
@@ -31,14 +29,7 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleCreateEventFromPM("mailbox", serviceMessage);
-                break;
-            case TE:
-                handleCreateEventFromTE("mailbox", serviceMessage);
-                break;
-        }
+        handleCreate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + MAILBOX_UPDATE)
@@ -47,14 +38,7 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleUpdateEventFromPM("mailbox", serviceMessage);
-                break;
-            case TE:
-                handleUpdateEventFromTE("mailbox", serviceMessage);
-                break;
-        }
+        handleUpdate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + MAILBOX_DELETE)
@@ -63,13 +47,11 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleDeleteEventFromPM("mailbox", serviceMessage);
-                break;
-            case TE:
-                handleDeleteEventFromTE("mailbox", serviceMessage);
-                break;
-        }
+        handleDelete(eventProvider, serviceMessage);
+    }
+
+    @Override
+    public String getResourceType() {
+        return "mailbox";
     }
 }

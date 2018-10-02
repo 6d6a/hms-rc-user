@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import ru.majordomo.hms.rc.user.api.DTO.Error;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -28,6 +28,7 @@ import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Path;
 
 import static ru.majordomo.hms.rc.user.common.Constants.PM;
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
@@ -44,6 +45,8 @@ abstract class BaseAMQPController<T extends Resource> {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected LordOfResources<T> governor;
+
+    public abstract String getResourceType();
 
     @Value("${spring.application.name}")
     public void setApplicationName(String applicationName) {
@@ -83,14 +86,49 @@ abstract class BaseAMQPController<T extends Resource> {
         return resource;
     }
 
+    void handleCreate(String eventProvider, ServiceMessage serviceMessage) {
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
+                handleCreateEventFromPM(serviceMessage);
+                break;
+            case TE:
+                handleCreateEventFromTE(serviceMessage);
+                break;
+        }
+    }
+
+    void handleUpdate(String eventProvider, ServiceMessage serviceMessage) {
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
+                handleUpdateEventFromPM(serviceMessage);
+                break;
+            case TE:
+                handleUpdateEventFromTE(serviceMessage);
+                break;
+        }
+    }
+
+    void handleDelete(String eventProvider, ServiceMessage serviceMessage) {
+        switch (getRealProviderName(eventProvider)) {
+            case PM:
+                handleDeleteEventFromPM(serviceMessage);
+                break;
+            case TE:
+                handleDeleteEventFromTE(serviceMessage);
+                break;
+        }
+    }
+
     void handleCreateEventFromPM(
-            String resourceType,
             ServiceMessage serviceMessage
     ) {
 
         Boolean success;
         T resource = null;
         String errorMessage = "";
+        String exceptionClass = null;
+        Collection<Error> errors = null;
+        String resourceType = getResourceType();
 
         try {
             resource = governor.create(serviceMessage);
@@ -101,16 +139,24 @@ abstract class BaseAMQPController<T extends Resource> {
                     " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                     " Создание ресурса " + resourceType + " не удалось: " + errorMessage);
             success = false;
+            exceptionClass = e.getClass().getSimpleName();
+            errors = getErrors(e);
         } catch (Exception e) {
             logger.error("ACTION_IDENTITY: " + serviceMessage.getActionIdentity() +
                     " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                     " Создание ресурса " + resourceType + " не удалось: " + e.getMessage());
             errorMessage = e.getMessage();
             success = false;
+            exceptionClass = e.getClass().getSimpleName();
         }
 
-        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+        ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
         report.addParam("success", success);
+
+        if (!success) {
+            report.addParam("exceptionClass", exceptionClass);
+            report.addParam("errors", errors);
+        }
 
         if (success && (resource instanceof ServerStorable || resource instanceof Serviceable)) {
             try {
@@ -119,7 +165,7 @@ abstract class BaseAMQPController<T extends Resource> {
             } catch (ParameterValidationException e) {
                 errorMessage = e.getMessage();
                 serviceMessage.addParam("success", false);
-                report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+                report = createReportMessage(serviceMessage, resource, errorMessage);
                 sender.send(resourceType + ".create", PM, report);
             }
             resource.setLocked(true);
@@ -130,14 +176,14 @@ abstract class BaseAMQPController<T extends Resource> {
     }
 
     void handleCreateEventFromTE(
-            String resourceType,
             ServiceMessage serviceMessage
     ) {
+        String resourceType = getResourceType();
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
         T resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
-        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+        ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
 
         if (resource != null) {
             if (!successEvent) {
@@ -152,9 +198,9 @@ abstract class BaseAMQPController<T extends Resource> {
     }
 
     void handleUpdateEventFromPM(
-            String resourceType,
             ServiceMessage serviceMessage
     ) {
+        String resourceType = getResourceType();
         Boolean success;
         T resource = null;
         String errorMessage = "";
@@ -178,7 +224,7 @@ abstract class BaseAMQPController<T extends Resource> {
                     " Обновление ресурса " + resourceType + " не удалось: " + e.getMessage());
             errorMessage = e.getMessage();
 
-            ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+            ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
             report.addParam("success", false);
             sender.send(resourceType + ".update", PM, report);
             return;
@@ -201,7 +247,7 @@ abstract class BaseAMQPController<T extends Resource> {
             success = false;
         }
 
-        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+        ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
         report.addParam("success", success);
 
         if (success && (resource instanceof ServerStorable || resource instanceof Serviceable) && !resourceType.equals("mailbox")) {
@@ -215,14 +261,14 @@ abstract class BaseAMQPController<T extends Resource> {
     }
 
     void handleUpdateEventFromTE(
-            String resourceType,
             ServiceMessage serviceMessage
     ) {
+        String resourceType = getResourceType();
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
         T resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
-        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+        ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
         report.addParam("success", successEvent);
 
         if (resource != null) {
@@ -234,9 +280,9 @@ abstract class BaseAMQPController<T extends Resource> {
     }
 
     void handleDeleteEventFromPM(
-            String resourceType,
             ServiceMessage serviceMessage
     ) {
+        String resourceType = getResourceType();
         String errorMessage = "";
         String resourceId = null;
         T resource = null;
@@ -255,12 +301,12 @@ abstract class BaseAMQPController<T extends Resource> {
             resource = governor.build(keyValue);
         } catch (ResourceNotFoundException e) {
             errorMessage = "Ресурс " + resourceType + " с ID: " + resourceId + " и accountId: " + accountId + " не найден";
-            ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
+            ServiceMessage report = createReportMessage(serviceMessage, null, errorMessage);
             report.addParam("success", false);
             sender.send(resourceType + ".delete", PM, report);
         } catch (ParameterValidationException e) {
             errorMessage = "Обработка ресурса " + resourceType + " с ID: " + resourceId + " и accountId: " + accountId + " не удалась";
-            ServiceMessage report = createReportMessage(serviceMessage, resourceType, null, errorMessage);
+            ServiceMessage report = createReportMessage(serviceMessage, null, errorMessage);
             report.addParam("success", false);
             sender.send(resourceType + ".delete", PM, report);
         }
@@ -271,12 +317,12 @@ abstract class BaseAMQPController<T extends Resource> {
                         " OPERATION_IDENTITY: " + serviceMessage.getOperationIdentity() +
                         " Обновление ресурса " + resourceType + " не удалось: locked");
                 errorMessage = "Ресурс в процессе обновления";
-                ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+                ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
                 report.addParam("success", false);
                 sender.send(resourceType + ".update", PM, report);
                 return;
             }
-            ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+            ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
             report.addParam("success", true);
             if (resource instanceof ServerStorable || resource instanceof Serviceable) {
                 String teRoutingKey = getTaskExecutorRoutingKey(resource);
@@ -302,14 +348,14 @@ abstract class BaseAMQPController<T extends Resource> {
     }
 
     void handleDeleteEventFromTE(
-            String resourceType,
             ServiceMessage serviceMessage
     ) {
+        String resourceType = getResourceType();
         Boolean successEvent = (Boolean) serviceMessage.getParam("success");
         String resourceUrl = serviceMessage.getObjRef();
         T resource = getResourceByUrl(resourceUrl);
         String errorMessage = (String) serviceMessage.getParam("errorMessage");
-        ServiceMessage report = createReportMessage(serviceMessage, resourceType, resource, errorMessage);
+        ServiceMessage report = createReportMessage(serviceMessage, resource, errorMessage);
 
         if (resource != null) {
             if (successEvent){
@@ -326,10 +372,10 @@ abstract class BaseAMQPController<T extends Resource> {
 
     private ServiceMessage createReportMessage(
             ServiceMessage event,
-            String resourceType,
             T resource,
             String errorMessage
     ) {
+        String resourceType = getResourceType();
         ServiceMessage report = new ServiceMessage();
         report.setActionIdentity(event.getActionIdentity());
         report.setOperationIdentity(event.getOperationIdentity());
@@ -393,5 +439,17 @@ abstract class BaseAMQPController<T extends Resource> {
 
     protected String getRealProviderName(String eventProvider) {
         return eventProvider.replaceAll("^" + instanceName + "\\.", "");
+    }
+
+    private Collection<Error> getErrors(ConstraintViolationException e) {
+        Map<Path, Error> errors = new HashMap<>();
+        e.getConstraintViolations()
+                .forEach(c -> {
+                    Error error = errors.getOrDefault(c.getPropertyPath(), new Error());
+                    error.setProperty(c.getPropertyPath().toString());
+                    error.getErrors().add(c.getMessage());
+                    errors.put(c.getPropertyPath(), error);
+                });
+        return errors.values();
     }
 }

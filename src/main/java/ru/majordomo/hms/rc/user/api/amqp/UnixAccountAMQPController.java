@@ -14,8 +14,6 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_UPDATE;
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
@@ -31,14 +29,7 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleCreateEventFromPM("unix-account", serviceMessage);
-                break;
-            case TE:
-                handleCreateEventFromTE("unix-account", serviceMessage);
-                break;
-        }
+        handleCreate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + UNIX_ACCOUNT_UPDATE)
@@ -47,14 +38,7 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleUpdateEventFromPM("unix-account", serviceMessage);
-                break;
-            case TE:
-                handleUpdateEventFromTE("unix-account", serviceMessage);
-                break;
-        }
+        handleUpdate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + UNIX_ACCOUNT_DELETE)
@@ -63,13 +47,11 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleDeleteEventFromPM("unix-account", serviceMessage);
-                break;
-            case TE:
-                handleDeleteEventFromTE("unix-account", serviceMessage);
-                break;
-        }
+        handleDelete(eventProvider, serviceMessage);
+    }
+
+    @Override
+    public String getResourceType() {
+        return "unix-account";
     }
 }
