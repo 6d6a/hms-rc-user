@@ -14,8 +14,6 @@ import ru.majordomo.hms.rc.user.resources.Database;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_UPDATE;
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class DatabaseAMQPController extends BaseAMQPController<Database> {
@@ -31,14 +29,7 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleCreateEventFromPM("database", serviceMessage);
-                break;
-            case TE:
-                handleCreateEventFromTE("database", serviceMessage);
-                break;
-        }
+        handleCreate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_UPDATE)
@@ -47,14 +38,7 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleUpdateEventFromPM("database", serviceMessage);
-                break;
-            case TE:
-                handleUpdateEventFromTE("database", serviceMessage);
-                break;
-        }
+        handleUpdate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_DELETE)
@@ -63,13 +47,11 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleDeleteEventFromPM("database", serviceMessage);
-                break;
-            case TE:
-                handleDeleteEventFromTE("database", serviceMessage);
-                break;
-        }
+        handleDelete(eventProvider, serviceMessage);
+    }
+
+    @Override
+    public String getResourceType() {
+        return "database";
     }
 }

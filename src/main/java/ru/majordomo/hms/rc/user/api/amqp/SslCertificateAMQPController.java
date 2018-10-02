@@ -19,7 +19,6 @@ import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;

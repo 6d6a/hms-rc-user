@@ -14,8 +14,6 @@ import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_USER_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_USER_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_USER_UPDATE;
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser> {
@@ -31,14 +29,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser>
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleCreateEventFromPM("database-user", serviceMessage);
-                break;
-            case TE:
-                handleCreateEventFromTE("database-user", serviceMessage);
-                break;
-        }
+        handleCreate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_USER_UPDATE)
@@ -47,14 +38,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser>
             @Header(value = "provider", required = false) String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleUpdateEventFromPM("database-user", serviceMessage);
-                break;
-            case TE:
-                handleUpdateEventFromTE("database-user", serviceMessage);
-                break;
-        }
+        handleUpdate(eventProvider, serviceMessage);
     }
 
     @RabbitListener(queues = "${hms.instance.name}" + "." + "${spring.application.name}" + "." + DATABASE_USER_DELETE)
@@ -63,13 +47,11 @@ public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser>
             @Header(value = "provider") String eventProvider,
             @Payload ServiceMessage serviceMessage
     ) {
-        switch (getRealProviderName(eventProvider)) {
-            case PM:
-                handleDeleteEventFromPM("database-user", serviceMessage);
-                break;
-            case TE:
-                handleDeleteEventFromTE("database-user", serviceMessage);
-                break;
-        }
+        handleDelete(eventProvider, serviceMessage);
+    }
+
+    @Override
+    public String getResourceType() {
+        return "database-user";
     }
 }
