@@ -261,36 +261,37 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         store(domain);
 
         if (updateWebSite) {
-            Map<String, String> webSiteSearch = new HashMap<>();
-            webSiteSearch.put("domainId", resourceId);
-            WebSite webSite;
-            try {
-                webSite = governorOfWebSite.build(webSiteSearch);
-                if (webSite != null) {
-                    ServiceMessage report = new ServiceMessage();
-                    report.setActionIdentity(serviceMessage.getActionIdentity());
-                    report.setOperationIdentity(serviceMessage.getOperationIdentity());
-                    report.setAccountId(serviceMessage.getAccountId());
-                    report.setObjRef("http://" + applicationName + "/website/" + webSite.getId());
-                    report.addParam("name", webSite.getName());
-
-                    if (report.getAccountId() == null || report.getAccountId().equals("")) {
-                        report.setAccountId(webSite.getAccountId());
-                    }
-
-                    report.addParam("success", true);
-
-                    String teRoutingKey = getTaskExecutorRoutingKey(webSite);
-                    sender.send(WEBSITE_UPDATE, teRoutingKey, report);
-                    webSite.setLocked(true);
-                    governorOfWebSite.store(webSite);
-                }
-            } catch (ResourceNotFoundException ignored) {
-            }
-
+            updateWebSite(domain, serviceMessage);
         }
 
         return domain;
+    }
+
+    private void updateWebSite(Domain domain, ServiceMessage serviceMessage) {
+        Map<String, String> webSiteSearch = new HashMap<>();
+        webSiteSearch.put("domainId", domain.getId());
+        try {
+            WebSite webSite = governorOfWebSite.build(webSiteSearch);
+            if (webSite != null) {
+                ServiceMessage report = new ServiceMessage();
+                report.setActionIdentity(serviceMessage.getActionIdentity());
+                report.setOperationIdentity(serviceMessage.getOperationIdentity());
+                report.setAccountId(serviceMessage.getAccountId());
+                report.setObjRef("http://" + applicationName + "/website/" + webSite.getId());
+                report.addParam("name", webSite.getName());
+
+                if (report.getAccountId() == null || report.getAccountId().equals("")) {
+                    report.setAccountId(webSite.getAccountId());
+                }
+
+                report.addParam("success", true);
+
+                String teRoutingKey = getTaskExecutorRoutingKey(webSite);
+                sender.send(WEBSITE_UPDATE, teRoutingKey, report);
+                webSite.setLocked(true);
+                governorOfWebSite.store(webSite);
+            }
+        } catch (ResourceNotFoundException ignored) {}
     }
 
     public void setSslCertificateId(Domain domain, String sslCertificateId) {
@@ -300,9 +301,19 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     public void removeSslCertificateId(SSLCertificate certificate) {
-        Query query = new Query(new Criteria("sslCertificateId").is(certificate.getId()));
-        Update update = new Update().unset("sslCertificateId");
-        mongoOperations.updateMulti(query, update, Domain.class);
+        Domain domain = repository.findBySslCertificateId(certificate.getId());
+        if (domain != null) {
+
+            Query query = new Query(new Criteria("sslCertificateId").is(certificate.getId()));
+            Update update = new Update().unset("sslCertificateId");
+            mongoOperations.updateFirst(query, update, Domain.class);
+
+            updateWebSite(domain);
+        }
+    }
+
+    private void updateWebSite(Domain domain) {
+        updateWebSite(domain, new ServiceMessage());
     }
 
     public void updateRegSpec(String domainName, RegSpec regSpec) {
