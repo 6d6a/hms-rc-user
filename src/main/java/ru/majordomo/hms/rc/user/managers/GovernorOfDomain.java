@@ -37,6 +37,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.REDIRECT_UPDATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.WEBSITE_UPDATE;
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
@@ -291,7 +292,36 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 webSite.setLocked(true);
                 governorOfWebSite.store(webSite);
             }
-        } catch (ResourceNotFoundException ignored) {}
+        } catch (ResourceNotFoundException ignored) {
+            updateRedirect(domain, serviceMessage);
+        }
+    }
+
+    private void updateRedirect(Domain domain, ServiceMessage serviceMessage) {
+        Map<String, String> search = new HashMap<>();
+        search.put("domainId", domain.getId());
+        try {
+            Redirect redirect = governorOfRedirect.build(search);
+            if (redirect != null) {
+                ServiceMessage report = new ServiceMessage();
+                report.setActionIdentity(null);
+                report.setOperationIdentity(null);
+                report.setAccountId(serviceMessage.getAccountId());
+                report.setObjRef("http://" + applicationName + "/redirect/" + redirect.getId());
+                report.addParam("name", redirect.getName());
+
+                if (report.getAccountId() == null || report.getAccountId().equals("")) {
+                    report.setAccountId(redirect.getAccountId());
+                }
+
+                report.addParam("success", true);
+
+                String teRoutingKey = getTaskExecutorRoutingKey(redirect);
+                sender.send(REDIRECT_UPDATE, teRoutingKey, report);
+                redirect.setLocked(true);
+                governorOfRedirect.store(redirect);
+            }
+        } catch (ResourceNotFoundException ignored1) {}
     }
 
     public void setSslCertificateId(Domain domain, String sslCertificateId) {
@@ -306,14 +336,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
             Query query = new Query(new Criteria("sslCertificateId").is(certificate.getId()));
             Update update = new Update().unset("sslCertificateId");
-            mongoOperations.updateFirst(query, update, Domain.class);
+            mongoOperations.updateMulti(query, update, Domain.class);
 
-            updateWebSite(domain);
+            updateWebSite(domain, new ServiceMessage());
         }
-    }
-
-    private void updateWebSite(Domain domain) {
-        updateWebSite(domain, new ServiceMessage());
     }
 
     public void updateRegSpec(String domainName, RegSpec regSpec) {
@@ -681,18 +707,18 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         }
     }
 
-    private String getTaskExecutorRoutingKey(WebSite webSite) throws ParameterValidationException {
+    private String getTaskExecutorRoutingKey(Serviceable serviceable) throws ParameterValidationException {
         try {
             String serverName = null;
-            if (webSite != null) {
-                serverName = staffRcClient.getServerByServiceId(webSite.getServiceId()).getName();
+            if (serviceable != null) {
+                serverName = staffRcClient.getServerByServiceId(serviceable.getServiceId()).getName();
             }
 
             return TE + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("[getTaskExecutorRoutingKey] got exception: %s ; resource id: %s class: %s"
-                    , e.getMessage(), webSite != null ? webSite.getId() : null, webSite != null ? webSite.getClass().getSimpleName() : null);
+                    , e.getMessage(), serviceable != null ? ((Resource) serviceable).getId() : null, serviceable != null ? serviceable.getClass().getSimpleName() : null);
             throw new ParameterValidationException("Exception: " + e.getMessage());
         }
     }
