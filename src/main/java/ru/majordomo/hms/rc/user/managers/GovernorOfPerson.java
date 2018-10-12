@@ -253,12 +253,12 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) == null) {
+        if (!repository.existsById(resourceId)) {
             throw new ResourceNotFoundException("Не найдена персона с ID: " + resourceId);
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -370,12 +370,9 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
     @Override
     public Person build(String resourceId) throws ResourceNotFoundException {
-        Person person = repository.findOne(resourceId);
-        if (person == null) {
-            throw new ParameterValidationException("Person с ID:" + resourceId + " не найдена");
-        }
-
-        return person;
+        return repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ParameterValidationException("Person с ID:" + resourceId + " не найдена"));
     }
 
     @Override

@@ -1,0 +1,56 @@
+hms:
+  instance:
+    name: ci
+resources:
+  unixAccount:
+    homeDirPattern: '"/home"'
+    maxUid: 2147483647
+    minUid: 2000
+    namePattern: '"u"'
+spring:
+  datasource:
+    driverClassName: com.mysql.jdbc.Driver
+    password: cfg0;0r
+    username: root
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+  profiles:
+    active: test
+  rabbitmq:
+    dynamic: true
+    password: guest
+    username: guest
+
+default:
+  archive:
+    hotname: archive.majordomo.ru
+  database:
+    serviceName: DATABASE_MYSQL
+  mailbox:
+    spamfilter:
+      action: MOVE_TO_SPAM_FOLDER
+      mood: NEUTRAL
+  website:
+    accessByOldHttpVersion: false
+    accessLogEnabled: true
+    allowUrlFopen: false
+    autoSubDomain: false
+    cgi:
+      enabled: false
+      fileExtensions: cgi,pl
+    charset: UTF8
+    customUserConf: ''
+    ddosProtection: true
+    documentRootPattern: /www
+    errorLogEnabled: true
+    followSymLinks: true
+    indexFileList: index.php,index.html,index.htm
+    mbstringFuncOverload: 0
+    multiViews: false
+    scriptAlias: cgi-bin
+    serviceName: WEBSITE_APACHE2_PHP56_DEFAULT
+    ssi:
+      enabled: true
+      fileExtensions: shtml,shtm
+    static:
+      fileExtensions: avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm

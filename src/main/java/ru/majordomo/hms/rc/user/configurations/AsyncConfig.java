@@ -22,7 +22,7 @@ public class AsyncConfig extends AsyncConfigurerSupport {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(10);
         executor.setMaxPoolSize(10);
-        executor.setThreadNamePrefix("RcU-Thread-");
+        executor.setThreadNamePrefix("RcU-");
         executor.initialize();
         return executor;
     }

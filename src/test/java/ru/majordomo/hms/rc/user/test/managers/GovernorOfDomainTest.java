@@ -75,8 +75,8 @@ public class GovernorOfDomainTest {
     public void setUp() throws Exception {
         persons = ResourceGenerator.generateBatchOfPerson();
         domains = ResourceGenerator.generateBatchOfDomains(persons);
-        repository.save(domains);
-        personRepository.save(persons);
+        repository.saveAll(domains);
+        personRepository.saveAll(persons);
     }
 
     @After

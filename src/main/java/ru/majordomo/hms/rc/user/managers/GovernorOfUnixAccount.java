@@ -207,12 +207,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     public void updateQuotaUsed(String unixAccountId, Long quotaSize) {
-        UnixAccount unixAccount = repository.findOne(unixAccountId);
-        if (unixAccount != null) {
-            unixAccount.setQuotaUsed(quotaSize);
-        } else {
-            throw new ResourceNotFoundException("UnixAccount с ID: " + unixAccountId + " не найден");
-        }
+        UnixAccount unixAccount = repository
+                .findById(unixAccountId)
+                .orElseThrow(() -> new ResourceNotFoundException("UnixAccount с ID: " + unixAccountId + " не найден"));
+
+        unixAccount.setQuotaUsed(quotaSize);
+
         store(unixAccount);
     }
 
@@ -232,12 +232,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) == null) {
+        if (!repository.existsById(resourceId)) {
             throw new ParameterValidationException("Не найден UnixAccount с ID: " + resourceId);
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -359,10 +359,10 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
     @Override
     public UnixAccount build(String resourceId) throws ResourceNotFoundException {
-        UnixAccount unixAccount = repository.findOne(resourceId);
-        if (unixAccount == null) {
-            throw new ResourceNotFoundException("Не найден UnixAccount с ID: " + resourceId);
-        }
+        UnixAccount unixAccount = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Не найден UnixAccount с ID: " + resourceId));
+
         unixAccount.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(unixAccount.getId(), false));
         return unixAccount;
     }

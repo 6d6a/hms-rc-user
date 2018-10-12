@@ -136,7 +136,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -237,20 +237,16 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
         if (resourceId == null) {
             throw new ParameterValidationException("Не указан resourceId");
         }
-        ResourceArchive archive = repository.findOne(resourceId);
-        if (archive == null) {
-            throw new ResourceNotFoundException();
-        }
+        ResourceArchive archive = repository.findById(resourceId).orElseThrow(() -> new ResourceNotFoundException("Архив не найден"));
+
         return construct(archive);
     }
 
     @Override
     public ResourceArchive build(Map<String, String> keyValue) throws ResourceNotFoundException {
-        ResourceArchive archive = repository.findOne(createResourceArchiveExample(keyValue));
-
-        if (archive == null) {
-            throw new ResourceNotFoundException();
-        }
+        ResourceArchive archive = repository
+                .findOne(createResourceArchiveExample(keyValue))
+                .orElseThrow(() -> new ResourceNotFoundException("Архив не найден"));
 
         return construct(archive);
     }

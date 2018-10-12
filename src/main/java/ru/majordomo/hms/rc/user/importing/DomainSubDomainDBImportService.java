@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -24,6 +25,7 @@ import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 @Service
+@Profile("import")
 public class DomainSubDomainDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DomainSubDomainDBImportService.class);
 
@@ -118,7 +120,7 @@ public class DomainSubDomainDBImportService implements ResourceDBImportService {
 
         if (domains != null && !domains.isEmpty()) {
             logger.error("found " + domains.size() + " domains using findByParentDomainIdNotNull()");
-            domainRepository.delete(domains);
+            domainRepository.deleteAll(domains);
         }
 
         pull();
@@ -130,7 +132,7 @@ public class DomainSubDomainDBImportService implements ResourceDBImportService {
 
         if (domains != null && !domains.isEmpty()) {
             logger.error("found " + domains.size() + " domains using findByAccountIdAndParentDomainIdNotNull(" + accountId + ")");
-            domainRepository.delete(domains);
+            domainRepository.deleteAll(domains);
         }
 
         pull(accountId);

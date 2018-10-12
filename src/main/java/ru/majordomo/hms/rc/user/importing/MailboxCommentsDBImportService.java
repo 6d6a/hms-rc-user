@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -22,6 +23,7 @@ import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 
 @Service
+@Profile("import")
 public class MailboxCommentsDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(MailboxCommentsDBImportService.class);
 

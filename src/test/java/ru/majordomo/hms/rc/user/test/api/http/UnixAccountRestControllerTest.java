@@ -40,6 +40,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -88,7 +89,7 @@ public class UnixAccountRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfUnixAccount = ResourceGenerator.generateBatchOfUnixAccounts();
-        repository.save((Iterable) batchOfUnixAccount);
+        repository.saveAll((Iterable) batchOfUnixAccount);
     }
 
     @Test
@@ -129,12 +130,12 @@ public class UnixAccountRestControllerTest {
                                 fieldWithPath("homeDir").description("Домашняя директория пользователя"),
                                 fieldWithPath("uid").description("UID пользователя"),
                                 fieldWithPath("serverId").description("ID сервера, на котором расположен ящик"),
-                                fieldWithPath("crontab").description("Список заданий в для cron"),
+                                subsectionWithPath("crontab[]").description("Список заданий в для cron"),
                                 fieldWithPath("quota").description("Максимальный совокупный размер файлов пользователя"),
                                 fieldWithPath("quotaUsed").description("Фактический совокупный размер файлов пользователя"),
                                 fieldWithPath("writable").description("Флаг, указывающий на то, возможна ли запись новых файлов пользователем"),
                                 fieldWithPath("passwordHash").description("Криптованный хеш пароля"),
-                                fieldWithPath("keyPair").description("Пара ключей для доступа по SSH"),
+                                subsectionWithPath("keyPair").description("Пара ключей для доступа по SSH"),
                                 fieldWithPath("sendmailAllowed").description("Разрешена ли отправка почты из скриптов аккаунта"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
                                 fieldWithPath("infected").description("Наличие незакрытых отчётов о вредоносном коде"),

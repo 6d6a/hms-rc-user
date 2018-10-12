@@ -344,12 +344,12 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) == null) {
+        if (!repository.existsById(resourceId)) {
             throw new ResourceNotFoundException("Ресурс не найден");
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -602,10 +602,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
     @Override
     public WebSite build(String resourceId) throws ResourceNotFoundException {
-        WebSite webSite = repository.findOne(resourceId);
-        if (webSite == null) {
-            throw new ResourceNotFoundException("Сайт с ID " + resourceId + " не найден");
-        }
+        WebSite webSite = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Сайт с ID " + resourceId + " не найден"));
+
         return construct(webSite);
     }
 

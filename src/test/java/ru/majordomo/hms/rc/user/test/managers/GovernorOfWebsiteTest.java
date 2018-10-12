@@ -172,7 +172,7 @@ public class GovernorOfWebsiteTest {
             domainIds.add(domain.getId());
         }
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
         accountId = unixAccounts.get(0).getAccountId();
 
         batchOfWebsites = new ArrayList<>();
@@ -181,7 +181,7 @@ public class GovernorOfWebsiteTest {
 
         batchOfWebsites = ResourceGenerator.generateBatchOfCertainWebsites(accountId, serviceId, unixAccounts.get(0).getId(), domainIds);
 
-        webSiteRepository.save(batchOfWebsites);
+        webSiteRepository.saveAll(batchOfWebsites);
     }
 
     @Test
@@ -231,14 +231,15 @@ public class GovernorOfWebsiteTest {
         WebSite webSite = governor.update(serviceMessage);
         System.out.println(webSite.getCgiFileExtensions());
 
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled(), "CgiEnabled must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMbstringFuncOverload() == 4, "MbstringFuncOverload==4 must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAllowUrlFopen(), "AllowUrlFopen must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMultiViews(), "MultiViews must be true");
-        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getFollowSymLinks(), "!FollowSymLinks must be true");
-        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAccessLogEnabled(), "!AccessLogEnabled must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAutoSubDomain(), "AutoSubDomain must be true");
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+        Assert.isTrue(foundWebSite.getCgiEnabled(), "CgiEnabled must be true");
+        Assert.isTrue(foundWebSite.getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
+        Assert.isTrue(foundWebSite.getMbstringFuncOverload() == 4, "MbstringFuncOverload==4 must be true");
+        Assert.isTrue(foundWebSite.getAllowUrlFopen(), "AllowUrlFopen must be true");
+        Assert.isTrue(foundWebSite.getMultiViews(), "MultiViews must be true");
+        Assert.isTrue(!foundWebSite.getFollowSymLinks(), "!FollowSymLinks must be true");
+        Assert.isTrue(!foundWebSite.getAccessLogEnabled(), "!AccessLogEnabled must be true");
+        Assert.isTrue(foundWebSite.getAutoSubDomain(), "AutoSubDomain must be true");
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -280,8 +281,10 @@ public class GovernorOfWebsiteTest {
 
         governor.update(serviceMessage);
 
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled(), "CgiEnabled must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+
+        Assert.isTrue(foundWebSite.getCgiEnabled(), "CgiEnabled must be true");
+        Assert.isTrue(foundWebSite.getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
     }
 
     @Test
@@ -291,7 +294,7 @@ public class GovernorOfWebsiteTest {
         governor.drop(resourceId);
 
         Assert.isTrue(webSiteRepository.count() == 1, "webSiteRepository.count() == 1 must be true");
-        Assert.isNull(webSiteRepository.findOne(resourceId), "webSiteRepository.findOne(resourceId) must be null");
+        Assert.isNull(webSiteRepository.findById(resourceId).orElse(null), "webSiteRepository.findOne(resourceId) must be null");
     }
 
     @Test(expected = ResourceNotFoundException.class)

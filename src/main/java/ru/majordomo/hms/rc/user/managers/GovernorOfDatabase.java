@@ -133,7 +133,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
             databaseUserIds.remove(databaseUserId);
             database.setDatabaseUserIds(databaseUserIds);
         }
-        repository.save(databases);
+        repository.saveAll(databases);
     }
 
     @Override
@@ -143,12 +143,12 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) == null) {
+        if (!repository.existsById(resourceId)) {
             throw new ResourceNotFoundException("Database c ID: " + resourceId + " не найден");
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -226,10 +226,10 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
     @Override
     public Database build(String resourceId) throws ResourceNotFoundException {
-        Database database = repository.findOne(resourceId);
-        if (database == null) {
-            throw new ResourceNotFoundException("База данных с ID " + resourceId + " не найдена");
-        }
+        Database database = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("База данных с ID " + resourceId + " не найдена"));
+
         return construct(database);
     }
 
@@ -295,13 +295,10 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     public void updateQuota(String databaseId, Long quotaSize) {
-        Database database = repository.findOne(databaseId);
-        if (database != null) {
-            database.setQuotaUsed(quotaSize);
-        } else {
-            throw new ResourceNotFoundException("Database с ID: " + databaseId + " не найден");
-        }
+        Database database = repository.findById(databaseId).orElseThrow(() -> new ResourceNotFoundException("Database с ID: " + databaseId + " не найден"));
+
+        database.setQuotaUsed(quotaSize);
+
         store(database);
     }
-
 }

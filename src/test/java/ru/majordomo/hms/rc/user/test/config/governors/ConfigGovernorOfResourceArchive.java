@@ -1,7 +1,8 @@
 package ru.majordomo.hms.rc.user.test.config.governors;
 
 import com.github.fakemongo.Fongo;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+
 import org.bson.types.ObjectId;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,7 +70,7 @@ public class ConfigGovernorOfResourceArchive extends AbstractMongoConfiguration 
     }
 
     @Override
-    public Mongo mongo() throws Exception {
+    public MongoClient mongoClient() {
         return new Fongo(getDatabaseName()).getMongo();
     }
 }

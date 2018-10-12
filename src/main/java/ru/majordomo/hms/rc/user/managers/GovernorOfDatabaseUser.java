@@ -161,12 +161,12 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) == null) {
+        if (!repository.existsById(resourceId)) {
             throw new ResourceNotFoundException("Ресурс не найден");
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -268,12 +268,11 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
     @Override
     public DatabaseUser build(String resourceId) throws ResourceNotFoundException {
-        DatabaseUser resource = repository.findOne(resourceId);
-        if (resource != null) {
-            return resource;
-        } else {
-            throw new ResourceNotFoundException("Пользователь баз данных с ID: " + resourceId + " не найден");
-        }
+        DatabaseUser resource = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь баз данных с ID: " + resourceId + " не найден"));
+
+        return resource;
     }
 
     @Override

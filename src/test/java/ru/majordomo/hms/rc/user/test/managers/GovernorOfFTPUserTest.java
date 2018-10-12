@@ -74,9 +74,9 @@ public class GovernorOfFTPUserTest {
     @Before
     public void setUp() throws Exception {
         unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
         ftpUsers = ResourceGenerator.generateBatchOfFTPUsersWithUnixAccountId(unixAccounts.get(0).getId());
-        repository.save(ftpUsers);
+        repository.saveAll(ftpUsers);
     }
 
     @After
@@ -203,7 +203,9 @@ public class GovernorOfFTPUserTest {
         serviceMessage.delParam("name");
         serviceMessage.addParam("allowedIPAddresses", Arrays.asList("1.1.1.1", "2.2.2.2"));
         governor.update(serviceMessage);
-        FTPUser ftpUser = repository.findOne(ftpUsers.get(0).getId());
+        FTPUser ftpUser = repository
+                .findById(ftpUsers.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(ftpUser.getHomeDir(), is("mjru"));
         assertThat(ftpUser.getSwitchedOn(), is(false));
         assertThat(ftpUser.getPasswordHash(), not(oldPasswordHash));
@@ -231,7 +233,7 @@ public class GovernorOfFTPUserTest {
     @Test
     public void drop() throws Exception {
         governor.drop(ftpUsers.get(0).getId());
-        assertNull(repository.findOne(ftpUsers.get(0).getId()));
+        assertNull(repository.findById(ftpUsers.get(0).getId()).orElse(null));
     }
 
     @Test(expected = ResourceNotFoundException.class)

@@ -49,6 +49,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -194,7 +195,7 @@ public class WebsiteRestControllerTest {
 
         }
 
-        repository.save((Iterable) batchOfWebsites);
+        repository.saveAll((Iterable) batchOfWebsites);
     }
 
     @Test
@@ -211,10 +212,10 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Комментарий к сайту"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли сайт"),
-                                fieldWithPath("unixAccount").description("Аккаунт на сервере, под чьим UID'ом будет работать вебсервер"),
+                                subsectionWithPath("unixAccount").description("Аккаунт на сервере, под чьим UID'ом будет работать вебсервер"),
                                 fieldWithPath("serviceId").description("ID сервиса, на котором расположен сайт"),
                                 fieldWithPath("documentRoot").description("Домашняя директория сайта. Указывается часть полного пути, не содрежащая путь к домашней директории"),
-                                fieldWithPath("domains").description("Домены, привязанные к сайту"),
+                                subsectionWithPath("domains[]").description("Домены, привязанные к сайту"),
                                 fieldWithPath("charSet").description("Кодировка сайта"),
                                 fieldWithPath("ssiEnabled").description("Включен ли SSI"),
                                 fieldWithPath("ssiFileExtensions").description("Список расширений файлов, которые должны обрабатываться SSI обработчиком"),

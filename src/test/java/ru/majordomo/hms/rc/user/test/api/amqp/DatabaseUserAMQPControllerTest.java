@@ -97,7 +97,7 @@ public class DatabaseUserAMQPControllerTest {
         setUpTE("update");
         setUpPM("update");
         databaseUserList = ResourceGenerator.generateBatchOfDatabaseUsers();
-        repository.save(databaseUserList);
+        repository.saveAll(databaseUserList);
     }
 
     @After

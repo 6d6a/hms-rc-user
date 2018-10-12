@@ -36,6 +36,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -84,7 +85,7 @@ public class PersonRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfPersons = ResourceGenerator.generateBatchOfPerson();
-        repository.save(batchOfPersons);
+        repository.saveAll(batchOfPersons);
     }
 
     @Test
@@ -110,6 +111,7 @@ public class PersonRestControllerTest {
                                 fieldWithPath("phoneNumbers").description("Список телефонных номеров"),
                                 fieldWithPath("emailAddresses").description("Список контакных email адресов"),
                                 fieldWithPath("passport").description("Паспортные данные"),
+                                fieldWithPath("passport.document").description("Документ"),
                                 fieldWithPath("passport.number").description("Серия и номер паспорта"),
                                 fieldWithPath("passport.issuedOrg").description("Наименование организации, выдавшей паспорт"),
                                 fieldWithPath("passport.issuedDate").description("Дата выдачи паспорта"),
@@ -118,7 +120,7 @@ public class PersonRestControllerTest {
                                 fieldWithPath("passport.registerPage").description("Страница с регистрацией"),
                                 fieldWithPath("legalEntity").description("Реквизиты организации. Здесь null, т.к. объект является физ. лицом"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является персона"),
-                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                subsectionWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
@@ -151,6 +153,7 @@ public class PersonRestControllerTest {
                                 fieldWithPath("phoneNumbers").description("Список телефонных номеров"),
                                 fieldWithPath("emailAddresses").description("Список контакных email адресов"),
                                 fieldWithPath("passport").description("Паспортные данные"),
+                                fieldWithPath("passport.number").description("Серия и номер паспорта"),
                                 fieldWithPath("passport.document").description("Документ"),
                                 fieldWithPath("passport.issuedOrg").description("Наименование организации, выдавшей документ"),
                                 fieldWithPath("passport.issuedDate").description("Дата выдачи документа"),
@@ -159,7 +162,7 @@ public class PersonRestControllerTest {
                                 fieldWithPath("passport.registerPage").description("Страница с регистрацией"),
                                 fieldWithPath("legalEntity").description("Реквизиты организации. Здесь null, т.к. объект является физ. лицом"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является персона"),
-                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                subsectionWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
@@ -198,12 +201,12 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity.directorMiddlename").description("Отчество директора организации"),
                                 fieldWithPath("legalEntity.kpp").description("КПП организации"),
                                 fieldWithPath("legalEntity.ogrn").description("ОГРН организации"),
-                                fieldWithPath("legalEntity.address").description("Юридический адрес организации"),
+                                subsectionWithPath("legalEntity.address").description("Юридический адрес организации"),
                                 fieldWithPath("legalEntity.bankName").description("Наименование банка"),
                                 fieldWithPath("legalEntity.bik").description("БИК банка"),
                                 fieldWithPath("legalEntity.correspondentAccount").description("Корреспондентский счет"),
                                 fieldWithPath("legalEntity.bankAccount").description("Рассчетный счет"),
-                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                subsectionWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
@@ -242,12 +245,12 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity.directorMiddlename").description("Отчество директора организации"),
                                 fieldWithPath("legalEntity.kpp").description("КПП организации"),
                                 fieldWithPath("legalEntity.ogrn").description("ОГРН организации"),
-                                fieldWithPath("legalEntity.address").description("Юридический адрес организации"),
+                                subsectionWithPath("legalEntity.address").description("Юридический адрес организации"),
                                 fieldWithPath("legalEntity.bankName").description("Наименование банка"),
                                 fieldWithPath("legalEntity.bik").description("БИК банка"),
                                 fieldWithPath("legalEntity.correspondentAccount").description("Корреспондентский счет"),
                                 fieldWithPath("legalEntity.bankAccount").description("Рассчетный счет"),
-                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                subsectionWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
@@ -281,6 +284,7 @@ public class PersonRestControllerTest {
                                 fieldWithPath("emailAddresses").description("Список контакных email адресов"),
                                 fieldWithPath("passport").description("Паспортные данные. Здесь null, т.к. объект является юр. лицом"),
                                 fieldWithPath("passport.number").description("Серия и номер паспорта"),
+                                fieldWithPath("passport.document").description("Документ"),
                                 fieldWithPath("passport.issuedOrg").description("Наименование организации, выдавшей паспорт"),
                                 fieldWithPath("passport.issuedDate").description("Дата выдачи паспорта"),
                                 fieldWithPath("passport.birthday").description("Дата рождения в формате yyyy-MM-dd"),
@@ -292,12 +296,12 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity.directorMiddlename").description("Отчество директора организации"),
                                 fieldWithPath("legalEntity.kpp").description("КПП организации"),
                                 fieldWithPath("legalEntity.ogrn").description("ОГРН организации"),
-                                fieldWithPath("legalEntity.address").description("Юридический адрес организации"),
+                                subsectionWithPath("legalEntity.address").description("Юридический адрес организации"),
                                 fieldWithPath("legalEntity.bankName").description("Наименование банка"),
                                 fieldWithPath("legalEntity.bik").description("БИК банка"),
                                 fieldWithPath("legalEntity.correspondentAccount").description("Корреспондентский счет"),
                                 fieldWithPath("legalEntity.bankAccount").description("Рассчетный счет"),
-                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                subsectionWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
@@ -330,6 +334,7 @@ public class PersonRestControllerTest {
                                 fieldWithPath("phoneNumbers").description("Список телефонных номеров"),
                                 fieldWithPath("emailAddresses").description("Список контакных email адресов"),
                                 fieldWithPath("passport").description("Паспортные данные. Здесь null, т.к. объект является юр. лицом"),
+                                fieldWithPath("passport.number").description("Серия и номер паспорта"),
                                 fieldWithPath("passport.document").description("Документ"),
                                 fieldWithPath("passport.issuedOrg").description("Наименование организации, выдавшей документ"),
                                 fieldWithPath("passport.issuedDate").description("Дата выдачи документа"),
@@ -342,12 +347,12 @@ public class PersonRestControllerTest {
                                 fieldWithPath("legalEntity.directorMiddlename").description("Отчество директора организации"),
                                 fieldWithPath("legalEntity.kpp").description("КПП организации"),
                                 fieldWithPath("legalEntity.ogrn").description("ОГРН организации"),
-                                fieldWithPath("legalEntity.address").description("Юридический адрес организации"),
+                                subsectionWithPath("legalEntity.address").description("Юридический адрес организации"),
                                 fieldWithPath("legalEntity.bankName").description("Наименование банка"),
                                 fieldWithPath("legalEntity.bik").description("БИК банка"),
                                 fieldWithPath("legalEntity.correspondentAccount").description("Корреспондентский счет"),
                                 fieldWithPath("legalEntity.bankAccount").description("Рассчетный счет"),
-                                fieldWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
+                                subsectionWithPath("postalAddress").description("Адрес, по которому можно направлять почтовые уведомления"),
                                 fieldWithPath("country").description("Код страны, резидентом которой является организация"),
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),

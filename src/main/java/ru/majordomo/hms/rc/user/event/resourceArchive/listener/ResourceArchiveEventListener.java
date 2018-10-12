@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.event.ResourceEventListener;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchiveCleanEvent;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -22,8 +22,9 @@ import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import ru.majordomo.hms.rc.user.schedulers.ResourceArchiveScheduler;
 
 @Component
-public class ResourceArchiveEventListener extends ResourceEventListener<ResourceArchive> {
-
+@Slf4j
+public class ResourceArchiveEventListener {
+    private final GovernorOfResourceArchive governorOfResourceArchive;
     private Sender sender;
     private ResourceArchiveScheduler scheduler;
     private StaffResourceControllerClient staffRcClient;
@@ -38,7 +39,7 @@ public class ResourceArchiveEventListener extends ResourceEventListener<Resource
             @Value("${spring.application.name}") String applicationName
     ) {
         this.scheduler = scheduler;
-        this.governor = governorOfResourceArchive;
+        this.governorOfResourceArchive = governorOfResourceArchive;
         this.sender = sender;
         this.applicationName = applicationName;
         this.staffRcClient = staffRcClient;
@@ -47,7 +48,7 @@ public class ResourceArchiveEventListener extends ResourceEventListener<Resource
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void on(ResourceArchivesCleanEvent event) {
-        logger.debug("We got ResourceArchivesCleanEvent");
+        log.debug("We got ResourceArchivesCleanEvent");
 
         scheduler.cleanResourceArchives();
     }
@@ -55,7 +56,7 @@ public class ResourceArchiveEventListener extends ResourceEventListener<Resource
     @EventListener
     @Async("threadPoolTaskExecutor")
     public void on(ResourceArchiveCleanEvent event) {
-        logger.debug("We got ResourceArchiveCleanEvent");
+        log.debug("We got ResourceArchiveCleanEvent");
 
         try {
             Map<String, String> keyValue = new HashMap<>();
@@ -63,9 +64,9 @@ public class ResourceArchiveEventListener extends ResourceEventListener<Resource
             ResourceArchive archive;
 
             try {
-                archive = governor.build(keyValue);
+                archive = governorOfResourceArchive.build(keyValue);
             } catch (ResourceNotFoundException | ParameterValidationException e) {
-                logger.error("[ResourceArchiveCleanEvent] ResourceArchive not found or not valid (id: " + event.getSource() + ") exception: " + e.getMessage());
+                log.error("[ResourceArchiveCleanEvent] ResourceArchive not found or not valid (id: " + event.getSource() + ") exception: " + e.getMessage());
 
                 return;
             }
@@ -79,11 +80,11 @@ public class ResourceArchiveEventListener extends ResourceEventListener<Resource
 
             String teRoutingKey = "te" + "." + serverName.split("\\.")[0];
 
-            logger.info("trying to send: " + report + " to: " + teRoutingKey);
+            log.info("trying to send: " + report + " to: " + teRoutingKey);
             sender.send("resource-archive.delete", teRoutingKey, report);
 
             archive.setLocked(true);
-            governor.store(archive);
+            governorOfResourceArchive.store(archive);
         } catch (Exception e) {
             e.printStackTrace();
         }

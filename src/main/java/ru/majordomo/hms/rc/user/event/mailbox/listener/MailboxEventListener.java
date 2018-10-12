@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.event.mailbox.listener;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 
 @Component
+@Profile("import")
 public class MailboxEventListener extends ResourceEventListener<Mailbox> {
     private final MailboxCommentsDBImportService mailboxCommentsDBImportService;
 

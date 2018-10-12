@@ -35,6 +35,7 @@ public class Domain extends Resource {
     private String personId;
 
     private RegSpec regSpec;
+    @Transient
     private List<DNSResourceRecord> dnsResourceRecords = new ArrayList<>();
 
     @Indexed

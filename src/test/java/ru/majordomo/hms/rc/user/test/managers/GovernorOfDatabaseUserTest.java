@@ -71,7 +71,7 @@ public class GovernorOfDatabaseUserTest {
     @Before
     public void setUp() throws Exception {
         databaseUsers = ResourceGenerator.generateBatchOfDatabaseUsers();
-        repository.save(databaseUsers);
+        repository.saveAll(databaseUsers);
     }
 
     @Test
@@ -86,14 +86,16 @@ public class GovernorOfDatabaseUserTest {
         for (Database database : databases) {
             database.setDatabaseUserIds(Collections.emptyList());
         }
-        databaseRepository.save(databases);
+        databaseRepository.saveAll(databases);
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         serviceMessage.setAccountId(databases.get(0).getAccountId());
         serviceMessage.addParam("databaseIds", Collections.singletonList(databases.get(0).getId()));
         System.out.println(databases);
         System.out.println(serviceMessage);
         DatabaseUser databaseUser = governor.create(serviceMessage);
-        assertThat(databaseRepository.findOne(databases.get(0).getId()).getDatabaseUserIds(), hasItem(databaseUser.getId()));
+        assertThat(databaseRepository
+                .findById(databases.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден")).getDatabaseUserIds(), hasItem(databaseUser.getId()));
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -132,7 +134,7 @@ public class GovernorOfDatabaseUserTest {
             databaseUserIds.add(databaseUser.getId());
         }
         databases.get(0).setDatabaseUserIds(databaseUserIds);
-        databaseRepository.save(databases);
+        databaseRepository.saveAll(databases);
         governor.drop(databaseUsers.get(0).getId());
     }
 
@@ -161,7 +163,10 @@ public class GovernorOfDatabaseUserTest {
         String oldPasswordHash = databaseUsers.get(0).getPasswordHash();
         serviceMessage.addParam("password", "87654321");
         DatabaseUser databaseUser = governor.update(serviceMessage);
-        assertThat(repository.findOne(databaseUser.getId()).getPasswordHash(), not(oldPasswordHash));
+        assertThat(repository
+                .findById(databaseUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"))
+                .getPasswordHash(), not(oldPasswordHash));
     }
 
     @After

@@ -84,11 +84,11 @@ public class GovernorOfDnsRecordTest {
     @Before
     public void setUp() throws Exception {
         unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
         persons = ResourceGenerator.generateBatchOfPerson();
         domains = ResourceGenerator.generateBatchOfDomains(persons);
-        domainRepository.save(domains);
-        personRepository.save(persons);
+        domainRepository.saveAll(domains);
+        personRepository.saveAll(persons);
     }
 
     @Test

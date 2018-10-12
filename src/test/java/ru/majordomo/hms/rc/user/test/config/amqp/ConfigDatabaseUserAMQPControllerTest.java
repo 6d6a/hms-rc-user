@@ -1,10 +1,11 @@
 package ru.majordomo.hms.rc.user.test.config.amqp;
 
 import com.github.fakemongo.Fongo;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+
 import org.bson.types.ObjectId;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
@@ -24,7 +25,7 @@ public class ConfigDatabaseUserAMQPControllerTest extends AbstractMongoConfigura
     }
 
     @Override
-    public Mongo mongo() throws Exception {
+    public MongoClient mongoClient() {
         return new Fongo(getDatabaseName()).getMongo();
     }
 
@@ -43,8 +44,8 @@ public class ConfigDatabaseUserAMQPControllerTest extends AbstractMongoConfigura
         return new GovernorOfWebSite();
     }
     @Bean
-    public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
-        return new JettyEmbeddedServletContainerFactory(0);
+    public ServletWebServerFactory embeddedServletContainerFactory() {
+        return new JettyServletWebServerFactory(0);
     }
 
     @Bean

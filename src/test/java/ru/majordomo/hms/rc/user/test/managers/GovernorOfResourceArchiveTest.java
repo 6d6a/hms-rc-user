@@ -175,7 +175,7 @@ public class GovernorOfResourceArchiveTest {
             domainIds.add(domain.getId());
         }
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
         accountId = unixAccounts.get(0).getAccountId();
 
         batchOfWebsites = new ArrayList<>();
@@ -184,11 +184,11 @@ public class GovernorOfResourceArchiveTest {
 
         batchOfWebsites = ResourceGenerator.generateBatchOfCertainWebsites(accountId, serviceId, unixAccounts.get(0).getId(), domainIds);
 
-        webSiteRepository.save(batchOfWebsites);
+        webSiteRepository.saveAll(batchOfWebsites);
 
         batchOfDatabases = ResourceGenerator.generateBatchOfDatabases();
         for (Database database: batchOfDatabases) {
-            databaseUserRepository.save(database.getDatabaseUsers());
+            databaseUserRepository.saveAll(database.getDatabaseUsers());
             databaseRepository.save(database);
         }
     }

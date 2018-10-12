@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -20,6 +21,7 @@ import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 
 @Service
+@Profile("import")
 public class FTPUserDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(FTPUserDBImportService.class);
 
@@ -105,7 +107,7 @@ public class FTPUserDBImportService implements ResourceDBImportService {
         List<FTPUser> ftpUsers = ftpUserRepository.findByAccountId(accountId);
 
         if (ftpUsers != null && !ftpUsers.isEmpty()) {
-            ftpUserRepository.delete(ftpUsers);
+            ftpUserRepository.deleteAll(ftpUsers);
         }
 
         pull(accountId);

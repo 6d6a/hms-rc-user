@@ -1,5 +1,22 @@
-#management:
-#  port: 18080
-#spring:
-#  redis:
-#    host: localhost
+server:
+  port: 8001
+management:
+  server:
+    port: 18088
+spring:
+    redis:
+        host: localhost
+    data:
+        mongodb:
+#            uri: mongodb://usersResourceController:ye7sMsxNnpEF@hms01.intr:27017,hms02.intr:27017,hms03.intr:27017/usersResourceController?replicaSet=hms-rs0
+            uri: mongodb://ci.intr:27017/usersResourceController
+#            uri: mongodb://localhost:27017/personmgr
+    rabbitmq:
+        host: ci.intr
+        username: guest
+        password: guest
+
+hms:
+  instance:
+    name: hms1
+

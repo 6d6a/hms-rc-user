@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -34,13 +35,13 @@ import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
 import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
 
 @Service
+@Profile("import")
 public class MailboxDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(MailboxDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final MailboxRepository mailboxRepository;
     private final GovernorOfMailbox governorOfMailbox;
-    private final DomainRepository domainRepository;
     private final ApplicationEventPublisher publisher;
     private final MailboxRedisRepository redisRepository;
     private final RedisTemplate<String, String> redisTemplate;
@@ -61,7 +62,6 @@ public class MailboxDBImportService implements ResourceDBImportService {
             @Qualifier("billingNamedParameterJdbcTemplate") NamedParameterJdbcTemplate namedParameterJdbcTemplate,
             MailboxRepository mailboxRepository,
             GovernorOfMailbox governorOfMailbox,
-            DomainRepository domainRepository,
             ApplicationEventPublisher publisher,
             MailboxRedisRepository redisRepository,
             RedisTemplate<String, String> redisTemplate
@@ -69,7 +69,6 @@ public class MailboxDBImportService implements ResourceDBImportService {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.mailboxRepository = mailboxRepository;
         this.governorOfMailbox = governorOfMailbox;
-        this.domainRepository = domainRepository;
         this.publisher = publisher;
         this.redisRepository = redisRepository;
         this.redisTemplate = redisTemplate;
@@ -221,7 +220,7 @@ public class MailboxDBImportService implements ResourceDBImportService {
         List<Mailbox> mailboxes = mailboxRepository.findByAccountId(accountId);
 
         if (mailboxes != null && !mailboxes.isEmpty()) {
-            mailboxRepository.delete(mailboxes);
+            mailboxRepository.deleteAll(mailboxes);
         }
 
         pull(accountId);

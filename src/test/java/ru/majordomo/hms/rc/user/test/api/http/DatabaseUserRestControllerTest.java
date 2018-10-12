@@ -92,7 +92,7 @@ public class DatabaseUserRestControllerTest {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .build();
         batchOfDatabaseUsers = ResourceGenerator.generateBatchOfDatabaseUsers();
-        repository.save(batchOfDatabaseUsers);
+        repository.saveAll(batchOfDatabaseUsers);
     }
 
     @After

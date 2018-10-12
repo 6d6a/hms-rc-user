@@ -44,6 +44,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -94,7 +95,7 @@ public class DatabaseRestControllerTest {
                 .build();
         batchOfDatabases = ResourceGenerator.generateBatchOfDatabases();
         for (Database database : batchOfDatabases) {
-            databaseUserRepository.save((Iterable) database.getDatabaseUsers());
+            databaseUserRepository.saveAll((Iterable) database.getDatabaseUsers());
             for (DatabaseUser databaseUser: database.getDatabaseUsers()) {
                 database.addDatabaseUserId(databaseUser.getId());
             }
@@ -122,7 +123,7 @@ public class DatabaseRestControllerTest {
                                 fieldWithPath("quota").description("Максимальный размер базы данных"),
                                 fieldWithPath("quotaUsed").description("Фактический размер базы в килобайтах"),
                                 fieldWithPath("writable").description("Флаг доступности записи."),
-                                fieldWithPath("databaseUsers").description("Список пользователей этой базы"),
+                                subsectionWithPath("databaseUsers[]").description("Список пользователей этой базы"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
                                 fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
                         )

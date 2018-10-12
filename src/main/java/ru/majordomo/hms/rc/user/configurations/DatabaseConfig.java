@@ -1,71 +1,78 @@
 package ru.majordomo.hms.rc.user.configurations;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
 @Configuration
 public class DatabaseConfig {
-    @Bean(name = "pdnsDataSource")
+    @Bean(name = "pdnsDataSourceProperties")
+    @ConfigurationProperties("spring.datasource")
     @Primary
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource pdnsDataSource() {
-        return DataSourceBuilder.create().build();
+    public DataSourceProperties pdnsDataSourceProperties() {
+        return new DataSourceProperties();
     }
 
-    @Bean(name = "pdnsJdbcTemplate")
-    @Autowired
-    public JdbcTemplate pdnsJdbcTemplate(@Qualifier("pdnsDataSource") DataSource pdnsDataSource) {
-        return new JdbcTemplate(pdnsDataSource);
+    @Bean(name = "pdnsDataSource")
+    @Primary
+    public HikariDataSource pdnsDataSource(@Qualifier("pdnsDataSourceProperties") DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
     @Bean(name = "pdnsNamedParameterJdbcTemplate")
+    @Primary
     @Autowired
-    public NamedParameterJdbcTemplate pdnsNamedParameterJdbcTemplate(@Qualifier("pdnsDataSource") DataSource pdnsDataSource) {
-        return new NamedParameterJdbcTemplate(pdnsDataSource);
+    public NamedParameterJdbcTemplate pdnsNamedParameterJdbcTemplate(@Qualifier("pdnsDataSource") DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 
+    @Profile("import")
+    @Bean(name = "billingDataSourceProperties")
+    @ConfigurationProperties("datasource.billing")
+    public DataSourceProperties billingDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Profile("import")
     @Bean(name = "billingDataSource")
-    @ConfigurationProperties(prefix="datasource.billing")
-    public DataSource billingDataSource() {
-        return DataSourceBuilder.create().build();
+    public HikariDataSource billingDataSource(@Qualifier("billingDataSourceProperties") DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
-    @Bean(name = "billingJdbcTemplate")
-    @Autowired
-    public JdbcTemplate billingJdbcTemplate(@Qualifier("billingDataSource") DataSource billingDataSource) {
-        return new JdbcTemplate(billingDataSource);
-    }
-
+    @Profile("import")
     @Bean(name = "billingNamedParameterJdbcTemplate")
     @Autowired
-    public NamedParameterJdbcTemplate billingNamedParameterJdbcTemplate(@Qualifier("billingDataSource") DataSource billingDataSource) {
-        return new NamedParameterJdbcTemplate(billingDataSource);
+    public NamedParameterJdbcTemplate billingNamedParameterJdbcTemplate(@Qualifier("billingDataSource") DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 
+    @Profile("import")
+    @Bean(name = "registrantDataSourceProperties")
+    @ConfigurationProperties("datasource.registrant")
+    public DataSourceProperties registrantDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Profile("import")
     @Bean(name = "registrantDataSource")
-    @ConfigurationProperties(prefix="datasource.registrant")
-    public DataSource registrantDataSource() {
-        return DataSourceBuilder.create().build();
+    public HikariDataSource registrantDataSource(@Qualifier("registrantDataSourceProperties") DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
-    @Bean(name = "registrantJdbcTemplate")
-    @Autowired
-    public JdbcTemplate registrantJdbcTemplate(@Qualifier("registrantDataSource") DataSource registrantDataSource) {
-        return new JdbcTemplate(registrantDataSource);
-    }
-
+    @Profile("import")
     @Bean(name = "registrantNamedParameterJdbcTemplate")
     @Autowired
-    public NamedParameterJdbcTemplate registrantNamedParameterJdbcTemplate(@Qualifier("registrantDataSource") DataSource registrantDataSource) {
-        return new NamedParameterJdbcTemplate(registrantDataSource);
+    public NamedParameterJdbcTemplate registrantNamedParameterJdbcTemplate(@Qualifier("registrantDataSource") DataSource dataSource) {
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 }

@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.configurations;
 
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -17,7 +18,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .httpBasic().disable()
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/**").permitAll()
+                .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .anyRequest().authenticated()
                 .and().csrf().disable();
