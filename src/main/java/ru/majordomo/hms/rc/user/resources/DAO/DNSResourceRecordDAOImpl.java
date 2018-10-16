@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -198,18 +197,22 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         try {
             return jdbcTemplate.queryForObject(query, parameters, Long.class);
         } catch (Exception e) {
-            initDomain(domainName);
-            return jdbcTemplate.queryForObject(query, parameters, Long.class);
+            return initDomain(domainName);
         }
     }
 
     @Override
-    public void initDomain(String domainName) {
+    public Long initDomain(String domainName) {
         String query = "INSERT INTO domains (name, uid) VALUES (:domainName, '0')";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("domainName", domainName);
-        jdbcTemplate.update(query, parameters);
+
+        KeyHolder holder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(query, parameters, holder);
+
+        return holder.getKey().longValue();
     }
 
     public void dropDomain(String domainName) {
