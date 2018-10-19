@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Service;
@@ -38,6 +39,7 @@ public class AccountRestController {
         this.governorOfWebSite = governorOfWebSite;
     }
 
+    @PreAuthorize("hasAuthority('TRANSFER_ACCOUNT')")
     @PostMapping("/{accountId}/account-move")
     public Boolean moveAccount(
             @PathVariable("accountId") String accountId,

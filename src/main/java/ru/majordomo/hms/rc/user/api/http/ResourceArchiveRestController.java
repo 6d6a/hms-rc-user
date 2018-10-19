@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import ru.majordomo.hms.rc.user.api.DTO.Count;
@@ -21,11 +22,13 @@ public class ResourceArchiveRestController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/resource-archive/{resourceArchiveId}")
     public ResourceArchive readOne(@PathVariable String resourceArchiveId) {
         return governor.build(resourceArchiveId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/resource-archive/{resourceArchiveId}")
     public ResourceArchive readOneByAccountId(
             @PathVariable("accountId") String accountId,
@@ -37,11 +40,13 @@ public class ResourceArchiveRestController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/resource-archive")
     public Collection<ResourceArchive> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/resource-archive")
     public Collection<ResourceArchive> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -49,18 +54,21 @@ public class ResourceArchiveRestController {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/resource-archive/filter")
     public Collection<ResourceArchive> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/resource-archive/count")
     public Count countByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.count(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/resource-archive/filter")
     public Collection<ResourceArchive> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);

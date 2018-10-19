@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
@@ -19,11 +20,13 @@ public class SslCertificateRestController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/ssl-certificate/{sslCertificateId}")
     public SSLCertificate readOne(@PathVariable String sslCertificateId) {
         return governor.build(sslCertificateId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/ssl-certificate/{sslCertificateId}")
     public SSLCertificate readOneByAccountId(
             @PathVariable("accountId") String accountId,
@@ -35,11 +38,13 @@ public class SslCertificateRestController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/ssl-certificate")
     public Collection<SSLCertificate> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/ssl-certificate")
     public Collection<SSLCertificate> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();

@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.api.http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -24,22 +25,26 @@ public class DatabaseRestController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/database/filter")
     public Collection<Database> filterByAccountId(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/database/filter")
     public Collection<Database> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/database/{databaseId}")
     public Database readOne(@PathVariable String databaseId) {
         return governor.build(databaseId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/database/{databaseId}")
     public Database readOneByAccountId(
             @PathVariable("accountId") String accountId,
@@ -51,11 +56,13 @@ public class DatabaseRestController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/database")
     public Collection<Database> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/database")
     public Collection<Database> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -63,11 +70,13 @@ public class DatabaseRestController {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/database/count")
     public Count countByAccountId(@PathVariable String accountId) {
         return governor.countByAccountId(accountId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping({"/database/{databaseId}/quota-report"})
     public ResponseEntity<Void> updateQuota(
             @PathVariable String databaseId,

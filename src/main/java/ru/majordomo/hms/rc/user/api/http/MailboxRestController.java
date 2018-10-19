@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.api.http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -23,11 +24,13 @@ public class MailboxRestController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/mailbox/{mailboxId}")
     public Mailbox readOne(@PathVariable String mailboxId) {
         return governor.build(mailboxId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/mailbox/{mailboxId}")
     public Mailbox readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("mailboxId") String mailboxId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -36,11 +39,13 @@ public class MailboxRestController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/mailbox")
     public Collection<Mailbox> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/mailbox")
     public Collection<Mailbox> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -48,16 +53,19 @@ public class MailboxRestController {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping(value = {"/mailbox/filter"}, headers = {"X-HMS-Projection=te"})
     public Collection<Mailbox> filterTe(@RequestParam Map<String, String> keyValue) {
         return governor.buildAllForTe(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/mailbox/filter")
     public Collection<Mailbox> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/mailbox/{mailboxId}/quota-report")
     public ResponseEntity<Void> updateQuota(@PathVariable String mailboxId, @RequestBody QuotaReport report) {
         try {
