@@ -16,6 +16,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 import ru.majordomo.hms.rc.user.resources.CharSet;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
@@ -34,127 +35,8 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     private GovernorOfResourceArchive governorOfResourceArchive;
     private Cleaner cleaner;
     private StaffResourceControllerClient staffRcClient;
-    private String defaultServiceName;
-    private String defaultWebsiteDocumetRootPattern;
-    private String defaultWebsiteCharset;
-    private Boolean defaultWebsiteSsiEnabled;
-    private String[] defaultWebsiteSsiFileExtensions;
-    private Boolean defaultWebsiteCgiEnabled;
-    private String[] defaultWebsiteCgiFileExtensions;
-    private String defaultWebsiteScriptAliace;
-    private Boolean defaultWebsiteDdosProtection;
-    private Boolean defaultWebsiteAutoSubDomain;
-    private Boolean defaultWebsiteAccessByOldHttpVersion;
-    private String[] defaultWebsiteStaticFileExtensions;
-    private String[] defaultWebsiteIndexFileList;
-    private String defaultWebsiteCustomUserConf;
-    private Boolean defaultAccessLogEnabled;
-    private Boolean defaultErrorLogEnabled;
-    private Boolean defaultFollowSymLinks;
-    private Boolean defaultMultiViews;
-    private Integer defaultMbstringFuncOverload;
-    private Boolean defaultAllowUrlFopen;
     private Validator validator;
-
-    @Value("${default.website.serviceName}")
-    public void setDefaultServiceName(String defaultServiceName) {
-        this.defaultServiceName = defaultServiceName;
-    }
-
-    @Value("${default.website.documentRootPattern}")
-    public void setDefaultWebsiteDocumetRootPattern(String defaultWebsiteDocumetRootPattern) {
-        this.defaultWebsiteDocumetRootPattern = defaultWebsiteDocumetRootPattern;
-    }
-
-    @Value("${default.website.charset}")
-    public void setDefaultWebsiteCharset(String defaultWebsiteCharset) {
-        this.defaultWebsiteCharset = defaultWebsiteCharset;
-    }
-
-    @Value("${default.website.ssi.enabled}")
-    public void setDefaultWebsiteSsiEnabled(Boolean defaultWebsiteSsiEnabled) {
-        this.defaultWebsiteSsiEnabled = defaultWebsiteSsiEnabled;
-    }
-
-    @Value("${default.website.ssi.fileExtensions}")
-    public void setDefaultWebsiteSsiFileExtensions(String[] defaultWebsiteSsiFileExtensions) {
-        this.defaultWebsiteSsiFileExtensions = defaultWebsiteSsiFileExtensions;
-    }
-
-    @Value("${default.website.cgi.enabled}")
-    public void setDefaultWebsiteCgiEnabled(Boolean defaultWebsiteCgiEnabled) {
-        this.defaultWebsiteCgiEnabled = defaultWebsiteCgiEnabled;
-    }
-
-    @Value("${default.website.cgi.fileExtensions}")
-    public void setDefaultWebsiteCgiFileExtensions(String[] defaultWebsiteCgiFileExtensions) {
-        this.defaultWebsiteCgiFileExtensions = defaultWebsiteCgiFileExtensions;
-    }
-
-    @Value("${default.website.scriptAlias}")
-    public void setDefaultWebsiteScriptAliace(String defaultWebsiteScriptAliace) {
-        this.defaultWebsiteScriptAliace = defaultWebsiteScriptAliace;
-    }
-
-    @Value("${default.website.ddosProtection}")
-    public void setDefaultWebsiteDdosProtection(Boolean defaultWebsiteDdosProtection) {
-        this.defaultWebsiteDdosProtection = defaultWebsiteDdosProtection;
-    }
-
-    @Value("${default.website.autoSubDomain}")
-    public void setDefaultWebsiteAutoSubDomain(Boolean defaultWebsiteAutoSubDomain) {
-        this.defaultWebsiteAutoSubDomain = defaultWebsiteAutoSubDomain;
-    }
-
-    @Value("${default.website.accessByOldHttpVersion}")
-    public void setDefaultWebsiteAccessByOldHttpVersion(Boolean defaultWebsiteAccessByOldHttpVersion) {
-        this.defaultWebsiteAccessByOldHttpVersion = defaultWebsiteAccessByOldHttpVersion;
-    }
-
-    @Value("${default.website.static.fileExtensions}")
-    public void setDefaultWebsiteStaticFileExtensions(String[] defaultWebsiteStaticFileExtensions) {
-        this.defaultWebsiteStaticFileExtensions = defaultWebsiteStaticFileExtensions;
-    }
-
-    @Value("${default.website.indexFileList}")
-    public void setDefaultWebsiteIndexFileList(String[] defaultWebsiteIndexFileList) {
-        this.defaultWebsiteIndexFileList = defaultWebsiteIndexFileList;
-    }
-
-    @Value("${default.website.customUserConf}")
-    public void setDefaultWebsiteCustomUserConf(String defaultWebsiteCustomUserConf) {
-        this.defaultWebsiteCustomUserConf = defaultWebsiteCustomUserConf;
-    }
-
-    @Value("${default.website.accessLogEnabled}")
-    public void setDefaultAccessLogEnabled(Boolean defaultAccessLogEnabled) {
-        this.defaultAccessLogEnabled = defaultAccessLogEnabled;
-    }
-
-    @Value("${default.website.errorLogEnabled}")
-    public void setDefaultErrorLogEnabled(Boolean defaultErrorLogEnabled) {
-        this.defaultErrorLogEnabled = defaultErrorLogEnabled;
-    }
-
-    @Value("${default.website.mbstringFuncOverload}")
-    public void setDefaultMbstringFuncOverload(Integer defaultMbstringFuncOverload) {
-        this.defaultMbstringFuncOverload = defaultMbstringFuncOverload;
-    }
-
-    @Value("${default.website.allowUrlFopen}")
-    public void setDefaultAllowUrlFopen(Boolean defaultAllowUrlFopen) {
-        this.defaultAllowUrlFopen = defaultAllowUrlFopen;
-    }
-
-    @Value("${default.website.followSymLinks}")
-    public void setDefaultFollowSymLinks(Boolean defaultFollowSymLinks) {
-        this.defaultFollowSymLinks = defaultFollowSymLinks;
-    }
-
-    @Value("${default.website.multiViews}")
-    public void setDefaultMultiViews(Boolean defaultMultiViews) {
-        this.defaultMultiViews = defaultMultiViews;
-    }
+    private DefaultWebSiteSettings defaultWebSiteSettings;
 
     @Autowired
     public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
@@ -189,6 +71,11 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     @Autowired
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    @Autowired
+    public void setDefaultWebSiteSettings(DefaultWebSiteSettings defaultWebSiteSettings) {
+        this.defaultWebSiteSettings = defaultWebSiteSettings;
     }
 
     @Override
@@ -397,7 +284,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             if (serviceMessage.getParam("staticFileExtensions") != null) {
                 staticFileExtensions = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("staticFileExtensions"));
             } else {
-                staticFileExtensions = Arrays.asList(defaultWebsiteStaticFileExtensions);
+                staticFileExtensions = defaultWebSiteSettings.getStatic().getFileExtensions();
             }
             List<String> indexFileList = new ArrayList<>();
             if (serviceMessage.getParam("indexFileList") != null) {
@@ -464,7 +351,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         }
 
         if ((webSite.getDocumentRoot() == null || webSite.getDocumentRoot().equals("")) && !webSite.getDomains().isEmpty()) {
-            webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + defaultWebsiteDocumetRootPattern);
+            webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + defaultWebSiteSettings.getDocumentRootPattern());
         }
 
         if (webSite.getUnixAccountId() == null || webSite.getUnixAccountId().equals("")) {
@@ -482,88 +369,87 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
             List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerId(webSite.getUnixAccount().getServerId());
             for (Service service : websiteServices) {
-                if (service.getServiceTemplate().getServiceType().getName().equals(this.defaultServiceName)) {
+                if (service.getServiceTemplate().getServiceType().getName().equals(defaultWebSiteSettings.getServiceName())) {
                     webSite.setServiceId(service.getId());
                     break;
                 }
             }
             if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
-                logger.error("Не найдено serviceType: " + this.defaultServiceName
+                logger.error("Не найдено serviceType: " + defaultWebSiteSettings.getServiceName()
                         + " для сервера: " + webSite.getUnixAccount().getServerId());
             }
         }
 
         if (webSite.getCharSet() == null) {
-            CharSet charSet = CharSet.valueOf(defaultWebsiteCharset);
-            webSite.setCharSet(charSet);
+            webSite.setCharSet(defaultWebSiteSettings.getCharset());
         }
 
         if (webSite.getSsiEnabled() == null) {
-            webSite.setSsiEnabled(defaultWebsiteSsiEnabled);
+            webSite.setSsiEnabled(defaultWebSiteSettings.getSsi().getEnabled());
         }
 
         if (webSite.getSsiFileExtensions() == null || webSite.getSsiFileExtensions().isEmpty()) {
-            webSite.setSsiFileExtensions(Arrays.asList(defaultWebsiteSsiFileExtensions));
+            webSite.setSsiFileExtensions(defaultWebSiteSettings.getSsi().getFileExtensions());
         }
 
         if (webSite.getCgiEnabled() == null) {
-            webSite.setCgiEnabled(defaultWebsiteCgiEnabled);
+            webSite.setCgiEnabled(defaultWebSiteSettings.getCgi().getEnabled());
         }
 
         if (webSite.getCgiFileExtensions() == null || webSite.getCgiFileExtensions().isEmpty()) {
-            webSite.setCgiFileExtensions(Arrays.asList(defaultWebsiteCgiFileExtensions));
+            webSite.setCgiFileExtensions(defaultWebSiteSettings.getCgi().getFileExtensions());
         }
 
         if (webSite.getScriptAlias() == null || webSite.getScriptAlias().equals("")) {
-            webSite.setScriptAlias(defaultWebsiteScriptAliace);
+            webSite.setScriptAlias(defaultWebSiteSettings.getScriptAlias());
         }
 
         if (webSite.getDdosProtection() == null) {
-            webSite.setDdosProtection(defaultWebsiteDdosProtection);
+            webSite.setDdosProtection(defaultWebSiteSettings.getDdosProtection());
         }
 
         if (webSite.getAutoSubDomain() == null) {
-            webSite.setAutoSubDomain(defaultWebsiteAutoSubDomain);
+            webSite.setAutoSubDomain(defaultWebSiteSettings.getAutoSubDomain());
         }
 
         if (webSite.getAccessByOldHttpVersion() == null) {
-            webSite.setAccessByOldHttpVersion(defaultWebsiteAccessByOldHttpVersion);
+            webSite.setAccessByOldHttpVersion(defaultWebSiteSettings.getAccessByOldHttpVersion());
         }
 
         if (webSite.getStaticFileExtensions() == null) {
-            webSite.setStaticFileExtensions(Arrays.asList(defaultWebsiteStaticFileExtensions));
+            webSite.setStaticFileExtensions(defaultWebSiteSettings.getStatic().getFileExtensions());
         }
 
         if (webSite.getCustomUserConf() == null) {
-            webSite.setCustomUserConf(defaultWebsiteCustomUserConf);
+            webSite.setCustomUserConf(defaultWebSiteSettings.getCustomUserConf());
         }
 
         if (webSite.getIndexFileList() == null || webSite.getIndexFileList().isEmpty()) {
-            webSite.setIndexFileList(Arrays.asList(defaultWebsiteIndexFileList));
+            webSite.setIndexFileList(defaultWebSiteSettings.getIndexFileList());
         }
 
         if (webSite.getAccessLogEnabled() == null) {
-            webSite.setAccessLogEnabled(defaultAccessLogEnabled);
+            webSite.setAccessLogEnabled(defaultWebSiteSettings.getAccessLogEnabled());
         }
 
         if (webSite.getErrorLogEnabled() == null) {
-            webSite.setErrorLogEnabled(defaultErrorLogEnabled);
+            webSite.setErrorLogEnabled(defaultWebSiteSettings.getErrorLogEnabled());
         }
 
         if (webSite.getMbstringFuncOverload() == null || webSite.getMbstringFuncOverload() < 0 || webSite.getMbstringFuncOverload() > 7) {
-            webSite.setMbstringFuncOverload(defaultMbstringFuncOverload);
+            webSite.setMbstringFuncOverload(defaultWebSiteSettings.getMbstringFuncOverload());
         }
 
         if (webSite.getAllowUrlFopen() == null) {
-            webSite.setAllowUrlFopen(defaultAllowUrlFopen);
+            webSite.setAllowUrlFopen(defaultWebSiteSettings.getAllowUrlFopen());
         }
 
         if (webSite.getFollowSymLinks() == null) {
-            webSite.setFollowSymLinks(defaultFollowSymLinks);
+            webSite.setFollowSymLinks(defaultWebSiteSettings.getFollowSymLinks());
         }
 
         if (webSite.getMultiViews() == null) {
-            webSite.setMultiViews(defaultMultiViews);
+            webSite.setMultiViews(defaultWebSiteSettings.getMultiViews());
         }
     }
 

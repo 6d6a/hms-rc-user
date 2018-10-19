@@ -56,10 +56,7 @@ import static org.hamcrest.CoreMatchers.is;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfDnsRecordTest {
     @Autowired

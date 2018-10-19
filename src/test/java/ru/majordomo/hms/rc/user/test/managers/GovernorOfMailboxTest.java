@@ -57,13 +57,7 @@ import static org.hamcrest.CoreMatchers.not;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "spring.redis.host=127.0.0.1",
-                "default.mailbox.spamfilter.mood=NEUTRAL",
-                "default.mailbox.spamfilter.action=MOVE_TO_SPAM_FOLDER",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfMailboxTest {
     @Autowired

@@ -16,10 +16,7 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
@@ -59,7 +56,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
         KeyHolder holder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(query, parameters, holder, new String[]{"ID"});
+        jdbcTemplate.update(query, parameters, holder, new String[]{"id"});
         return holder.getKey().longValue();
     }
 
@@ -213,7 +210,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
         KeyHolder holder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(query, parameters, holder);
+        jdbcTemplate.update(query, parameters, holder, new String[]{"id"});
 
         return holder.getKey().longValue();
     }

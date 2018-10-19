@@ -52,10 +52,7 @@ import static ru.majordomo.hms.rc.user.common.Constants.TE;
         AMQPBrokerConfig.class,
 
         ConfigGovernors.class
-}, webEnvironment = RANDOM_PORT,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+}, webEnvironment = RANDOM_PORT
 )
 public class DatabaseUserAMQPControllerTest {
 

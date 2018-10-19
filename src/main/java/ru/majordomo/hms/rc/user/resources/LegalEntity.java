@@ -1,7 +1,7 @@
 package ru.majordomo.hms.rc.user.resources;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import java.util.Objects;
 

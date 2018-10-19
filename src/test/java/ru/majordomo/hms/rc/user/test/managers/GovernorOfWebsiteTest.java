@@ -58,30 +58,7 @@ import static org.hamcrest.CoreMatchers.is;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "default.website.serviceName=WEBSITE_APACHE2_PHP56_DEFAULT",
-                "default.website.documentRootPattern=/www",
-                "default.website.charset=UTF8",
-                "default.website.ssi.enabled=true",
-                "default.website.ssi.fileExtensions=shtml,shtm",
-                "default.website.cgi.enabled=false",
-                "default.website.cgi.fileExtensions=cgi,pl",
-                "default.website.scriptAlias=cgi-bin",
-                "default.website.ddosProtection=true",
-                "default.website.autoSubDomain=false",
-                "default.website.accessByOldHttpVersion=false",
-                "default.website.static.fileExtensions=avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
-                "default.website.indexFileList=index.php,index.html,index.htm",
-                "default.website.customUserConf=",
-                "default.website.accessLogEnabled=true",
-                "default.website.errorLogEnabled=true",
-                "default.website.allowUrlFopen=false",
-                "default.website.mbstringFuncOverload=0",
-                "default.website.followSymLinks=true",
-                "default.website.multiViews=false",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfWebsiteTest {
     @Autowired
@@ -96,66 +73,6 @@ public class GovernorOfWebsiteTest {
     private WebSiteRepository webSiteRepository;
     @Autowired
     private StaffResourceControllerClient staffResourceControllerClient;
-
-    @Value("${default.website.serviceName}")
-    private String defaultServiceName;
-
-    @Value("${default.website.documentRootPattern}")
-    private String defaultWebsiteDocumetRootPattern;
-
-    @Value("${default.website.charset}")
-    private CharSet defaultWebsiteCharset;
-
-    @Value("${default.website.ssi.enabled}")
-    private Boolean defaultWebsiteSsiEnabled;
-
-    @Value("${default.website.ssi.fileExtensions}")
-    private List<String> defaultWebsiteSsiFileExtensions;
-
-    @Value("${default.website.cgi.enabled}")
-    private Boolean defaultWebsiteCgiEnabled;
-
-    @Value("${default.website.cgi.fileExtensions}")
-    private List<String> defaultWebsiteCgiFileExtensions;
-
-    @Value("${default.website.scriptAlias}")
-    private String defaultWebsiteScriptAliace;
-
-    @Value("${default.website.ddosProtection}")
-    private Boolean defaultWebsiteDdosProtection;
-
-    @Value("${default.website.autoSubDomain}")
-    private Boolean defaultWebsiteAutoSubDomain;
-
-    @Value("${default.website.accessByOldHttpVersion}")
-    private Boolean defaultWebsiteAccessByOldHttpVersion;
-
-    @Value("${default.website.static.fileExtensions}")
-    private List<String> defaultWebsiteStaticFileExtensions;
-
-    @Value("${default.website.indexFileList}")
-    private List<String> defaultWebsiteIndexFileList;
-
-    @Value("${default.website.customUserConf}")
-    private String defaultWebsiteCustomUserConf;
-
-    @Value("${default.website.accessLogEnabled}")
-    private Boolean defaultAccessLogEnabled;
-
-    @Value("${default.website.errorLogEnabled}")
-    private Boolean defaultErrorLogEnabled;
-
-    @Value("${default.website.allowUrlFopen}")
-    private Boolean defaultAllowUrlFopen;
-
-    @Value("${default.website.mbstringFuncOverload}")
-    private Boolean defaultMbstringFuncOverload;
-
-    @Value("${default.website.followSymLinks}")
-    private Boolean defaultFollowSymLinks;
-
-    @Value("${default.website.multiViews}")
-    private Boolean defaultMultiViews;
 
     private List<String> domainIds = new ArrayList<>();
     private String accountId;

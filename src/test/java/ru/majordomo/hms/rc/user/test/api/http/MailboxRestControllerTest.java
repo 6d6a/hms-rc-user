@@ -71,14 +71,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "spring.redis.host:127.0.0.1",
-                "spring.redis.port:6379",
-                "default.mailbox.spamfilter.mood:NEUTRAL",
-                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = RANDOM_PORT
 )
 public class MailboxRestControllerTest {
 

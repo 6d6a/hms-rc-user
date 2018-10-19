@@ -51,11 +51,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "default.database.serviceName=DATABASE_MYSQL",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfDatabaseUserTest {
 

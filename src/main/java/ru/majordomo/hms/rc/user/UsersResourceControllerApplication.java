@@ -6,9 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+
+import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 
 //import ru.majordomo.hms.rc.user.importing.DBImportService;
 
@@ -16,6 +19,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 @EnableEurekaClient
 @EnableFeignClients(basePackages = {"ru.majordomo.hms.rc.user.api.interfaces"})
 @EnableMongoAuditing
+@EnableConfigurationProperties(DefaultWebSiteSettings.class)
 public class UsersResourceControllerApplication implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(UsersResourceControllerApplication.class);

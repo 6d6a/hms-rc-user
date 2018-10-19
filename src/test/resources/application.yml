@@ -7,6 +7,9 @@ resources:
     maxUid: 2147483647
     minUid: 2000
     namePattern: '"u"'
+  quotable:
+    warnPercent:
+      mailbox: 90
 spring:
   datasource:
     driverClassName: com.mysql.jdbc.Driver
@@ -20,7 +23,9 @@ spring:
     dynamic: true
     password: guest
     username: guest
-
+  redis:
+    host: 127.0.0.1
+    port: 6379
 default:
   archive:
     hotname: archive.majordomo.ru

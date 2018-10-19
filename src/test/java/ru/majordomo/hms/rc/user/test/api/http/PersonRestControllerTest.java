@@ -58,10 +58,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = RANDOM_PORT
 )
 public class PersonRestControllerTest {
 

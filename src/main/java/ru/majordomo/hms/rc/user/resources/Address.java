@@ -3,7 +3,7 @@ package ru.majordomo.hms.rc.user.resources;
 import com.google.common.base.Objects;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

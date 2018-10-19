@@ -60,11 +60,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
-
+        webEnvironment = RANDOM_PORT
 )
 public class FTPUserRestControllerTest {
 

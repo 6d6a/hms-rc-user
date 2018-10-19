@@ -53,10 +53,7 @@ import static ru.majordomo.hms.rc.user.resources.PersonType.INDIVIDUAL_FOREIGN;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfPersonTest {
     @Autowired

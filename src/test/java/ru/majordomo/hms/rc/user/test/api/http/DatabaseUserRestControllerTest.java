@@ -60,12 +60,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "default.database.serviceName=DATABASE_MYSQL",
-                "resources.quotable.warnPercent.mailbox=90"
-
-        }
+        webEnvironment = RANDOM_PORT
 )
 public class DatabaseUserRestControllerTest {
 

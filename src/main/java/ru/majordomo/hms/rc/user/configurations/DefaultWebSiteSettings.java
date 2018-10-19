@@ -2,10 +2,12 @@ package ru.majordomo.hms.rc.user.configurations;
 
 import org.hibernate.validator.constraints.Range;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -17,53 +19,56 @@ import static ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings.SET
 
 @Data
 @ConfigurationProperties(prefix = SETTINGS_PREFIX)
+@Validated
 public class DefaultWebSiteSettings {
     public static final String SETTINGS_PREFIX = "default.website";
 
     @NotNull
-    private final Boolean accessByOldHttpVersion;
+    private Boolean accessByOldHttpVersion;
     @NotNull
-    private final Boolean accessLogEnabled;
+    private Boolean accessLogEnabled;
     @NotNull
-    private final Boolean allowUrlFopen;
+    private Boolean allowUrlFopen;
     @NotNull
-    private final Boolean autoSubDomain;
+    private Boolean autoSubDomain;
     @NotNull
-    private final CharSet charset;
+    private CharSet charset;
+    @NotNull
+    private String customUserConf;
+    @NotNull
+    private Boolean ddosProtection;
     @NotBlank
-    private final String customUserConf;
+    private String documentRootPattern;
     @NotNull
-    private final Boolean ddosProtection;
-    @NotBlank
-    private final String documentRootPattern;
+    private Boolean errorLogEnabled;
     @NotNull
-    private final Boolean errorLogEnabled;
-    @NotNull
-    private final Boolean followSymLinks;
+    private Boolean followSymLinks;
     @NotEmpty
-    private final List<String> indexFileList;
+    private List<String> indexFileList;
     @NotNull
     @Range(min = 0, max = 7, message = "mbstringFuncOverload должно быть между {min} и {max}")
     private Integer mbstringFuncOverload;
     @NotNull
-    private final Boolean multiViews;
+    private Boolean multiViews;
     @NotBlank
-    private final String scriptAlias;
+    private String scriptAlias;
     @NotBlank
-    private final String serviceName;
-    @NotEmpty
-    private final List<String> fileExtensions;
+    private String serviceName;
     @NotNull
-    private final FileExtensionsSettings cgi;
+    @NestedConfigurationProperty
+    @Valid
+    private FileExtensionsSettings cgi = new FileExtensionsSettings();
     @NotNull
-    private final FileExtensionsSettings ssi;
-    @NotEmpty
-    private final List<String> staticFileExtensions;
+    @NestedConfigurationProperty
+    @Valid
+    private FileExtensionsSettings ssi = new FileExtensionsSettings();
+    @NotNull
+    private FileExtensionsSettings Static = new FileExtensionsSettings();
 
     @Data
-    private class FileExtensionsSettings {
-        private final Boolean enabled = true;
+    public class FileExtensionsSettings {
+        private Boolean enabled = true;
         @NotEmpty
-        private final List<String> fileExtensions;
+        private List<String> fileExtensions;
     }
 }

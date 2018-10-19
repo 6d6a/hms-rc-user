@@ -3,7 +3,7 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
