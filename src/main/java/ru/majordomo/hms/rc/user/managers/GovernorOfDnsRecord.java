@@ -4,6 +4,8 @@ import com.mysql.management.util.NotImplementedException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -267,28 +269,30 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         dnsResourceRecordDAO.save(record);
     }
 
+    @Transactional
     public void initDomain(Domain domain) {
         String domainName = IDN.toASCII(domain.getName());
-        dnsResourceRecordDAO.initDomain(domainName);
-        addSoaRecord(domain);
-        addNsRecords(domain);
-        addDefaultARecords(domain);
-        addMailRecords(domain);
+        Long domainId = dnsResourceRecordDAO.initDomain(domainName);
+        addSoaRecord(domain, domainId);
+        addNsRecords(domain, domainId);
+        addDefaultARecords(domain, domainId);
+        addMailRecords(domain, domainId);
     }
 
-    public void addNsRecords(Domain domain) {
+    public void addNsRecords(Domain domain, Long domainId) {
         String domainName = IDN.toASCII(domain.getName());
 
         DNSResourceRecord record = new DNSResourceRecord();
+        record.setDomainId(domainId);
         record.setRrType(DNSResourceRecordType.NS);
         record.setOwnerName(domainName);
         record.setTtl(3600L);
         record.setData("ns.majordomo.ru");
-        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        dnsResourceRecordDAO.insert(record);
         record.setData("ns2.majordomo.ru");
-        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        dnsResourceRecordDAO.insert(record);
         record.setData("ns3.majordomo.ru");
-        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        dnsResourceRecordDAO.insert(record);
     }
 
     public void addARecords(Domain domain) {
@@ -323,21 +327,23 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         dnsResourceRecordDAO.insertByDomainName(domainName, record);
     }
 
-    public void addSoaRecord(Domain domain) {
+    public void addSoaRecord(Domain domain, Long domainId) {
         String domainName = IDN.toASCII(domain.getName());
 
         DNSResourceRecord record = new DNSResourceRecord();
+        record.setDomainId(domainId);
         record.setRrType(DNSResourceRecordType.SOA);
         record.setOwnerName(domainName);
         record.setTtl(3600L);
         record.setData("ns.majordomo.ru. support.majordomo.ru. 2004032900 3600 900 3600000 3600");
-        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        dnsResourceRecordDAO.insert(record);
     }
 
-    public void addDefaultARecords(Domain domain) {
+    public void addDefaultARecords(Domain domain, Long domainId) {
         String domainName = IDN.toASCII(domain.getName());
 
         DNSResourceRecord record = new DNSResourceRecord();
+        record.setDomainId(domainId);
         record.setRrType(DNSResourceRecordType.A);
         record.setOwnerName(domainName);
         record.setTtl(3600L);
@@ -347,9 +353,9 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             logger.error("[addDefaultARecords] Ошибка: " + e.getMessage());
             return;
         }
-        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        dnsResourceRecordDAO.insert(record);
         record.setOwnerName("*." + domainName);
-        dnsResourceRecordDAO.insertByDomainName(domainName, record);
+        dnsResourceRecordDAO.insert(record);
     }
 
     private String getServerPrimaryIp(String accountId) {
@@ -370,33 +376,35 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         }
     }
 
-    public void addMailRecords(Domain domain) {
+    public void addMailRecords(Domain domain, Long domainId) {
         String domainName = IDN.toASCII(domain.getName());
 
         DNSResourceRecord mxRecord = new DNSResourceRecord();
+        mxRecord.setDomainId(domainId);
         mxRecord.setRrType(DNSResourceRecordType.MX);
         mxRecord.setRrClass(DNSResourceRecordClass.IN);
         mxRecord.setTtl(3600L);
         mxRecord.setOwnerName(domainName);
         mxRecord.setData("mmxs.majordomo.ru");
         mxRecord.setPrio(10L);
-        dnsResourceRecordDAO.insertByDomainName(domainName, mxRecord);
+        dnsResourceRecordDAO.insert(mxRecord);
 
         DNSResourceRecord cnameRecord = new DNSResourceRecord();
+        cnameRecord.setDomainId(domainId);
         cnameRecord.setRrClass(DNSResourceRecordClass.IN);
         cnameRecord.setRrType(DNSResourceRecordType.CNAME);
         cnameRecord.setTtl(3600L);
         cnameRecord.setOwnerName("smtp." + domainName);
         cnameRecord.setData("smtp.majordomo.ru");
-        dnsResourceRecordDAO.insertByDomainName(domainName, cnameRecord);
+        dnsResourceRecordDAO.insert(cnameRecord);
 
         cnameRecord.setOwnerName("pop3." + domainName);
         cnameRecord.setData("pop3.majordomo.ru");
-        dnsResourceRecordDAO.insertByDomainName(domainName, cnameRecord);
+        dnsResourceRecordDAO.insert(cnameRecord);
 
         cnameRecord.setOwnerName("mail." + domainName);
         cnameRecord.setData("mail.majordomo.ru");
-        dnsResourceRecordDAO.insertByDomainName(domainName, cnameRecord);
+        dnsResourceRecordDAO.insert(cnameRecord);
     }
 
     void setZoneStatus(Domain domain, Boolean switchedOn) {
