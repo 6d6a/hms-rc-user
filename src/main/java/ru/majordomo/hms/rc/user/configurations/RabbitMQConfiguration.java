@@ -12,11 +12,11 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
 import java.util.ArrayList;
@@ -64,8 +64,8 @@ public class RabbitMQConfiguration {
     }
 
     @Bean
-    public MappingJackson2MessageConverter mappingJackson2MessageConverter() {
-        return new MappingJackson2MessageConverter();
+    public Jackson2JsonMessageConverter converter() {
+        return new Jackson2JsonMessageConverter();
     }
 
     @Bean
