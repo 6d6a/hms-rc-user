@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.IDN;
@@ -44,11 +45,13 @@ public class DomainRestController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/domain/{domainId}")
     public Domain readOne(@PathVariable String domainId) {
         return governor.build(domainId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/domain/{domain-name}/add-dns-record")
     public ResponseEntity<DNSResourceRecord> addDnsRecord(
             @PathVariable("domain-name") String domainName,
@@ -71,6 +74,7 @@ public class DomainRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/domain/process-sync")
     public ResponseEntity<Void> processDomainsSync(@RequestBody Map<String, RegSpec> domains) {
         try {
@@ -87,6 +91,7 @@ public class DomainRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/domain/{domain-name}/delete-dns-record")
     public ResponseEntity deleteDnsRecord(@PathVariable("domain-name") String domainName, @RequestBody DNSResourceRecord record) {
         try {
@@ -97,6 +102,7 @@ public class DomainRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/domain/{domainId}")
     public Domain readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("domainId") String domainId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -105,11 +111,13 @@ public class DomainRestController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/domain")
     public Collection<Domain> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/domain")
     public Collection<Domain> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -117,22 +125,26 @@ public class DomainRestController {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/domain/filter")
     public Collection<Domain> readAllWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/domain/filter")
     public Collection<Domain> readAllWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);
         return governor.buildAll(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/domain/find")
     public Domain readOneWithParams(@RequestParam Map<String, String> requestParams) {
         return governor.build(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/domain/find")
     public Domain readOneWithParamsByAccount(@PathVariable String accountId, @RequestParam Map<String, String> requestParams) {
         requestParams.put("accountId", accountId);

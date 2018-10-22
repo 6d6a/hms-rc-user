@@ -5,10 +5,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -17,11 +20,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import ru.majordomo.hms.rc.user.resources.CharSet;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
@@ -49,6 +50,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,94 +70,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = RANDOM_PORT, properties = {
-        "default.website.serviceName=WEBSITE_APACHE2_PHP56_DEFAULT",
-        "default.website.documentRootPattern=/www",
-        "default.website.charset=UTF8",
-        "default.website.ssi.enabled=true",
-        "default.website.ssi.fileExtensions=shtml,shtm",
-        "default.website.cgi.enabled=false",
-        "default.website.cgi.fileExtensions=cgi,pl",
-        "default.website.scriptAlias=cgi-bin",
-        "default.website.ddosProtection=true",
-        "default.website.autoSubDomain=false",
-        "default.website.accessByOldHttpVersion=false",
-        "default.website.static.fileExtensions=avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
-        "default.website.indexFileList=index.php,index.html,index.htm",
-        "default.website.customUserConf=",
-        "default.website.accessLogEnabled=true",
-        "default.website.errorLogEnabled=true",
-        "default.website.allowUrlFopen=false",
-        "default.website.mbstringFuncOverload=0",
-        "default.website.followSymLinks=true",
-        "default.website.multiViews=false",
-        "resources.quotable.warnPercent.mailbox=90"
-})
+        webEnvironment = RANDOM_PORT
+)
 public class WebsiteRestControllerTest {
 
     private MockMvc mockMvc;
     private String resourceName = "website";
     private List<WebSite> batchOfWebsites = new ArrayList<>();
-
-    @Value("${default.website.serviceName}")
-    private String defaultServiceName;
-
-    @Value("${default.website.documentRootPattern}")
-    private String defaultWebsiteDocumetRootPattern;
-
-    @Value("${default.website.charset}")
-    private CharSet defaultWebsiteCharset;
-
-    @Value("${default.website.ssi.enabled}")
-    private Boolean defaultWebsiteSsiEnabled;
-
-    @Value("${default.website.ssi.fileExtensions}")
-    private List<String> defaultWebsiteSsiFileExtensions;
-
-    @Value("${default.website.cgi.enabled}")
-    private Boolean defaultWebsiteCgiEnabled;
-
-    @Value("${default.website.cgi.fileExtensions}")
-    private List<String> defaultWebsiteCgiFileExtensions;
-
-    @Value("${default.website.scriptAlias}")
-    private String defaultWebsiteScriptAliace;
-
-    @Value("${default.website.ddosProtection}")
-    private Boolean defaultWebsiteDdosProtection;
-
-    @Value("${default.website.autoSubDomain}")
-    private Boolean defaultWebsiteAutoSubDomain;
-
-    @Value("${default.website.accessByOldHttpVersion}")
-    private Boolean defaultWebsiteAccessByOldHttpVersion;
-
-    @Value("${default.website.static.fileExtensions}")
-    private List<String> defaultWebsiteStaticFileExtensions;
-
-    @Value("${default.website.indexFileList}")
-    private List<String> defaultWebsiteIndexFileList;
-
-    @Value("${default.website.customUserConf}")
-    private String defaultWebsiteCustomUserConf;
-
-    @Value("${default.website.accessLogEnabled}")
-    private Boolean defaultAccessLogEnabled;
-
-    @Value("${default.website.errorLogEnabled}")
-    private Boolean defaultErrorLogEnabled;
-
-    @Value("${default.website.allowUrlFopen}")
-    private Boolean defaultAllowUrlFopen;
-
-    @Value("${default.website.mbstringFuncOverload}")
-    private Boolean defaultMbstringFuncOverload;
-
-    @Value("${default.website.followSymLinks}")
-    private Boolean defaultFollowSymLinks;
-
-    @Value("${default.website.multiViews}")
-    private Boolean defaultMultiViews;
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
@@ -194,7 +115,7 @@ public class WebsiteRestControllerTest {
 
         }
 
-        repository.save((Iterable) batchOfWebsites);
+        repository.saveAll((Iterable) batchOfWebsites);
     }
 
     @Test
@@ -211,10 +132,10 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("Комментарий к сайту"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли сайт"),
-                                fieldWithPath("unixAccount").description("Аккаунт на сервере, под чьим UID'ом будет работать вебсервер"),
+                                subsectionWithPath("unixAccount").description("Аккаунт на сервере, под чьим UID'ом будет работать вебсервер"),
                                 fieldWithPath("serviceId").description("ID сервиса, на котором расположен сайт"),
                                 fieldWithPath("documentRoot").description("Домашняя директория сайта. Указывается часть полного пути, не содрежащая путь к домашней директории"),
-                                fieldWithPath("domains").description("Домены, привязанные к сайту"),
+                                subsectionWithPath("domains[]").description("Домены, привязанные к сайту"),
                                 fieldWithPath("charSet").description("Кодировка сайта"),
                                 fieldWithPath("ssiEnabled").description("Включен ли SSI"),
                                 fieldWithPath("ssiFileExtensions").description("Список расширений файлов, которые должны обрабатываться SSI обработчиком"),

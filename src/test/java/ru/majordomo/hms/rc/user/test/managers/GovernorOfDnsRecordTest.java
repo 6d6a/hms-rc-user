@@ -56,10 +56,7 @@ import static org.hamcrest.CoreMatchers.is;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfDnsRecordTest {
     @Autowired
@@ -84,11 +81,11 @@ public class GovernorOfDnsRecordTest {
     @Before
     public void setUp() throws Exception {
         unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
         persons = ResourceGenerator.generateBatchOfPerson();
         domains = ResourceGenerator.generateBatchOfDomains(persons);
-        domainRepository.save(domains);
-        personRepository.save(persons);
+        domainRepository.saveAll(domains);
+        personRepository.saveAll(persons);
     }
 
     @Test

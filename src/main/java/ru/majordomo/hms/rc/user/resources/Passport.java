@@ -3,7 +3,7 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import java.time.LocalDate;
 import java.util.Objects;

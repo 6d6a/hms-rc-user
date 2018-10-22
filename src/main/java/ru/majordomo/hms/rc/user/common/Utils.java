@@ -1,6 +1,6 @@
 package ru.majordomo.hms.rc.user.common;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
 import java.math.BigDecimal;

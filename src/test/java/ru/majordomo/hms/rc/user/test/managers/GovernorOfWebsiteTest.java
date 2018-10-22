@@ -58,30 +58,7 @@ import static org.hamcrest.CoreMatchers.is;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "default.website.serviceName=WEBSITE_APACHE2_PHP56_DEFAULT",
-                "default.website.documentRootPattern=/www",
-                "default.website.charset=UTF8",
-                "default.website.ssi.enabled=true",
-                "default.website.ssi.fileExtensions=shtml,shtm",
-                "default.website.cgi.enabled=false",
-                "default.website.cgi.fileExtensions=cgi,pl",
-                "default.website.scriptAlias=cgi-bin",
-                "default.website.ddosProtection=true",
-                "default.website.autoSubDomain=false",
-                "default.website.accessByOldHttpVersion=false",
-                "default.website.static.fileExtensions=avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm",
-                "default.website.indexFileList=index.php,index.html,index.htm",
-                "default.website.customUserConf=",
-                "default.website.accessLogEnabled=true",
-                "default.website.errorLogEnabled=true",
-                "default.website.allowUrlFopen=false",
-                "default.website.mbstringFuncOverload=0",
-                "default.website.followSymLinks=true",
-                "default.website.multiViews=false",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfWebsiteTest {
     @Autowired
@@ -96,66 +73,6 @@ public class GovernorOfWebsiteTest {
     private WebSiteRepository webSiteRepository;
     @Autowired
     private StaffResourceControllerClient staffResourceControllerClient;
-
-    @Value("${default.website.serviceName}")
-    private String defaultServiceName;
-
-    @Value("${default.website.documentRootPattern}")
-    private String defaultWebsiteDocumetRootPattern;
-
-    @Value("${default.website.charset}")
-    private CharSet defaultWebsiteCharset;
-
-    @Value("${default.website.ssi.enabled}")
-    private Boolean defaultWebsiteSsiEnabled;
-
-    @Value("${default.website.ssi.fileExtensions}")
-    private List<String> defaultWebsiteSsiFileExtensions;
-
-    @Value("${default.website.cgi.enabled}")
-    private Boolean defaultWebsiteCgiEnabled;
-
-    @Value("${default.website.cgi.fileExtensions}")
-    private List<String> defaultWebsiteCgiFileExtensions;
-
-    @Value("${default.website.scriptAlias}")
-    private String defaultWebsiteScriptAliace;
-
-    @Value("${default.website.ddosProtection}")
-    private Boolean defaultWebsiteDdosProtection;
-
-    @Value("${default.website.autoSubDomain}")
-    private Boolean defaultWebsiteAutoSubDomain;
-
-    @Value("${default.website.accessByOldHttpVersion}")
-    private Boolean defaultWebsiteAccessByOldHttpVersion;
-
-    @Value("${default.website.static.fileExtensions}")
-    private List<String> defaultWebsiteStaticFileExtensions;
-
-    @Value("${default.website.indexFileList}")
-    private List<String> defaultWebsiteIndexFileList;
-
-    @Value("${default.website.customUserConf}")
-    private String defaultWebsiteCustomUserConf;
-
-    @Value("${default.website.accessLogEnabled}")
-    private Boolean defaultAccessLogEnabled;
-
-    @Value("${default.website.errorLogEnabled}")
-    private Boolean defaultErrorLogEnabled;
-
-    @Value("${default.website.allowUrlFopen}")
-    private Boolean defaultAllowUrlFopen;
-
-    @Value("${default.website.mbstringFuncOverload}")
-    private Boolean defaultMbstringFuncOverload;
-
-    @Value("${default.website.followSymLinks}")
-    private Boolean defaultFollowSymLinks;
-
-    @Value("${default.website.multiViews}")
-    private Boolean defaultMultiViews;
 
     private List<String> domainIds = new ArrayList<>();
     private String accountId;
@@ -172,7 +89,7 @@ public class GovernorOfWebsiteTest {
             domainIds.add(domain.getId());
         }
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
         accountId = unixAccounts.get(0).getAccountId();
 
         batchOfWebsites = new ArrayList<>();
@@ -181,7 +98,7 @@ public class GovernorOfWebsiteTest {
 
         batchOfWebsites = ResourceGenerator.generateBatchOfCertainWebsites(accountId, serviceId, unixAccounts.get(0).getId(), domainIds);
 
-        webSiteRepository.save(batchOfWebsites);
+        webSiteRepository.saveAll(batchOfWebsites);
     }
 
     @Test
@@ -231,14 +148,15 @@ public class GovernorOfWebsiteTest {
         WebSite webSite = governor.update(serviceMessage);
         System.out.println(webSite.getCgiFileExtensions());
 
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled(), "CgiEnabled must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMbstringFuncOverload() == 4, "MbstringFuncOverload==4 must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAllowUrlFopen(), "AllowUrlFopen must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getMultiViews(), "MultiViews must be true");
-        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getFollowSymLinks(), "!FollowSymLinks must be true");
-        Assert.isTrue(!webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAccessLogEnabled(), "!AccessLogEnabled must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getAutoSubDomain(), "AutoSubDomain must be true");
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+        Assert.isTrue(foundWebSite.getCgiEnabled(), "CgiEnabled must be true");
+        Assert.isTrue(foundWebSite.getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
+        Assert.isTrue(foundWebSite.getMbstringFuncOverload() == 4, "MbstringFuncOverload==4 must be true");
+        Assert.isTrue(foundWebSite.getAllowUrlFopen(), "AllowUrlFopen must be true");
+        Assert.isTrue(foundWebSite.getMultiViews(), "MultiViews must be true");
+        Assert.isTrue(!foundWebSite.getFollowSymLinks(), "!FollowSymLinks must be true");
+        Assert.isTrue(!foundWebSite.getAccessLogEnabled(), "!AccessLogEnabled must be true");
+        Assert.isTrue(foundWebSite.getAutoSubDomain(), "AutoSubDomain must be true");
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -280,8 +198,10 @@ public class GovernorOfWebsiteTest {
 
         governor.update(serviceMessage);
 
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiEnabled(), "CgiEnabled must be true");
-        Assert.isTrue(webSiteRepository.findOne(batchOfWebsites.get(0).getId()).getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+
+        Assert.isTrue(foundWebSite.getCgiEnabled(), "CgiEnabled must be true");
+        Assert.isTrue(foundWebSite.getCgiFileExtensions().equals(cgiExtensions), "CgiFileExtensions.equals(cgiExtensions) must be true");
     }
 
     @Test
@@ -291,7 +211,7 @@ public class GovernorOfWebsiteTest {
         governor.drop(resourceId);
 
         Assert.isTrue(webSiteRepository.count() == 1, "webSiteRepository.count() == 1 must be true");
-        Assert.isNull(webSiteRepository.findOne(resourceId), "webSiteRepository.findOne(resourceId) must be null");
+        Assert.isNull(webSiteRepository.findById(resourceId).orElse(null), "webSiteRepository.findOne(resourceId) must be null");
     }
 
     @Test(expected = ResourceNotFoundException.class)

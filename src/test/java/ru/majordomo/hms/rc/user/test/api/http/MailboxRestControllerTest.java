@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -49,6 +50,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,14 +71,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "spring.redis.host:127.0.0.1",
-                "spring.redis.port:6379",
-                "default.mailbox.spamfilter.mood:NEUTRAL",
-                "default.mailbox.spamfilter.action:MOVE_TO_SPAM_FOLDER",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = RANDOM_PORT
 )
 public class MailboxRestControllerTest {
 
@@ -106,8 +101,8 @@ public class MailboxRestControllerTest {
     @Before
     public void setUp() throws Exception {
         if (redisServer == null) {
-            JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) redisConnectionFactory;
-            redisServer = new RedisServer(jedisConnectionFactory.getPort());
+            LettuceConnectionFactory redisConnectionFactory = (LettuceConnectionFactory) this.redisConnectionFactory;
+            redisServer = new RedisServer(redisConnectionFactory.getPort());
             redisServer.start();
         }
         this.doc = document("domain/{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()));
@@ -116,7 +111,7 @@ public class MailboxRestControllerTest {
                 .build();
         batchOfMailboxes = ResourceGenerator.generateBatchOfMailboxes();
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts(batchOfMailboxes);
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
         for (Mailbox mailbox: batchOfMailboxes) {
             Person person = mailbox.getDomain().getPerson();
             Domain domain = mailbox.getDomain();
@@ -131,7 +126,7 @@ public class MailboxRestControllerTest {
             mailbox.setMailSpool("/homebig/" + domain.getName() + "/" + mailbox.getName());
         }
 
-        repository.save((Iterable) batchOfMailboxes);
+        repository.saveAll((Iterable) batchOfMailboxes);
     }
 
     @Test
@@ -151,7 +146,7 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("comment").description("Комментарий для ящика"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли ящик"),
                                 fieldWithPath("passwordHash").description("Хэш пароля"),
-                                fieldWithPath("domain").description("Домен, на котором создан ящик"),
+                                subsectionWithPath("domain").description("Домен, на котором создан ящик"),
                                 fieldWithPath("redirectAddresses").description("Список переадресаций с текущего почтового ящика"),
                                 fieldWithPath("blackList").description("Список адресов, почта с которых не должна доставляться"),
                                 fieldWithPath("whiteList").description("Список адресов, с которых почта должна доставляться в любом случае"),

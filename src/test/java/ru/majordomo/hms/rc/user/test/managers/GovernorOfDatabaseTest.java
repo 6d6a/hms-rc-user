@@ -48,11 +48,7 @@ import static org.hamcrest.CoreMatchers.not;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "default.database.serviceName=DATABASE_MYSQL",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfDatabaseTest {
     @Autowired
@@ -70,7 +66,7 @@ public class GovernorOfDatabaseTest {
     public void setUp() throws Exception {
         batchOfDatabases = ResourceGenerator.generateBatchOfDatabases();
         for (Database database : batchOfDatabases) {
-            databaseUserRepository.save(database.getDatabaseUsers());
+            databaseUserRepository.saveAll(database.getDatabaseUsers());
             repository.save(database);
         }
     }
@@ -212,7 +208,7 @@ public class GovernorOfDatabaseTest {
 
     @Test
     public void removeUserFromDatabase() throws Exception {
-        Database database = repository.findOne(batchOfDatabases.get(0).getId());
+        Database database = repository.findById(batchOfDatabases.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         String databaseUserId = database.getDatabaseUserIds().get(0);
         governor.removeDatabaseUserIdFromDatabases(databaseUserId);
         assertThat(repository.findByDatabaseUserIdsContaining(databaseUserId).size(), is(0));

@@ -53,10 +53,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfDomainTest {
     @Autowired
@@ -75,8 +72,8 @@ public class GovernorOfDomainTest {
     public void setUp() throws Exception {
         persons = ResourceGenerator.generateBatchOfPerson();
         domains = ResourceGenerator.generateBatchOfDomains(persons);
-        repository.save(domains);
-        personRepository.save(persons);
+        repository.saveAll(domains);
+        personRepository.saveAll(persons);
     }
 
     @After

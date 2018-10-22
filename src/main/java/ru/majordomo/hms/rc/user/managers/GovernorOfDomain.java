@@ -417,7 +417,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             logger.debug("Перенаправлений, использующих домен с ID " + resourceId + " не обнаружено");
         }
 
-        Domain domain = repository.findOne(resourceId);
+        Domain domain = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Домен не найден"));
+
         if (domain.getParentDomainId() == null) {
             governorOfDnsRecord.dropDomain(domain.getName());
         }
@@ -426,7 +429,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -445,10 +448,9 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             
             domain.setAutoRenew(true);
         } else if (serviceMessage.getParam("parentDomainId") != null) {
-            Domain parent = repository.findOne((String) serviceMessage.getParam("parentDomainId"));
-            if (parent == null) {
-                throw new ParameterValidationException("Не найден домен-родитель с id: " + serviceMessage.getParam("parentDomainId"));
-            }
+            Domain parent = repository
+                    .findById((String) serviceMessage.getParam("parentDomainId"))
+                    .orElseThrow(() -> new ParameterValidationException("Не найден домен-родитель с id: " + serviceMessage.getParam("parentDomainId")));
 
             if (parent.getParentDomainId() != null) {
                 throw new ParameterValidationException("Домен-родитель не может быть поддоменом");
@@ -498,10 +500,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         }
 
         if (domain.getParentDomainId() != null) {
-            Domain parent = repository.findOne(domain.getParentDomainId());
-            if (parent == null) {
-                throw new ParameterValidationException("Не найден домен-родитель с id: " + domain.getParentDomainId());
-            }
+            Domain parent = repository
+                    .findById(domain.getParentDomainId())
+                    .orElseThrow(() -> new ParameterValidationException("Не найден домен-родитель с id: " + domain.getParentDomainId()));
+
             domain.setRegSpec(parent.getRegSpec());
         }
 
@@ -515,10 +517,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
     @Override
     public Domain build(String resourceId) throws ResourceNotFoundException {
-        Domain domain = repository.findOne(resourceId);
-        if (domain == null) {
-            throw new ResourceNotFoundException("Domain с ID:" + resourceId + " не найден");
-        }
+        Domain domain = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Domain с ID:" + resourceId + " не найден"));
+
         return construct(domain);
     }
 

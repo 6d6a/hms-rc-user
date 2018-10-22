@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -31,6 +32,7 @@ import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import ru.majordomo.hms.rc.user.resources.SSLCertificateState;
 
 @Service
+@Profile("import")
 public class SSLCertificateDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(SSLCertificateDBImportService.class);
 
@@ -133,7 +135,7 @@ public class SSLCertificateDBImportService implements ResourceDBImportService {
         List<SSLCertificate> sslCertificates = sslCertificateRepository.findByAccountId(accountId);
 
         if (sslCertificates != null && !sslCertificates.isEmpty()) {
-            sslCertificateRepository.delete(sslCertificates);
+            sslCertificateRepository.deleteAll(sslCertificates);
         }
 
         pull(accountId);

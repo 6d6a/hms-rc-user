@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import redis.embedded.RedisServer;
@@ -56,13 +57,7 @@ import static org.hamcrest.CoreMatchers.not;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "spring.redis.host=127.0.0.1",
-                "default.mailbox.spamfilter.mood=NEUTRAL",
-                "default.mailbox.spamfilter.action=MOVE_TO_SPAM_FOLDER",
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfMailboxTest {
     @Autowired
@@ -90,8 +85,8 @@ public class GovernorOfMailboxTest {
     @Before
     public void setUp() throws Exception {
         if (redisServer == null) {
-            JedisConnectionFactory jedisConnectionFactory = (JedisConnectionFactory) redisConnectionFactory;
-            redisServer = new RedisServer(jedisConnectionFactory.getPort());
+            LettuceConnectionFactory redisConnectionFactory = (LettuceConnectionFactory) this.redisConnectionFactory;
+            redisServer = new RedisServer(redisConnectionFactory.getPort());
             redisServer.start();
         }
         List<UnixAccount> unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
@@ -100,10 +95,10 @@ public class GovernorOfMailboxTest {
             Person person = domain.getPerson();
             personRepository.save(person);
         }
-        domainRepository.save(batchOfDomains);
+        domainRepository.saveAll(batchOfDomains);
 
         unixAccounts.get(0).setAccountId(batchOfDomains.get(0).getAccountId());
-        unixAccountRepository.save(unixAccounts);
+        unixAccountRepository.saveAll(unixAccounts);
 
         mailboxes = ResourceGenerator.generateBatchOfMailboxesWithDomains(batchOfDomains);
 
@@ -113,7 +108,7 @@ public class GovernorOfMailboxTest {
             governor.syncWithRedis(mailbox);
         }
 
-        repository.save(mailboxes);
+        repository.saveAll(mailboxes);
     }
 
     @AfterClass
@@ -150,7 +145,9 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getMailFromAllowed(), is(true));
         assertThat(mailbox.getAntiSpamEnabled(), is(false));
 
-        MailboxForRedis redisMailbox = redisRepository.findOne(governor.construct(mailbox).getFullName());
+        MailboxForRedis redisMailbox = redisRepository
+                .findById(governor.construct(mailbox).getFullName())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertNotNull(redisMailbox);
         assertThat(redisMailbox.getMailFromAllowed(), is(mailbox.getMailFromAllowed()));
         assertThat(redisMailbox.getAntiSpamEnabled(), is(mailbox.getAntiSpamEnabled()));
@@ -244,7 +241,9 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("redirectAddresses", Collections.singletonList("ololo@redirect.ru"));
         governor.update(serviceMessage);
 
-        Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
+        Mailbox mailbox = repository
+                .findById(mailboxes.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertNotNull(mailbox);
         assertNotNull(mailbox.getPasswordHash());
         assertThat(mailbox.getQuota(), is(500000L));
@@ -254,7 +253,9 @@ public class GovernorOfMailboxTest {
         assertThat(mailbox.getRedirectAddresses(), is(Collections.singletonList("ololo@redirect.ru")));
         assertThat(mailbox.getPasswordHash(), not(mailboxes.get(0).getPasswordHash()));
 
-        MailboxForRedis redisMailbox = redisRepository.findOne(governor.construct(mailbox).getFullName());
+        MailboxForRedis redisMailbox = redisRepository
+                .findById(governor.construct(mailbox).getFullName())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertNotNull(redisMailbox);
         assertThat(mailbox.getAntiSpamEnabled(), is(redisMailbox.getAntiSpamEnabled()));
         assertThat(String.join(":", mailbox.getWhiteList()), is(redisMailbox.getWhiteList()));
@@ -277,10 +278,12 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("isAggregator", true);
         governor.update(serviceMessage);
 
-        Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
+        Mailbox mailbox = repository.findById(mailboxes.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(mailbox.getIsAggregator(), is(true));
 
-        MailboxForRedis redisMailbox = redisRepository.findOne("*@" + governor.construct(mailbox).getDomain().getName());
+        MailboxForRedis redisMailbox = redisRepository
+                .findById("*@" + governor.construct(mailbox).getDomain().getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertNotNull(redisMailbox);
         assertThat(mailbox.getAntiSpamEnabled(), is(redisMailbox.getAntiSpamEnabled()));
         assertThat(String.join(":", mailbox.getWhiteList()), is(redisMailbox.getWhiteList()));
@@ -294,7 +297,7 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("isAggregator", false);
         governor.update(serviceMessage);
 
-        assertNull(redisRepository.findOne("*@" + governor.construct(mailbox).getDomain().getName()));
+        assertNull(redisRepository.findById("*@" + governor.construct(mailbox).getDomain().getName()).orElse(null));
     }
 
     @Test
@@ -305,9 +308,13 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("mailFromAllowed", false);
         governor.update(serviceMessage);
-        Mailbox mailbox = repository.findOne(mailboxes.get(0).getId());
+        Mailbox mailbox = repository
+                .findById(mailboxes.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(mailbox.getMailFromAllowed(), is(false));
-        MailboxForRedis redisMailbox = redisRepository.findOne(governor.construct(mailbox).getFullName());
+        MailboxForRedis redisMailbox = redisRepository
+                .findById(governor.construct(mailbox).getFullName())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertNotNull(redisMailbox);
         assertThat(mailbox.getMailFromAllowed(), is(redisMailbox.getMailFromAllowed()));
     }
@@ -353,7 +360,7 @@ public class GovernorOfMailboxTest {
     @Test
     public void drop() throws Exception {
         governor.drop(mailboxes.get(0).getId());
-        assertNull(repository.findOne(mailboxes.get(0).getId()));
+        assertNull(repository.findById(mailboxes.get(0).getId()).orElse(null));
     }
 
     @Test(expected = ResourceNotFoundException.class)

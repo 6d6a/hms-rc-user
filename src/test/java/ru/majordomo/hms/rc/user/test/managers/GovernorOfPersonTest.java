@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -30,6 +31,7 @@ import javax.validation.ConstraintViolationException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 import static org.junit.Assert.assertThat;
@@ -51,10 +53,7 @@ import static ru.majordomo.hms.rc.user.resources.PersonType.INDIVIDUAL_FOREIGN;
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfPersonTest {
     @Autowired
@@ -72,7 +71,7 @@ public class GovernorOfPersonTest {
         persons = ResourceGenerator.generateBatchOfPerson();
         persons.get(0).addLinkedAccountId(persons.get(1).getAccountId());
 
-        repository.save(persons);
+        repository.saveAll(persons);
     }
 
     @After
@@ -203,7 +202,9 @@ public class GovernorOfPersonTest {
 
         governor.update(serviceMessage);
 
-        Person gotPerson = repository.findOne(persons.get(0).getId());
+        Person gotPerson = repository
+                .findById(persons.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(gotPerson.getFirstname(), is(newFirstname));
         assertThat(gotPerson.getLastname(), is(newLastname));
         assertThat(gotPerson.getMiddlename(), is(newMiddlename));
@@ -211,7 +212,7 @@ public class GovernorOfPersonTest {
         assertThat(gotPerson.getPhoneNumbers(), is(newPhoneNumbers));
         System.out.println(gotPerson.getPostalAddress());
         System.out.println(newPostalAddress);
-        assertTrue(gotPerson.getPostalAddress().equals(newPostalAddress));
+        assertEquals(gotPerson.getPostalAddress(), newPostalAddress);
         assertThat(gotPerson.getPassport(), is(governor.buildPassportFromMap(newPassport)));
     }
 
@@ -249,7 +250,9 @@ public class GovernorOfPersonTest {
 
         governor.update(serviceMessage);
 
-        Person gotPerson = repository.findOne(persons.get(0).getId());
+        Person gotPerson = repository
+                .findById(persons.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(gotPerson.getFirstname(), is(newFirstname));
         assertThat(gotPerson.getLastname(), is(newLastname));
         assertThat(gotPerson.getMiddlename(), is(newMiddlename));
@@ -257,7 +260,7 @@ public class GovernorOfPersonTest {
         assertThat(gotPerson.getPhoneNumbers(), is(newPhoneNumbers));
         System.out.println(gotPerson.getPostalAddress());
         System.out.println(newPostalAddress);
-        assertTrue(gotPerson.getPostalAddress().equals(newPostalAddress));
+        assertEquals(gotPerson.getPostalAddress(), newPostalAddress);
         assertThat(gotPerson.getPassport(), is(governor.buildPassportFromMap(newPassport)));
     }
 
@@ -300,15 +303,17 @@ public class GovernorOfPersonTest {
 
         governor.update(serviceMessage);
 
-        Person gotPerson = repository.findOne(persons.get(0).getId());
+        Person gotPerson = repository
+                .findById(persons.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(gotPerson.getOrgName(), is(newOrgName));
         assertThat(gotPerson.getOrgForm(), is(newOrgForm));
         assertThat(gotPerson.getEmailAddresses(), is(newEmailAddresses));
         assertThat(gotPerson.getPhoneNumbers(), is(newPhoneNumbers));
         System.out.println(gotPerson.getPostalAddress());
         System.out.println(newPostalAddress);
-        assertTrue(gotPerson.getPostalAddress().equals(newPostalAddress));
-        assertEquals(gotPerson.getPassport(), null);
+        assertEquals(gotPerson.getPostalAddress(), newPostalAddress);
+        assertNull(gotPerson.getPassport());
         assertThat(gotPerson.getLegalEntity(), is(governor.buildLegalEntityFromMap(newLegalEntity)));
     }
 

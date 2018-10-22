@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.mongodb.core.convert.CustomConversions;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+
 import ru.majordomo.hms.rc.user.mappers.StringToAddressConverter;
 
 import java.util.ArrayList;
@@ -20,10 +21,10 @@ public class MongoConfig {
     private String mongodbUri;
 
     @Bean
-    public CustomConversions customConversions() {
-        List<Converter<?, ?>> converterList = new ArrayList<Converter<?, ?>>();
+    public MongoCustomConversions customConversions() {
+        List<Converter<?, ?>> converterList = new ArrayList<>();
         converterList.add(new StringToAddressConverter());
-        return new CustomConversions(converterList);
+        return new MongoCustomConversions(converterList);
     }
 
     @Bean

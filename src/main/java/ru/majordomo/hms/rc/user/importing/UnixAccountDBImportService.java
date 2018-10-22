@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -27,6 +28,7 @@ import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 @Service
+@Profile("import")
 public class UnixAccountDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(UnixAccountDBImportService.class);
 
@@ -189,7 +191,7 @@ public class UnixAccountDBImportService implements ResourceDBImportService {
         List<UnixAccount> unixAccounts = unixAccountRepository.findByAccountId(accountId);
 
         if (unixAccounts != null && !unixAccounts.isEmpty()) {
-            unixAccountRepository.delete(unixAccounts);
+            unixAccountRepository.deleteAll(unixAccounts);
         }
 
         pull(accountId);

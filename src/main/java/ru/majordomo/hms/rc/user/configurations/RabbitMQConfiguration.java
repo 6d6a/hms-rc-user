@@ -1,23 +1,22 @@
 package ru.majordomo.hms.rc.user.configurations;
 
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
-import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
 import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
 @Configuration
 @Profile({"default","prod","dev"})
 @EnableRabbit
-public class RabbitMQConfiguration implements RabbitListenerConfigurer {
+public class RabbitMQConfiguration {
 
     @Value("${spring.rabbitmq.host}")
     private String rabbitHost;
@@ -64,33 +63,10 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
         return new RabbitTemplate(connectionFactory());
     }
 
-    public void configureRabbitListeners(
-            RabbitListenerEndpointRegistrar registrar) {
-        registrar.setMessageHandlerMethodFactory(myHandlerMethodFactory());
-        registrar.setContainerFactory(rabbitListenerContainerFactory());
-    }
-
     @Bean
-    public RabbitListenerContainerFactory rabbitListenerContainerFactory() {
-        SimpleRabbitListenerContainerFactory containerFactory = new SimpleRabbitListenerContainerFactory();
-        containerFactory.setConcurrentConsumers(10);
-        containerFactory.setConnectionFactory(connectionFactory());
-        return containerFactory;
+    public Jackson2JsonMessageConverter converter() {
+        return new Jackson2JsonMessageConverter();
     }
-
-    @Bean
-    public DefaultMessageHandlerMethodFactory myHandlerMethodFactory() {
-        DefaultMessageHandlerMethodFactory factory = new DefaultMessageHandlerMethodFactory();
-        factory.setMessageConverter(mappingJackson2MessageConverter());
-        return factory;
-    }
-
-    @Bean
-    public MappingJackson2MessageConverter mappingJackson2MessageConverter() {
-        return new MappingJackson2MessageConverter();
-    }
-
-
 
     @Bean
     RetryOperationsInterceptor interceptor() {

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -21,6 +22,7 @@ import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
 @Component
+@Profile("import")
 public class DatabaseUserDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DatabaseUserDBImportService.class);
 
@@ -106,7 +108,7 @@ public class DatabaseUserDBImportService implements ResourceDBImportService {
         List<DatabaseUser> databaseUsers = databaseUserRepository.findByAccountId(accountId);
 
         if (databaseUsers != null && !databaseUsers.isEmpty()) {
-            databaseUserRepository.delete(databaseUsers);
+            databaseUserRepository.deleteAll(databaseUsers);
         }
 
         pull(accountId);

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -50,10 +51,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = NONE,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+        webEnvironment = NONE
 )
 public class GovernorOfUnixAccountTest {
     @Autowired
@@ -68,7 +66,7 @@ public class GovernorOfUnixAccountTest {
     @Before
     public void setUp() throws Exception {
         unixAccounts = ResourceGenerator.generateBatchOfUnixAccounts();
-        repository.save(unixAccounts);
+        repository.saveAll(unixAccounts);
     }
 
     @After
@@ -197,7 +195,9 @@ public class GovernorOfUnixAccountTest {
         SSHKeyPair keyPair = unixAccounts.get(0).getKeyPair();
         System.out.println(unixAccounts.get(0).getCrontab());
         governor.update(serviceMessage);
-        UnixAccount unixAccount = repository.findOne(unixAccounts.get(0).getId());
+        UnixAccount unixAccount = repository
+                .findById(unixAccounts.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(unixAccount.getKeyPair().toString(), not(keyPair.toString()));
         System.out.println(unixAccount.getCrontab());
     }
@@ -210,7 +210,9 @@ public class GovernorOfUnixAccountTest {
         serviceMessage.addParam("resourceId", unixAccounts.get(0).getId());
         serviceMessage.addParam("sendmailAllowed", false);
         governor.update(serviceMessage);
-        UnixAccount unixAccount = repository.findOne(unixAccounts.get(0).getId());
+        UnixAccount unixAccount = repository
+                .findById(unixAccounts.get(0).getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(unixAccount.getSendmailAllowed(), is(false));
     }
 }

@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.event.database.listener;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.resources.Database;
 
 @Component
+@Profile("import")
 public class DatabaseEventListener extends ResourceEventListener<Database> {
 
     @Autowired

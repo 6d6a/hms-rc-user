@@ -104,7 +104,7 @@ public class Aggregator {
                 .aggregate(aggregation, tClass, AccountIdAndField.class)
                 .getMappedResults()
                 .stream()
-                .collect(Collectors.toMap(l -> l.getAccountId(), l -> l.getField()));
+                .collect(Collectors.toMap(AccountIdAndField::getAccountId, l -> l.getField()));
     }
 
     public class AccountIdAndField {

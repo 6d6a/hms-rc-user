@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.api.http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -25,11 +26,13 @@ public class PersonRestController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/person/{personId}")
     public Person readOne(@PathVariable String personId) {
         return governor.build(personId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/person/{personId}")
     public Person readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("personId") String personId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -38,11 +41,13 @@ public class PersonRestController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/person")
     public Collection<Person> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/person")
     public Collection<Person> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -50,6 +55,7 @@ public class PersonRestController {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/person/{personId}/sync")
     public ResponseEntity syncPerson(@PathVariable("accountId") String accountId,@PathVariable("personId") String personId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -67,6 +73,7 @@ public class PersonRestController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @PostMapping("/{accountId}/person")
     public Person addByNicHandle(
             @PathVariable String accountId,
@@ -81,6 +88,7 @@ public class PersonRestController {
         return governor.addByNicHandle(accountId, nicHandle);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/person/find")
     public Collection<Person> find(@PathVariable String accountId, @RequestParam Map<String, String> keyValue) {
         keyValue.put("accountId", accountId);

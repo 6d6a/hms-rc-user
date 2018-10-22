@@ -282,12 +282,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) == null) {
+        if (!repository.existsById(resourceId)) {
             throw new ResourceNotFoundException("Не найден почтовый ящик с ID: " + resourceId);
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -485,10 +485,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
     @Override
     public Mailbox build(String resourceId) throws ResourceNotFoundException {
-        Mailbox mailbox = repository.findOne(resourceId);
-        if (mailbox == null) {
-            throw new ResourceNotFoundException("Mailbox с ID:" + resourceId + " не найден");
-        }
+        Mailbox mailbox = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mailbox с ID:" + resourceId + " не найден"));
+
         return construct(mailbox);
     }
 
@@ -676,7 +676,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private void dropFromRedis(Mailbox mailbox) {
-        redisRepository.delete(mailbox.getFullNameInPunycode());
+        redisRepository.deleteById(mailbox.getFullNameInPunycode());
         String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.delete(key);
     }
@@ -703,7 +703,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private void dropAggregatorInRedis(Mailbox mailbox) {
-        redisRepository.delete("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
+        redisRepository.deleteById("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
     }
 
     public void updateQuota(String mailboxId, Long quotaSize) {

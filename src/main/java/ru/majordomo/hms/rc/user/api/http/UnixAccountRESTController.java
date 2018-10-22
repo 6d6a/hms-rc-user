@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.api.http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -24,11 +25,13 @@ public class UnixAccountRESTController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/unix-account/{unixAccountId}")
     public UnixAccount readOne(@PathVariable String unixAccountId) {
         return governor.build(unixAccountId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/unix-account/{unixAccountId}")
     public UnixAccount readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("unixAccountId") String unixAccountId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -37,21 +40,25 @@ public class UnixAccountRESTController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/unix-account")
     public Collection<UnixAccount> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping(value = "/unix-account/filter", headers = {"X-HMS-Projection=pm"})
     public Collection<UnixAccount> filterForPm(@RequestParam Map<String, String> keyValue) {
         return governor.buildAllPm(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/unix-account/filter")
     public Collection<UnixAccount> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/unix-account/{unixAccountId}/quota-report")
     public ResponseEntity<Void> updateQuota(@PathVariable String unixAccountId, @RequestBody QuotaReport report) {
         try {
@@ -63,11 +70,13 @@ public class UnixAccountRESTController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/unix-account/{unixAccountId}/malware-report")
     public MalwareReport getMalwareReport(@PathVariable String accountId, @PathVariable String unixAccountId) {
         return governor.getMalwareReport(accountId, unixAccountId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/unix-account/{unixAccountId}/malware-report")
     public ResponseEntity<Void> reportMalware(@PathVariable String unixAccountId, @RequestBody MalwareReport report) {
         report.setUnixAccountId(unixAccountId);
@@ -80,6 +89,7 @@ public class UnixAccountRESTController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/unix-account")
     public Collection<UnixAccount> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();

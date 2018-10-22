@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.api.http;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -20,11 +21,13 @@ public class DatabaseUserRestController {
         this.governor = governor;
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/database-user/{databaseUserId}")
     public DatabaseUser readOne(@PathVariable String databaseUserId) {
         return governor.build(databaseUserId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/database-user/{databaseUserId}")
     public DatabaseUser readOneByAccountId(
             @PathVariable("accountId") String accountId,
@@ -36,11 +39,13 @@ public class DatabaseUserRestController {
         return governor.build(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/database-user")
     public Collection<DatabaseUser> readAll() {
         return governor.buildAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/database-user")
     public Collection<DatabaseUser> readAllByAccountId(@PathVariable String accountId) {
         Map<String, String> keyValue = new HashMap<>();
@@ -48,6 +53,7 @@ public class DatabaseUserRestController {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/database-user/filter")
     public Collection<DatabaseUser> filterByAccountId(
             @PathVariable String accountId,
@@ -57,6 +63,7 @@ public class DatabaseUserRestController {
         return governor.buildAll(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/database-user/filter")
     public Collection<DatabaseUser> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);

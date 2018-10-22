@@ -1,0 +1,32 @@
+eureka:
+    client:
+        enabled: false
+hms:
+    instance:
+        name: ci
+resources:
+    unixAccount:
+        homeDirPattern: '"/home"'
+        maxUid: 2147483647
+        minUid: 2000
+        namePattern: '"u"'
+spring:
+    application:
+        name: rc-user
+    cloud:
+        config:
+            discovery:
+                enabled: false
+            enabled: false
+    datasource:
+        driverClassName: com.mysql.jdbc.Driver
+        password: cfg0;0r
+        username: root
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+    profiles:
+        active: test
+    rabbitmq:
+        dynamic: true
+        password: guest
+        username: guest

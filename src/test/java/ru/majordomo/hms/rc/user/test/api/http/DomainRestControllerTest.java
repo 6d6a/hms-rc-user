@@ -47,6 +47,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -66,11 +67,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 ConfigGovernors.class,
                 AMQPBrokerConfig.class
         },
-        webEnvironment = RANDOM_PORT,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
-
+        webEnvironment = RANDOM_PORT
 )
 public class DomainRestControllerTest {
 
@@ -122,9 +119,9 @@ public class DomainRestControllerTest {
                                 fieldWithPath("accountId").description("ID аккаунта владельца ресурса"),
                                 fieldWithPath("name").description("FQDN"),
                                 fieldWithPath("switchedOn").description("Флаг того, активен ли домен"),
-                                fieldWithPath("person").description("Персона, на которую зарегистрирован домен"),
-                                fieldWithPath("regSpec").description("Регистрационная информация"),
-                                fieldWithPath("dnsResourceRecords").description("Список записей в зоне домена (DNS resource records)"),
+                                subsectionWithPath("person").description("Персона, на которую зарегистрирован домен"),
+                                subsectionWithPath("regSpec").description("Регистрационная информация"),
+                                subsectionWithPath("dnsResourceRecords[]").description("Список записей в зоне домена (DNS resource records)"),
                                 fieldWithPath("sslCertificate").description("Объект SSL сертификата"),
                                 fieldWithPath("autoRenew").description("Флаг автоматического продления"),
                                 fieldWithPath("parentDomainId").description("ID домена-родителя - отличное от null означает, что это поддомен"),

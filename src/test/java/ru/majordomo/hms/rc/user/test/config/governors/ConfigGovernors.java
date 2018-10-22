@@ -1,12 +1,15 @@
 package ru.majordomo.hms.rc.user.test.config.governors;
 
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 import ru.majordomo.hms.rc.user.managers.*;
 
+@EnableConfigurationProperties(DefaultWebSiteSettings.class)
 public class ConfigGovernors {
     @Bean
     public GovernorOfWebSite governorOfWebSite() {
@@ -69,8 +72,8 @@ public class ConfigGovernors {
     }
 
     @Bean
-    public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
-        return new JettyEmbeddedServletContainerFactory(0);
+    public ServletWebServerFactory embeddedServletContainerFactory() {
+        return new JettyServletWebServerFactory(0);
     }
 
     @Bean

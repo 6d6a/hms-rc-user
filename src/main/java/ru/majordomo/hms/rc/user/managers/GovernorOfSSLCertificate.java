@@ -105,13 +105,12 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
             throw new ParameterValidationException("Необходимо указать resourceId");
         }
 
-        SSLCertificate certificate = repository.findOne(resourceId);
-
-        if (certificate == null) {
-            throw new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId);
-        }
+        SSLCertificate certificate = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId));
 
         params.remove(resourceId);
+
         try {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 switch (entry.getKey()) {
@@ -163,10 +162,10 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        SSLCertificate certificate = repository.findOne(resourceId);
-        if (certificate == null) {
-            throw new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId);
-        }
+        SSLCertificate certificate = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId));
+
         certificate.setSwitchedOn(false);
 
         preDelete(resourceId);
@@ -174,11 +173,9 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     }
 
     public void realDrop(String resourceId) throws ResourceNotFoundException {
-        SSLCertificate certificate = repository.findOne(resourceId);
-
-        if (certificate == null) {
-            throw new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId);
-        }
+        SSLCertificate certificate = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId));
 
         preDelete(resourceId);
 
@@ -248,11 +245,9 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
     @Override
     public SSLCertificate build(String resourceId) throws ResourceNotFoundException {
-        SSLCertificate sslCertificate = repository.findOne(resourceId);
-        if (sslCertificate == null) {
-            throw new ResourceNotFoundException("SSLCertificate с ID: " + resourceId + " не найден");
-        }
-        return sslCertificate;
+        return repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("SSLCertificate с ID: " + resourceId + " не найден"));
     }
 
     public Stream<SSLCertificate> findAllStream() {

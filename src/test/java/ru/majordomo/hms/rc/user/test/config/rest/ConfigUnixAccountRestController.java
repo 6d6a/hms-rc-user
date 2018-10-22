@@ -1,11 +1,11 @@
 package ru.majordomo.hms.rc.user.test.config.rest;
 
 import com.github.fakemongo.Fongo;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
 
 import org.bson.types.ObjectId;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -23,8 +23,8 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 @DependsOn
 public class ConfigUnixAccountRestController extends AbstractMongoConfiguration {
     @Bean
-    public EmbeddedServletContainerFactory embeddedServletContainerFactory() {
-        return new JettyEmbeddedServletContainerFactory(0);
+    public ServletWebServerFactory embeddedServletContainerFactory() {
+        return new JettyServletWebServerFactory(0);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ConfigUnixAccountRestController extends AbstractMongoConfiguration 
     }
 
     @Override
-    public Mongo mongo() throws Exception {
+    public MongoClient mongoClient() {
         return new Fongo(getDatabaseName()).getMongo();
     }
 

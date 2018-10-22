@@ -52,10 +52,7 @@ import static ru.majordomo.hms.rc.user.common.Constants.TE;
         AMQPBrokerConfig.class,
 
         ConfigGovernors.class
-}, webEnvironment = RANDOM_PORT,
-        properties = {
-                "resources.quotable.warnPercent.mailbox=90"
-        }
+}, webEnvironment = RANDOM_PORT
 )
 public class DatabaseUserAMQPControllerTest {
 
@@ -97,7 +94,7 @@ public class DatabaseUserAMQPControllerTest {
         setUpTE("update");
         setUpPM("update");
         databaseUserList = ResourceGenerator.generateBatchOfDatabaseUsers();
-        repository.save(databaseUserList);
+        repository.saveAll(databaseUserList);
     }
 
     @After

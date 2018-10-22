@@ -1,39 +1,37 @@
 package ru.majordomo.hms.rc.user.event.domain.listener;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import ru.majordomo.hms.rc.user.event.ResourceEventListener;
-import ru.majordomo.hms.rc.user.event.domain.DomainSubDomainCreateEvent;
-import ru.majordomo.hms.rc.user.event.domain.DomainSubDomainImportEvent;
-import ru.majordomo.hms.rc.user.importing.DomainSubDomainDBImportService;
+import ru.majordomo.hms.rc.user.event.domain.DomainCreateEvent;
+import ru.majordomo.hms.rc.user.event.domain.DomainImportEvent;
+import ru.majordomo.hms.rc.user.importing.DomainDBImportService;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
 @Component
 @Profile("import")
-public class DomainSubDomainEventListener extends ResourceEventListener<Domain> {
-
-    @Autowired
-    public DomainSubDomainEventListener(
+public class DomainImportEventListener extends ResourceEventListener<Domain> {
+    public DomainImportEventListener(
             GovernorOfDomain governorOfDomain,
-            DomainSubDomainDBImportService domainDBImportService) {
+            DomainDBImportService domainDBImportService
+    ) {
         this.governor = governorOfDomain;
         this.dbImportService = domainDBImportService;
     }
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onCreateEvent(DomainSubDomainCreateEvent event) {
+    public void onCreateEvent(DomainCreateEvent event) {
         processCreateEvent(event);
     }
 
     @EventListener
     @Async("threadPoolTaskExecutor")
-    public void onImportEvent(DomainSubDomainImportEvent event) {
+    public void onImportEvent(DomainImportEvent event) {
         processImportEvent(event);
     }
 }

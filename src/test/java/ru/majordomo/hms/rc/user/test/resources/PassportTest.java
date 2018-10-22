@@ -6,6 +6,8 @@ import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -37,7 +39,7 @@ public class PassportTest {
         tested.setMainPage(standard.getMainPage());
         tested.setRegisterPage(standard.getRegisterPage());
 
-        assertTrue(standard != tested);
-        assertTrue(standard.equals(tested));
+        assertNotSame(standard, tested);
+        assertEquals(standard, tested);
     }
 }

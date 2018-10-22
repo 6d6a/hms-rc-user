@@ -135,12 +135,12 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        if (repository.findOne(resourceId) == null) {
+        if (!repository.existsById(resourceId)) {
             throw new ResourceNotFoundException("Ресурс не найден");
         }
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -227,10 +227,10 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
     @Override
     public Redirect build(String resourceId) throws ResourceNotFoundException {
-        Redirect redirect = repository.findOne(resourceId);
-        if (redirect == null) {
-            throw new ResourceNotFoundException("Перенаправление с ID " + resourceId + " не найдено");
-        }
+        Redirect redirect = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Перенаправление с ID " + resourceId + " не найдено"));
+
         return construct(redirect);
     }
 

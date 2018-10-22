@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -33,6 +34,7 @@ import ru.majordomo.hms.rc.user.resources.WebSite;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
 @Component
+@Profile("import")
 public class WebSiteDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(WebSiteDBImportService.class);
 
@@ -252,7 +254,7 @@ public class WebSiteDBImportService implements ResourceDBImportService {
         List<WebSite> webSites = webSiteRepository.findByAccountId(accountId);
 
         if (webSites != null && !webSites.isEmpty()) {
-            webSiteRepository.delete(webSites);
+            webSiteRepository.deleteAll(webSites);
         }
 
         pull(accountId);

@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.event.ftpUser.listener;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -13,11 +14,13 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 
 @Component
+@Profile("import")
 public class FTPUserEventListener extends ResourceEventListener<FTPUser> {
     @Autowired
     public FTPUserEventListener(
             GovernorOfFTPUser governorOfFTPUser,
-            FTPUserDBImportService ftpUserDBImportService) {
+            FTPUserDBImportService ftpUserDBImportService
+    ) {
         this.governor = governorOfFTPUser;
         this.dbImportService = ftpUserDBImportService;
     }

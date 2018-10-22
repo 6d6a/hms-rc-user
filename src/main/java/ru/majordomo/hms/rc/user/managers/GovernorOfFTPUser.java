@@ -117,13 +117,13 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        FTPUser ftpUser = repository.findOne(resourceId);
-        if (ftpUser == null) {
-            throw new ResourceNotFoundException("Пользователь FTP с ID: " + resourceId + " не найден");
-        }
+        FTPUser ftpUser = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь FTP с ID: " + resourceId + " не найден"));
 
         preDelete(resourceId);
-        repository.delete(resourceId);
+
+        repository.deleteById(resourceId);
     }
 
     @Override
@@ -197,10 +197,9 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
 
     @Override
     public FTPUser build(String resourceId) throws ResourceNotFoundException {
-        FTPUser ftpUser = repository.findOne(resourceId);
-        if (ftpUser == null) {
-            throw new ResourceNotFoundException("Пользователь FTP с ID:" + resourceId + " не найден");
-        }
+        FTPUser ftpUser = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь FTP с ID:" + resourceId + " не найден"));
 
         return construct(ftpUser);
     }
