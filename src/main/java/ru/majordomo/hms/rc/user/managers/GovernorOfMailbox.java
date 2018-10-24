@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -379,6 +381,18 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
         keyValue.put("resourceId", domainId);
         mailbox.setDomain(governorOfDomain.build(keyValue));
+
+        if (plainPassword != null) {
+            try {
+                Pattern p = Pattern.compile("^[a-zA-Z0-9 !\"#$%&\'\\\\()*+,\\-.\\/:;<=>?@\\[\\]^_`{|}~]{6,}$");
+                Matcher m = p.matcher(plainPassword);
+                if (!m.matches()) {
+                    throw new ParameterValidationException("Недопустимые символы в пароле");
+                }
+            } catch (Exception e) {
+                throw new ParameterValidationException("Недопустимые символы в пароле");
+            }
+        }
 
         try {
             mailbox.setPasswordHashByPlainPassword(plainPassword);
