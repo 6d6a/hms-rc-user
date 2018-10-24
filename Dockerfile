@@ -6,6 +6,6 @@ ENV XMN 384M
 ENV DEBUG ""
 #ENV DEBUG "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6006"
 
-COPY ./build/libs /
+COPY ./build/libs/HMS_rc-user*jar /
 
 ENTRYPOINT [ "/entrypoint.sh" ]
