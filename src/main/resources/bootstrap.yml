@@ -1,7 +1,5 @@
 eureka:
     instance:
-        preferIpAddress: false
-        hostname: ${HOSTNAME}
         metadata-map:
             management.port: ${management.port:18080}
         statusPageUrlPath: ${management.endpoints.web.base-path}/info
