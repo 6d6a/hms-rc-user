@@ -1,5 +1,6 @@
 eureka:
     instance:
+        preferIpAddress: false
         metadata-map:
             management.port: ${management.port:18080}
         statusPageUrlPath: ${management.endpoints.web.base-path}/info
@@ -14,5 +15,8 @@ spring:
         config:
             uri: http://configserver:8888
             fail-fast: true
+        inetutils:
+            preferred-networks:
+                - 10.10
     profiles:
         active: dev
