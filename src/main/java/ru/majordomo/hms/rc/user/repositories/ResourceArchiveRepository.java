@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public interface ResourceArchiveRepository extends MongoRepository<ResourceArchive, String> {
-    ResourceArchive findByArchivedResourceId(String resourceId);
+    void deleteByArchivedResourceId(String resourceId);
     ResourceArchive findByIdAndAccountId(String resourceId, String accountId);
     List<ResourceArchive> findByAccountId(String accountId);
     Stream<ResourceArchive> findByWillBeDeletedAfterBefore(LocalDateTime willBeDeletedAfter);
