@@ -220,6 +220,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         preValidate(website);
         validate(website);
         store(website);
+        logger.info("Сохранён вебсайт при апдейте: " + website.getName() + ", switchedOn: " + website.getSwitchedOn());
 
         return website;
     }

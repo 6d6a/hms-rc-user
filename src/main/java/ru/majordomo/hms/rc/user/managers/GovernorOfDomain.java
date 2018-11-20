@@ -291,6 +291,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 sender.send(WEBSITE_UPDATE, teRoutingKey, report);
                 webSite.setLocked(true);
                 governorOfWebSite.store(webSite);
+                logger.info("При апдейте домена: " + domain.getName() + " сохранён и проставлен лок следующему вебсайту: " +
+                        webSite.getName() + ", switchedOn: " + webSite.getSwitchedOn());
             }
         } catch (ResourceNotFoundException ignored) {
             updateRedirect(domain, serviceMessage);
