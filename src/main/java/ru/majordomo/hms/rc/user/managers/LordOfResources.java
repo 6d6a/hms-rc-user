@@ -121,7 +121,6 @@ public abstract class LordOfResources<T extends Resource> {
         String id = cleaner.cleanString((String) serviceMessage.getParam("id"));
         String accountId = cleaner.cleanString(serviceMessage.getAccountId());
         String name = cleaner.cleanString((String) serviceMessage.getParam("name"));
-        Boolean switchedOn = (Boolean) serviceMessage.getParam("switchedOn");
 
         if (id != null && !id.equals("")) {
             resource.setId(id);
@@ -131,8 +130,12 @@ public abstract class LordOfResources<T extends Resource> {
             resource.setAccountId(accountId);
         }
 
+        Object switchedOn = serviceMessage.getParam("switchedOn");
+        if (switchedOn != null) {
+            resource.setSwitchedOn((Boolean) switchedOn);
+        }
+
         resource.setName(name);
-        resource.setSwitchedOn(switchedOn);
     }
 
     void preValidateDatabaseServiceId(Serviceable serviceable, StaffResourceControllerClient staffRcClient, String defaultServiceName) {
