@@ -468,7 +468,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());
+            log.debug("mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -478,7 +478,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Set<ConstraintViolation<Mailbox>> constraintViolations = validator.validate(mailbox, MailboxImportChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] mailbox: " + mailbox + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -551,7 +551,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
         MongoCollection domainsCollection = jongo.getCollection("domains");
 
-        logger.info("[start] searchForDomains");
+        log.info("[start] searchForDomains");
 
         Map<String, String> domainNames = new HashMap<>();
 
@@ -577,10 +577,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             e.printStackTrace();
         }
 
-        logger.info("[end] searchForDomains");
+        log.info("[end] searchForDomains");
 
         if (keyValue.get("serverId") != null) {
-            logger.info("[start] searchForMailbox");
+            log.info("[start] searchForMailbox");
 
             MongoCollection mailboxesCollection = jongo.getCollection("mailboxes");
 
@@ -616,7 +616,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                 e.printStackTrace();
             }
 
-            logger.info("[end] searchForMailbox");
+            log.info("[end] searchForMailbox");
         }
 
         return mailboxes;
@@ -672,7 +672,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         try {
             data = mapper.writeValueAsString(userData);
         } catch (JsonProcessingException e) {
-            logger.error("Mailbox userData не записана в Redis!");
+            log.error("Mailbox userData не записана в Redis!");
         }
         String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.boundValueOps(key).set(data);

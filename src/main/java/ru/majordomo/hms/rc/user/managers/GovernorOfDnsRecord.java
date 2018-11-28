@@ -178,7 +178,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         Set<ConstraintViolation<DNSResourceRecord>> constraintViolations = validator.validate(record, DnsRecordChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("record: " + record + " constraintViolations: " + constraintViolations.toString());
+            log.debug("record: " + record + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -304,7 +304,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
                 Domain parentDomain = governorOfDomain.build(domain.getParentDomainId());
                 domainName = IDN.toASCII(parentDomain.getName());
             } catch (ResourceNotFoundException e) {
-                logger.error("[addARecords] Ошибка: " + e.getMessage());
+                log.error("[addARecords] Ошибка: " + e.getMessage());
                 e.printStackTrace();
                 return;
             }
@@ -318,7 +318,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         try {
             record.setData(getServerPrimaryIp(domain.getAccountId()));
         } catch (ParameterValidationException e) {
-            logger.error("[addARecords] Ошибка: " + e.getMessage());
+            log.error("[addARecords] Ошибка: " + e.getMessage());
             e.printStackTrace();
             return;
         }
@@ -350,7 +350,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         try {
             record.setData(getServerPrimaryIp(domain.getAccountId()));
         } catch (ParameterValidationException e) {
-            logger.error("[addDefaultARecords] Ошибка: " + e.getMessage());
+            log.error("[addDefaultARecords] Ошибка: " + e.getMessage());
             return;
         }
         dnsResourceRecordDAO.insert(record);

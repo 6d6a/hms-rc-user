@@ -210,7 +210,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         Set<ConstraintViolation<SSLCertificate>> constraintViolations = validator.validate(sslCertificate, SSLCertificateChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("sslCertificate: " + sslCertificate + " constraintViolations: " + constraintViolations.toString());
+            log.debug("sslCertificate: " + sslCertificate + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -220,7 +220,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         Set<ConstraintViolation<SSLCertificate>> constraintViolations = validator.validate(sslCertificate, SSLCertificateImportChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] sslCertificate: " + sslCertificate + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] sslCertificate: " + sslCertificate + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

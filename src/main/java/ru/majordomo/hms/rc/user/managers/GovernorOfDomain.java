@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.net.IDN;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Stream;
@@ -146,11 +145,35 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
                     person = governorOfPerson.createPersonRegistrant(person);
                 }
+
+                try {
+                    governorOfPerson.validate(person);
+                } catch (ConstraintViolationException e) {
+                    StringBuilder sb = new StringBuilder();
+                    e.getConstraintViolations().forEach(c ->
+                        sb.append("property: ").append(c.getPropertyPath()).append(" message: ").append(c.getMessage())
+                    );
+
+                    log.error("accountId {} can't register domain {} with person (id: '{}', nic-hanlde: '{}') " +
+                                    "because person is not valid: {}", serviceMessage.getAccountId(), domain.getName(),
+                            person.getId(), person.getNicHandle(), sb.toString()
+                    );
+                    throw new ParameterValidationException("Персона " + person.getNicHandle() + " не валидна: " +
+                            e.getConstraintViolations()
+                                    .stream()
+                                    .map(c -> c.getMessage())
+                                    .reduce("", (acc, s) -> acc + ", " + s)
+                    );
+                }
+
                 try {
                     registrar.registerDomain(person.getNicHandle(), domain.getName());
                     domain.setRegSpec(registrar.getRegSpec(domain.getName()));
                     domain.setNeedSync(LocalDateTime.now());
                 } catch (Exception e) {
+                    log.info("accountId {} catch e {} with registrar.registerDomain(nic-handle: {}, domain: {}); message: {}",
+                            serviceMessage.getAccountId(), e.getClass(), person.getNicHandle(), domain.getName(), e.getMessage()
+                    );
                     throw new ParameterValidationException(e.getMessage());
                 }
             }
@@ -164,7 +187,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             if (domain.getParentDomainId() == null)
                 governorOfDnsRecord.initDomain(domain);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
             e.printStackTrace();
         }
 
@@ -394,7 +417,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 throw new ParameterValidationException("Домен используется в вебсайте с ID " + webSite.getId());
             }
         } catch (ResourceNotFoundException e) {
-            logger.debug("Вебсайтов использующих домен с ID " + resourceId + " не обнаружено");
+            log.debug("Вебсайтов использующих домен с ID " + resourceId + " не обнаружено");
         }
 
         List<Mailbox> mailboxes = (List<Mailbox>) governorOfMailbox.buildAll(keyValue);
@@ -414,7 +437,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 throw new ParameterValidationException("Домен используется в перенаправлении с ID " + redirect.getId());
             }
         } catch (ResourceNotFoundException e) {
-            logger.debug("Перенаправлений, использующих домен с ID " + resourceId + " не обнаружено");
+            log.debug("Перенаправлений, использующих домен с ID " + resourceId + " не обнаружено");
         }
 
         Domain domain = repository
@@ -469,7 +492,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         Set<ConstraintViolation<Domain>> constraintViolations = validator.validate(domain, DomainChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("domain: " + domain + " constraintViolations: " + constraintViolations.toString());
+            log.debug("domain: " + domain + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -479,7 +502,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         Set<ConstraintViolation<Domain>> constraintViolations = validator.validate(domain, DomainChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] domain: " + domain + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] domain: " + domain + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -679,12 +702,12 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     public void syncRegSpec(String name) {
-        logger.info("Sync " + name);
+        log.info("Sync " + name);
         RegSpec regSpec = null;
         try {
             regSpec = registrar.getRegSpec(name);
         } catch (Exception e) {
-            logger.error("Can't getRegSpec, domainName: " + name + " " + e.getClass().toString() + " e.message: " + e.getMessage());
+            log.error("Can't getRegSpec, domainName: " + name + " " + e.getClass().toString() + " e.message: " + e.getMessage());
         }
 
         if (regSpec == null
@@ -698,7 +721,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             Domain domain = build(params);
 
             if (domain.getNeedSync().isBefore(LocalDateTime.now().plusHours(1))) {
-                logger.error("Can't syncRegSpec " + domain.getName() + " after register or renew more than one hour");
+                log.error("Can't syncRegSpec " + domain.getName() + " after register or renew more than one hour");
                 mongoOperations.updateFirst(
                         new Query(new Criteria("_id").is(domain.getId())),
                         new Update().unset("needSync"), Domain.class
@@ -719,7 +742,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             return TE + "." + serverName.split("\\.")[0];
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("[getTaskExecutorRoutingKey] got exception: %s ; resource id: %s class: %s"
+            log.error("[getTaskExecutorRoutingKey] got exception: %s ; resource id: %s class: %s"
                     , e.getMessage(), serviceable != null ? ((Resource) serviceable).getId() : null, serviceable != null ? serviceable.getClass().getSimpleName() : null);
             throw new ParameterValidationException("Exception: " + e.getMessage());
         }

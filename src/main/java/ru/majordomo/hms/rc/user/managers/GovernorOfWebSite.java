@@ -1,7 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -213,7 +212,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                 }
             }
         } catch (ClassCastException e) {
-            logger.error("WebSite update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+            log.error("WebSite update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
@@ -333,7 +332,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setMemoryLimit(memoryLimit);
             webSite.setMbstringInternalEncoding(mbstringInternalEncoding);
         } catch (ClassCastException e) {
-            logger.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+            log.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
@@ -375,7 +374,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                 }
             }
             if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
-                logger.error("Не найдено serviceType: " + defaultWebSiteSettings.getServiceName()
+                log.error("Не найдено serviceType: " + defaultWebSiteSettings.getServiceName()
                         + " для сервера: " + webSite.getUnixAccount().getServerId());
             }
         }
@@ -458,7 +457,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         Set<ConstraintViolation<WebSite>> constraintViolations = validator.validate(webSite, WebSiteChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("webSite: " + webSite + " constraintViolations: " + constraintViolations.toString());
+            log.debug("webSite: " + webSite + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -468,7 +467,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         Set<ConstraintViolation<WebSite>> constraintViolations = validator.validate(webSite, WebSiteImportChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] webSite: " + webSite + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] webSite: " + webSite + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

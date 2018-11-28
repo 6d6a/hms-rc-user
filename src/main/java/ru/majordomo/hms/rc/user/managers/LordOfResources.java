@@ -18,7 +18,7 @@ import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
 
 public abstract class LordOfResources<T extends Resource> {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     public T create(ServiceMessage serviceMessage) throws ParameterValidationException {
         T resource;
 
@@ -150,7 +150,7 @@ public abstract class LordOfResources<T extends Resource> {
                     }
                 }
                 if (serviceable.getServiceId() == null || (serviceable.getServiceId().equals(""))) {
-                    logger.error("Не найдено serviceType: " + defaultServiceName
+                    log.error("Не найдено serviceType: " + defaultServiceName
                             + " для сервера: " + serverId);
                 }
             }
