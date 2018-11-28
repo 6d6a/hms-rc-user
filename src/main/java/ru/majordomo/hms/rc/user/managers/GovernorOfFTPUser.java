@@ -173,7 +173,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         Set<ConstraintViolation<FTPUser>> constraintViolations = validator.validate(ftpUser, FTPUserChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("ftpUser: " + ftpUser + " constraintViolations: " + constraintViolations.toString());
+            log.debug("ftpUser: " + ftpUser + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -183,7 +183,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         Set<ConstraintViolation<FTPUser>> constraintViolations = validator.validate(ftpUser, FTPUserChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] ftpUser: " + ftpUser + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] ftpUser: " + ftpUser + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

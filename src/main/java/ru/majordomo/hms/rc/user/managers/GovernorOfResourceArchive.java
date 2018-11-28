@@ -106,7 +106,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
                 }
             }
         } catch (ClassCastException e) {
-            logger.error("ResourceArchive update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+            log.error("ResourceArchive update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
@@ -201,7 +201,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
         Set<ConstraintViolation<ResourceArchive>> constraintViolations = validator.validate(archive, ResourceArchiveChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("archive: " + archive + " constraintViolations: " + constraintViolations.toString());
+            log.debug("archive: " + archive + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

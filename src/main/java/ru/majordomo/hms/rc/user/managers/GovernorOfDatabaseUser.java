@@ -246,7 +246,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         Set<ConstraintViolation<DatabaseUser>> constraintViolations = validator.validate(databaseUser, DatabaseUserChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("databaseUser: " + databaseUser + " constraintViolations: " + constraintViolations.toString());
+            log.debug("databaseUser: " + databaseUser + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -256,7 +256,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         Set<ConstraintViolation<DatabaseUser>> constraintViolations = validator.validate(databaseUser, DatabaseUserImportChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] databaseUser: " + databaseUser + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] databaseUser: " + databaseUser + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

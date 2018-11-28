@@ -102,7 +102,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
             person.setNicHandle(nicHandle);
         } catch (FeignException e) {
             String errorReason = e.getMessage();
-            logger.debug("Ошибка при создании персоны:" + errorReason);
+            log.debug("Ошибка при создании персоны:" + errorReason);
             String errorContent = errorReason.replaceAll(".*content:", "");
 //            String errorMessage;
 //            try {
@@ -117,7 +117,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 //            } catch (IOException ex) {
 //                errorMessage = "Ошибка при регистрации домена. Повторите попытку позже.";
 //            }
-            logger.debug("Ошибка при создании персоны: " + errorContent);
+            log.debug("Ошибка при создании персоны: " + errorContent);
             throw new ParameterValidationException(errorContent);
         }
     }
@@ -266,7 +266,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
         String actionId = serviceMessage.getActionIdentity();
         String operationId = serviceMessage.getOperationIdentity();
-        logger.debug("Action ID:" + actionId +
+        log.debug("Action ID:" + actionId +
                 "Operation ID:" + operationId +
                 "Приступаю к построению ресурса, исходя из данных в ServiceMessage");
 
@@ -320,7 +320,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         person.setOrgName(orgName);
         person.setOrgForm(orgForm);
 
-        logger.debug("Action ID: " + actionId +
+        log.debug("Action ID: " + actionId +
                 " Operation Id: " + operationId +
                 " ресурс Person построен из полученного сообщения:" + person.toString());
 
@@ -348,7 +348,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         );
 
         if (!constraintViolations.isEmpty()) {
-            logger.error("person: " + person + " constraintViolations: " + constraintViolations.toString());
+            log.error("person: " + person + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -358,7 +358,7 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         Set<ConstraintViolation<Person>> constraintViolations = validator.validate(person, PersonImportChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] person: " + person + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] person: " + person + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

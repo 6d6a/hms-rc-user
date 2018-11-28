@@ -190,7 +190,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                 }
             }
         } catch (ClassCastException e) {
-            logger.error("Один из параметров указан неверно. " +
+            log.error("Один из параметров указан неверно. " +
                     "UnixAccountId: " + unixAccount.getId() +
                     "AccountId: " + unixAccount.getAccountId() +
                     "ClassCastExceptionMessage: " + e.getMessage() +
@@ -337,7 +337,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         Set<ConstraintViolation<UnixAccount>> constraintViolations = validator.validate(unixAccount, UnixAccountChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("unixAccount: " + unixAccount + " constraintViolations: " + constraintViolations.toString());
+            log.debug("unixAccount: " + unixAccount + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -347,7 +347,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         Set<ConstraintViolation<UnixAccount>> constraintViolations = validator.validate(unixAccount, UnixAccountChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] unixAccount: " + unixAccount + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] unixAccount: " + unixAccount + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -409,7 +409,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         Jongo jongo = new Jongo(db);
 
         if (keyValue.get("serverId") != null) {
-            logger.info("[start] searchForUnixAccount");
+            log.info("[start] searchForUnixAccount");
 
             MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
 
@@ -440,7 +440,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                 e.printStackTrace();
             }
 
-            logger.info("[end] searchForUnixAccount");
+            log.info("[end] searchForUnixAccount");
         }
 
         return unixAccounts;

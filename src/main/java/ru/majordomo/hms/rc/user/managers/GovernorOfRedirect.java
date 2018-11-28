@@ -85,7 +85,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
         try {
             setParamsFromKeyValue(redirect, serviceMessage.getParams());
         } catch (ClassCastException e) {
-            logger.error("Redirect update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+            log.error("Redirect update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
@@ -152,7 +152,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
         try {
             setParamsFromKeyValue(redirect, serviceMessage.getParams());
         } catch (ClassCastException e) {
-            logger.error("Redirect buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+            log.error("Redirect buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
@@ -182,7 +182,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
             //пока что unixAccount должен быть у всех
             if (unixAccounts.isEmpty()) {
-                logger.error("UnixAccount с accountId " + redirect.getAccountId() + " не найден");
+                log.error("UnixAccount с accountId " + redirect.getAccountId() + " не найден");
             } else {
                 UnixAccount unixAccount = unixAccounts.iterator().next();
                 //Должен быть только один nginx на сервере
@@ -196,7 +196,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
                     }
                 }
                 if (redirect.getServiceId() == null || (redirect.getServiceId().equals(""))) {
-                    logger.error("Не найдено serviceType: STAFF_NGINX "
+                    log.error("Не найдено serviceType: STAFF_NGINX "
                             + " для сервера: " + unixAccount.getServerId());
                 }
             }
@@ -208,7 +208,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
         Set<ConstraintViolation<Redirect>> constraintViolations = validator.validate(redirect, RedirectChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("redirect: " + redirect + " constraintViolations: " + constraintViolations.toString());
+            log.debug("redirect: " + redirect + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }

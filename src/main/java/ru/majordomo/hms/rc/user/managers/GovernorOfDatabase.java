@@ -199,7 +199,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
         Set<ConstraintViolation<Database>> constraintViolations = validator.validate(database, DatabaseChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("database: " + database + " constraintViolations: " + constraintViolations.toString());
+            log.debug("database: " + database + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
@@ -209,7 +209,7 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
         Set<ConstraintViolation<Database>> constraintViolations = validator.validate(database, DatabaseImportChecks.class);
 
         if (!constraintViolations.isEmpty()) {
-            logger.debug("[validateImported] database: " + database + " constraintViolations: " + constraintViolations.toString());
+            log.debug("[validateImported] database: " + database + " constraintViolations: " + constraintViolations.toString());
             throw new ConstraintViolationException(constraintViolations);
         }
     }
