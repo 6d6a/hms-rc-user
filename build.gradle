@@ -3,7 +3,7 @@ import org.ajoberstar.grgit.*
 buildscript {
     repositories {
         maven {
-            url 'https://nexus.intr/repository/mavengroup/'
+            url 'http://nexus.intr/repository/mavengroup/'
         }
         maven {
             url "https://plugins.gradle.org/m2/"
@@ -101,7 +101,7 @@ task resourceJar(type: Jar, dependsOn: compileJava) {
 
 repositories {
     maven {
-        url 'https://nexus.intr/repository/mavengroup'
+        url 'http://nexus.intr/repository/mavengroup'
     }
 }
 
@@ -184,4 +184,4 @@ asciidoctor {
 
 build.dependsOn("resourceJar")
 publish.doFirst autoIncrementBuildNumber
-//apply from: "https://nexus.intr/repository/init/gradle-init/0.1/dockertask.gradle"
+//apply from: "http://nexus.intr/repository/init/gradle-init/0.1/dockertask.gradle"

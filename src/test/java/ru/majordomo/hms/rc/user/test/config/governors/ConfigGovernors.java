@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 import ru.majordomo.hms.rc.user.managers.*;
+import ru.majordomo.hms.rc.user.service.CounterService;
 
 @EnableConfigurationProperties(DefaultWebSiteSettings.class)
 public class ConfigGovernors {
@@ -79,5 +80,10 @@ public class ConfigGovernors {
     @Bean
     public Cleaner cleaner() {
         return new Cleaner();
+    }
+
+    @Bean
+    public CounterService counterService() {
+        return new CounterService();
     }
 }

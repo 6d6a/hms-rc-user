@@ -16,7 +16,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -38,20 +39,15 @@ import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
-import ru.majordomo.hms.rc.user.resources.DTO.ObjectContainer;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
+import ru.majordomo.hms.rc.user.service.CounterService;
 
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
 import static ru.majordomo.hms.rc.user.common.Utils.getLongFromUnexpectedInput;
 
 @Component
 public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
-
-    public final int MIN_UID = 2000;
-    public final int MAX_UID = 65535;
 
     private UnixAccountRepository repository;
     private GovernorOfFTPUser governorOfFTPUser;
@@ -64,6 +60,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private MongoOperations mongoOperations;
     private String springDataMongodbDatabase;
     private MongoClient mongoClient;
+    private CounterService counterService;
+
+    @Autowired
+    public void setCounterService(CounterService counterService) {
+        this.counterService = counterService;
+    }
 
     @Autowired
     public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
@@ -252,9 +254,13 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         Integer uid = (Integer) serviceMessage.getParam("uid");
         if (uid == null || uid == 0) {
             uid = getFreeUid();
+        } else {
+            throwIfExists("uid", uid);
         }
 
-        unixAccount.setName(getFreeUnixAccountName());
+        unixAccount.setName(
+                getFreeUnixAccountName(unixAccount.getAccountId())
+        );
 
         String homeDir;
         String serverId;
@@ -268,6 +274,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             homeDir = cleaner.cleanString((String) serviceMessage.getParam("homeDir"));
             if (homeDir == null || homeDir.equals("")) {
                 homeDir = "/home/" + unixAccount.getName();
+            } else {
+                throwIfExists("homeDir", homeDir);
             }
 
             serverId = cleaner.cleanString((String) serviceMessage.getParam("serverId"));
@@ -462,99 +470,36 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         repository.save(unixAccount);
     }
 
-    public String getFreeUnixAccountName() {
-        List<String> unixAccountNames = this.getUnixAccountNames();
-        int counter = 0;
-        int freeNumName = 0;
-        int accountsCount = unixAccountNames.size();
+    public String getFreeUnixAccountName(String accountId) {
+        if (accountId == null || !accountId.matches("^\\d+$")) {
+            accountId = "";
+        }
 
+        if (accountId.isEmpty()) {
+            accountId = counterService.getNextUid().toString();
+        }
 
-        if (accountsCount == 0) {
-            freeNumName = MIN_UID;
-        } else {
-
-            int[] names = new int[unixAccountNames.size()];
-            for (String name : unixAccountNames) {
-                if (nameIsNumerable(name)) {
-                    names[counter] = getUnixAccountNameAsInteger(name);
-                    counter++;
-                }
+        if (exists("name", "u" + accountId)) {
+            int suffix = 1;
+            while (exists("name", "u" + accountId + "_" + suffix)) {
+                suffix++;
             }
-            freeNumName = getGapInOrder(names);
+            return "u" + accountId + "_" + suffix;
+        } else {
+            return "u" + accountId;
         }
-        if (freeNumName == 0) {
-            throw new IllegalStateException("Невозможно найти свободное имя");
-        }
-
-        return "u" + freeNumName;
     }
 
     private String getActiveHostingServerId() {
         return staffRcClient.getActiveHostingServer().getId();
     }
 
-    private int getGapInOrder(int[] order) {
-        int numInGap = 0;
-        int lastElementIndex = order.length - 1;
-        Arrays.sort(order);
-        if (order[0] > MIN_UID) {
-            numInGap = MIN_UID;
-        }
-        if (order[lastElementIndex] < MAX_UID) {
-            numInGap = MAX_UID;
-        }
-
-        for (int i = 0; i <= (lastElementIndex-1); i++) {
-            int curElement = order[i];
-            int nextElement = order[i + 1];
-            if ((nextElement - curElement) > 1) {
-                numInGap = curElement + 1;
-                break;
-            }
-        }
-
-        return numInGap;
-    }
-
-    /**
-     * Функция для получения свободного UID. Алгоритмы получения (в порядке использования):
-     * 1) получаем наибольший UID и добавляем к нему 1;
-     * 2) получаем наименьший UID и вычитаем из него 1;
-     * 3) получаем отсортированный список UID'ов пачками по 20 и сравниваем их разницу.
-     * Алгоритм 3 на примере:
-     * - список UID'ов 2000,2002,2005,2006,2007;
-     * - берем первую пару, т.е. UID'ы 2000 и 2002;
-     * - вычитаем из наибольшего наименьшее, т.е. 2002-2000;
-     * - результат операции вычитания 2, он не равен 1, значит в последовательности найдена бреш;
-     * - получаем число, которое пропущено, для этого берем минимальное и прибавляем к нему 1;
-     * - 2000+1=2001 - свободный UID.
-     * Если ни один из алгоритмов не сработал, скорее всего свободные UID'ы закончились, выбрасываем
-     * IllegalStateException.
-     */
     public Integer getFreeUid() {
-        List<Integer> uidList = getUidList();
-        int freeUid = 0;
-        int accountsCount = uidList.size();
-
-        if (accountsCount == 0) {
-            freeUid = MIN_UID;
-        } else {
-
-            int[] uids = new int[accountsCount];
-            int counter = 0;
-            for (int uid : uidList) {
-                uids[counter] = uid;
-                counter++;
-            }
-
-            freeUid = getGapInOrder(uids);
+        Integer nextUid = counterService.getNextUid();
+        while (exists("uid", nextUid)) {
+            nextUid = counterService.getNextUid();
         }
-
-        if (freeUid == 0) {
-            throw new IllegalStateException("Невозможно найти свободный UID");
-        }
-
-        return freeUid;
+        return nextUid;
     }
 
     public Integer getUnixAccountNameAsInteger(String unixAccountName) {
@@ -567,10 +512,6 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     public Boolean nameIsNumerable(String name) {
         String pattern = "^u\\d+$";
         return name.matches(pattern);
-    }
-
-    public Boolean isUidValid(Integer uid) {
-        return (uid <= MAX_UID && uid >= MIN_UID);
     }
 
     private void validateAndProcessCronTask(CronTask cronTask) throws ParameterValidationException {
@@ -629,23 +570,13 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         malwareReportRepository.save(report);
     }
 
-    public List<String> getUnixAccountNames() {
-        return this.getListFieldValue(String.class, "name", "unixAccounts");
+    private void throwIfExists(String property, Object value) {
+        if (exists(property, value)) {
+            throw new ParameterValidationException(property + " " + value + " уже существует");
+        }
     }
 
-    public List<Integer> getUidList() {
-        return this.getListFieldValue(Integer.class, "uid", "unixAccounts");
-    }
-
-    public <T extends Object> List<T> getListFieldValue(Class<T> clazz, String field, String collection){
-        GroupOperation group = group().addToSet(field).as("object");
-
-        List<ObjectContainer> list = mongoOperations.aggregate(
-                newAggregation(group), collection, ObjectContainer.class
-        ).getMappedResults();
-
-        if (list == null || list.isEmpty()) { return new ArrayList<>(); }
-
-        return list.get(0).getObject();
+    private boolean exists(String property, Object value) {
+        return mongoOperations.exists(new Query(new Criteria(property).is(value)), UnixAccount.class);
     }
 }

@@ -1,6 +1,9 @@
 package ru.majordomo.hms.rc.user.resources;
 
 import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -17,12 +20,14 @@ import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.resources.validation.ValidAbsoluteFilePath;
 import ru.majordomo.hms.rc.user.resources.validation.ValidHomeDir;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 @Document(collection = "unixAccounts")
 public class UnixAccount extends Resource implements ServerStorable, Quotable, Securable {
     @Transient
     public static final int MIN_UID = 1000;
     @Transient
-    public static final int MAX_UID = 70000;
+    public static final int MAX_UID = 700000;
 
     @Indexed
     @NotNull(message = "Uid не может быть равным null")
@@ -54,88 +59,9 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     @Transient
     private Boolean infected;
 
-    public List<CronTask> getCrontab() {
-        return crontab;
-    }
-
-    public void setCrontab(List<CronTask> crontab) {
-        this.crontab = crontab;
-    }
-
-    public void addCronTask(CronTask task) {
-        this.crontab.add(task);
-    }
-
-    public void delCronTask(CronTask task) {
-        this.crontab.remove(task);
-    }
-
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
-    }
-
-    public Integer getUid() {
-        return uid;
-    }
-
-    public void setUid(Integer uid) {
-        this.uid = uid;
-    }
-
-    public String getHomeDir() {
-        return homeDir;
-    }
-
-    public void setHomeDir(String homeDir) {
-        this.homeDir = homeDir;
-    }
-
-    public String getServerId() {
-        return serverId;
-    }
-
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
-    }
-
-    public SSHKeyPair getKeyPair() {
-        return keyPair;
-    }
-
-    public void setKeyPair(SSHKeyPair keyPair) {
-        this.keyPair = keyPair;
-    }
-
-    @Override
-    public String toString() {
-        return "UnixAccount{" +
-                super.toString() +
-                ", uid=" + uid +
-                ", homeDir='" + homeDir + '\'' +
-                ", serverId='" + serverId + '\'' +
-                ", quota=" + quota +
-                ", quotaUsed=" + quotaUsed +
-                ", writable=" + writable +
-                ", passwordHash='" + passwordHash + '\'' +
-                ", keyPair=" + keyPair +
-                ", crontab=" + crontab +
-                '}';
-    }
-
-    @Override
-    public void setQuota(Long quota) {
-        this.quota = quota;
-    }
-
-    @Override
-    public Long getQuota() {
-        return quota;
-    }
-
-    @Override
-    public void setQuotaUsed(Long quotaUsed) {
-        this.quotaUsed = quotaUsed;
     }
 
     @Override
@@ -144,43 +70,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     }
 
     @Override
-    public void setWritable(Boolean writable) {
-        this.writable = writable;
-    }
-
-    @Override
-    public Boolean getWritable() {
-        return writable;
-    }
-
-    public Boolean getSendmailAllowed() {
-        return sendmailAllowed;
-    }
-
-    public void setSendmailAllowed(Boolean sendmailAllowed) {
-        this.sendmailAllowed = sendmailAllowed;
-    }
-
-    @Override
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    @Override
     public void setPasswordHashByPlainPassword(String plainPassword) throws UnsupportedEncodingException {
         passwordHash = PasswordManager.forUbuntu(plainPassword);
-    }
-
-    @Override
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public Boolean getInfected() {
-        return infected;
-    }
-
-    public void setInfected(Boolean infected) {
-        this.infected = infected;
     }
 }
