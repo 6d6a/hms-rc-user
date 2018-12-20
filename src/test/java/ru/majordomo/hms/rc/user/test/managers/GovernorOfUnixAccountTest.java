@@ -7,6 +7,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
@@ -14,10 +17,12 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
+import ru.majordomo.hms.rc.user.model.Counter;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
+import ru.majordomo.hms.rc.user.service.CounterService;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
 import ru.majordomo.hms.rc.user.test.common.ServiceMessageGenerator;
 import ru.majordomo.hms.rc.user.test.config.DatabaseConfig;
@@ -60,6 +65,8 @@ public class GovernorOfUnixAccountTest {
     private UnixAccountRepository repository;
     @Autowired
     private Cleaner cleaner;
+    @Autowired
+    private MongoOperations mongoOperations;
 
     private List<UnixAccount> unixAccounts;
 
@@ -104,19 +111,14 @@ public class GovernorOfUnixAccountTest {
     @Test
     public void getFreeUidWhenNoOneUsed() throws Exception {
         repository.deleteAll();
-        assertThat(governor.getFreeUid(), is(governor.MIN_UID));
-    }
+        mongoOperations.remove(
+                new Query(
+                        new Criteria("internalName").is(CounterService.UNIX_ACCOUNT_UID_INTERNAL_NAME)
+                ),
+                Counter.class
+        );
 
-    @Test
-    public void getFreeUidWhenAllUpperUidUsed() throws Exception {
-        repository.deleteAll();
-        for (int i = (governor.MAX_UID - 3); i <= governor.MAX_UID; i++) {
-            UnixAccount unixAccount = new UnixAccount();
-            unixAccount.setUid(i);
-            repository.save(unixAccount);
-        }
-
-        assertThat(governor.getFreeUid(), is(governor.MIN_UID));
+        assertThat(governor.getFreeUid(), is(CounterService.DEFAULT_START_UID + 1));
     }
 
     @Test
@@ -124,6 +126,83 @@ public class GovernorOfUnixAccountTest {
         String name = "u134035";
         Integer nameId = governor.getUnixAccountNameAsInteger(name);
         assertThat(nameId, is(134035));
+    }
+
+    @Test
+    public void everyNextUidIsIncreasesByOne() {
+        Integer uid = governor.getFreeUid();
+        for (int i = 0; i < 10; i++) {
+            assertThat(governor.getFreeUid(), is(++uid));
+        }
+    }
+
+    @Test
+    public void ifNextUidIsBusyGetNextOne() {
+        Integer uid = governor.getFreeUid();
+
+        UnixAccount unixAccount = new UnixAccount();
+        unixAccount.setName("djgkasjdgjasdg");
+        unixAccount.setUid(uid + 1);
+        repository.insert(unixAccount);
+
+        assertThat(governor.getFreeUid(), is(uid + 2));
+    }
+
+    @Test
+    public void getFreeNameByAccountIdIsNull() {
+        Integer uid = governor.getFreeUid();
+        assertThat(governor.getFreeUnixAccountName(null), is("u" + (uid+1)));
+    }
+
+    @Test
+    public void getFreeNameByAccountIdIsShit() {
+        Integer uid = governor.getFreeUid();
+
+        assertThat(
+                governor.getFreeUnixAccountName("!@#$%^&*(()_+"),
+                is("u" + (++uid))
+        );
+
+        assertThat(
+                governor.getFreeUnixAccountName("dkjghjaksjg"),
+                is("u" + (++uid))
+        );
+
+        assertThat(
+                governor.getFreeUnixAccountName("ac_82475"),
+                is("u" + (++uid))
+        );
+
+        assertThat(
+                governor.getFreeUnixAccountName(""),
+                is("u" + (++uid))
+        );
+
+        assertThat(
+                governor.getFreeUnixAccountName(" \t \n"),
+                is("u" + (++uid))
+        );
+    }
+
+    @Test
+    public void getFreeNameByAccountIdIsStringOfNumberAndItsNotBusy() {
+        assertThat(
+                governor.getFreeUnixAccountName("135135"),
+                is("u135135")
+        );
+    }
+
+    @Test
+    public void getFreeNameByAccountIdIsStringOfNumberAndItsBusy() {
+        UnixAccount unixAccount = new UnixAccount();
+        unixAccount.setName("u235135");
+        unixAccount.setUid(235135);
+        repository.insert(unixAccount);
+
+        assertThat(
+                governor.getFreeUnixAccountName("235135"),
+                is("u235135_1")
+        );
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -144,41 +223,19 @@ public class GovernorOfUnixAccountTest {
 
     @Test
     public void getFreeNumNameWhenNoOneUsed() throws Exception {
-        assertThat(governor.getFreeUnixAccountName(), is("u" + governor.MIN_UID));
+        assertThat(
+                governor.getFreeUnixAccountName(null),
+                is("u" + (CounterService.DEFAULT_START_UID + 1))
+        );
     }
 
     @Test
-    public void getFreeNumNameWhenOnlyOneAccAndItsNameU2000() throws Exception {
+    public void getFreeNumNameWhenOnlyOneAccAndItsNameU70001() throws Exception {
         repository.deleteAll();
         UnixAccount unixAccount = new UnixAccount();
-        unixAccount.setName("u2000");
+        unixAccount.setName("u70001");
         repository.save(unixAccount);
-        assertThat(governor.getFreeUnixAccountName(), is("u" + governor.MAX_UID));
-    }
-
-    @Test
-    public void freeNumName() throws Exception {
-        repository.deleteAll();
-        UnixAccount unixAccount = new UnixAccount();
-        unixAccount.setName("u134035");
-        repository.save(unixAccount);
-
-        unixAccount = new UnixAccount();
-        unixAccount.setName("u134037");
-        repository.save(unixAccount);
-
-        System.out.println(repository.findAll());
-        assertThat(governor.getFreeUnixAccountName(), is("u134036"));
-    }
-
-    @Test
-    public void lowUidNotValid() throws Exception {
-        assertThat(governor.isUidValid(1000), is(false));
-    }
-
-    @Test
-    public void uidValid() throws Exception {
-        assertThat(governor.isUidValid(2000), is(true));
+        assertThat(governor.getFreeUnixAccountName(null), is("u" + (CounterService.DEFAULT_START_UID + 2)));
     }
 
     @Test
