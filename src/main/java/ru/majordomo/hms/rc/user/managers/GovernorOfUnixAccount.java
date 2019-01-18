@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.JSchException;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.WriteResult;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.bson.types.ObjectId;
@@ -578,5 +579,33 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
     private boolean exists(String property, Object value) {
         return mongoOperations.exists(new Query(new Criteria(property).is(value)), UnixAccount.class);
+    }
+
+    public void processQuotaReport(ServiceMessage serviceMessage) {
+        Integer uid = null;
+        Long quotaUsed = null;
+
+        if (serviceMessage.getParam("uid") != null) {
+            uid = (Integer) serviceMessage.getParam("uid");
+        }
+
+        if (serviceMessage.getParam("quotaUsed") != null) {
+            Object quotaUsedFromMessage = serviceMessage.getParam("quotaUsed");
+            if (quotaUsedFromMessage instanceof Long) {
+                quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+            } else if (quotaUsedFromMessage instanceof Integer) {
+                quotaUsed = ((Integer) serviceMessage.getParam("quotaUsed")).longValue();
+            }
+        }
+
+        DB db = mongoClient.getDB(springDataMongodbDatabase);
+
+        Jongo jongo = new Jongo(db);
+
+        MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
+
+        if (uid != null && quotaUsed != null && unixAccountsCollection.count("{uid:#", uid) > 0) {
+            WriteResult writeResult = unixAccountsCollection.update("{uid:#", uid).with("{$set: {quotaUsed: #}}", quotaUsed);
+        }
     }
 }

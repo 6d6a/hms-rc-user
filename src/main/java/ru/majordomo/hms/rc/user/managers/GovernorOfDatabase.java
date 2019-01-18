@@ -1,6 +1,13 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
+import com.mongodb.WriteResult;
+
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +46,8 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     private Validator validator;
     private String defaultServiceName;
     private StaffResourceControllerClient staffRcClient;
+    private MongoClient mongoClient;
+    private String springDataMongodbDatabase;
 
     @Value("${default.database.serviceName}")
     public void setDefaultServiceName(String defaultServiceName) {
@@ -73,6 +82,16 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     @Autowired
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    @Autowired
+    public void setMongoClient(@Qualifier("jongoMongoClient") MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
+    }
+
+    @Value("${spring.data.mongodb.database}")
+    public void setSpringDataMongodbDatabase(String springDataMongodbDatabase) {
+        this.springDataMongodbDatabase = springDataMongodbDatabase;
     }
 
     @Override
@@ -300,5 +319,33 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
         database.setQuotaUsed(quotaSize);
 
         store(database);
+    }
+
+    public void processQuotaReport(ServiceMessage serviceMessage) {
+        String name = null;
+        Long quotaUsed = null;
+
+        if (serviceMessage.getParam("name") != null) {
+            name = (String) serviceMessage.getParam("name");
+        }
+
+        if (serviceMessage.getParam("quotaUsed") != null) {
+            Object quotaUsedFromMessage = serviceMessage.getParam("quotaUsed");
+            if (quotaUsedFromMessage instanceof Long) {
+                quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+            } else if (quotaUsedFromMessage instanceof Integer) {
+                quotaUsed = ((Integer) serviceMessage.getParam("quotaUsed")).longValue();
+            }
+        }
+
+        DB db = mongoClient.getDB(springDataMongodbDatabase);
+
+        Jongo jongo = new Jongo(db);
+
+        MongoCollection databasesCollection = jongo.getCollection("databases");
+
+        if (name != null && quotaUsed != null && databasesCollection.count("{name:#", name) > 0) {
+            WriteResult writeResult = databasesCollection.update("{name:#", name).with("{$set: {quotaUsed: #}}", quotaUsed);
+        }
     }
 }

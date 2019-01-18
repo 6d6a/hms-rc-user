@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.WriteResult;
 
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
@@ -764,6 +765,34 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             if (newQuotaUsedInPercent >= warnPercent && oldQuotaUsedInPercent < warnPercent) {
                 publisher.publishEvent(new MailboxQuotaWarnEvent(mailbox));
             }
+        }
+    }
+
+    public void processQuotaReport(ServiceMessage serviceMessage) {
+        String name = null;
+        Long quotaUsed = null;
+
+        if (serviceMessage.getParam("name") != null) {
+            name = (String) serviceMessage.getParam("name");
+        }
+
+        if (serviceMessage.getParam("quotaUsed") != null) {
+            Object quotaUsedFromMessage = serviceMessage.getParam("quotaUsed");
+            if (quotaUsedFromMessage instanceof Long) {
+                quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+            } else if (quotaUsedFromMessage instanceof Integer) {
+                quotaUsed = ((Integer) serviceMessage.getParam("quotaUsed")).longValue();
+            }
+        }
+
+        DB db = mongoClient.getDB(springDataMongodbDatabase);
+
+        Jongo jongo = new Jongo(db);
+
+        MongoCollection mailboxesCollection = jongo.getCollection("mailboxes");
+
+        if (name != null && quotaUsed != null && mailboxesCollection.count("{name:#", name) > 0) {
+            WriteResult writeResult = mailboxesCollection.update("{name:#", name).with("{$set: {quotaUsed: #}}", quotaUsed);
         }
     }
 }

@@ -67,6 +67,10 @@ public class Constants {
         public static final String REDIRECT_UPDATE = "redirect.update";
         public static final String REDIRECT_DELETE = "redirect.delete";
 
+        public static final String UNIX_ACCOUNT_QUOTA = "unix-account.quota";
+        public static final String DATABASE_QUOTA = "database.quota";
+        public static final String MAILBOX_QUOTA = "mailbox.quota";
+
         public static Set<String> ALL_EXCHANGES;
 
         static {
@@ -111,7 +115,10 @@ public class Constants {
                     WEBSITE_DELETE,
                     REDIRECT_CREATE,
                     REDIRECT_UPDATE,
-                    REDIRECT_DELETE
+                    REDIRECT_DELETE,
+                    UNIX_ACCOUNT_QUOTA,
+                    DATABASE_QUOTA,
+                    MAILBOX_QUOTA
             ));
         }
     }
