@@ -816,26 +816,30 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                 Mailbox currentMailbox = repository.findByNameAndDomainId(mailboxName, currentDomain.getId());
 
                 if(currentMailbox != null) {
-                    currentMailbox.setDomain(currentDomain);
+                    if (!currentMailbox.getQuotaUsed().equals(quotaUsed)) {
+                        log.info("mailboxes quotaReport found changed quotaUsed. old: " + currentMailbox.getQuotaUsed() + " new: " + quotaUsed);
 
-                    // Сохраняем старые значения для определения необходимости отправки уведомлений
-                    long oldQuotaUsed = currentMailbox.getQuotaUsed();
-                    boolean oldWritable = currentMailbox.getWritable();
-
-                    //Устанавливаем новые квоту и writable после определения старых значений
-                    currentMailbox.setQuotaUsed(quotaUsed);
-                    currentMailbox.setWritable(this.getNewWritable(currentMailbox));
-
-                    WriteResult writeResult = mailboxesCollection
-                            .update("{name: #, domainId: #}", mailboxName, currentDomain.getId())
-                            .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
-
-                    if (oldWritable != currentMailbox.getWritable()) {
-                        syncWithRedis(currentMailbox);
+//                        currentMailbox.setDomain(currentDomain);
+//
+//                        // Сохраняем старые значения для определения необходимости отправки уведомлений
+//                        long oldQuotaUsed = currentMailbox.getQuotaUsed();
+//                        boolean oldWritable = currentMailbox.getWritable();
+//
+//                        //Устанавливаем новые квоту и writable после определения старых значений
+//                        currentMailbox.setQuotaUsed(quotaUsed);
+//                        currentMailbox.setWritable(this.getNewWritable(currentMailbox));
+//
+//                        WriteResult writeResult = mailboxesCollection
+//                                .update("{name: #, domainId: #}", mailboxName, currentDomain.getId())
+//                                .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
+//
+//                        if (oldWritable != currentMailbox.getWritable()) {
+//                            syncWithRedis(currentMailbox);
+//                        }
+//
+//                        // Отправляем уведомление, если это необходимо
+//                        notify(currentMailbox, oldWritable, oldQuotaUsed);
                     }
-
-                    // Отправляем уведомление, если это необходимо
-                    notify(currentMailbox, oldWritable, oldQuotaUsed);
                 }
             }
         }

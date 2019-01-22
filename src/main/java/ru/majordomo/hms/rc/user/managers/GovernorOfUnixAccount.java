@@ -605,7 +605,21 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
 
         if (uid != null && quotaUsed != null && unixAccountsCollection.count("{uid: #}", uid) > 0) {
-            WriteResult writeResult = unixAccountsCollection.update("{uid: #}", uid).with("{$set: {quotaUsed: #}}", quotaUsed);
+            UnixAccount currentUnixAccount = unixAccountsCollection
+                    .findOne("{uid: #}", uid)
+                    .projection("{quotaUsed: 1}")
+                    .map(
+                            result -> {
+                                UnixAccount unixAccount = new UnixAccount();
+                                unixAccount.setId(((ObjectId) result.get("_id")).toString());
+                                unixAccount.setQuotaUsed((Long) result.get("quotaUsed"));
+                                return unixAccount;
+                            }
+                    );
+            if (!currentUnixAccount.getQuotaUsed().equals(quotaUsed)) {
+                log.info("unixAccounts quotaReport found changed quotaUsed. old: " + currentUnixAccount.getQuotaUsed() + " new: " + quotaUsed);
+                //WriteResult writeResult = unixAccountsCollection.update("{uid: #}", uid).with("{$set: {quotaUsed: #}}", quotaUsed);
+            }
         }
     }
 }

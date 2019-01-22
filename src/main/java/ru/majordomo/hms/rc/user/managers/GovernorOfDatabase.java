@@ -4,6 +4,7 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 
+import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -345,7 +346,21 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
         MongoCollection databasesCollection = jongo.getCollection("databases");
 
         if (name != null && quotaUsed != null && databasesCollection.count("{name: #}", name) > 0) {
-            WriteResult writeResult = databasesCollection.update("{name: #}", name).with("{$set: {quotaUsed: #}}", quotaUsed);
+            Database currentDatabase = databasesCollection
+                    .findOne("{name: #}", name)
+                    .projection("{quotaUsed: 1}")
+                    .map(
+                            result -> {
+                                Database database = new Database();
+                                database.setId(((ObjectId) result.get("_id")).toString());
+                                database.setQuotaUsed((Long) result.get("quotaUsed"));
+                                return database;
+                            }
+                    );
+            if (!currentDatabase.getQuotaUsed().equals(quotaUsed)) {
+                log.info("databases quotaReport found changed quotaUsed. old: " + currentDatabase.getQuotaUsed() + " new: " + quotaUsed);
+                //WriteResult writeResult = databasesCollection.update("{name: #}", name).with("{$set: {quotaUsed: #}}", quotaUsed);
+            }
         }
     }
 }
