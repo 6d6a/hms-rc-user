@@ -344,8 +344,8 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
         MongoCollection databasesCollection = jongo.getCollection("databases");
 
-        if (name != null && quotaUsed != null && databasesCollection.count("{name:#", name) > 0) {
-            WriteResult writeResult = databasesCollection.update("{name:#", name).with("{$set: {quotaUsed: #}}", quotaUsed);
+        if (name != null && quotaUsed != null && databasesCollection.count("{name: #}", name) > 0) {
+            WriteResult writeResult = databasesCollection.update("{name: #}", name).with("{$set: {quotaUsed: #}}", quotaUsed);
         }
     }
 }

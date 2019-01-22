@@ -604,8 +604,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
         MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
 
-        if (uid != null && quotaUsed != null && unixAccountsCollection.count("{uid:#", uid) > 0) {
-            WriteResult writeResult = unixAccountsCollection.update("{uid:#", uid).with("{$set: {quotaUsed: #}}", quotaUsed);
+        if (uid != null && quotaUsed != null && unixAccountsCollection.count("{uid: #}", uid) > 0) {
+            WriteResult writeResult = unixAccountsCollection.update("{uid: #}", uid).with("{$set: {quotaUsed: #}}", quotaUsed);
         }
     }
 }

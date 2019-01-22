@@ -769,11 +769,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     public void processQuotaReport(ServiceMessage serviceMessage) {
-        String name = null;
+        String fullName = null, domainName = null, mailboxName = null;
         Long quotaUsed = null;
 
         if (serviceMessage.getParam("name") != null) {
-            name = (String) serviceMessage.getParam("name");
+            fullName = (String) serviceMessage.getParam("name");
         }
 
         if (serviceMessage.getParam("quotaUsed") != null) {
@@ -790,9 +790,54 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Jongo jongo = new Jongo(db);
 
         MongoCollection mailboxesCollection = jongo.getCollection("mailboxes");
+        MongoCollection domainsCollection = jongo.getCollection("domains");
 
-        if (name != null && quotaUsed != null && mailboxesCollection.count("{name:#", name) > 0) {
-            WriteResult writeResult = mailboxesCollection.update("{name:#", name).with("{$set: {quotaUsed: #}}", quotaUsed);
+        String[] splitFullName = fullName != null ? fullName.split("@", 2) : new String[0];
+
+        if (splitFullName.length == 2) {
+            mailboxName = splitFullName[0];
+            domainName = splitFullName[1];
+        }
+
+        if (mailboxName != null && domainName != null && quotaUsed != null) {
+            Domain currentDomain = domainsCollection
+                    .findOne("{name: #}", java.net.IDN.toUnicode(domainName))
+                    .projection("{name: 1}")
+                    .map(
+                            result -> {
+                                Domain domain = new Domain();
+                                domain.setId(((ObjectId) result.get("_id")).toString());
+                                domain.setName((String) result.get("name"));
+                                return domain;
+                            }
+                    );
+
+            if (currentDomain != null) {
+                Mailbox currentMailbox = repository.findByNameAndDomainId(mailboxName, currentDomain.getId());
+
+                if(currentMailbox != null) {
+                    currentMailbox.setDomain(currentDomain);
+
+                    // Сохраняем старые значения для определения необходимости отправки уведомлений
+                    long oldQuotaUsed = currentMailbox.getQuotaUsed();
+                    boolean oldWritable = currentMailbox.getWritable();
+
+                    //Устанавливаем новые квоту и writable после определения старых значений
+                    currentMailbox.setQuotaUsed(quotaUsed);
+                    currentMailbox.setWritable(this.getNewWritable(currentMailbox));
+
+                    WriteResult writeResult = mailboxesCollection
+                            .update("{name: #, domainId: #}", mailboxName, currentDomain.getId())
+                            .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
+
+                    if (oldWritable != currentMailbox.getWritable()) {
+                        syncWithRedis(currentMailbox);
+                    }
+
+                    // Отправляем уведомление, если это необходимо
+                    notify(currentMailbox, oldWritable, oldQuotaUsed);
+                }
+            }
         }
     }
 }
