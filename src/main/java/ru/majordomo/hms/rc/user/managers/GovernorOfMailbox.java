@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.WriteResult;
 
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
@@ -763,6 +764,83 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
             if (newQuotaUsedInPercent >= warnPercent && oldQuotaUsedInPercent < warnPercent) {
                 publisher.publishEvent(new MailboxQuotaWarnEvent(mailbox));
+            }
+        }
+    }
+
+    public void processQuotaReport(ServiceMessage serviceMessage) {
+        String fullName = null, domainName = null, mailboxName = null;
+        Long quotaUsed = null;
+
+        if (serviceMessage.getParam("name") != null) {
+            fullName = (String) serviceMessage.getParam("name");
+        }
+
+        if (serviceMessage.getParam("quotaUsed") != null) {
+            Object quotaUsedFromMessage = serviceMessage.getParam("quotaUsed");
+            if (quotaUsedFromMessage instanceof Long) {
+                quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+            } else if (quotaUsedFromMessage instanceof Integer) {
+                quotaUsed = ((Integer) serviceMessage.getParam("quotaUsed")).longValue();
+            }
+        }
+
+        DB db = mongoClient.getDB(springDataMongodbDatabase);
+
+        Jongo jongo = new Jongo(db);
+
+        MongoCollection mailboxesCollection = jongo.getCollection("mailboxes");
+        MongoCollection domainsCollection = jongo.getCollection("domains");
+
+        String[] splitFullName = fullName != null ? fullName.split("@", 2) : new String[0];
+
+        if (splitFullName.length == 2) {
+            mailboxName = splitFullName[0];
+            domainName = splitFullName[1];
+        }
+
+        if (mailboxName != null && domainName != null && quotaUsed != null) {
+            Domain currentDomain = domainsCollection
+                    .findOne("{name: #}", java.net.IDN.toUnicode(domainName))
+                    .projection("{name: 1}")
+                    .map(
+                            result -> {
+                                Domain domain = new Domain();
+                                domain.setId(((ObjectId) result.get("_id")).toString());
+                                domain.setName((String) result.get("name"));
+                                return domain;
+                            }
+                    );
+
+            if (currentDomain != null) {
+                Mailbox currentMailbox = repository.findByNameAndDomainId(mailboxName, currentDomain.getId());
+
+                if(currentMailbox != null) {
+                    if (!currentMailbox.getQuotaUsed().equals(quotaUsed)) {
+                        log.info("mailboxes quotaReport found changed quotaUsed. old: " + currentMailbox.getQuotaUsed() + " new: " + quotaUsed);
+
+//                        currentMailbox.setDomain(currentDomain);
+//
+//                        // Сохраняем старые значения для определения необходимости отправки уведомлений
+//                        long oldQuotaUsed = currentMailbox.getQuotaUsed();
+//                        boolean oldWritable = currentMailbox.getWritable();
+//
+//                        //Устанавливаем новые квоту и writable после определения старых значений
+//                        currentMailbox.setQuotaUsed(quotaUsed);
+//                        currentMailbox.setWritable(this.getNewWritable(currentMailbox));
+//
+//                        WriteResult writeResult = mailboxesCollection
+//                                .update("{name: #, domainId: #}", mailboxName, currentDomain.getId())
+//                                .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
+//
+//                        if (oldWritable != currentMailbox.getWritable()) {
+//                            syncWithRedis(currentMailbox);
+//                        }
+//
+//                        // Отправляем уведомление, если это необходимо
+//                        notify(currentMailbox, oldWritable, oldQuotaUsed);
+                    }
+                }
             }
         }
     }

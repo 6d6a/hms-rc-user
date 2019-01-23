@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcraft.jsch.JSchException;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.WriteResult;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.bson.types.ObjectId;
@@ -578,5 +579,47 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
     private boolean exists(String property, Object value) {
         return mongoOperations.exists(new Query(new Criteria(property).is(value)), UnixAccount.class);
+    }
+
+    public void processQuotaReport(ServiceMessage serviceMessage) {
+        Integer uid = null;
+        Long quotaUsed = null;
+
+        if (serviceMessage.getParam("uid") != null) {
+            uid = (Integer) serviceMessage.getParam("uid");
+        }
+
+        if (serviceMessage.getParam("quotaUsed") != null) {
+            Object quotaUsedFromMessage = serviceMessage.getParam("quotaUsed");
+            if (quotaUsedFromMessage instanceof Long) {
+                quotaUsed = (Long) serviceMessage.getParam("quotaUsed");
+            } else if (quotaUsedFromMessage instanceof Integer) {
+                quotaUsed = ((Integer) serviceMessage.getParam("quotaUsed")).longValue();
+            }
+        }
+
+        DB db = mongoClient.getDB(springDataMongodbDatabase);
+
+        Jongo jongo = new Jongo(db);
+
+        MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
+
+        if (uid != null && quotaUsed != null && unixAccountsCollection.count("{uid: #}", uid) > 0) {
+            UnixAccount currentUnixAccount = unixAccountsCollection
+                    .findOne("{uid: #}", uid)
+                    .projection("{quotaUsed: 1}")
+                    .map(
+                            result -> {
+                                UnixAccount unixAccount = new UnixAccount();
+                                unixAccount.setId(((ObjectId) result.get("_id")).toString());
+                                unixAccount.setQuotaUsed((Long) result.get("quotaUsed"));
+                                return unixAccount;
+                            }
+                    );
+            if (!currentUnixAccount.getQuotaUsed().equals(quotaUsed)) {
+                log.info("unixAccounts quotaReport found changed quotaUsed. old: " + currentUnixAccount.getQuotaUsed() + " new: " + quotaUsed);
+                //WriteResult writeResult = unixAccountsCollection.update("{uid: #}", uid).with("{$set: {quotaUsed: #}}", quotaUsed);
+            }
+        }
     }
 }
