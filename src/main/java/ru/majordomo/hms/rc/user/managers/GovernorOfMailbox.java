@@ -591,7 +591,13 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                     .map(
                             result -> {
                                 Mailbox mailbox = new Mailbox();
-                                mailbox.setId(((ObjectId) result.get("_id")).toString());
+
+                                if (result.get("_id") instanceof ObjectId) {
+                                    mailbox.setId(((ObjectId) result.get("_id")).toString());
+                                } else if (result.get("_id") instanceof String) {
+                                    mailbox.setId((String) result.get("_id"));
+                                }
+
                                 mailbox.setName((String) result.get("name"));
                                 mailbox.setUid((Integer) result.get("uid"));
                                 mailbox.setMailSpool((String) result.get("mailSpool"));
@@ -817,7 +823,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
                 if(currentMailbox != null) {
                     if (!currentMailbox.getQuotaUsed().equals(quotaUsed)) {
-                        log.info("mailboxes quotaReport found changed quotaUsed. old: " + currentMailbox.getQuotaUsed() + " new: " + quotaUsed);
+                        log.info("mailboxes quotaReport for mailbox '" + fullName + "' found changed quotaUsed. old: " + currentMailbox.getQuotaUsed() + " new: " + quotaUsed);
 
 //                        currentMailbox.setDomain(currentDomain);
 //
