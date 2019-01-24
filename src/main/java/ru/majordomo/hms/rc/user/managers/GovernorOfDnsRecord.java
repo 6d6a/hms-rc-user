@@ -161,17 +161,20 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Override
     public void preValidate(DNSResourceRecord record) {
         DNSResourceRecordType type = record.getRrType();
-        switch (type) {
-            case A:
-                record.setPrio(null);
-                break;
-            case MX:
-                if (record.getPrio() == null) record.setPrio(10L);
-                break;
-            case AAAA:
-                break;
-            default:
-                break;
+        
+        if(type != null) {
+            switch (type) {
+                case A:
+                    record.setPrio(null);
+                    break;
+                case MX:
+                    if (record.getPrio() == null) record.setPrio(10L);
+                    break;
+                case AAAA:
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
