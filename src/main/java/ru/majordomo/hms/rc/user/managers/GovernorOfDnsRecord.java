@@ -65,6 +65,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Override
     public DNSResourceRecord create(ServiceMessage serviceMessage) throws ParameterValidationException {
         DNSResourceRecord record = buildResourceFromServiceMessage(serviceMessage);
+        preValidate(record);
         validate(record);
         store(record);
 
@@ -87,6 +88,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
         setRecordParams(record, serviceMessage);
 
+        preValidate(record);
         validate(record);
         store(record);
 
