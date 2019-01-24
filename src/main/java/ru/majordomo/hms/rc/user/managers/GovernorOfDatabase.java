@@ -19,11 +19,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import ru.majordomo.hms.rc.staff.resources.Resource;
+import ru.majordomo.hms.rc.staff.resources.Server;
+import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -323,11 +327,19 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     public void processQuotaReport(ServiceMessage serviceMessage) {
-        String name = null;
+        String name = null, host = null, serviceType = null;
         Long quotaUsed = null;
 
         if (serviceMessage.getParam("name") != null) {
             name = (String) serviceMessage.getParam("name");
+        }
+
+        if (serviceMessage.getParam("host") != null) {
+            host = (String) serviceMessage.getParam("host");
+        }
+
+        if (serviceMessage.getParam("serviceType") != null) {
+            serviceType = (String) serviceMessage.getParam("serviceType");
         }
 
         if (serviceMessage.getParam("quotaUsed") != null) {
@@ -345,27 +357,35 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
         MongoCollection databasesCollection = jongo.getCollection("databases");
 
-        if (name != null && quotaUsed != null && databasesCollection.count("{name: #}", name) > 0) {
-            Database currentDatabase = databasesCollection
-                    .findOne("{name: #}", name)
-                    .projection("{quotaUsed: 1}")
-                    .map(
-                            result -> {
-                                Database database = new Database();
+        if (name != null && host != null && serviceType != null && quotaUsed != null) {
+            List<Server> servers = staffRcClient.getCachedServersOnlyIdAndNameByName(host);
+            if (!servers.isEmpty()) {
+                List<Service> services = staffRcClient.getCachedServicesByServerIdAndServiceType(servers.get(0).getId(), serviceType);
 
-                                if (result.get("_id") instanceof ObjectId) {
-                                    database.setId(((ObjectId) result.get("_id")).toString());
-                                } else if (result.get("_id") instanceof String) {
-                                    database.setId((String) result.get("_id"));
-                                }
+                if (!services.isEmpty()) {
+                    Database currentDatabase = databasesCollection
+                            .findOne("{name: #, serviceId: {$in: #}}", name, services.stream().map(Resource::getId).collect(Collectors.toList()))
+                            .projection("{quotaUsed: 1}")
+                            .map(
+                                    result -> {
+                                        Database database = new Database();
 
-                                database.setQuotaUsed((Long) result.get("quotaUsed"));
-                                return database;
-                            }
-                    );
-            if (!currentDatabase.getQuotaUsed().equals(quotaUsed)) {
-                log.info("databases quotaReport for '" + name + "' found changed quotaUsed. old: " + currentDatabase.getQuotaUsed() + " new: " + quotaUsed);
-                //WriteResult writeResult = databasesCollection.update("{name: #}", name).with("{$set: {quotaUsed: #}}", quotaUsed);
+                                        if (result.get("_id") instanceof ObjectId) {
+                                            database.setId(((ObjectId) result.get("_id")).toString());
+                                        } else if (result.get("_id") instanceof String) {
+                                            database.setId((String) result.get("_id"));
+                                        }
+
+                                        database.setQuotaUsed((Long) result.get("quotaUsed"));
+                                        return database;
+                                    }
+                            );
+
+                    if (currentDatabase != null && !currentDatabase.getQuotaUsed().equals(quotaUsed)) {
+                        log.info("databases quotaReport for '" + name + "' found changed quotaUsed. old: " + currentDatabase.getQuotaUsed() + " new: " + quotaUsed);
+                        //WriteResult writeResult = databasesCollection.update("{_id: #}", new ObjectId(currentDatabase.getId())).with("{$set: {quotaUsed: #}}", quotaUsed);
+                    }
+                }
             }
         }
     }

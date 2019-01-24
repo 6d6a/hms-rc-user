@@ -37,6 +37,7 @@ import javax.validation.Validator;
 import feign.FeignException;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -775,11 +776,15 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     public void processQuotaReport(ServiceMessage serviceMessage) {
-        String fullName = null, domainName = null, mailboxName = null;
+        String fullName = null, domainName = null, mailboxName = null, host = null;
         Long quotaUsed = null;
 
         if (serviceMessage.getParam("name") != null) {
             fullName = (String) serviceMessage.getParam("name");
+        }
+
+        if (serviceMessage.getParam("host") != null) {
+            host = (String) serviceMessage.getParam("host");
         }
 
         if (serviceMessage.getParam("quotaUsed") != null) {
@@ -805,46 +810,46 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             domainName = splitFullName[1];
         }
 
-        if (mailboxName != null && domainName != null && quotaUsed != null) {
-            Domain currentDomain = domainsCollection
-                    .findOne("{name: #}", java.net.IDN.toUnicode(domainName))
-                    .projection("{name: 1}")
-                    .map(
-                            result -> {
-                                Domain domain = new Domain();
-                                domain.setId(((ObjectId) result.get("_id")).toString());
-                                domain.setName((String) result.get("name"));
-                                return domain;
-                            }
-                    );
+        if (host != null && mailboxName != null && domainName != null && quotaUsed != null) {
+            List<Server> servers = staffRcClient.getCachedServersOnlyIdAndNameByName(host);
+            if (!servers.isEmpty()) {
+                Domain currentDomain = domainsCollection
+                        .findOne("{name: #}", java.net.IDN.toUnicode(domainName))
+                        .projection("{name: 1}")
+                        .map(
+                                result -> {
+                                    Domain domain = new Domain();
+                                    domain.setId(((ObjectId) result.get("_id")).toString());
+                                    domain.setName((String) result.get("name"));
+                                    return domain;
+                                }
+                        );
 
-            if (currentDomain != null) {
-                Mailbox currentMailbox = repository.findByNameAndDomainId(mailboxName, currentDomain.getId());
+                if (currentDomain != null) {
+                    Mailbox currentMailbox = repository.findByNameAndDomainId(mailboxName, currentDomain.getId());
 
-                if(currentMailbox != null) {
-                    if (!currentMailbox.getQuotaUsed().equals(quotaUsed)) {
+                    if(currentMailbox != null && currentMailbox.getServerId().equals(servers.get(0).getId()) && !currentMailbox.getQuotaUsed().equals(quotaUsed)) {
                         log.info("mailboxes quotaReport for mailbox '" + fullName + "' found changed quotaUsed. old: " + currentMailbox.getQuotaUsed() + " new: " + quotaUsed);
-
-//                        currentMailbox.setDomain(currentDomain);
-//
-//                        // Сохраняем старые значения для определения необходимости отправки уведомлений
-//                        long oldQuotaUsed = currentMailbox.getQuotaUsed();
-//                        boolean oldWritable = currentMailbox.getWritable();
-//
-//                        //Устанавливаем новые квоту и writable после определения старых значений
-//                        currentMailbox.setQuotaUsed(quotaUsed);
-//                        currentMailbox.setWritable(this.getNewWritable(currentMailbox));
-//
-//                        WriteResult writeResult = mailboxesCollection
-//                                .update("{name: #, domainId: #}", mailboxName, currentDomain.getId())
-//                                .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
-//
-//                        if (oldWritable != currentMailbox.getWritable()) {
-//                            syncWithRedis(currentMailbox);
-//                        }
-//
-//                        // Отправляем уведомление, если это необходимо
-//                        notify(currentMailbox, oldWritable, oldQuotaUsed);
+                        //                        currentMailbox.setDomain(currentDomain);
+                        //
+                        //                        // Сохраняем старые значения для определения необходимости отправки уведомлений
+                        //                        long oldQuotaUsed = currentMailbox.getQuotaUsed();
+                        //                        boolean oldWritable = currentMailbox.getWritable();
+                        //
+                        //                        //Устанавливаем новые квоту и writable после определения старых значений
+                        //                        currentMailbox.setQuotaUsed(quotaUsed);
+                        //                        currentMailbox.setWritable(this.getNewWritable(currentMailbox));
+                        //
+                        //                        WriteResult writeResult = mailboxesCollection
+                        //                                .update("{_id: #}", new ObjectId(currentMailbox.getId()))
+                        //                                .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
+                        //
+                        //                        if (oldWritable != currentMailbox.getWritable()) {
+                        //                            syncWithRedis(currentMailbox);
+                        //                        }
+                        //
+                        //                        // Отправляем уведомление, если это необходимо
+                        //                        notify(currentMailbox, oldWritable, oldQuotaUsed);
                     }
                 }
             }
