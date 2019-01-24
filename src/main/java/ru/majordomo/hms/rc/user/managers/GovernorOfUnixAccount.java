@@ -631,8 +631,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                                 }
                         );
                 if (currentUnixAccount != null && !currentUnixAccount.getQuotaUsed().equals(quotaUsed)) {
-                    log.info("unixAccounts quotaReport for uid '" + uid + "' found changed quotaUsed. Old: " + currentUnixAccount.getQuotaUsed().toString() + " new: " + quotaUsed);
-                    //WriteResult writeResult = unixAccountsCollection.update("{_id: #}", new ObjectId(currentUnixAccount.getId())).with("{$set: {quotaUsed: #}}", quotaUsed);
+                    log.info("unixAccounts quotaReport for host '" + host + "' and uid '" + uid + "' found changed quotaUsed. Old: " + currentUnixAccount.getQuotaUsed().toString() + " new: " + quotaUsed);
+//                    WriteResult writeResult = unixAccountsCollection.update("{_id: #}", new ObjectId(currentUnixAccount.getId())).with("{$set: {quotaUsed: #}}", quotaUsed);
                 }
             }
         }

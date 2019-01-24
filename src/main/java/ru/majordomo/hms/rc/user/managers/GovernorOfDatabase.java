@@ -382,8 +382,8 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
                             );
 
                     if (currentDatabase != null && !currentDatabase.getQuotaUsed().equals(quotaUsed)) {
-                        log.info("databases quotaReport for '" + name + "' found changed quotaUsed. old: " + currentDatabase.getQuotaUsed() + " new: " + quotaUsed);
-                        //WriteResult writeResult = databasesCollection.update("{_id: #}", new ObjectId(currentDatabase.getId())).with("{$set: {quotaUsed: #}}", quotaUsed);
+                        log.info("databases quotaReport for host '" + host + "' and name '" + name + "' found changed quotaUsed. old: " + currentDatabase.getQuotaUsed() + " new: " + quotaUsed);
+//                        WriteResult writeResult = databasesCollection.update("{_id: #}", new ObjectId(currentDatabase.getId())).with("{$set: {quotaUsed: #}}", quotaUsed);
                     }
                 }
             }
