@@ -190,6 +190,16 @@ public class ConfigStaffResourceControllerClient {
             public List<Server> getServersOnlyIdAndName() {
                 return null;
             }
+
+            @Override
+            public List<Server> getCachedServersOnlyIdAndNameByName(String serverName) {
+                return null;
+            }
+
+            @Override
+            public List<Service> getCachedServicesByServerIdAndServiceType(String serverId, String serviceType) {
+                return null;
+            }
         };
     }
 
