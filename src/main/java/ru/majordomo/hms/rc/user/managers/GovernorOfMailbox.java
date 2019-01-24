@@ -829,27 +829,27 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                     Mailbox currentMailbox = repository.findByNameAndDomainId(mailboxName, currentDomain.getId());
 
                     if(currentMailbox != null && currentMailbox.getServerId().equals(servers.get(0).getId()) && !currentMailbox.getQuotaUsed().equals(quotaUsed)) {
-                        log.info("mailboxes quotaReport for mailbox '" + fullName + "' found changed quotaUsed. old: " + currentMailbox.getQuotaUsed() + " new: " + quotaUsed);
-                        //                        currentMailbox.setDomain(currentDomain);
-                        //
-                        //                        // Сохраняем старые значения для определения необходимости отправки уведомлений
-                        //                        long oldQuotaUsed = currentMailbox.getQuotaUsed();
-                        //                        boolean oldWritable = currentMailbox.getWritable();
-                        //
-                        //                        //Устанавливаем новые квоту и writable после определения старых значений
-                        //                        currentMailbox.setQuotaUsed(quotaUsed);
-                        //                        currentMailbox.setWritable(this.getNewWritable(currentMailbox));
-                        //
-                        //                        WriteResult writeResult = mailboxesCollection
-                        //                                .update("{_id: #}", new ObjectId(currentMailbox.getId()))
-                        //                                .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
-                        //
-                        //                        if (oldWritable != currentMailbox.getWritable()) {
-                        //                            syncWithRedis(currentMailbox);
-                        //                        }
-                        //
-                        //                        // Отправляем уведомление, если это необходимо
-                        //                        notify(currentMailbox, oldWritable, oldQuotaUsed);
+                        log.info("mailboxes quotaReport for host '" + host + "' and mailbox '" + fullName + "' found changed quotaUsed. old: " + currentMailbox.getQuotaUsed() + " new: " + quotaUsed);
+//                        currentMailbox.setDomain(currentDomain);
+//
+//                        // Сохраняем старые значения для определения необходимости отправки уведомлений
+//                        long oldQuotaUsed = currentMailbox.getQuotaUsed();
+//                        boolean oldWritable = currentMailbox.getWritable();
+//
+//                        //Устанавливаем новые квоту и writable после определения старых значений
+//                        currentMailbox.setQuotaUsed(quotaUsed);
+//                        currentMailbox.setWritable(this.getNewWritable(currentMailbox));
+//
+//                        WriteResult writeResult = mailboxesCollection
+//                                .update("{_id: #}", new ObjectId(currentMailbox.getId()))
+//                                .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
+//
+//                        if (oldWritable != currentMailbox.getWritable()) {
+//                            syncWithRedis(currentMailbox);
+//                        }
+//
+//                        // Отправляем уведомление, если это необходимо
+//                        notify(currentMailbox, oldWritable, oldQuotaUsed);
                     }
                 }
             }
