@@ -29,6 +29,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
@@ -583,10 +584,15 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
     public void processQuotaReport(ServiceMessage serviceMessage) {
         Integer uid = null;
+        String host = null;
         Long quotaUsed = null;
 
         if (serviceMessage.getParam("uid") != null) {
             uid = (Integer) serviceMessage.getParam("uid");
+        }
+
+        if (serviceMessage.getParam("host") != null) {
+            host = (String) serviceMessage.getParam("host");
         }
 
         if (serviceMessage.getParam("quotaUsed") != null) {
@@ -604,27 +610,30 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
         MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
 
-        if (uid != null && quotaUsed != null && unixAccountsCollection.count("{uid: #}", uid) > 0) {
-            UnixAccount currentUnixAccount = unixAccountsCollection
-                    .findOne("{uid: #}", uid)
-                    .projection("{quotaUsed: 1}")
-                    .map(
-                            result -> {
-                                UnixAccount unixAccount = new UnixAccount();
+        if (uid != null && host != null&& quotaUsed != null) {
+            List<Server> servers = staffRcClient.getCachedServersOnlyIdAndNameByName(host);
+            if (!servers.isEmpty()) {
+                UnixAccount currentUnixAccount = unixAccountsCollection
+                        .findOne("{uid: #, serverId: #}", uid, servers.get(0).getId())
+                        .projection("{quotaUsed: 1}")
+                        .map(
+                                result -> {
+                                    UnixAccount unixAccount = new UnixAccount();
 
-                                if (result.get("_id") instanceof ObjectId) {
-                                    unixAccount.setId(((ObjectId) result.get("_id")).toString());
-                                } else if (result.get("_id") instanceof String) {
-                                    unixAccount.setId((String) result.get("_id"));
+                                    if (result.get("_id") instanceof ObjectId) {
+                                        unixAccount.setId(((ObjectId) result.get("_id")).toString());
+                                    } else if (result.get("_id") instanceof String) {
+                                        unixAccount.setId((String) result.get("_id"));
+                                    }
+
+                                    unixAccount.setQuotaUsed((Long) result.get("quotaUsed"));
+                                    return unixAccount;
                                 }
-
-                                unixAccount.setQuotaUsed((Long) result.get("quotaUsed"));
-                                return unixAccount;
-                            }
-                    );
-            if (!currentUnixAccount.getQuotaUsed().equals(quotaUsed)) {
-                log.info("unixAccounts quotaReport for uid '" + uid + "' found changed quotaUsed. Old: " + currentUnixAccount.getQuotaUsed().toString() + " new: " + quotaUsed);
-                //WriteResult writeResult = unixAccountsCollection.update("{uid: #}", uid).with("{$set: {quotaUsed: #}}", quotaUsed);
+                        );
+                if (currentUnixAccount != null && !currentUnixAccount.getQuotaUsed().equals(quotaUsed)) {
+                    log.info("unixAccounts quotaReport for uid '" + uid + "' found changed quotaUsed. Old: " + currentUnixAccount.getQuotaUsed().toString() + " new: " + quotaUsed);
+                    //WriteResult writeResult = unixAccountsCollection.update("{_id: #}", new ObjectId(currentUnixAccount.getId())).with("{$set: {quotaUsed: #}}", quotaUsed);
+                }
             }
         }
     }

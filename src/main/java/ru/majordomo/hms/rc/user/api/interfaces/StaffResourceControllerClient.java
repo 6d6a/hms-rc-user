@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.api.interfaces;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,4 +58,12 @@ public interface StaffResourceControllerClient {
 
     @GetMapping(value = "/server", headers = "X-HMS-Projection=OnlyIdAndName")
     List<Server> getServersOnlyIdAndName();
+
+    @Cacheable("serversOnlyIdAndNameByName")
+    @GetMapping(value = "/server?name={serverName}", headers = "X-HMS-Projection=OnlyIdAndName")
+    List<Server> getCachedServersOnlyIdAndNameByName(@PathVariable("serverName") String serverName);
+
+    @Cacheable("servicesByServerIdAndServiceType")
+    @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type={serviceType}")
+    List<Service> getCachedServicesByServerIdAndServiceType(@PathVariable("serverId") String serverId, @PathVariable("serviceType") String serviceType);
 }
