@@ -588,7 +588,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         Long quotaUsed = null;
 
         if (serviceMessage.getParam("uid") != null) {
-            uid = (Integer) serviceMessage.getParam("uid");
+            uid = Integer.parseInt((String) serviceMessage.getParam("uid"));
         }
 
         if (serviceMessage.getParam("host") != null) {
@@ -632,7 +632,14 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                         );
                 if (currentUnixAccount != null && !currentUnixAccount.getQuotaUsed().equals(quotaUsed)) {
                     log.info("unixAccounts quotaReport for host '" + host + "' and uid '" + uid + "' found changed quotaUsed. Old: " + currentUnixAccount.getQuotaUsed().toString() + " new: " + quotaUsed);
-//                    WriteResult writeResult = unixAccountsCollection.update("{_id: #}", new ObjectId(currentUnixAccount.getId())).with("{$set: {quotaUsed: #}}", quotaUsed);
+
+//                    Object objectId = currentUnixAccount.getId();
+//
+//                    try {
+//                        objectId = new ObjectId(currentUnixAccount.getId());
+//                    } catch (Exception ignored) {}
+//
+//                    WriteResult writeResult = unixAccountsCollection.update("{_id: #}", objectId).with("{$set: {quotaUsed: #}}", quotaUsed);
                 }
             }
         }

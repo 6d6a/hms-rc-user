@@ -840,8 +840,14 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 //                        currentMailbox.setQuotaUsed(quotaUsed);
 //                        currentMailbox.setWritable(this.getNewWritable(currentMailbox));
 //
+//                        Object objectId = currentMailbox.getId();
+//
+//                        try {
+//                            objectId = new ObjectId(currentMailbox.getId());
+//                        } catch (Exception ignored) {}
+//
 //                        WriteResult writeResult = mailboxesCollection
-//                                .update("{_id: #}", new ObjectId(currentMailbox.getId()))
+//                                .update("{_id: #}", objectId)
 //                                .with("{$set: {quotaUsed: #, writable: #}}", quotaUsed, currentMailbox.getWritable());
 //
 //                        if (oldWritable != currentMailbox.getWritable()) {
