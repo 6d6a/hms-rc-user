@@ -610,7 +610,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
         MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
 
-        if (uid != null && host != null&& quotaUsed != null) {
+        if (uid != null && host != null && quotaUsed != null) {
             List<Server> servers = staffRcClient.getCachedServersOnlyIdAndNameByName(host);
             if (!servers.isEmpty()) {
                 UnixAccount currentUnixAccount = unixAccountsCollection

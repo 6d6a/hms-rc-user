@@ -330,8 +330,8 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
         String name = null, host = null, serviceType = null;
         Long quotaUsed = null;
 
-        if (serviceMessage.getParam("name") != null) {
-            name = (String) serviceMessage.getParam("name");
+        if (serviceMessage.getParam("db") != null) {
+            name = (String) serviceMessage.getParam("db");
         }
 
         if (serviceMessage.getParam("host") != null) {

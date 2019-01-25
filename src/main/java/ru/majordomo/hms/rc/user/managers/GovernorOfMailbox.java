@@ -779,8 +779,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         String fullName = null, domainName = null, mailboxName = null, host = null;
         Long quotaUsed = null;
 
-        if (serviceMessage.getParam("name") != null) {
-            fullName = (String) serviceMessage.getParam("name");
+        if (serviceMessage.getParam("mailbox") != null) {
+            fullName = (String) serviceMessage.getParam("mailbox");
         }
 
         if (serviceMessage.getParam("host") != null) {
