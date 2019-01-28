@@ -12,14 +12,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -27,7 +24,11 @@ import java.util.zip.GZIPInputStream;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.majordomo.hms.rc.user.api.DTO.FieldWithStringsContainer;
+import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
+
+import static ru.majordomo.hms.rc.user.common.Constants.*;
 
 @Service
 @Slf4j
@@ -37,23 +38,33 @@ public class AlienDomainsSearcher {
     private final String domainListAllFile = tmpDir + "DomainlistAll.txt";
 
     private final GovernorOfDomain governorOfDomain;
+    private final PmFeignClient pmFeignClient;
 
-    public AlienDomainsSearcher(GovernorOfDomain governorOfDomain) {
+    public AlienDomainsSearcher(
+            GovernorOfDomain governorOfDomain,
+            PmFeignClient pmFeignClient
+    ) {
         this.governorOfDomain = governorOfDomain;
+        this.pmFeignClient = pmFeignClient;
     }
 
     public void search() {
         prepareSearch();
         List<FieldWithStringsContainer> accountsWithAlienDomains = governorOfDomain.findAccountsWithAlienDomainNames();
 
-//        int emailsSent = 0;
-//        int clientsFound = accountsWithAlienDomains.size();
-//        int domainsFound = 0;
-//        int rucenterEmailsSent = 0;
+        AtomicInteger emailsSent = new AtomicInteger();
+        AtomicInteger clientsChecked = new AtomicInteger();
+        AtomicInteger domainsChecked = new AtomicInteger();
+        AtomicInteger rucenterEmailsSent = new AtomicInteger();
 
         accountsWithAlienDomains.forEach(accountWithAlienDomains -> {
-//            log.info("accountWithAlienDomains: " + accountWithAlienDomains);
+            List<String> alienDomains = new ArrayList<>();
+            List<String> ruCenterDomains = new ArrayList<>();
+
+            clientsChecked.incrementAndGet();
             accountWithAlienDomains.getStrings().forEach(domain -> {
+                domainsChecked.incrementAndGet();
+
                 Pattern pattern = Pattern.compile("^" + IDN.toASCII(domain).toUpperCase() + "\t([A-Z0-9-]+)\t.*");
                 Matcher matcher = pattern.matcher("");
 
@@ -70,13 +81,80 @@ public class AlienDomainsSearcher {
                                         && !registrator.equals("NETHOUSE-SU")
                                 ) {
                                     log.info("match: " + domain + " " + m.group(1));
+
+                                    if (registrator.equals("RU-CENTER-RU")
+                                            || registrator.equals("RUCENTER-RF")
+                                            || registrator.equals("RUCENTER-SU")
+                                    ) {
+                                        if (ruCenterDomains.size() <= 9) {
+                                            ruCenterDomains.add(domain);
+                                        }
+
+                                    } else {
+                                        if (alienDomains.size() <= 9) {
+                                            alienDomains.add(domain);
+                                        }
+                                    }
                                 }
                             });
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
+
+            if (ruCenterDomains.size() == 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAIN_KEY, ruCenterDomains.get(0));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterDomains", params);
+
+                rucenterEmailsSent.incrementAndGet();
+            }
+
+            if (alienDomains.size() == 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAIN_KEY, alienDomains.get(0));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienDomains", params);
+
+                emailsSent.incrementAndGet();
+            }
+
+            if (ruCenterDomains.size() > 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAINS_KEY, String.join("<br/>", ruCenterDomains));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterManyDomains", params);
+
+                rucenterEmailsSent.incrementAndGet();
+            }
+
+            if (alienDomains.size() > 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAINS_KEY, String.join("<br/>", alienDomains));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienManyDomains", params);
+
+                emailsSent.incrementAndGet();
+            }
+
         });
+
+        log.info(
+                "Emails sent: '%s'. Domains checked: '%s'. Ru-center emails sent: '%s'. Clients checked: '%s'.",
+                emailsSent,
+                domainsChecked,
+                rucenterEmailsSent,
+                clientsChecked
+        );
     }
 
     private void prepareSearch() {
@@ -119,5 +197,18 @@ public class AlienDomainsSearcher {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void sendEmail(String accountId, String apiName, Map<String, String> params) {
+        ServiceMessage message = new ServiceMessage();
+
+        message.setAccountId(accountId);
+
+        message.addParam(PARAMETRS_KEY, params);
+        message.addParam(API_NAME_KEY, apiName);
+        message.addParam(TYPE_KEY, EMAIL);
+        message.addParam(PRIORITY_KEY, 7);
+
+        pmFeignClient.sendNotificationToClient(message);
     }
 }

@@ -9,6 +9,21 @@ public class Constants {
     public static final String TE = "te";
     public static final String RC_USER = "rc.user";
     public static final String LETSENCRYPT = "letsencrypt";
+    public static final int BYTES_IN_ONE_MEBIBYTE = 1024 * 1024;
+    public static final String FREE_QUOTA_KEY = "free_quota";
+    public static final String NAME_KEY = "name";
+    public static final String RESOURCE_KEY = "resource";
+    public static final String QUOTA_KEY = "quota";
+    public static final String PARAMETRS_KEY = "parametrs";
+    public static final String API_NAME_KEY = "api_name";
+    public static final String TYPE_KEY = "type";
+    public static final String EMAIL = "EMAIL";
+    public static final String SMS = "SMS";
+    public static final String PRIORITY_KEY = "priority";
+    public static final String FROM_KEY = "from";
+    public static final String REPLY_TO_KEY = "reply_to";
+    public static final String DOMAIN_KEY = "domain";
+    public static final String DOMAINS_KEY = "domains";
 
     public static class Exchanges {
         public static final String ACCOUNT_CREATE = "account.create";

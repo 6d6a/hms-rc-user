@@ -16,25 +16,13 @@ import ru.majordomo.hms.rc.user.resources.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static ru.majordomo.hms.rc.user.common.Constants.*;
+
 @Component
 public class QuotableEventListener {
-
     private final Logger logger = LoggerFactory.getLogger(QuotableEventListener.class);
 
-    private static final int BYTES_IN_ONE_MEBIBYTE = 1024 * 1024;
-    private static final String FREE_QUOTA_KEY = "free_quota";
-    private static final String NAME_KEY = "name";
-    private static final String RESOURCE_KEY = "resource";
-    private static final String QUOTA_KEY = "quota";
-    private static final String PARAMETRS_KEY = "parametrs";
-    private static final String API_NAME_KEY = "api_name";
-    private static final String TYPE_KEY = "type";
-    private static final String EMAIL = "EMAIL";
-    private static final String SMS = "SMS";
-    private static final String PRIORITY_KEY = "priority";
-
     private final PmFeignClient pmFeignClient;
-
 
     @Autowired
     public QuotableEventListener(
