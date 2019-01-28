@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.majordomo.hms.rc.user.event.domain.*;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
+import ru.majordomo.hms.rc.user.service.AlienDomainsSearcher;
 
 import java.util.List;
 
@@ -18,14 +19,17 @@ import java.util.List;
 public class DomainEventListener {
     private final GovernorOfDomain governorOfDomain;
     private final ApplicationEventPublisher publisher;
+    private final AlienDomainsSearcher alienDomainsSearcher;
 
     @Autowired
     public DomainEventListener(
             GovernorOfDomain governorOfDomain,
-            ApplicationEventPublisher publisher
+            ApplicationEventPublisher publisher,
+            AlienDomainsSearcher alienDomainsSearcher
     ) {
         this.publisher = publisher;
         this.governorOfDomain = governorOfDomain;
+        this.alienDomainsSearcher = alienDomainsSearcher;
     }
 
     @EventListener
@@ -67,6 +71,16 @@ public class DomainEventListener {
         domainNames.forEach(domainName -> publisher.publishEvent(new RegSpecSyncEvent(domainName)));
 
         log.debug("End of processing DomainsSyncAfterRegisterEvent");
+    }
+
+    @EventListener
+    @Async("vipThreadPoolTaskExecutor")
+    public void on(CheckAlienDomainsEvent event) {
+        log.debug("We got CheckAlienDomainsEvent");
+
+        alienDomainsSearcher.search();
+
+        log.debug("End of processing CheckAlienDomainsEvent");
     }
 
     @EventListener

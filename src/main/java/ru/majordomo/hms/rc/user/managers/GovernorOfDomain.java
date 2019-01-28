@@ -24,6 +24,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import ru.majordomo.hms.rc.user.api.DTO.FieldWithStringsContainer;
 import ru.majordomo.hms.rc.user.api.DTO.StringsContainer;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
@@ -745,6 +746,29 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             log.error("[getTaskExecutorRoutingKey] got exception: %s ; resource id: %s class: %s"
                     , e.getMessage(), serviceable != null ? ((Resource) serviceable).getId() : null, serviceable != null ? serviceable.getClass().getSimpleName() : null);
             throw new ParameterValidationException("Exception: " + e.getMessage());
+        }
+    }
+
+    public List<FieldWithStringsContainer> findAccountsWithAlienDomainNames() {
+        MatchOperation match = Aggregation.match(
+                Criteria
+                        .where("regSpec").exists(false)
+                        .and("name").regex("^[a-z0-9-]*.ru$|^[a-z0-9-]*.xn--p1ai$|^[a-z0-9-]*.su$")
+        );
+
+        GroupOperation group = Aggregation.group("accountId")
+                .first("accountId").as("field")
+                .addToSet("name").as("strings");
+
+        Aggregation aggregation = Aggregation.newAggregation(match, group);
+
+        List<FieldWithStringsContainer> results =
+                mongoOperations.aggregate(aggregation, Domain.class, FieldWithStringsContainer.class).getMappedResults();
+
+        if (results == null || results.isEmpty()) {
+            return Collections.emptyList();
+        } else {
+            return results;
         }
     }
 }
