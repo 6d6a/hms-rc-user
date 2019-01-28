@@ -80,7 +80,7 @@ public class AlienDomainsSearcher {
                                         && !registrator.equals("NETHOUSE-RF")
                                         && !registrator.equals("NETHOUSE-SU")
                                 ) {
-                                    log.info("match: " + domain + " " + m.group(1));
+                                    log.info("match: " + domain + " " + registrator);
 
                                     if (registrator.equals("RU-CENTER-RU")
                                             || registrator.equals("RUCENTER-RF")
@@ -99,6 +99,126 @@ public class AlienDomainsSearcher {
                             });
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+            });
+
+            if (ruCenterDomains.size() == 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAIN_KEY, ruCenterDomains.get(0));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterDomains", params);
+
+                rucenterEmailsSent.incrementAndGet();
+            }
+
+            if (alienDomains.size() == 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAIN_KEY, alienDomains.get(0));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienDomains", params);
+
+                emailsSent.incrementAndGet();
+            }
+
+            if (ruCenterDomains.size() > 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAINS_KEY, String.join("<br/>", ruCenterDomains));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterManyDomains", params);
+
+                rucenterEmailsSent.incrementAndGet();
+            }
+
+            if (alienDomains.size() > 1) {
+                Map<String, String> params = new HashMap<>();
+                params.put(FROM_KEY, "noreply@majordomo.ru");
+                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
+                params.put(DOMAINS_KEY, String.join("<br/>", alienDomains));
+
+                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienManyDomains", params);
+
+                emailsSent.incrementAndGet();
+            }
+
+        });
+
+        log.info(
+                "Emails sent: '%s'. Domains checked: '%s'. Ru-center emails sent: '%s'. Clients checked: '%s'.",
+                emailsSent,
+                domainsChecked,
+                rucenterEmailsSent,
+                clientsChecked
+        );
+    }
+
+    public void searchMemory() {
+        prepareSearch();
+
+        Pattern pattern = Pattern.compile("^([A-Z0-9-]+)\t([A-Z0-9-]+)\t.*");
+        Matcher matcher = pattern.matcher("");
+
+        Map<String, String> domainList = new HashMap<>();
+
+        try (Stream<String> lines = Files.lines(Paths.get(domainListAllFile))) {
+            lines.map(matcher::reset)
+                    .filter(Matcher::matches)
+                    .forEach(m -> {
+                        String domain =  m.group(1);
+                        String registrator = m.group(2);
+
+                        if (!registrator.equals("")
+                                && !registrator.equals("NETHOUSE-RU")
+                                && !registrator.equals("NETHOUSE-RF")
+                                && !registrator.equals("NETHOUSE-SU")
+                        ) {
+                            log.info("found: " + domain + " in " + registrator);
+
+                            domainList.put(domain, registrator);
+                        }
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<FieldWithStringsContainer> accountsWithAlienDomains = governorOfDomain.findAccountsWithAlienDomainNames();
+
+        AtomicInteger emailsSent = new AtomicInteger();
+        AtomicInteger clientsChecked = new AtomicInteger();
+        AtomicInteger domainsChecked = new AtomicInteger();
+        AtomicInteger rucenterEmailsSent = new AtomicInteger();
+
+        accountsWithAlienDomains.forEach(accountWithAlienDomains -> {
+            List<String> alienDomains = new ArrayList<>();
+            List<String> ruCenterDomains = new ArrayList<>();
+
+            clientsChecked.incrementAndGet();
+            accountWithAlienDomains.getStrings().forEach(domain -> {
+                domainsChecked.incrementAndGet();
+
+                String registrator = domainList.getOrDefault(IDN.toASCII(domain).toUpperCase(), "");
+
+                if (!registrator.equals("")) {
+                    log.info("match: " + domain + " " + registrator);
+
+                    if (registrator.equals("RU-CENTER-RU")
+                            || registrator.equals("RUCENTER-RF")
+                            || registrator.equals("RUCENTER-SU")
+                    ) {
+                        if (ruCenterDomains.size() <= 9) {
+                            ruCenterDomains.add(domain);
+                        }
+
+                    } else {
+                        if (alienDomains.size() <= 9) {
+                            alienDomains.add(domain);
+                        }
+                    }
                 }
             });
 
