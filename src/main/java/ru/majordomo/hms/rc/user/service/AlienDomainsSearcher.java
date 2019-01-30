@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.service;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -11,15 +13,14 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +29,23 @@ import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 
-import static ru.majordomo.hms.rc.user.common.Constants.*;
+import static ru.majordomo.hms.rc.user.common.Constants.API_NAME_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.DOMAINS_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.DOMAIN_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.EMAIL;
+import static ru.majordomo.hms.rc.user.common.Constants.FROM_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.PARAMETRS_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.PRIORITY_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.REPLY_TO_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.SEND_ONLY_TO_ACTIVE_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.TYPE_KEY;
 
 @Service
 @Slf4j
 public class AlienDomainsSearcher {
     private final String tmpDir = System.getProperty("java.io.tmpdir") + "/";
-    private final String domainListFileArchive = tmpDir + "Domainlist.gz";
-    private final String domainListAllFile = tmpDir + "DomainlistAll.txt";
+    private final String domainListFileArchivePath = tmpDir + "Domainlist.gz";
+    private final String domainListAllFilePath = tmpDir + "DomainlistAll.txt";
 
     private final GovernorOfDomain governorOfDomain;
     private final PmFeignClient pmFeignClient;
@@ -50,173 +60,101 @@ public class AlienDomainsSearcher {
 
     public void search() {
         prepareSearch();
+
+        File domainListAllFile = new File(domainListAllFilePath);
+
+        if (!domainListAllFile.exists()) {
+            log.error("domainListAllFile dos not exist");
+            return;
+        }
+
         List<FieldWithStringsContainer> accountsWithAlienDomains = governorOfDomain.findAccountsWithAlienDomainNames();
+        Map<String, Map<String, String>> mapOfDomains;
+        Map<String, List<Map<String, String>>> mapOfAccounts = new HashMap<>();
 
-        AtomicInteger emailsSent = new AtomicInteger();
-        AtomicInteger clientsChecked = new AtomicInteger();
-        AtomicInteger domainsChecked = new AtomicInteger();
-        AtomicInteger rucenterEmailsSent = new AtomicInteger();
+        mapOfDomains = accountsWithAlienDomains
+                .stream()
+                .flatMap(fieldWithStringsContainer -> fieldWithStringsContainer.getStrings().stream().map(domainName -> {
+                            Map<String, String> accMap = new HashMap<>();
+                            accMap.put("accountId", fieldWithStringsContainer.getField());
+                            accMap.put("domainName", IDN.toUnicode(domainName).toLowerCase());
 
-        accountsWithAlienDomains.forEach(accountWithAlienDomains -> {
-            List<String> alienDomains = new ArrayList<>();
-            List<String> ruCenterDomains = new ArrayList<>();
-
-            clientsChecked.incrementAndGet();
-            accountWithAlienDomains.getStrings().forEach(domain -> {
-                domainsChecked.incrementAndGet();
-
-                Pattern pattern = Pattern.compile("^" + IDN.toASCII(domain).toUpperCase() + "\t([A-Z0-9-]+)\t.*");
-                Matcher matcher = pattern.matcher("");
-
-                try (Stream<String> lines = Files.lines(Paths.get(domainListAllFile))) {
-                    lines.map(matcher::reset)
-                            .filter(Matcher::matches)
-                            .findFirst()
-                            .ifPresent(m -> {
-                                String registrator = m.group(1);
-
-                                if (!registrator.equals("")
-                                        && !registrator.equals("NETHOUSE-RU")
-                                        && !registrator.equals("NETHOUSE-RF")
-                                        && !registrator.equals("NETHOUSE-SU")
-                                ) {
-                                    log.info("match: " + domain + " " + registrator);
-
-                                    if (registrator.equals("RU-CENTER-RU")
-                                            || registrator.equals("RUCENTER-RF")
-                                            || registrator.equals("RUCENTER-SU")
-                                    ) {
-                                        if (ruCenterDomains.size() <= 9) {
-                                            ruCenterDomains.add(domain);
-                                        }
-
-                                    } else {
-                                        if (alienDomains.size() <= 9) {
-                                            alienDomains.add(domain);
-                                        }
-                                    }
-                                }
-                            });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-
-            if (ruCenterDomains.size() == 1) {
-                Map<String, String> params = new HashMap<>();
-                params.put(FROM_KEY, "noreply@majordomo.ru");
-                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
-                params.put(DOMAIN_KEY, ruCenterDomains.get(0));
-
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterDomains", params);
-
-                rucenterEmailsSent.incrementAndGet();
-            }
-
-            if (alienDomains.size() == 1) {
-                Map<String, String> params = new HashMap<>();
-                params.put(FROM_KEY, "noreply@majordomo.ru");
-                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
-                params.put(DOMAIN_KEY, alienDomains.get(0));
-
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienDomains", params);
-
-                emailsSent.incrementAndGet();
-            }
-
-            if (ruCenterDomains.size() > 1) {
-                Map<String, String> params = new HashMap<>();
-                params.put(FROM_KEY, "noreply@majordomo.ru");
-                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
-                params.put(DOMAINS_KEY, String.join("<br/>", ruCenterDomains));
-
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterManyDomains", params);
-
-                rucenterEmailsSent.incrementAndGet();
-            }
-
-            if (alienDomains.size() > 1) {
-                Map<String, String> params = new HashMap<>();
-                params.put(FROM_KEY, "noreply@majordomo.ru");
-                params.put(REPLY_TO_KEY, "domain@majordomo.ru");
-                params.put(DOMAINS_KEY, String.join("<br/>", alienDomains));
-
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienManyDomains", params);
-
-                emailsSent.incrementAndGet();
-            }
-
-        });
-
-        log.info(
-                "Emails sent: '%s'. Domains checked: '%s'. Ru-center emails sent: '%s'. Clients checked: '%s'.",
-                emailsSent,
-                domainsChecked,
-                rucenterEmailsSent,
-                clientsChecked
-        );
-    }
-
-    public void searchMemory() {
-        prepareSearch();
-
-        Pattern pattern = Pattern.compile("^([A-Z0-9-]+)\t([A-Z0-9-]+)\t.*");
-        Matcher matcher = pattern.matcher("");
-
-        Map<String, String> domainList = new HashMap<>();
-
-        try (Stream<String> lines = Files.lines(Paths.get(domainListAllFile))) {
-            lines.map(matcher::reset)
-                    .filter(Matcher::matches)
-                    .forEach(m -> {
-                        String domain =  m.group(1);
-                        String registrator = m.group(2);
-
-                        if (!registrator.equals("")
-                                && !registrator.equals("NETHOUSE-RU")
-                                && !registrator.equals("NETHOUSE-RF")
-                                && !registrator.equals("NETHOUSE-SU")
-                        ) {
-                            log.info("found: " + domain + " in " + registrator);
-
-                            domainList.put(domain, registrator);
+                            return accMap;
                         }
-                    });
+                ))
+                .collect(Collectors.toMap(p -> p.get("domainName"), p -> p));
+
+        try {
+            LineIterator it = FileUtils.lineIterator(domainListAllFile, "UTF-8");
+            try {
+                while (it.hasNext()) {
+                    String line = it.nextLine();
+                    String[] strings = line.split("\t");
+                    if (strings.length >= 2) {
+                        String domain = IDN.toUnicode(strings[0]).toLowerCase();
+                        String registrator = strings[1];
+
+                        if (mapOfDomains.containsKey(domain)) {
+                            Map<String, String> domainMap = mapOfDomains.get(domain);
+                            domainMap.put("registrator", registrator);
+                            mapOfDomains.put(domain, domainMap);
+                        }
+                    }
+                }
+            } finally {
+                LineIterator.closeQuietly(it);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        List<FieldWithStringsContainer> accountsWithAlienDomains = governorOfDomain.findAccountsWithAlienDomainNames();
+        mapOfDomains.forEach((key, value) -> {
+            String accountId = value.get("accountId");
+            if (mapOfAccounts.containsKey(accountId)) {
+                List<Map<String, String>> accountDomains = mapOfAccounts.get(accountId);
+                accountDomains.add(value);
+            } else {
+                List<Map<String, String>> accountDomains = new ArrayList<>();
+                accountDomains.add(value);
+                mapOfAccounts.put(accountId, accountDomains);
+            }
+        });
 
         AtomicInteger emailsSent = new AtomicInteger();
         AtomicInteger clientsChecked = new AtomicInteger();
         AtomicInteger domainsChecked = new AtomicInteger();
         AtomicInteger rucenterEmailsSent = new AtomicInteger();
 
-        accountsWithAlienDomains.forEach(accountWithAlienDomains -> {
+        mapOfAccounts.forEach((accountId, listOfAlienDomains) -> {
             List<String> alienDomains = new ArrayList<>();
             List<String> ruCenterDomains = new ArrayList<>();
 
             clientsChecked.incrementAndGet();
-            accountWithAlienDomains.getStrings().forEach(domain -> {
+            listOfAlienDomains.forEach(domain -> {
                 domainsChecked.incrementAndGet();
 
-                String registrator = domainList.getOrDefault(IDN.toASCII(domain).toUpperCase(), "");
+                String registrator = domain.get("registrator");
+                String domainName = domain.get("domainName");
 
-                if (!registrator.equals("")) {
-                    log.info("match: " + domain + " " + registrator);
+                if (registrator != null
+                        && !registrator.equals("")
+                        && !registrator.equals("NETHOUSE-RU")
+                        && !registrator.equals("NETHOUSE-RF")
+                        && !registrator.equals("NETHOUSE-SU")
+                ) {
+                    log.info("match: " + domainName + " " + registrator);
 
                     if (registrator.equals("RU-CENTER-RU")
                             || registrator.equals("RUCENTER-RF")
                             || registrator.equals("RUCENTER-SU")
                     ) {
                         if (ruCenterDomains.size() <= 9) {
-                            ruCenterDomains.add(domain);
+                            ruCenterDomains.add(domainName);
                         }
 
                     } else {
                         if (alienDomains.size() <= 9) {
-                            alienDomains.add(domain);
+                            alienDomains.add(domainName);
                         }
                     }
                 }
@@ -228,7 +166,7 @@ public class AlienDomainsSearcher {
                 params.put(REPLY_TO_KEY, "domain@majordomo.ru");
                 params.put(DOMAIN_KEY, ruCenterDomains.get(0));
 
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterDomains", params);
+                sendEmail(accountId, "MajordomoVHRuCenterDomains", params);
 
                 rucenterEmailsSent.incrementAndGet();
             }
@@ -239,7 +177,7 @@ public class AlienDomainsSearcher {
                 params.put(REPLY_TO_KEY, "domain@majordomo.ru");
                 params.put(DOMAIN_KEY, alienDomains.get(0));
 
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienDomains", params);
+                sendEmail(accountId, "MajordomoVHAlienDomains", params);
 
                 emailsSent.incrementAndGet();
             }
@@ -250,7 +188,7 @@ public class AlienDomainsSearcher {
                 params.put(REPLY_TO_KEY, "domain@majordomo.ru");
                 params.put(DOMAINS_KEY, String.join("<br/>", ruCenterDomains));
 
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHRuCenterManyDomains", params);
+                sendEmail(accountId, "MajordomoVHRuCenterManyDomains", params);
 
                 rucenterEmailsSent.incrementAndGet();
             }
@@ -261,7 +199,7 @@ public class AlienDomainsSearcher {
                 params.put(REPLY_TO_KEY, "domain@majordomo.ru");
                 params.put(DOMAINS_KEY, String.join("<br/>", alienDomains));
 
-                sendEmail(accountWithAlienDomains.getField(), "MajordomoVHAlienManyDomains", params);
+                sendEmail(accountId, "MajordomoVHAlienManyDomains", params);
 
                 emailsSent.incrementAndGet();
             }
@@ -269,24 +207,23 @@ public class AlienDomainsSearcher {
         });
 
         log.info(
-                "Emails sent: '%s'. Domains checked: '%s'. Ru-center emails sent: '%s'. Clients checked: '%s'.",
-                emailsSent,
-                domainsChecked,
-                rucenterEmailsSent,
-                clientsChecked
+                "Emails sent: " + emailsSent + "'. " +
+                        "Domains checked: '" + domainsChecked + "'. " +
+                        "Ru-center emails sent: '" + rucenterEmailsSent + "'. " +
+                        "Clients checked: '" + clientsChecked + "'."
         );
     }
 
     private void prepareSearch() {
         String templateUrl = "https://uapweb.tcinet.ru:8092/getstat_su?login=NETHOUSE-WEB-#DOMAIN#&passwd=#PASSWORD#&file=Domainlist#DATE#.gz";
 
-        Map<String, String> zonePasswords =  new HashMap<>();
+        Map<String, String> zonePasswords = new HashMap<>();
 
         zonePasswords.put("RU", "snwphvmd");
         zonePasswords.put("SU", "tnqpzdkh");
         zonePasswords.put("RF", "snwphvmd");
 
-        File file = new File(domainListAllFile);
+        File file = new File(domainListAllFilePath);
 
         if (file.exists()) {
             file.delete();
@@ -302,16 +239,16 @@ public class AlienDomainsSearcher {
                 URL url = new URL(fileUrl);
                 ReadableByteChannel domainListFileChannel = Channels.newChannel(url.openStream());
 
-                FileOutputStream domainListFileArchiveOutputStream = new FileOutputStream(domainListFileArchive);
+                FileOutputStream domainListFileArchiveOutputStream = new FileOutputStream(domainListFileArchivePath);
                 FileChannel domainListFileArchiveChannel = domainListFileArchiveOutputStream.getChannel();
 
                 domainListFileArchiveChannel.transferFrom(domainListFileChannel, 0, Long.MAX_VALUE);
 
-                FileInputStream domainListFileArchiveInputStream = new FileInputStream(domainListFileArchive);
+                FileInputStream domainListFileArchiveInputStream = new FileInputStream(domainListFileArchivePath);
 
                 GZIPInputStream gis = new GZIPInputStream(domainListFileArchiveInputStream);
 
-                FileChannel domainListAllFileChannel = new FileOutputStream(domainListAllFile, true).getChannel();
+                FileChannel domainListAllFileChannel = new FileOutputStream(domainListAllFilePath, true).getChannel();
                 domainListAllFileChannel.transferFrom(Channels.newChannel(gis), domainListAllFileChannel.size(), Long.MAX_VALUE);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -328,6 +265,7 @@ public class AlienDomainsSearcher {
         message.addParam(API_NAME_KEY, apiName);
         message.addParam(TYPE_KEY, EMAIL);
         message.addParam(PRIORITY_KEY, 7);
+        message.addParam(SEND_ONLY_TO_ACTIVE_KEY, true);
 
         pmFeignClient.sendNotificationToClient(message);
     }

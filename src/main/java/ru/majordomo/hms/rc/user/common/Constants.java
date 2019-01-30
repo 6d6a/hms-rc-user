@@ -24,6 +24,7 @@ public class Constants {
     public static final String REPLY_TO_KEY = "reply_to";
     public static final String DOMAIN_KEY = "domain";
     public static final String DOMAINS_KEY = "domains";
+    public static final String SEND_ONLY_TO_ACTIVE_KEY = "send_only_to_active";
 
     public static class Exchanges {
         public static final String ACCOUNT_CREATE = "account.create";
