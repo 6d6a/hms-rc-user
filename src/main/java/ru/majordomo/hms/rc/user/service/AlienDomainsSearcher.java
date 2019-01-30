@@ -36,6 +36,7 @@ import static ru.majordomo.hms.rc.user.common.Constants.EMAIL;
 import static ru.majordomo.hms.rc.user.common.Constants.FROM_KEY;
 import static ru.majordomo.hms.rc.user.common.Constants.PARAMETRS_KEY;
 import static ru.majordomo.hms.rc.user.common.Constants.PRIORITY_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.REGISTRATOR_KEY;
 import static ru.majordomo.hms.rc.user.common.Constants.REPLY_TO_KEY;
 import static ru.majordomo.hms.rc.user.common.Constants.SEND_ONLY_TO_ACTIVE_KEY;
 import static ru.majordomo.hms.rc.user.common.Constants.TYPE_KEY;
@@ -176,6 +177,7 @@ public class AlienDomainsSearcher {
                 params.put(FROM_KEY, "noreply@majordomo.ru");
                 params.put(REPLY_TO_KEY, "domain@majordomo.ru");
                 params.put(DOMAIN_KEY, alienDomains.get(0));
+                params.put(REGISTRATOR_KEY, mapOfDomains.get(alienDomains.get(0)).get("registrator"));
 
                 sendEmail(accountId, "MajordomoVHAlienDomains", params);
 
