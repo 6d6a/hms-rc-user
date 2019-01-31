@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import ru.majordomo.hms.rc.user.event.domain.CheckAlienDomainsEvent;
 import ru.majordomo.hms.rc.user.event.domain.DomainsSyncAfterRegisterEvent;
 import ru.majordomo.hms.rc.user.event.person.SyncPersonsEvent;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
@@ -30,12 +31,10 @@ public class SchedulerRestController {
                 publisher.publishEvent(new SyncPersonsEvent());
 
                 break;
-
             case "ssl_certificates_renew":
                 publisher.publishEvent(new SSLCertificatesRenewEvent());
 
                 break;
-
             case "resource_archives_clean":
                 publisher.publishEvent(new ResourceArchivesCleanEvent());
 
@@ -44,6 +43,11 @@ public class SchedulerRestController {
                 publisher.publishEvent(new DomainsSyncAfterRegisterEvent());
 
                 break;
+            case "check_alien_domains":
+                publisher.publishEvent(new CheckAlienDomainsEvent());
+
+                break;
+
             default:
                 throw new ParameterValidationException("Неизвестный параметр scheduleAction");
         }
