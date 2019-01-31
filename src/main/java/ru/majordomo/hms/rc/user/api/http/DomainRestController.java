@@ -151,4 +151,10 @@ public class DomainRestController {
         return governor.build(requestParams);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping("{accountId}/domain/get-dns-record/{recordId}")
+    public DNSResourceRecord readOneDnsRecord(@PathVariable String accountId, @PathVariable String recordId) {
+        return governorOfDnsRecord.build(recordId);
+    }
+
 }
