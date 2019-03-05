@@ -22,8 +22,6 @@ import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 public class Domain extends Resource {
 
     @Transient
-    @Valid
-    @ConvertGroup(from = DomainChecks.class, to = Default.class)
     private Person person;
 
     @Transient
