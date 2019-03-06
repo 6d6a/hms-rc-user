@@ -11,13 +11,14 @@ import java.util.Map;
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.resourceProcessor.support.ResourceSearcher;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
 
-public abstract class LordOfResources<T extends Resource> {
+public abstract class LordOfResources<T extends Resource> implements ResourceSearcher<T> {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     public T create(ServiceMessage serviceMessage) throws ParameterValidationException {
         T resource;

@@ -8,6 +8,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
@@ -52,6 +54,11 @@ public class DomainAMQPController extends BaseAMQPController<Domain> {
 
     @Override
     public String getResourceType() {
-        return "domain";
+        return Constants.Exchanges.Resource.DOMAIN;
+    }
+
+    @Override
+    protected String getRoutingKey(ResourceActionContext<Domain> context) {
+        return getDefaultRoutingKey();
     }
 }

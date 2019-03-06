@@ -8,6 +8,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
 import ru.majordomo.hms.rc.user.resources.Person;
 
@@ -52,6 +54,11 @@ public class PersonAMQPController extends BaseAMQPController<Person> {
 
     @Override
     public String getResourceType() {
-        return "person";
+        return Constants.Exchanges.Resource.PERSON;
+    }
+
+    @Override
+    protected String getRoutingKey(ResourceActionContext<Person> context) {
+        return getDefaultRoutingKey();
     }
 }

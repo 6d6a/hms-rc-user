@@ -1,12 +1,15 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.*;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 
@@ -51,6 +54,11 @@ public class DnsRecordAMQPController extends BaseAMQPController<DNSResourceRecor
 
     @Override
     public String getResourceType() {
-        return "dns-record";
+        return Constants.Exchanges.Resource.DNS_RECORD;
+    }
+
+    @Override
+    protected String getRoutingKey(ResourceActionContext<DNSResourceRecord> context) {
+        return getDefaultRoutingKey();
     }
 }

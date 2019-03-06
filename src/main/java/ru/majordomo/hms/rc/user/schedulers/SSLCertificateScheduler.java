@@ -1,10 +1,9 @@
 package ru.majordomo.hms.rc.user.schedulers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +15,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.CertificateHelper;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.Domain;
@@ -27,30 +27,29 @@ import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_UPDATE;
 import static ru.majordomo.hms.rc.user.common.Constants.LETSENCRYPT;
 
+@Slf4j
 @Component
 public class SSLCertificateScheduler {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final GovernorOfSSLCertificate governorOfSSLCertificate;
-    private final Sender sender;
     private final GovernorOfDomain governorOfDomain;
+    private final Sender sender;
 
     @Autowired
     public SSLCertificateScheduler(
             GovernorOfSSLCertificate governorOfSSLCertificate,
-            Sender sender,
-            GovernorOfDomain governorOfDomain
+            GovernorOfDomain governorOfDomain,
+            Sender sender
     ) {
         this.governorOfSSLCertificate = governorOfSSLCertificate;
-        this.sender = sender;
         this.governorOfDomain = governorOfDomain;
+        this.sender = sender;
     }
 
     @SchedulerLock(name = "sslCertRenewLock")
     public void renewCerts() {
-        logger.info("Started sslCertRenew");
+        log.info("Started sslCertRenew");
 
-        Integer counter = 0, counterAll = 0;
+        int counter = 0, counterAll = 0;
 
         try (Stream<SSLCertificate> sslCerts = governorOfSSLCertificate.findAllStream()) {
             List<SSLCertificate> listSSLCerts = sslCerts.collect(Collectors.toList());
@@ -65,53 +64,59 @@ public class SSLCertificateScheduler {
                 }
             }
 
-            logger.info("Total Certs processed for renew: " + counter +
+            log.info("Total Certs processed for renew: " + counter +
                     ". Count of renews before limit exceeds: " + counterAll);
         }
-        logger.info("Ended sslCertRenew");
+        log.info("Ended sslCertRenew");
     }
 
     private boolean SSLCertificateProcess(SSLCertificate sslCertificate) {
         try {
-            logger.info("start process cert for " + sslCertificate.getName());
+            log.info("start process cert for " + sslCertificate.getName());
 
             if (sslCertificate.getCert() == null || sslCertificate.getCert().equals("")) {
-                logger.error("ssl.name: " + sslCertificate.getName() + " ssl.cert is null or empty");
+                log.error("ssl.name: " + sslCertificate.getName() + " ssl.cert is null or empty");
                 return false;
             }
 
-            LocalDateTime notAfter = governorOfSSLCertificate.getNotAfterFromCert(sslCertificate);
+            Map<String, String> keyValue = new HashMap<>();
+            keyValue.put("accountId", sslCertificate.getAccountId());
+            keyValue.put("sslCertificateId", sslCertificate.getId());
 
-            logger.info("name " + sslCertificate.getName() + " notAfter " + notAfter.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            Domain domain = null;
+            try {
+                domain = governorOfDomain.build(keyValue);
+            } catch (ResourceNotFoundException e) {
+                log.error("Domain with sslCertificateId {} not found, drop certificate", sslCertificate.getId());
+                governorOfSSLCertificate.drop(sslCertificate.getId());
+            } catch (Exception e) {
+                log.error("Catch e {} e.message {} in build domain by {}; certificate {}",
+                        e.getClass(), e.getMessage(), keyValue, sslCertificate);
+            }
+
+            if (domain == null) {
+                return false;
+            }
+
+            LocalDateTime notAfter = CertificateHelper.getNotAfter(sslCertificate);
+
+            log.info("name " + sslCertificate.getName() + " notAfter " + notAfter.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
             if (notAfter.isBefore(LocalDateTime.now())) {
                 //Еcли сертификат выключен и просрочен
                 if (!sslCertificate.isSwitchedOn()) {
-                    logger.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() +
+                    log.info("Found NOT active expired certificate. Id: " + sslCertificate.getId() +
                             " name: " + sslCertificate.getName() +
                             " AccountId: " + sslCertificate.getAccountId());
 
-                    governorOfSSLCertificate.realDrop(sslCertificate.getId());
-
-                    return false;
-                }
-
-                Domain domain = getDomain(sslCertificate);
-
-                //SSL сертификат никому не принадлежит и истек
-                if (domain == null) {
-                    logger.info("Found certificate without domain. Id: " + sslCertificate.getId() +
-                            " AccountId: " + sslCertificate.getAccountId());
-
-                    governorOfSSLCertificate.realDrop(sslCertificate.getId());
+                    governorOfSSLCertificate.drop(sslCertificate.getId());
 
                     return false;
                 }
             }
 
-            //Надо продлить
             if (sslCertificate.isSwitchedOn() && notAfter.isBefore(LocalDateTime.now().plusDays(5))) {
-                logger.info("Found active expiring certificate. Id: " + sslCertificate.getId() +
+                log.info("Found active expiring certificate. Id: " + sslCertificate.getId() +
                         " name: " + sslCertificate.getName() +
                         " AccountId: " + sslCertificate.getAccountId());
 
@@ -126,22 +131,12 @@ public class SSLCertificateScheduler {
                 return true;
             }
 
-            logger.info("end process cert for " + sslCertificate.getName() + " certificate is not expired");
+            log.info("end process cert for " + sslCertificate.getName() + " certificate is not expired");
             return false;
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("e " + e.getClass() + " e.message: " + e.getMessage() + " ssl: " + sslCertificate);
+            log.error("e " + e.getClass() + " e.message: " + e.getMessage() + " ssl: " + sslCertificate);
             return false;
         }
-    }
-
-    private Domain getDomain(SSLCertificate sslCertificate) {
-        Domain domain = null;
-        try {
-            Map<String, String> buildParams = new HashMap<>();
-            buildParams.put("sslCertificateId", sslCertificate.getId());
-            domain = governorOfDomain.build(buildParams);
-        } catch (ResourceNotFoundException ignore) {}
-        return domain;
     }
 }

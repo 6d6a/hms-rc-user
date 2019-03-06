@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.managers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
@@ -31,6 +33,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.event.domain.DomainWasDeleted;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -58,6 +61,12 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     private Sender sender;
     private StaffResourceControllerClient staffRcClient;
     protected String applicationName;
+    private ApplicationEventPublisher publisher;
+
+    @Autowired
+    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+        this.publisher = publisher;
+    }
 
     @Autowired
     public void setGovernorOfPerson(GovernorOfPerson governorOfPerson) {
@@ -313,8 +322,6 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
                 String teRoutingKey = getTaskExecutorRoutingKey(webSite);
                 sender.send(WEBSITE_UPDATE, teRoutingKey, report);
-//                webSite.setLocked(true);
-                governorOfWebSite.store(webSite);
             }
         } catch (ResourceNotFoundException ignored) {
             updateRedirect(domain, serviceMessage);
@@ -342,8 +349,6 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
                 String teRoutingKey = getTaskExecutorRoutingKey(redirect);
                 sender.send(REDIRECT_UPDATE, teRoutingKey, report);
-                redirect.setLocked(true);
-                governorOfRedirect.store(redirect);
             }
         } catch (ResourceNotFoundException ignored1) {}
     }
@@ -354,15 +359,20 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         mongoOperations.updateFirst(query, update, Domain.class);
     }
 
-    public void removeSslCertificateId(SSLCertificate certificate) {
-        Domain domain = repository.findBySslCertificateId(certificate.getId());
-        if (domain != null) {
+    public void removeSslCertificateId(String sslCertificateId) {
+        List<Domain> domains = mongoOperations.find(
+                new Query(new Criteria("sslCertificateId").is(sslCertificateId)),
+                Domain.class
+        );
 
-            Query query = new Query(new Criteria("sslCertificateId").is(certificate.getId()));
-            Update update = new Update().unset("sslCertificateId");
-            mongoOperations.updateMulti(query, update, Domain.class);
-
-            updateWebSite(domain, new ServiceMessage());
+        if (!domains.isEmpty()) {
+            List<String> domainIds = domains.stream().map(Resource::getId).collect(Collectors.toList());
+            mongoOperations.updateMulti(
+                    new Query(new Criteria("_id").in(domainIds)),
+                    new Update().unset("sslCertificateId"),
+                    Domain.class
+            );
+            domains.forEach(domain -> updateWebSite(domain, new ServiceMessage()));
         }
     }
 
@@ -401,21 +411,18 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
     @Override
     public void preDelete(String resourceId) {
+        Domain domain = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Домен не найден"));
+
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("domainId", resourceId);
-
-        List<Domain> subDomains = repository.findByParentDomainId(resourceId);
-        if (subDomains.size() > 0) {
-            for (Domain subDomain : subDomains) {
-                drop(subDomain.getId());
-            }
-        }
 
         WebSite webSite;
         try {
             webSite = governorOfWebSite.build(keyValue);
             if (webSite != null) {
-                throw new ParameterValidationException("Домен используется в вебсайте с ID " + webSite.getId());
+                throw new ParameterValidationException("Домен используется в вебсайте " + webSite.getName());
             }
         } catch (ResourceNotFoundException e) {
             log.debug("Вебсайтов использующих домен с ID " + resourceId + " не обнаружено");
@@ -441,9 +448,12 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             log.debug("Перенаправлений, использующих домен с ID " + resourceId + " не обнаружено");
         }
 
-        Domain domain = repository
-                .findById(resourceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Домен не найден"));
+        List<Domain> subDomains = repository.findByParentDomainId(resourceId);
+        if (subDomains.size() > 0) {
+            for (Domain subDomain : subDomains) {
+                drop(subDomain.getId());
+            }
+        }
 
         if (domain.getParentDomainId() == null) {
             governorOfDnsRecord.dropDomain(domain.getName());
@@ -452,8 +462,15 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        preDelete(resourceId);
-        repository.deleteById(resourceId);
+        Domain domain = repository
+                .findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Не найден домен с ID " + resourceId));
+
+        preDelete(domain.getId());
+
+        repository.deleteById(domain.getId());
+
+        publisher.publishEvent(new DomainWasDeleted(domain));
     }
 
     @Override

@@ -8,12 +8,16 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.UNIX_ACCOUNT_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
@@ -52,6 +56,19 @@ public class UnixAccountAMQPController extends BaseAMQPController<UnixAccount> {
 
     @Override
     public String getResourceType() {
-        return "unix-account";
+        return Constants.Exchanges.Resource.UNIX_ACCOUNT;
+    }
+
+    @Override
+    protected String getRoutingKey(ResourceActionContext<UnixAccount> context) {
+        String routingKey = getDefaultRoutingKey();
+
+        if (context.getEventProvider().equals(PM)) {
+            routingKey = getTaskExecutorRoutingKey(context.getResource());
+        } else if (context.getEventProvider().equals(TE)) {
+            routingKey = getDefaultRoutingKey();
+        }
+
+        return routingKey;
     }
 }

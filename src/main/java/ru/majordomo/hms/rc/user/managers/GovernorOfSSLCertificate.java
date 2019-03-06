@@ -1,19 +1,11 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.security.cert.Certificate;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -26,6 +18,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.CertificateHelper;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
@@ -89,46 +82,30 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
     @Override
     public SSLCertificate update(ServiceMessage serviceMessage) throws ParameterValidationException {
-        String name = (String) serviceMessage.getParam("name");
-        SSLCertificate sslCertificate = repository.findByName(name);
-        if (sslCertificate == null) {
-            throw new ResourceNotFoundException();
-        }
-        sslCertificate.setAccountId(serviceMessage.getAccountId());
-        sslCertificate.setSwitchedOn(true);
-        return sslCertificate;
-    }
+        String resourceId = (String) serviceMessage.getParam("resourceId");
+        String accountId = serviceMessage.getAccountId();
 
-    public SSLCertificate update(Map<String, Object> params) throws ParameterValidationException, ResourceNotFoundException {
-        String resourceId = (String) params.get("resourceId");
-        if (resourceId == null || resourceId.equals("")) {
-            throw new ParameterValidationException("Необходимо указать resourceId");
+        SSLCertificate certificate = repository.findByIdAndAccountId(resourceId, accountId);
+
+        if (certificate == null) {
+            throw new ResourceNotFoundException(
+                    "На аккаунте " + accountId + " не найден ssl-сертификат с ID: " + resourceId
+            );
         }
 
-        SSLCertificate certificate = repository
-                .findById(resourceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId));
-
-        params.remove(resourceId);
-
-        try {
-            for (Map.Entry<String, Object> entry : params.entrySet()) {
-                switch (entry.getKey()) {
-                    case "state":
-                    case "switchedOn":
-                        Boolean switchedOn = (Boolean) entry.getValue();
-                        if (!certificate.getSwitchedOn().equals(switchedOn)) {
-                            certificate.setSwitchedOn(switchedOn);
-                        }
-                        break;
-                }
-            }
-        } catch (ClassCastException e) {
-            throw new ParameterValidationException("Один из параметров указан неверно");
+        if (certificate.isLocked()) {
+            throw new ParameterValidationException("Сертификат в процессе обновления");
         }
 
-        validate(certificate);
-        store(certificate);
+        Boolean switchedOn = (Boolean) serviceMessage.getParam("switchedOn");
+
+        if (switchedOn != null) {
+            certificate.setSwitchedOn(switchedOn);
+        }
+
+        if (canCreateCustomCertificate(serviceMessage)) {
+            setCustomCertDataAndValidateIt(certificate, serviceMessage);
+        }
 
         return certificate;
     }
@@ -139,15 +116,17 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         try {
 
             sslCertificate = buildResourceFromServiceMessage(serviceMessage);
-            validate(sslCertificate);
-            store(sslCertificate);
 
             Map<String, String> keyValue = new HashMap<>();
             keyValue.put("name", sslCertificate.getName());
             keyValue.put("accountId", serviceMessage.getAccountId());
-            Domain domain = governorOfDomain.build(keyValue);
-            governorOfDomain.setSslCertificateId(domain, sslCertificate.getId());
 
+            Domain domain = governorOfDomain.build(keyValue);
+
+            validate(sslCertificate);
+            store(sslCertificate);
+
+            governorOfDomain.setSslCertificateId(domain, sslCertificate.getId());
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
@@ -162,42 +141,24 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
-        SSLCertificate certificate = repository
-                .findById(resourceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId));
+        if (!repository.existsById(resourceId)) {
+            throw new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId);
+        }
 
-        certificate.setSwitchedOn(false);
+        governorOfDomain.removeSslCertificateId(resourceId);
 
-        preDelete(resourceId);
-        repository.save(certificate);
-    }
-
-    public void realDrop(String resourceId) throws ResourceNotFoundException {
-        SSLCertificate certificate = repository
-                .findById(resourceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Не найдено SSL сертификата с ID: " + resourceId));
-
-        preDelete(resourceId);
-
-        governorOfDomain.removeSslCertificateId(certificate);
-
-        repository.delete(certificate);
+        repository.deleteById(resourceId);
     }
 
     @Override
     public SSLCertificate buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
-        SSLCertificate sslCertificate;
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            String json = (String) serviceMessage.getParam("sslCertificate");
-            sslCertificate = mapper.readValue(json, SSLCertificate.class);
-        } catch (IOException e) {
-            throw new ParameterValidationException(e.getMessage());
-        }
+        SSLCertificate certificate = new SSLCertificate();
+        certificate.setAccountId(serviceMessage.getAccountId());
+        certificate.setName((String) serviceMessage.getParam("name"));
 
-        sslCertificate.setAccountId(serviceMessage.getAccountId());
+        setCustomCertDataAndValidateIt(certificate, serviceMessage);
 
-        return sslCertificate;
+        return certificate;
     }
 
     @Override
@@ -226,21 +187,19 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     }
 
     public boolean exists(Map<String, String> keyValue) {
-        SSLCertificate certificate = null;
-
         if (hasResourceIdAndAccountId(keyValue)) {
-            certificate = repository.findByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
+            return repository.existsByIdAndAccountId(keyValue.get("resourceId"), keyValue.get("accountId"));
         }
 
         if (hasNameAndAccountId(keyValue)) {
-            certificate = repository.findByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
+            return repository.existsByNameAndAccountId(keyValue.get("name"), keyValue.get("accountId"));
         }
 
         if (keyValue.get("name") != null) {
-            certificate = repository.findByName(keyValue.get("name"));
+            return repository.existsByName(keyValue.get("name"));
         }
 
-        return certificate != null;
+        return false;
     }
 
     @Override
@@ -294,16 +253,12 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         repository.save(sslCertificate);
     }
 
-    public String getTERoutingKey(String sslCertificateId) throws ParameterValidationException {
-        SSLCertificate sslCertificate = build(sslCertificateId);
-        if (sslCertificate == null) {
-            return null;
-        }
-        Domain domain = domainRepository.findBySslCertificateId(sslCertificate.getId());
+    public String getTERoutingKey(SSLCertificate sslCertificate) throws ParameterValidationException {
+        Domain domain = domainRepository.findBySslCertificateIdAndAccountId(sslCertificate.getId(), sslCertificate.getAccountId());
         if (domain == null) {
             return null;
         }
-        WebSite webSite = webSiteRepository.findByDomainIdsContains(domain.getId());
+        WebSite webSite = webSiteRepository.findByDomainIdsContainsAndAccountId(domain.getId(), domain.getAccountId());
         if (webSite == null) {
             return null;
         }
@@ -315,16 +270,45 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         }
     }
 
-    public LocalDateTime getNotAfterFromCert(SSLCertificate certificate) throws CertificateException {
-        X509Certificate x509Certificate = (X509Certificate) CertificateFactory
-                .getInstance("X509")
-                .generateCertificate(
-                        // string encoded with default charset
-                        new ByteArrayInputStream(certificate.getCert().getBytes())
-                );
+    public void setCustomCertDataAndValidateIt(SSLCertificate sslCertificate, ServiceMessage serviceMessage) {
+        sslCertificate.setKey((String) serviceMessage.getParam("key"));
 
-        Instant instant = Instant.ofEpochMilli(x509Certificate.getNotAfter().getTime());
+        String cert = (String) serviceMessage.getParam("cert");
+        String chain = (String) serviceMessage.getParam("chain");
 
-        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        List<Certificate> certificates = CertificateHelper.buildSequenceCertificateChain(
+                cert != null && !cert.isEmpty() ? cert + chain : chain
+        );
+
+        sslCertificate.setCert(
+                CertificateHelper.toPEM(
+                        certificates.get(0)
+                )
+        );
+
+        if (certificates.size() > 1) {
+            sslCertificate.setChain(
+                    CertificateHelper.toPEM(
+                            certificates.subList(1, certificates.size())
+                    )
+            );
+        }
+
+        try {
+            sslCertificate.setNotAfter(CertificateHelper.getNotAfter(sslCertificate));
+        } catch (Exception ignore) {}
+
+        sslCertificate.setIssuerInfo(
+                CertificateHelper.getIssuerInfo(certificates.get(0))
+        );
+
+        CertificateHelper.validate(sslCertificate);
+    }
+
+    public boolean canCreateCustomCertificate(ServiceMessage serviceMessage) {
+        return Stream.of("key", "chain").allMatch(key ->
+                serviceMessage.getParam(key) instanceof String
+                && !serviceMessage.getParam(key).toString().isEmpty()
+        );
     }
 }
