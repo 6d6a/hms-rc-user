@@ -553,7 +553,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     public MalwareReport getMalwareReport(String accountId, String unixAccountId) {
-        if (repository.findByIdAndAccountId(unixAccountId, accountId) == null) throw new ResourceNotFoundException();
+        if (repository.findByIdAndAccountId(unixAccountId, accountId) == null) {
+            throw new ResourceNotFoundException("На аккаунте " + accountId + " не найден UnixAccount с ID: " + unixAccountId);
+        }
         List<MalwareReport> reports = malwareReportRepository.findByUnixAccountId(unixAccountId);
         if (reports.size() == 0) return null;
         return reports.get(0);

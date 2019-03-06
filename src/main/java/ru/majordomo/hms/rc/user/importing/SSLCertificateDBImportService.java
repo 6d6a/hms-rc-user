@@ -11,7 +11,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
-import sun.security.x509.X509CertImpl;
+//import sun.security.x509.X509CertImpl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -85,40 +85,41 @@ public class SSLCertificateDBImportService implements ResourceDBImportService {
         sslCertificate.setSwitchedOn(rs.getString("switched_on").equals("1"));
         sslCertificate.setName(rs.getString("name"));
         //TODO переделать на Lists
-        sslCertificate.setDns01Digest(rs.getString("dns01Digest"));
+//        sslCertificate.setDns01Digest(rs.getString("dns01Digest"));
+//
+//        try {
+//            sslCertificate.setChallengeLocation(new URI(rs.getString("name")));
+//        } catch (URISyntaxException e) {
+//            e.printStackTrace();
+//        }
 
-        try {
-            sslCertificate.setChallengeLocation(new URI(rs.getString("name")));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            sslCertificate.setAuthorizationLocation(new URI(rs.getString("name")));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            sslCertificate.setAuthorizationLocation(new URI(rs.getString("name")));
+//        } catch (URISyntaxException e) {
+//            e.printStackTrace();
+//        }
 
         sslCertificate.setKey(rs.getString("key"));
         sslCertificate.setCsr(rs.getString("csr"));
         sslCertificate.setCert(rs.getString("cert"));
         sslCertificate.setChain(rs.getString("chain"));
-        sslCertificate.setState(SSLCertificateState.valueOf(rs.getString("state")));
+//        sslCertificate.setState(SSLCertificateState.valueOf(rs.getString("state")));
 
         X509Certificate cert = null;
-        try {
-            cert = new X509CertImpl(rs.getAsciiStream("cert"));
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        }
-
-        if (cert != null) {
-            Date notAfterDate = cert.getNotAfter();
-            Instant notAfterDateInstant = Instant.ofEpochMilli(notAfterDate.getTime());
-            LocalDateTime notAfter = LocalDateTime.ofInstant(notAfterDateInstant, ZoneId.systemDefault());
-
-            sslCertificate.setNotAfter(notAfter);
-        }
+        //warning: X509CertImpl is internal proprietary API and may be removed in a future release
+//        try {
+//            cert = new X509CertImpl(rs.getAsciiStream("cert"));
+//        } catch (CertificateException e) {
+//            e.printStackTrace();
+//        }
+//
+//        if (cert != null) {
+//            Date notAfterDate = cert.getNotAfter();
+//            Instant notAfterDateInstant = Instant.ofEpochMilli(notAfterDate.getTime());
+//            LocalDateTime notAfter = LocalDateTime.ofInstant(notAfterDateInstant, ZoneId.systemDefault());
+//
+//            sslCertificate.setNotAfter(notAfter);
+//        }
 
         publisher.publishEvent(new SSLCertificateCreateEvent(sslCertificate));
 

@@ -8,6 +8,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 
@@ -52,6 +54,11 @@ public class FTPUserAMQPController extends BaseAMQPController<FTPUser> {
 
     @Override
     public String getResourceType() {
-        return "ftp-user";
+        return Constants.Exchanges.Resource.FTP_USER;
+    }
+
+    @Override
+    protected String getRoutingKey(ResourceActionContext<FTPUser> context) {
+        return getDefaultRoutingKey();
     }
 }

@@ -60,6 +60,6 @@ public class UsersResourceControllerApplication implements CommandLineRunner {
             }
         }
         sb = sb.length() == 0 ? sb.append("No Options Specified") : sb;
-        logger.info(String.format("Launched personal manager with following options: %s", sb.toString()));
+        logger.info(String.format("Launched UserResourceController with following options: %s", sb.toString()));
     }
 }

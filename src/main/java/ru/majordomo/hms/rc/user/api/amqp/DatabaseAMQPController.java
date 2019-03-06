@@ -8,12 +8,16 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.resources.Database;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DATABASE_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class DatabaseAMQPController extends BaseAMQPController<Database> {
@@ -52,6 +56,19 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
 
     @Override
     public String getResourceType() {
-        return "database";
+        return Constants.Exchanges.Resource.DATABASE;
+    }
+
+    @Override
+    protected String getRoutingKey(ResourceActionContext<Database> context) {
+        String routingKey = getDefaultRoutingKey();
+
+        if (context.getEventProvider().equals(PM)) {
+            routingKey = getTaskExecutorRoutingKey(context.getResource());
+        } else if (context.getEventProvider().equals(TE)) {
+            routingKey = getDefaultRoutingKey();
+        }
+
+        return routingKey;
     }
 }

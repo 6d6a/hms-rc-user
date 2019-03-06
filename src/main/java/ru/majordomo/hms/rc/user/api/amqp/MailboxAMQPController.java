@@ -8,12 +8,16 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.MAILBOX_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.MAILBOX_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.MAILBOX_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
@@ -52,6 +56,30 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
 
     @Override
     public String getResourceType() {
-        return "mailbox";
+        return Constants.Exchanges.Resource.MAILBOX;
+    }
+
+    @Override
+    protected String getRoutingKey(ResourceActionContext<Mailbox> context) {
+        Mailbox resource = context.getResource();
+
+        String routingKey = getDefaultRoutingKey();
+
+        if (context.getEventProvider().equals(PM)) {
+            switch (context.getAction()) {
+                case CREATE:
+                case DELETE:
+                    routingKey = getTaskExecutorRoutingKey(resource);
+                    break;
+
+                case UPDATE:
+                    routingKey = getDefaultRoutingKey();
+                    break;
+            }
+        } else if (context.getEventProvider().equals(TE)) {
+            routingKey = getDefaultRoutingKey();
+        }
+
+        return routingKey;
     }
 }

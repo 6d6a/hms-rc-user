@@ -28,65 +28,89 @@ public class Constants {
     public static final String SEND_ONLY_TO_ACTIVE_KEY = "send_only_to_active";
 
     public static class Exchanges {
-        public static final String ACCOUNT_CREATE = "account.create";
-        public static final String ACCOUNT_UPDATE = "account.update";
-        public static final String ACCOUNT_DELETE = "account.delete";
+        public static class Resource {
+            public static final String ACCOUNT = "account";
+            public static final String DATABASE = "database";
+            public static final String DATABASE_USER = "database-user";
+            public static final String DNS_RECORD = "dns-record";
+            public static final String DOMAIN = "domain";
+            public static final String FTP_USER = "ftp-user";
+            public static final String MAILBOX = "mailbox";
+            public static final String PERSON = "person";
+            public static final String UNIX_ACCOUNT = "unix-account";
+            public static final String WEBSITE = "website";
+            public static final String REDIRECT = "redirect";
+            public static final String SSL_CERTIFICATE = "ssl-certificate";
+            public static final String RESOURCE_ARCHIVE = "resource-archive";
+            public static final String PAYMENT = "payment";
+        }
+
+        public static class Command {
+            public static final String CREATE = "create";
+            public static final String UPDATE = "update";
+            public static final String DELETE = "delete";
+            public static final String QUOTA = "quota";
+        }
+
+        public static final String ACCOUNT_CREATE = Resource.ACCOUNT + "." + Command.CREATE;
+        public static final String ACCOUNT_UPDATE = Resource.ACCOUNT + "." + Command.UPDATE;
+        public static final String ACCOUNT_DELETE = Resource.ACCOUNT + "." + Command.DELETE;
 
         public static final String ACCOUNT_HISTORY = "account-history";
 
-        public static final String DATABASE_CREATE = "database.create";
-        public static final String DATABASE_UPDATE = "database.update";
-        public static final String DATABASE_DELETE = "database.delete";
+        public static final String DATABASE_CREATE = Resource.DATABASE + "." + Command.CREATE;
+        public static final String DATABASE_UPDATE = Resource.DATABASE + "." + Command.UPDATE;
+        public static final String DATABASE_DELETE = Resource.DATABASE + "." + Command.DELETE;
 
-        public static final String DATABASE_USER_CREATE = "database-user.create";
-        public static final String DATABASE_USER_UPDATE = "database-user.update";
-        public static final String DATABASE_USER_DELETE = "database-user.delete";
+        public static final String DATABASE_USER_CREATE = Resource.DATABASE_USER + "." + Command.CREATE;
+        public static final String DATABASE_USER_UPDATE = Resource.DATABASE_USER + "." + Command.UPDATE;
+        public static final String DATABASE_USER_DELETE = Resource.DATABASE_USER + "." + Command.DELETE;
 
-        public static final String DNS_RECORD_CREATE = "dns-record.create";
-        public static final String DNS_RECORD_UPDATE = "dns-record.update";
-        public static final String DNS_RECORD_DELETE = "dns-record.delete";
+        public static final String DNS_RECORD_CREATE = Resource.DNS_RECORD + "." + Command.CREATE;
+        public static final String DNS_RECORD_UPDATE = Resource.DNS_RECORD + "." + Command.UPDATE;
+        public static final String DNS_RECORD_DELETE = Resource.DNS_RECORD + "." + Command.DELETE;
 
-        public static final String DOMAIN_CREATE = "domain.create";
-        public static final String DOMAIN_UPDATE = "domain.update";
-        public static final String DOMAIN_DELETE = "domain.delete";
+        public static final String DOMAIN_CREATE = Resource.DOMAIN + "." + Command.CREATE;
+        public static final String DOMAIN_UPDATE = Resource.DOMAIN + "." + Command.UPDATE;
+        public static final String DOMAIN_DELETE = Resource.DOMAIN + "." + Command.DELETE;
 
-        public static final String FTP_USER_CREATE = "ftp-user.create";
-        public static final String FTP_USER_UPDATE = "ftp-user.update";
-        public static final String FTP_USER_DELETE = "ftp-user.delete";
+        public static final String FTP_USER_CREATE = Resource.FTP_USER + "." + Command.CREATE;
+        public static final String FTP_USER_UPDATE = Resource.FTP_USER + "." + Command.UPDATE;
+        public static final String FTP_USER_DELETE = Resource.FTP_USER + "." + Command.DELETE;
 
-        public static final String MAILBOX_CREATE = "mailbox.create";
-        public static final String MAILBOX_UPDATE = "mailbox.update";
-        public static final String MAILBOX_DELETE = "mailbox.delete";
+        public static final String MAILBOX_CREATE = Resource.MAILBOX + "." + Command.CREATE;
+        public static final String MAILBOX_UPDATE = Resource.MAILBOX + "." + Command.UPDATE;
+        public static final String MAILBOX_DELETE = Resource.MAILBOX + "." + Command.DELETE;
 
-        public static final String PAYMENT_CREATE = "payment.create";
+        public static final String PAYMENT_CREATE = Resource.PAYMENT + "." + Command.CREATE;
 
-        public static final String PERSON_CREATE = "person.create";
-        public static final String PERSON_UPDATE = "person.update";
-        public static final String PERSON_DELETE = "person.delete";
+        public static final String PERSON_CREATE = Resource.PERSON + "." + Command.CREATE;
+        public static final String PERSON_UPDATE = Resource.PERSON + "." + Command.UPDATE;
+        public static final String PERSON_DELETE = Resource.PERSON + "." + Command.DELETE;
 
-        public static final String RESOURCE_ARCHIVE_CREATE = "resource-archive.create";
-        public static final String RESOURCE_ARCHIVE_UPDATE = "resource-archive.update";
-        public static final String RESOURCE_ARCHIVE_DELETE = "resource-archive.delete";
+        public static final String RESOURCE_ARCHIVE_CREATE = Resource.RESOURCE_ARCHIVE + "." + Command.CREATE;
+        public static final String RESOURCE_ARCHIVE_UPDATE = Resource.RESOURCE_ARCHIVE + "." + Command.UPDATE;
+        public static final String RESOURCE_ARCHIVE_DELETE = Resource.RESOURCE_ARCHIVE + "." + Command.DELETE;
 
-        public static final String SSL_CERTIFICATE_CREATE = "ssl-certificate.create";
-        public static final String SSL_CERTIFICATE_UPDATE = "ssl-certificate.update";
-        public static final String SSL_CERTIFICATE_DELETE = "ssl-certificate.delete";
+        public static final String SSL_CERTIFICATE_CREATE = Resource.SSL_CERTIFICATE + "." + Command.CREATE;
+        public static final String SSL_CERTIFICATE_UPDATE = Resource.SSL_CERTIFICATE + "." + Command.UPDATE;
+        public static final String SSL_CERTIFICATE_DELETE = Resource.SSL_CERTIFICATE + "." + Command.DELETE;
 
-        public static final String UNIX_ACCOUNT_CREATE = "unix-account.create";
-        public static final String UNIX_ACCOUNT_UPDATE = "unix-account.update";
-        public static final String UNIX_ACCOUNT_DELETE = "unix-account.delete";
+        public static final String UNIX_ACCOUNT_CREATE = Resource.UNIX_ACCOUNT + "." + Command.CREATE;
+        public static final String UNIX_ACCOUNT_UPDATE = Resource.UNIX_ACCOUNT + "." + Command.UPDATE;
+        public static final String UNIX_ACCOUNT_DELETE = Resource.UNIX_ACCOUNT + "." + Command.DELETE;
 
-        public static final String WEBSITE_CREATE = "website.create";
-        public static final String WEBSITE_UPDATE = "website.update";
-        public static final String WEBSITE_DELETE = "website.delete";
+        public static final String WEBSITE_CREATE = Resource.WEBSITE + "." + Command.CREATE;
+        public static final String WEBSITE_UPDATE = Resource.WEBSITE + "." + Command.UPDATE;
+        public static final String WEBSITE_DELETE = Resource.WEBSITE + "." + Command.DELETE;
 
-        public static final String REDIRECT_CREATE = "redirect.create";
-        public static final String REDIRECT_UPDATE = "redirect.update";
-        public static final String REDIRECT_DELETE = "redirect.delete";
+        public static final String REDIRECT_CREATE = Resource.REDIRECT + "." + Command.CREATE;
+        public static final String REDIRECT_UPDATE = Resource.REDIRECT + "." + Command.UPDATE;
+        public static final String REDIRECT_DELETE = Resource.REDIRECT + "." + Command.DELETE;
 
-        public static final String UNIX_ACCOUNT_QUOTA = "unix-account.quota";
-        public static final String DATABASE_QUOTA = "database.quota";
-        public static final String MAILBOX_QUOTA = "mailbox.quota";
+        public static final String UNIX_ACCOUNT_QUOTA = Resource.UNIX_ACCOUNT + "." + Command.QUOTA;
+        public static final String DATABASE_QUOTA = Resource.DATABASE + "." + Command.QUOTA;
+        public static final String MAILBOX_QUOTA = Resource.MAILBOX + "." + Command.QUOTA;
 
         public static Set<String> ALL_EXCHANGES;
 

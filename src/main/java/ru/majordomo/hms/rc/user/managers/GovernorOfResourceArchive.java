@@ -129,7 +129,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     @Override
     public void drop(String resourceId) throws ResourceNotFoundException {
         if (resourceId == null) {
-            throw new ResourceNotFoundException();
+            throw new ResourceNotFoundException("Не указан ID архива");
         }
 
         preDelete(resourceId);
