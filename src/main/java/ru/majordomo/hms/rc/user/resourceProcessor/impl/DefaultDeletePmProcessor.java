@@ -44,7 +44,7 @@ public class DefaultDeletePmProcessor<T extends Resource> implements ResourcePro
             resource.setLocked(true);
             processorContext.getGovernor().store(resource);
         } else {
-            processorContext.getGovernor().drop(resource.getId());
+            processorContext.getGovernor().drop(resourceId);
         }
 
         processorContext.getSender().send(context, routingKey);
