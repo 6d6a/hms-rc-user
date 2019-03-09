@@ -7,6 +7,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
+import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
@@ -39,7 +40,10 @@ public class DefaultUpdatePmProcessor<T extends Resource> implements ResourcePro
 
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
 
-        if (resource instanceof ServerStorable || resource instanceof Serviceable) {
+        if (
+                (resource instanceof ServerStorable || resource instanceof Serviceable)
+                        && !(resource instanceof Mailbox)
+        ) {
             resource.setLocked(true);
             processorContext.getGovernor().store(resource);
         }
