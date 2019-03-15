@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.schedulers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.SchedulerLock;
 
@@ -121,11 +120,8 @@ public class SSLCertificateScheduler {
                         " AccountId: " + sslCertificate.getAccountId());
 
                 ServiceMessage serviceMessage = new ServiceMessage();
-                ObjectMapper mapper = new ObjectMapper();
-                String json = mapper.writeValueAsString(sslCertificate);
-                serviceMessage.addParam("sslCertificate", json);
-                serviceMessage.addParam("resourceId", sslCertificate.getId());
                 serviceMessage.setAccountId(sslCertificate.getAccountId());
+                serviceMessage.addParam("name", sslCertificate.getName());
                 sender.send(SSL_CERTIFICATE_UPDATE, LETSENCRYPT, serviceMessage);
 
                 return true;
