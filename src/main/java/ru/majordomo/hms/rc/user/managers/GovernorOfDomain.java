@@ -231,47 +231,15 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                             break;
                         case "renew":
                             if ((Boolean) entry.getValue()) {
-                                try {
-                                    ResponseEntity responseEntity = registrar.renewDomain(domain.getName(),
-                                            domain.getRegSpec().getRegistrar());
-                                    if (!responseEntity.getStatusCode().equals(HttpStatus.ACCEPTED)) {
-                                        throw new ParameterValidationException("Ошибка при продлении домена");
-                                    }
-                                    RegSpec regSpec = registrar.getRegSpec(domain.getName());
-                                    //TODO надо переделать на получении id заявки на продление домена от reg-rpc
-                                    // устанавливать статус домена в продление и проверять статус продления
-                                    try {
-                                        if (regSpec == null) {
-                                            if (domain.getRegSpec() != null) {
-                                                regSpec = domain.getRegSpec();
-                                                regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
-                                                regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
-                                            } else {
-                                                regSpec = new RegSpec();
-                                                regSpec.setPaidTill(LocalDate.now().plusYears(1));
-                                                regSpec.setFreeDate(LocalDate.now().plusYears(1));
-                                            }
-                                        } else {
-                                            if (regSpec.getFreeDate() != null) {
-                                                regSpec.setFreeDate(regSpec.getFreeDate().plusYears(1));
-                                            } else {
-                                                regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
-                                            }
-                                            if (regSpec.getPaidTill() != null) {
-                                                regSpec.setPaidTill(regSpec.getPaidTill().plusYears(1));
-                                            } else {
-                                                regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
-                                            }
-                                        }
-                                    } catch (NullPointerException e) {
-                                        //NullPointer может быть в случае, если RegSpec в домене содержит null вместо дат PaidTill или FreeDate
-                                    }
-                                    domain.setRegSpec(regSpec);
-                                    domain.setNeedSync(LocalDateTime.now());
-                                } catch (Exception e) {
-                                    throw new ParameterValidationException(e.getMessage());
-                                }
+                                processRenew(domain);
                             }
+
+                            break;
+                        case "register":
+                            if ((Boolean) entry.getValue()) {
+                                processExistsDomainRegistration(domain, serviceMessage);
+                            }
+
                             break;
                         case "switchedOn":
                             Boolean switchedOn = (Boolean) entry.getValue();
@@ -786,6 +754,78 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             return Collections.emptyList();
         } else {
             return results;
+        }
+    }
+
+    private void processRenew(Domain domain) throws ParameterValidationException {
+        try {
+            ResponseEntity responseEntity = registrar.renewDomain(domain.getName(),
+                    domain.getRegSpec().getRegistrar());
+            if (!responseEntity.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+                throw new ParameterValidationException("Ошибка при продлении домена");
+            }
+            RegSpec regSpec = registrar.getRegSpec(domain.getName());
+            try {
+                if (regSpec == null) {
+                    if (domain.getRegSpec() != null) {
+                        regSpec = domain.getRegSpec();
+                        regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
+                        regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
+                    } else {
+                        regSpec = new RegSpec();
+                        regSpec.setPaidTill(LocalDate.now().plusYears(1));
+                        regSpec.setFreeDate(LocalDate.now().plusYears(1));
+                    }
+                } else {
+                    if (regSpec.getFreeDate() != null) {
+                        regSpec.setFreeDate(regSpec.getFreeDate().plusYears(1));
+                    } else {
+                        regSpec.setFreeDate(domain.getRegSpec().getFreeDate().plusYears(1));
+                    }
+                    if (regSpec.getPaidTill() != null) {
+                        regSpec.setPaidTill(regSpec.getPaidTill().plusYears(1));
+                    } else {
+                        regSpec.setPaidTill(domain.getRegSpec().getPaidTill().plusYears(1));
+                    }
+                }
+            } catch (NullPointerException e) {
+                //NullPointer может быть в случае, если RegSpec в домене содержит null вместо дат PaidTill или FreeDate
+            }
+            domain.setRegSpec(regSpec);
+            domain.setNeedSync(LocalDateTime.now());
+        } catch (Exception e) {
+            throw new ParameterValidationException(e.getMessage());
+        }
+    }
+
+    private void processExistsDomainRegistration(Domain domain, ServiceMessage serviceMessage) {
+        if (domain.getRegSpec() != null) {
+            throw new ParameterValidationException("Регистрация домена недоступна");
+        }
+
+        if (serviceMessage.getParam("personId") != null) {
+            String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
+            Person person = governorOfPerson.build(domainPersonId);
+            domain.setPerson(person);
+            governorOfPerson.validate(person);
+        } else {
+            throw new ParameterValidationException("Персона должна быть указана");
+        }
+
+        Person person = domain.getPerson();
+        if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
+            person = governorOfPerson.createPersonRegistrant(person);
+        }
+
+        try {
+            registrar.registerDomain(person.getNicHandle(), domain.getName());
+            domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+            domain.setNeedSync(LocalDateTime.now());
+        } catch (Exception e) {
+            log.info("accountId {} catch e {} with registrar.registerDomain(nic-handle: {}, domain: {}); message: {}",
+                    serviceMessage.getAccountId(), e.getClass(), person.getNicHandle(), domain.getName(), e.getMessage()
+            );
+            throw new ParameterValidationException(e.getMessage());
         }
     }
 }

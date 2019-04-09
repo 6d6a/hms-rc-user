@@ -71,8 +71,9 @@ publishing {
 
 version = '0.0.1-SNAPSHOT'
 
+archivesBaseName = 'rc-user'
+
 jar {
-    baseName = 'rc-user'
     version = version
     dependsOn asciidoctor
     from("${asciidoctor.outputDir}/html5") {
