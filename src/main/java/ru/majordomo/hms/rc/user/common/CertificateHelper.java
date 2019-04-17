@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.majordomo.hms.personmgr.exception.InternalApiException;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
+import ru.majordomo.hms.rc.user.resources.validation.validator.DomainNameValidator;
 
 import java.io.ByteArrayInputStream;
 import java.net.IDN;
@@ -108,36 +109,55 @@ public class CertificateHelper {
     }
 
     static void checkDomainName(String domain, Certificate certificate) {
-        String nameFromCert = "";
+        List<String> names = new ArrayList<>();
         try {
             X509Certificate x509 = (X509Certificate) certificate;
             for (String string : x509.getSubjectDN().getName().split(",")) {
                 string = string.trim();
                 if (string.startsWith("CN=")) {
-                    nameFromCert = string.replaceAll("^CN=(www\\.)?", "");
+                    names.add(string.replaceAll("^CN=(www\\.)?", ""));
                     break;
                 }
             }
+            try {
+                Collection<List<?>> alterNames = x509.getSubjectAlternativeNames();
+                if (alterNames != null) {
+                    for (List<?> namesInner : alterNames) {
+                        for (Object o : namesInner) {
+                            if (o instanceof String) {
+                                names.add((String) o);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ignore) {}
         } catch (Exception e) {
             log.error("Can't get domain name from certificate, catch e {} message {}", e, e.getMessage());
             throw new ParameterValidationException("Не удалось получить имя домена из сертификата");
         }
 
+        DomainNameValidator v = new DomainNameValidator();
+
+        names = names.stream()
+                .map(String::toLowerCase)
+                .filter(name -> v.isValid(name, null))
+                .collect(Collectors.toList());
+
         String domainInUnicode = IDN.toASCII(domain.toLowerCase());
 
-        if (nameFromCert.startsWith("*.")) {
-            String withoutWildcard = nameFromCert.substring(2);
-            if (!domainInUnicode.endsWith(withoutWildcard)) {
-                throw new ParameterValidationException(
-                        "Имя домена сертификата *." + IDN.toUnicode(withoutWildcard) + " не совпадает с " + domain
-                );
+        if (names.stream().noneMatch(nameFromCert -> {
+            if (nameFromCert.startsWith("*.")) {
+                String withoutWildcard = nameFromCert.substring(2);
+                if (!domainInUnicode.endsWith(withoutWildcard)) {
+                    return false;
+                }
+            } else {
+                return domainInUnicode.equals(nameFromCert)
+                        || domainInUnicode.replaceAll("^www\\.", "").equals(nameFromCert);
             }
-        } else if (!domainInUnicode.equals(nameFromCert)
-                && !domainInUnicode.replaceAll("^www\\.", "").equals(nameFromCert)
-        ) {
-            throw new ParameterValidationException(
-                    "Имя домена сертификата " + IDN.toUnicode(nameFromCert) + " не совпадает с " + domain
-            );
+            return true;
+        })) {
+            throw new ParameterValidationException("Имя домена не совпадает с данными сертификата");
         }
     }
 
