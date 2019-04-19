@@ -6,6 +6,8 @@ import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.net.IDN;
 import java.security.*;
 import java.security.cert.*;
@@ -68,9 +70,9 @@ public class CertificateHelper {
         LocalDateTime notAfter = LocalDateTime.ofInstant(xCert.getNotAfter().toInstant(), ZoneId.systemDefault());
 
         if (notBefore.isAfter(now)) {
-            throw new ParameterValidationException("Сертификат не действителен до " + notBefore.toLocalDate());
+            throw new ParameterValidationException("Сертификат не действителен до " + notBefore);
         } else if (notAfter.isBefore(now)) {
-            throw new ParameterValidationException("Срок действия сертификата истёк " + notAfter.toLocalDate());
+            throw new ParameterValidationException("Срок действия сертификата истёк " + notAfter);
         }
     }
 
@@ -183,10 +185,14 @@ public class CertificateHelper {
         if (certificates.isEmpty()) {
             throw new ParameterValidationException("Сертификат отсутствует");
         } else if (certificates.size() == 1) {
-            try {
-                certificates.get(0).verify(certificates.get(0).getPublicKey());
-            } catch (Exception e) {
-                throw new ParameterValidationException("Сертификат не является самоподписанным");
+            Certificate certificate = certificates.get(0);
+
+            boolean isVerified = verifyLastInChain(certificate);
+
+            if (!isVerified) {
+                throw new ParameterValidationException(
+                        "Сертификат не является самоподписанным или подписанным корневым сертификатом"
+                );
             }
         } else {
             try {
@@ -200,6 +206,9 @@ public class CertificateHelper {
                         if (!Arrays.equals(previous.getPublicKey().getEncoded(), current.getPublicKey().getEncoded())) {
                             previous.verify(current.getPublicKey());
                             validatedCount++;
+                        } else if (!iterator.hasNext()) {
+                            verifyLastInChain(current);
+                            validatedCount++;
                         }
                     }
                     previous = current;
@@ -211,6 +220,28 @@ public class CertificateHelper {
                 log.error("Can't verify certificates {}, catch e {} message {}", certificates, e, e.getMessage());
                 throw new ParameterValidationException("Сертификат или сертификаты удостоверяющего центра невалидны");
             }
+        }
+    }
+
+    private static boolean verifyLastInChain(Certificate certificate) {
+        try {
+            certificate.verify(certificate.getPublicKey());
+            log.info("certificate {} is self-signed", ((X509Certificate) certificate).getIssuerDN().getName());
+            return true;
+        } catch (Exception e) {
+            return getRootCertificates().stream().anyMatch(root -> {
+                try {
+                    certificate.verify(root.getPublicKey());
+                    log.info(
+                            "{} signed by {}",
+                            ((X509Certificate) certificate).getIssuerDN().getName(),
+                            root.getIssuerDN().getName()
+                    );
+                    return true;
+                } catch (Exception ignore) {
+                    return false;
+                }
+            });
         }
     }
 
@@ -333,5 +364,32 @@ public class CertificateHelper {
             }
         } catch (Exception ignore) {}
         return issuerInfo;
+    }
+
+    private static List<X509Certificate> getRootCertificates() {
+        List<X509Certificate> list = new ArrayList<>();
+
+        String filename = System.getProperty("java.home") + "/lib/security/cacerts".replace('/', File.separatorChar);
+
+        try (FileInputStream is = new FileInputStream(filename)) {
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            String password = "changeit";
+            keystore.load(is, password.toCharArray());
+
+            // This class retrieves the most-trusted CAs from the keystore
+            PKIXParameters params = new PKIXParameters(keystore);
+
+            // Get the set of trust anchors, which contain the most-trusted CA certificates
+
+            for (TrustAnchor ta : params.getTrustAnchors()) {
+                // Get certificate
+                list.add(ta.getTrustedCert());
+            }
+
+            return Collections.unmodifiableList(list);
+        } catch (Exception e) {
+            log.error("can't load root certificates by {} e: {} message: {}", filename, e.getClass(), e.getMessage());
+            return Collections.emptyList();
+        }
     }
 }
