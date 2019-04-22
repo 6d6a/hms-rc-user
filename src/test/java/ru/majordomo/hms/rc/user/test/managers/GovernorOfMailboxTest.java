@@ -376,4 +376,44 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("name", ".qwer");
         governor.create(serviceMessage);
     }
+
+    @Test
+    public void validateAllowedIps() {
+        Arrays.asList(
+                " sdg",
+                "15135",
+                "1.1.1.1",
+                "111.1.1.1",
+                "111.1.1.1/0",
+                "111.1.1.1/45",
+                "111.1.1.1/01",
+                "111.1.1.1/-1",
+                "1111.1.1.1/14",
+                "331.1.1.1/14",
+                "256.1.1.1/14",
+                "6.256.1.1/14",
+                "6.265.1.1/14",
+                "6.26.265.1/14",
+                "6.26.2.335/14"
+        ).forEach(ip -> {
+            ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
+            serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+            serviceMessage.addParam("allowedIps", Arrays.asList(ip));
+
+            try {
+                governor.create(serviceMessage);
+                throw new RuntimeException("ip " + ip + " прошел проверку cidr");
+            } catch (ConstraintViolationException e) {} //its ok
+        });
+    }
+
+    @Test
+    public void validateValidAllowedIps() {
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
+        serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+        serviceMessage.addParam("allowedIps", Arrays.asList("84.240.40.0/24", "111.1.1.1/32"));
+
+        governor.create(serviceMessage);
+
+    }
 }

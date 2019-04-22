@@ -21,12 +21,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -255,6 +250,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                             mailbox.setWillBeDeletedAfter(LocalDateTime.parse((String) entry.getValue()));
                         }
                         break;
+                    case "allowedIps":
+                        mailbox.setAllowedIps(new HashSet<>(
+                                cleaner.cleanListWithStrings((List<String>) entry.getValue()))
+                        );
+                        break;
                     default:
                         break;
                 }
@@ -310,6 +310,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         SpamFilterAction spamFilterAction = null;
         String domainId;
         String comment = null;
+        Set<String> allowedIps = new HashSet<>();
 
         try {
             if (serviceMessage.getParam("domainId") == null) {
@@ -367,6 +368,15 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                     throw new ParameterValidationException("Недопустимый тип придирчивости SPAM-фильтра");
                 }
             }
+
+            if (serviceMessage.getParam("allowedIps") != null) {
+                allowedIps = new HashSet<>(
+                        cleaner.cleanListWithStrings(
+                                (List<String>) serviceMessage.getParam("allowedIps")
+                        )
+                );
+            }
+
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
@@ -402,7 +412,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             throw new ParameterValidationException("Недопустимые символы в пароле");
         }
 
-        String serverId = findMailStorageServer(domainId);
+        String serverId = findMailStorageServer();
 
         String mailSpool = null;
         if (serverId != null && !serverId.equals("")) {
@@ -432,6 +442,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailbox.setSpamFilterAction(spamFilterAction);
         mailbox.setSpamFilterMood(spamFilterMood);
         mailbox.setComment(comment);
+        mailbox.setAllowedIps(allowedIps);
 
         return mailbox;
     }
@@ -440,9 +451,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         return repository.findByDomainIdAndIsAggregator(domainId, true) != null;
     }
 
-    private String findMailStorageServer(String domainId) {
-        List<Mailbox> mailboxes = repository.findByDomainId(domainId);
-
+    private String findMailStorageServer() {
         try {
             return staffRcClient.getActiveMailboxServer().getId();
         } catch (FeignException e) {
@@ -661,6 +670,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
         mailboxForRedis.setServerName(serverName);
         mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
+        mailboxForRedis.setAllowedIps(String.join(":", mailbox.getAllowedIps()));
 
         return mailboxForRedis;
     }

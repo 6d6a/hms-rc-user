@@ -1,12 +1,14 @@
 package ru.majordomo.hms.rc.user.resources.DTO;
 
 
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
 import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
 
 @RedisHash("mailboxes")
+@Data
 public class MailboxForRedis {
     @Id
     private String id;
@@ -22,104 +24,5 @@ public class MailboxForRedis {
     private Boolean writable;
     private String serverName;
     private String storageData;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public String getBlackList() {
-        return blackList;
-    }
-
-    public void setBlackList(String blackList) {
-        this.blackList = blackList;
-    }
-
-    public String getWhiteList() {
-        return whiteList;
-    }
-
-    public void setWhiteList(String whiteList) {
-        this.whiteList = whiteList;
-    }
-
-    public String getRedirectAddresses() {
-        return redirectAddresses;
-    }
-
-    public void setRedirectAddresses(String redirectAddresses) {
-        this.redirectAddresses = redirectAddresses;
-    }
-
-    public Boolean getMailFromAllowed() { return mailFromAllowed; }
-
-    public void setMailFromAllowed(Boolean mailFromAllowed) { this.mailFromAllowed = mailFromAllowed; }
-
-    public Boolean getAntiSpamEnabled() {
-        return antiSpamEnabled;
-    }
-
-    public void setAntiSpamEnabled(Boolean antiSpamEnabled) {
-        this.antiSpamEnabled = antiSpamEnabled;
-    }
-
-    public SpamFilterMood getSpamFilterMood() {
-        return spamFilterMood;
-    }
-
-    public void setSpamFilterMood(SpamFilterMood spamFilterMood) {
-        this.spamFilterMood = spamFilterMood;
-    }
-
-    public SpamFilterAction getSpamFilterAction() {
-        return spamFilterAction;
-    }
-
-    public void setSpamFilterAction(SpamFilterAction spamFilterAction) {
-        this.spamFilterAction = spamFilterAction;
-    }
-
-    public Boolean getWritable() {
-        return writable;
-    }
-
-    public void setWritable(Boolean writable) {
-        this.writable = writable;
-    }
-
-    public String getServerName() {
-        return serverName;
-    }
-
-    public void setServerName(String serverName) {
-        this.serverName = serverName;
-    }
-
-    public String getStorageData() {
-        return storageData;
-    }
-
-    public void setStorageData(String storageData) {
-        this.storageData = storageData;
-    }
+    private String allowedIps;
 }
