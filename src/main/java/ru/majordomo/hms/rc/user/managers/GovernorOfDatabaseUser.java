@@ -20,12 +20,15 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.common.Utils;
+import ru.majordomo.hms.rc.user.configurations.MysqlSessionVariablesConfig;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserImportChecks;
+
+import static java.lang.String.join;
 
 @Component
 public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
@@ -35,6 +38,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     private Validator validator;
     private String defaultServiceName;
     private StaffResourceControllerClient staffRcClient;
+    private MysqlSessionVariablesConfig mysqlSessionVariablesConfig;
 
     @Value("${default.database.serviceName}")
     public void setDefaultServiceName(String defaultServiceName) {
@@ -64,6 +68,11 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     @Autowired
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    @Autowired
+    public void setMysqlSessionVariablesConfig(MysqlSessionVariablesConfig config) {
+        this.mysqlSessionVariablesConfig = config;
     }
 
     @Override
@@ -137,6 +146,14 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                                 serviceMessage.getParam("maxCpuTimePerSecond")
                         );
                         databaseUser.setMaxCpuTimePerSecond(maxCpuTimePerSecond);
+
+                        break;
+                    case "sessionVariables":
+                        setSessionVariables(
+                                (Map<String, Object>) entry.getValue(),
+                                databaseUser,
+                                mysqlSessionVariablesConfig
+                        );
 
                         break;
                     default:
@@ -214,6 +231,15 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                 } catch (ParameterValidationException ignore) {} //this means that there is no limit
                 databaseUser.setMaxCpuTimePerSecond(maxCpuTimePerSecond);
             }
+
+            if (serviceMessage.getParam("sessionVariables") instanceof Map) {
+                setSessionVariables(
+                        (Map<String, Object>) serviceMessage.getParam("sessionVariables"),
+                        databaseUser,
+                        mysqlSessionVariablesConfig
+                );
+            }
+
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
@@ -314,5 +340,47 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     @Override
     public void store(DatabaseUser databaseUser) {
         repository.save(databaseUser);
+    }
+
+    private void setSessionVariables(Map<String, Object> sessionVariables, DatabaseUser databaseUser, MysqlSessionVariablesConfig cnf) {
+        switch (databaseUser.getType()) {
+            case MYSQL:
+                (sessionVariables).forEach((key, value) -> {
+                    if (value == null) {
+                        databaseUser.getSessionVariables().remove(key);
+                    } else {
+                        if (Arrays.asList("characterSetClient", "characterSetResults", "characterSetConnection").contains(key)) {
+                            if (value instanceof String && cnf.getCharsets().contains(value)) {
+                                databaseUser.getSessionVariables().put(key, value);
+                            } else {
+                                throw new ParameterValidationException(
+                                        "Значение " + key + " должно быть одиним из " + join(", ", cnf.getCharsets())
+                                );
+                            }
+                        } else if ("collationConnection".equals(key)) {
+                            if (value instanceof String && cnf.getCollations().contains(value)) {
+                                databaseUser.getSessionVariables().put(key, value);
+                            } else {
+                                throw new ParameterValidationException(
+                                        "Значение " + key + " должно быть одиним из " + join(", ", cnf.getCollations())
+                                );
+                            }
+                        } else if ("queryCacheType".equals(key)) {
+                            if (value instanceof String && cnf.getQueryCacheTypes().contains(value)) {
+                                databaseUser.getSessionVariables().put(key, value);
+                            } else {
+                                throw new ParameterValidationException(
+                                        "Значение " + key + " должно быть одиним из " + join(", ", cnf.getQueryCacheTypes())
+                                );
+                            }
+                        }
+                    }
+                });
+
+                break;
+            case POSTGRES:
+            default:
+                break;
+        }
     }
 }

@@ -3,13 +3,18 @@ package ru.majordomo.hms.rc.user.resources;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,6 +30,8 @@ import ru.majordomo.hms.rc.user.resources.validation.group.DatabaseUserChecks;
 
 @Document(collection = "databaseUsers")
 @ValidDatabaseUser(groups = DatabaseUserChecks.class)
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class DatabaseUser extends Resource implements Serviceable, Securable {
     @NotBlank(message = "Пароль не может быть пустым")
     private String passwordHash;
@@ -38,27 +45,17 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
     @Indexed
     private String serviceId;
 
+    @JsonIgnore
     private List<Long> allowedIPAddresses;
 
+    private Map<String, Object> sessionVariables = new HashMap<>();
+
     @Transient
+    @JsonIgnore
     private List<String> databaseIds;
 
     @DecimalMin(value = "0", message = "maxCpuTimePerSecond должно быть больше либо равно нулю или null")
     private BigDecimal maxCpuTimePerSecond;
-
-    @JsonIgnore
-    public List<String> getDatabaseIds() {
-        return databaseIds;
-    }
-    @JsonIgnore
-    public void setDatabaseIds(List<String> databaseIds) {
-        this.databaseIds = databaseIds;
-    }
-
-    @JsonIgnore
-    public List<Long> getAllowedIPAddresses() {
-        return allowedIPAddresses;
-    }
 
     @JsonGetter(value = "allowedIPAddresses")
     public List<String> getAllowedIpsAsCollectionOfString() {
@@ -69,11 +66,6 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
             }
         }
         return allowedIpsAsString;
-    }
-
-    @JsonIgnore
-    public void setAllowedIPAddresses(List<Long> allowedIPAddresses) {
-        this.allowedIPAddresses = allowedIPAddresses;
     }
 
     @JsonSetter(value = "allowedIPAddresses")
@@ -87,32 +79,9 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
         }
     }
 
-    public DBType getType() {
-        return type;
-    }
-
-    public void setType(DBType type) {
-        this.type = type;
-    }
-
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
-    }
-
-    @Override
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    @Override
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    @Override
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
     }
 
     @Override
@@ -130,29 +99,5 @@ public class DatabaseUser extends Resource implements Serviceable, Securable {
             default:
                 throw new IllegalArgumentException("Неизвестный тип базы");
         }
-    }
-
-    @Override
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    @Override
-    public String toString() {
-        return "DatabaseUser{" +
-                "passwordHash='" + passwordHash + '\'' +
-                ", type=" + type +
-                ", serviceId='" + serviceId + '\'' +
-                ", allowedIPAddresses=" + allowedIPAddresses +
-                ", databaseIds=" + databaseIds +
-                "} " + super.toString();
-    }
-
-    public BigDecimal getMaxCpuTimePerSecond() {
-        return maxCpuTimePerSecond;
-    }
-
-    public void setMaxCpuTimePerSecond(BigDecimal maxCpuTimePerSecond) {
-        this.maxCpuTimePerSecond = maxCpuTimePerSecond;
     }
 }

@@ -59,3 +59,17 @@ default:
       fileExtensions: shtml,shtm
     static:
       fileExtensions: avi,bz2,css,gif,gz,jpg,jpeg,js,mp3,mpeg,ogg,png,rar,svg,swf,zip,html,htm
+
+database-user:
+  mysql:
+    session-variables:
+      charsets:
+        - "big5"
+        - "dec8"
+      query-cache-types:
+        - "ON"
+        - "OFF"
+        - "DEMAND"
+      collations:
+        - "big5_chinese_ci"
+        - "big5_bin"
