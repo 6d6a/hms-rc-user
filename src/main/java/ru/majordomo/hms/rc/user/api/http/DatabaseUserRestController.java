@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.configurations.MysqlSessionVariablesConfig;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 
@@ -15,10 +17,16 @@ import ru.majordomo.hms.rc.user.resources.DatabaseUser;
 public class DatabaseUserRestController {
 
     private GovernorOfDatabaseUser governor;
+    private MysqlSessionVariablesConfig mysqlSessionVariablesConfig;
 
     @Autowired
     public void setGovernor(GovernorOfDatabaseUser governor) {
         this.governor = governor;
+    }
+
+    @Autowired
+    public void setMysqlSessionVariablesConfig(MysqlSessionVariablesConfig mysqlSessionVariablesConfig) {
+        this.mysqlSessionVariablesConfig = mysqlSessionVariablesConfig;
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
@@ -67,5 +75,41 @@ public class DatabaseUserRestController {
     @GetMapping("/database-user/filter")
     public Collection<DatabaseUser> filter(@RequestParam Map<String, String> requestParams) {
         return governor.buildAll(requestParams);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping(
+            {
+                    "{accountId}/database-user/session-variables/collations",
+                    "/database-user/session-variables/collations"
+            })
+    public List<String> collations(
+            @PathVariable(value = "accountId", required = false) String accountId
+    ) {
+       return mysqlSessionVariablesConfig.getCollations();
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping(
+            {
+                    "{accountId}/database-user/session-variables/query-cache-types",
+                    "/database-user/session-variables/query-cache-types"
+            })
+    public List<String> queryCacheTypes(
+            @PathVariable(value = "accountId", required = false) String accountId
+    ) {
+        return mysqlSessionVariablesConfig.getQueryCacheTypes();
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping(
+            {
+                    "{accountId}/database-user/session-variables/charsets",
+                    "/database-user/session-variables/charsets"
+            })
+    public List<String> charsets(
+            @PathVariable(value = "accountId", required = false) String accountId
+    ) {
+        return mysqlSessionVariablesConfig.getCharsets();
     }
 }

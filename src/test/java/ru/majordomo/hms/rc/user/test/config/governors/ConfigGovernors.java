@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
+import ru.majordomo.hms.rc.user.configurations.MysqlSessionVariablesConfig;
 import ru.majordomo.hms.rc.user.managers.*;
 import ru.majordomo.hms.rc.user.service.CounterService;
 
@@ -85,5 +86,10 @@ public class ConfigGovernors {
     @Bean
     public CounterService counterService() {
         return new CounterService();
+    }
+
+    @Bean
+    MysqlSessionVariablesConfig mysqlSessionVariablesConfig() {
+        return new MysqlSessionVariablesConfig();
     }
 }

@@ -115,7 +115,8 @@ public class DatabaseUserRestControllerTest {
                                 fieldWithPath("allowedIPAddresses").description("IP-адреса, с которых возможен доступ"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
                                 fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
-                                fieldWithPath("maxCpuTimePerSecond").description("Количество процессорного времени в секунду")
+                                fieldWithPath("maxCpuTimePerSecond").description("Количество процессорного времени в секунду"),
+                                fieldWithPath("sessionVariables").description("Переменные сессии")
                         )
                 ));
     }
