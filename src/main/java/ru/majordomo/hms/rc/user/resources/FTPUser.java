@@ -10,6 +10,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Transient;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -37,7 +38,7 @@ public class FTPUser extends Resource implements Securable {
     private List<@Pattern(
             regexp = CIDR_PATTERN,
             message = "{ru.majordomo.hms.rc.user.resources.validation.ValidCidrOrIP.message}"
-    ) String> allowedIPAddresses;
+    ) String> allowedIPAddresses = new ArrayList<>();
 
     @Transient
     private UnixAccount unixAccount;
