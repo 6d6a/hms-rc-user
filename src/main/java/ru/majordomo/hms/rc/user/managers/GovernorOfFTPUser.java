@@ -81,11 +81,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                         ftpUser.setHomeDir(homedir);
                         break;
                     case "allowedIPAddresses":
-                        try {
-                            ftpUser.setAllowedIPAddresses((List<Object>) entry.getValue());
-                        } catch (NumberFormatException e) {
-                            throw new ParameterValidationException("Неверный формат IP-адреса");
-                        }
+                        ftpUser.setAllowedIPAddresses(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         break;
                     case "allowWebFtp":
                         try {
@@ -93,6 +89,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                         } catch (Exception e) {
                             throw new ParameterValidationException("Неверный формат allowWebFtp");
                         }
+                        break;
                     case "switchedOn":
                         ftpUser.setSwitchedOn((Boolean) entry.getValue());
                         break;
@@ -148,6 +145,13 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
             if (serviceMessage.getParam("unixAccountId") != null) {
                 unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
             }
+            if (serviceMessage.getParam("allowedIPAddresses") != null) {
+                ftpUser.setAllowedIPAddresses(
+                        cleaner.cleanListWithStrings(
+                                (List<String>) serviceMessage.getParam("allowedIPAddresses")
+                        )
+                );
+            }
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
@@ -155,11 +159,6 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         ftpUser.setPasswordHashByPlainPassword(plainPassword);
         ftpUser.setHomeDir(homeDir);
         ftpUser.setUnixAccountId(unixAccountId);
-        try {
-            ftpUser.setAllowedIPAddresses((List<Object>) serviceMessage.getParam("allowedIPAddresses"));
-        } catch (NumberFormatException e) {
-            throw new ParameterValidationException("Неверный формат IP-адреса");
-        }
 
         return ftpUser;
     }
