@@ -22,7 +22,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 
-import ru.majordomo.hms.rc.staff.resources.Network;
+import ru.majordomo.hms.rc.user.resources.DTO.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.resources.validation.ServiceId;
 import ru.majordomo.hms.rc.user.resources.validation.ValidDatabaseUser;

@@ -1,19 +1,22 @@
 package ru.majordomo.hms.rc.user.resources;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Transient;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import ru.majordomo.hms.rc.staff.resources.Network;
+import ru.majordomo.hms.rc.user.resources.DTO.Network;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
 import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
@@ -22,14 +25,20 @@ import ru.majordomo.hms.rc.user.resources.validation.ValidRelativeFilePath;
 
 @Document(collection = "ftpUsers")
 @UniqueNameResource(FTPUser.class)
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ValidFTPUser
 public class FTPUser extends Resource implements Securable {
+    @JsonIgnore
+//    private final static String CIDR_PATTERN = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([1-9]|[1-2]\\d|3[0-2]))?$";
+    private final static String CIDR_PATTERN = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
+
     @NotBlank(message = "Пароль FTP пользователя не может быть пустым")
     private String passwordHash;
 
     @ValidRelativeFilePath
     private String homeDir = "";
-    private List<Long> allowedIPAddresses;
+    private List<Object> allowedIPAddresses;
 
     @Transient
     private UnixAccount unixAccount;
@@ -41,69 +50,17 @@ public class FTPUser extends Resource implements Securable {
 
     private Boolean allowWebFtp = true;
 
-    public Boolean getAllowWebFtp() {
-        return this.allowWebFtp;
+    public List<String> getAllowedIPAddresses() {
+        return listToListIpsInString(allowedIPAddresses);
     }
 
-    public void setAllowWebFtp(Boolean enabled){
-        this.allowWebFtp = enabled;
-    }
-
-    @JsonIgnore
-    public List<Long> getAllowedIPAddresses() {
-        return allowedIPAddresses;
-    }
-
-    @JsonGetter(value = "allowedIPAddresses")
-    public List<String> getAllowedIpsAsCollectionOfString() {
-        List<String> allowedIpsAsString = new ArrayList<>();
-        if (allowedIPAddresses != null) {
-            for (Long entry : allowedIPAddresses) {
-                allowedIpsAsString.add(Network.ipAddressInIntegerToString(entry));
-            }
-        }
-        return allowedIpsAsString;
-    }
-
-    @JsonIgnore
-    public void setAllowedIPAddresses(List<Long> allowedIPAddresses) {
-        this.allowedIPAddresses = allowedIPAddresses;
-    }
-
-    @JsonSetter(value = "allowedIPAddresses")
-    public void setAllowedIpsAsCollectionOfString(List<String> allowedIpsAsString) throws NumberFormatException {
-        List<Long> allowedIpsAsLong = new ArrayList<>();
-        if (allowedIpsAsString != null) {
-            for (String entry : allowedIpsAsString) {
-                Long ip = Network.ipAddressInStringToInteger(entry);
-                if (!allowedIpsAsLong.contains(ip)) {
-                    allowedIpsAsLong.add(ip);
-                }
-            }
-            setAllowedIPAddresses(allowedIpsAsLong);
-        }
+    public void setAllowedIPAddresses(List<Object> allowedIPAddresses) {
+        this.allowedIPAddresses = new ArrayList<>(listToListIpsInString(allowedIPAddresses));
     }
 
     @JsonIgnore
     public String getUnixAccountId() {
         return unixAccountId;
-    }
-
-    public void setUnixAccountId(String unixAccountId) {
-        this.unixAccountId = unixAccountId;
-    }
-
-    public UnixAccount getUnixAccount() {
-        return unixAccount;
-    }
-
-    public void setUnixAccount(UnixAccount unixAccount) {
-        this.unixAccount = unixAccount;
-    }
-
-    @Override
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
     }
 
     @Override
@@ -112,32 +69,24 @@ public class FTPUser extends Resource implements Securable {
     }
 
     @Override
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    @Override
     public void switchResource() {
         switchedOn = !switchedOn;
     }
 
-    public String getHomeDir() {
-        return homeDir;
-    }
+    private List<String> listToListIpsInString(List<Object> list) {
+        Pattern pattern = Pattern.compile(CIDR_PATTERN);
 
-    public void setHomeDir(String homeDir) {
-        this.homeDir = homeDir;
-    }
-
-    @Override
-    public String toString() {
-        return "FTPUser{" +
-                "passwordHash='" + passwordHash + '\'' +
-                ", homeDir='" + homeDir + '\'' +
-                ", allowedIPAddresses=" + allowedIPAddresses +
-                ", unixAccount=" + unixAccount +
-                ", unixAccountId='" + unixAccountId + '\'' +
-                ", allowWebFtp='" + allowWebFtp + '\'' +
-                "} " + super.toString();
+        if (list == null) return new ArrayList<>();
+        return list.stream().map(o -> {
+            if (o instanceof Long) {
+                return Network.ipAddressInIntegerToString((Long) o);
+            } else if (o instanceof Integer) {
+                return Network.ipAddressInIntegerToString(((Integer) o).longValue());
+            } else if (o instanceof String && pattern.matcher((String) o).find()) {
+                return (String) o;
+            } else {
+                throw new NumberFormatException("Некорректное значение IP-адреса: " + o);
+            }
+        }).collect(Collectors.toList());
     }
 }
