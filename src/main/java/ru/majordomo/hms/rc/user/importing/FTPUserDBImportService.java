@@ -84,11 +84,11 @@ public class FTPUserDBImportService implements ResourceDBImportService {
         namedParameterJdbcTemplate.query(query,
                 namedParameters1,
                 (rs1 -> {
-                    List<String> currentIpsAsCollectionOfString = ftpUser.getAllowedIpsAsCollectionOfString();
-
-                    currentIpsAsCollectionOfString.add(rs1.getString("remote_ip"));
-
-                    ftpUser.setAllowedIpsAsCollectionOfString(currentIpsAsCollectionOfString);
+//                    List<String> currentIpsAsCollectionOfString = ftpUser.getAllowedIpsAsCollectionOfString();
+//
+//                    currentIpsAsCollectionOfString.add(rs1.getString("remote_ip"));
+//
+//                    ftpUser.setAllowedIpsAsCollectionOfString(currentIpsAsCollectionOfString);
                 })
         );
 

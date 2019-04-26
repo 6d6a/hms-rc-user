@@ -127,7 +127,7 @@ public class GovernorOfFTPUserTest {
         assertThat(ftpUsers.get(0).getName(), is("f_-111111"));
         assertThat(ftpUsers.get(0).getHomeDir(), is("mjru"));
         assertThat(ftpUsers.get(0).getPasswordHash(), anything());
-        assertThat(ftpUsers.get(0).getAllowedIpsAsCollectionOfString(), is(Arrays.asList("3.3.3.3", "4.4.4.4")));
+        assertThat(ftpUsers.get(0).getAllowedIPAddresses(), is(Arrays.asList("3.3.3.3", "4.4.4.4")));
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -206,7 +206,7 @@ public class GovernorOfFTPUserTest {
         assertThat(ftpUser.getHomeDir(), is("mjru"));
         assertThat(ftpUser.getSwitchedOn(), is(false));
         assertThat(ftpUser.getPasswordHash(), not(oldPasswordHash));
-        assertThat(ftpUser.getAllowedIpsAsCollectionOfString(), is(Arrays.asList("1.1.1.1", "2.2.2.2")));
+        assertThat(ftpUser.getAllowedIPAddresses(), is(Arrays.asList("1.1.1.1", "2.2.2.2")));
     }
 
     @Test(expected = ResourceNotFoundException.class)

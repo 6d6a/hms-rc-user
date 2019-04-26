@@ -82,7 +82,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                         break;
                     case "allowedIPAddresses":
                         try {
-                            ftpUser.setAllowedIpsAsCollectionOfString(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+                            ftpUser.setAllowedIPAddresses((List<Object>) entry.getValue());
                         } catch (NumberFormatException e) {
                             throw new ParameterValidationException("Неверный формат IP-адреса");
                         }
@@ -134,7 +134,6 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         String plainPassword = "";
         String homeDir = null;
         String unixAccountId = null;
-        List<String> allowedAddressListAsString = new ArrayList<>();
 
         try {
             if (serviceMessage.getParam("password") != null) {
@@ -149,9 +148,6 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
             if (serviceMessage.getParam("unixAccountId") != null) {
                 unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
             }
-            if (serviceMessage.getParam("allowedIPAddresses") != null) {
-                allowedAddressListAsString = cleaner.cleanListWithStrings((List<String>) serviceMessage.getParam("allowedIPAddresses"));
-            }
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
@@ -160,7 +156,7 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         ftpUser.setHomeDir(homeDir);
         ftpUser.setUnixAccountId(unixAccountId);
         try {
-            ftpUser.setAllowedIpsAsCollectionOfString(allowedAddressListAsString);
+            ftpUser.setAllowedIPAddresses((List<Object>) serviceMessage.getParam("allowedIPAddresses"));
         } catch (NumberFormatException e) {
             throw new ParameterValidationException("Неверный формат IP-адреса");
         }
