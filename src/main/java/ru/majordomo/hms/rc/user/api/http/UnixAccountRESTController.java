@@ -13,7 +13,6 @@ import java.util.Map;
 import ru.majordomo.hms.rc.user.api.DTO.stat.ResourceQuotaCount;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
-import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.service.stat.Aggregator;
@@ -110,6 +109,6 @@ public class UnixAccountRESTController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("/{accountId}/unix-account/quota-count")
     public ResourceQuotaCount getCountByAccountId(@PathVariable String accountId) {
-        return aggregator.getResourceQuotaCountByAccountId(Mailbox.class, accountId);
+        return aggregator.getResourceQuotaCountByAccountId(UnixAccount.class, accountId);
     }
 }
