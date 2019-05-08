@@ -4,8 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.rc.user.api.DTO.stat.ResourceQuotaCount;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.DTO.stat.BaseResourceIdCount;
@@ -114,5 +117,28 @@ public class Aggregator {
         public void setAccountId(String accountId) { this.accountId = accountId; }
         public String getField() { return field; }
         public void setField(String field) { this.field = field; }
+    }
+
+    public <T extends Quotable> ResourceQuotaCount getResourceQuotaCountByAccountId(Class<T> tClass, String accountId) {
+        MatchOperation match = Aggregation.match(Criteria.where("accountId").is(accountId));
+
+        GroupOperation group = group("accountId")
+                .first("accountId").as("accountId")
+                .sum("quotaUsed").as("quotaUsed")
+                .count().as("count");
+
+        Aggregation aggregation = Aggregation.newAggregation(match, group);
+
+        List<ResourceQuotaCount> mappedResults = mongoOperations.aggregate(
+                aggregation, tClass, ResourceQuotaCount.class
+        ).getMappedResults();
+
+        if (mappedResults.isEmpty()) {
+            ResourceQuotaCount count = new ResourceQuotaCount();
+            count.setAccountId(accountId);
+            return count;
+        } else {
+            return mappedResults.get(0);
+        }
     }
 }

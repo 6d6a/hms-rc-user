@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import ru.majordomo.hms.rc.user.api.http.*;
+import ru.majordomo.hms.rc.user.service.stat.Aggregator;
 
 @Configuration
 @EnableWebMvc
@@ -46,5 +47,10 @@ public class ConfigRestControllers {
     @Bean
     public WebSiteRESTController webSiteRESTController() {
         return new WebSiteRESTController();
+    }
+
+    @Bean
+    Aggregator aggregator() {
+        return new Aggregator(null, null);
     }
 }
