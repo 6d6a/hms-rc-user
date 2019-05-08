@@ -11,14 +11,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.DTO.Count;
+import ru.majordomo.hms.rc.user.api.DTO.stat.ResourceQuotaCount;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Database;
+import ru.majordomo.hms.rc.user.service.stat.Aggregator;
 
 @RestController
 public class DatabaseRestController {
 
     private GovernorOfDatabase governor;
+
+    private Aggregator aggregator;
+
+    @Autowired
+    public void setAggregator(Aggregator aggregator) {
+        this.aggregator = aggregator;
+    }
 
     @Autowired
     public void setGovernor(GovernorOfDatabase governor) {
@@ -91,4 +100,9 @@ public class DatabaseRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping("/{accountId}/database/quota-count")
+    public ResourceQuotaCount getCountByAccountId(@PathVariable String accountId) {
+        return aggregator.getResourceQuotaCountByAccountId(Database.class, accountId);
+    }
 }

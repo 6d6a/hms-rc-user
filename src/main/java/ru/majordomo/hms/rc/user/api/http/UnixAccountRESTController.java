@@ -10,15 +10,25 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.api.DTO.stat.ResourceQuotaCount;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
+import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
+import ru.majordomo.hms.rc.user.service.stat.Aggregator;
 
 @RestController
 public class UnixAccountRESTController {
 
     private GovernorOfUnixAccount governor;
+
+    private Aggregator aggregator;
+
+    @Autowired
+    public void setAggregator(Aggregator aggregator) {
+        this.aggregator = aggregator;
+    }
 
     @Autowired
     public void setGovernor(GovernorOfUnixAccount governor) {
@@ -95,5 +105,11 @@ public class UnixAccountRESTController {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
         return governor.buildAll(keyValue);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping("/{accountId}/unix-account/quota-count")
+    public ResourceQuotaCount getCountByAccountId(@PathVariable String accountId) {
+        return aggregator.getResourceQuotaCountByAccountId(Mailbox.class, accountId);
     }
 }
