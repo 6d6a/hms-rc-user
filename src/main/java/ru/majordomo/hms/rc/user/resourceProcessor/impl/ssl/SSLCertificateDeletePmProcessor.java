@@ -25,9 +25,11 @@ public class SSLCertificateDeletePmProcessor implements ResourceProcessor<SSLCer
         keyValue.put("accountId", accountId);
         keyValue.put("resourceId", resourceId);
 
-        SSLCertificate certificate = processorContext.getGovernor().build(keyValue);
+        context.setResource(
+                processorContext.getGovernor().build(keyValue)
+        );
 
-        processorContext.getGovernor().drop(certificate.getId());
+        processorContext.getGovernor().drop(context.getResource().getId());
 
         serviceMessage.addParam("success", true);
 
