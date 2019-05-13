@@ -19,17 +19,21 @@ public class TeDeleteProcessor<T extends Resource> implements ResourceProcessor<
 
         String resourceUrl = serviceMessage.getObjRef();
 
-        T resource = processorContext.getResourceByUrlBuilder().get(resourceUrl);
+        context.setResource(
+                processorContext.getResourceByUrlBuilder().get(resourceUrl)
+        );
 
-        if (resource != null) {
+        if (context.getResource() != null) {
             if (successEvent){
-                processorContext.getGovernor().drop(resource.getId());
+                processorContext.getGovernor().drop(context.getResource().getId());
             } else {
-                resource.setLocked(false);
-                processorContext.getGovernor().store(resource);
+                context.getResource().setLocked(false);
+                processorContext.getGovernor().store(context.getResource());
             }
         }
 
-        processorContext.getSender().send(context, processorContext.getRoutingKeyResolver().get(context));
+        processorContext.getSender().send(
+                context, processorContext.getRoutingKeyResolver().get(context)
+        );
     }
 }
