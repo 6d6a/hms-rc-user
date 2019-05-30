@@ -762,7 +762,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             return false;
         }
 
-        UnixAccount unixAccount = unixAccountRepository.findFirstByAccountIdAndUid(mailbox.getAccountId(), mailbox.getUid());
+        UnixAccount unixAccount = unixAccountRepository.findFirstByAccountId(mailbox.getAccountId());
 
         if (unixAccount == null  ) {
             throw new ResourceNotFoundException("UnixAccount с AccountId: " + mailbox.getAccountId() + " не найден");
