@@ -416,4 +416,44 @@ public class GovernorOfMailboxTest {
         governor.create(serviceMessage);
 
     }
+
+    @Test
+    public void invalidLocalNameTest() {
+        Arrays.asList(
+                ".sdg",
+                "/.dsg",
+                "/.d!@#$%^&*()sg",
+                "kasdgjjsdgkjasg/",
+                "/kasdgjjsdgkjasg",
+                "asdgjjsd./gkjasg",
+                "asdgjjsd/.gkjasg",
+                "asdgjjsd.",
+                "asdgjjsd/gkjasg",
+                "/"
+        ).forEach(localName -> {
+            ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
+            serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+            serviceMessage.addParam("name", localName);
+
+            try {
+                governor.create(serviceMessage);
+                throw new RuntimeException("localName " + localName + " прошел проверку");
+            } catch (ConstraintViolationException e) {} //its ok
+        });
+    }
+
+    @Test
+    public void validLocalNameTest() {
+        Arrays.asList(
+                "asdgasdg2452.dgj",
+                "asdgasdg?2452.dgj",
+                "asdgasdg!#$%&'*+=?^_`{|}~-2452.dgj",
+                "asdgasdg2!452.dgj"
+        ).forEach(localName -> {
+            ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
+            serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
+            serviceMessage.addParam("name", localName);
+            governor.create(serviceMessage);
+        });
+    }
 }
