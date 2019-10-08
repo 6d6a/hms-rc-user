@@ -27,6 +27,8 @@ public class Constants {
     public static final String REGISTRATOR_KEY = "registrator";
     public static final String SEND_ONLY_TO_ACTIVE_KEY = "send_only_to_active";
 
+    public static final String MAJORDOMO_SITE_NAME = "majordomo.ru";
+
     public static class Exchanges {
         public static class Resource {
             public static final String ACCOUNT = "account";

@@ -51,6 +51,8 @@ import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 
+import static ru.majordomo.hms.rc.user.common.Constants.MAJORDOMO_SITE_NAME;
+
 @Service
 public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private MailboxRepository repository;
@@ -71,9 +73,16 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private ApplicationEventPublisher publisher;
     private int warnPercent;
 
+    private String majordomoMailboxServerId;
+
     @Value("${resources.quotable.warnPercent.mailbox}")
     public void setWarnPercent(int warnPercent){
         this.warnPercent = warnPercent;
+    }
+
+    @Value("${resources.quotable.warnPercent.mailbox}")
+    public void setMajordomoMailboxServerId(String majordomoMailboxServerId) {
+        this.majordomoMailboxServerId = majordomoMailboxServerId;
     }
 
     @Autowired
@@ -412,7 +421,14 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             throw new ParameterValidationException("Недопустимые символы в пароле");
         }
 
-        String serverId = findMailStorageServer();
+        String serverId;
+
+        if (governorOfDomain.build(domainId).getName() != null &&
+                governorOfDomain.build(domainId).getName().equals(MAJORDOMO_SITE_NAME)) {
+            serverId = findMjMailStorageServer();
+        } else {
+            serverId = findMailStorageServer();
+        }
 
         String mailSpool = null;
         if (serverId != null && !serverId.equals("")) {
@@ -421,6 +437,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                 mailSpool = storage.getMountPoint();
             }
         }
+
 
         if (mailSpool == null) {
             throw new ParameterValidationException("Внутренняя ошибка: не удалось сформировать mailSpool");
@@ -456,6 +473,14 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             return staffRcClient.getActiveMailboxServer().getId();
         } catch (FeignException e) {
             throw new ParameterValidationException("Внутренняя ошибка: не удалось найти подходящий сервер");
+        }
+    }
+
+    private String findMjMailStorageServer() {
+        try {
+            return staffRcClient.getActiveMjMailboxServer().getId();
+        } catch (FeignException e) {
+            throw new ParameterValidationException("Внутренняя ошибка: не удалось найти сервер внутренней почты");
         }
     }
 

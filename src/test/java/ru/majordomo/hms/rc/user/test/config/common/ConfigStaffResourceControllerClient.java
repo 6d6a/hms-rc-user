@@ -88,6 +88,11 @@ public class ConfigStaffResourceControllerClient {
             }
 
             @Override
+            public Server getActiveMjMailboxServer() {
+                return mockedMailboxServer;
+            }
+
+            @Override
             public Server getServerById(@PathVariable("serverId") String serverId) {
                 Server server = new Server();
                 server.setId(serverId);
