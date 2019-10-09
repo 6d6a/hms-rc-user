@@ -309,6 +309,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Mailbox mailbox = new Mailbox();
         setResourceParams(mailbox, serviceMessage, cleaner);
         String plainPassword = null;
+        String passwordHash = null;
         List<String> redirectAddresses = new ArrayList<>();
         List<String> blackList = new ArrayList<>();
         List<String> whiteList = new ArrayList<>();
@@ -330,6 +331,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
             if (serviceMessage.getParam("password") != null) {
                 plainPassword = (String) serviceMessage.getParam("password");
+            }
+
+            if (serviceMessage.getParam("passwordHash") != null) {
+                passwordHash = (String) serviceMessage.getParam("passwordHash");
             }
 
             if (serviceMessage.getParam("comment") != null) {
@@ -403,22 +408,26 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         keyValue.put("resourceId", domainId);
         mailbox.setDomain(governorOfDomain.build(keyValue));
 
-        if (plainPassword != null) {
-            try {
-                Pattern p = Pattern.compile("^[a-zA-Z0-9 !\"#$%&\'\\\\()*+,\\-.\\/:;<=>?@\\[\\]^_`{|}~]{6,}$");
-                Matcher m = p.matcher(plainPassword);
-                if (!m.matches()) {
+        if (passwordHash != null) {
+            mailbox.setPasswordHash(passwordHash);
+        } else {
+            if (plainPassword != null) {
+                try {
+                    Pattern p = Pattern.compile("^[a-zA-Z0-9 !\"#$%&\'\\\\()*+,\\-.\\/:;<=>?@\\[\\]^_`{|}~]{6,}$");
+                    Matcher m = p.matcher(plainPassword);
+                    if (!m.matches()) {
+                        throw new ParameterValidationException("Недопустимые символы в пароле");
+                    }
+                } catch (Exception e) {
                     throw new ParameterValidationException("Недопустимые символы в пароле");
                 }
-            } catch (Exception e) {
+            }
+
+            try {
+                mailbox.setPasswordHashByPlainPassword(plainPassword);
+            } catch (UnsupportedEncodingException e) {
                 throw new ParameterValidationException("Недопустимые символы в пароле");
             }
-        }
-
-        try {
-            mailbox.setPasswordHashByPlainPassword(plainPassword);
-        } catch (UnsupportedEncodingException e) {
-            throw new ParameterValidationException("Недопустимые символы в пароле");
         }
 
         String serverId;
