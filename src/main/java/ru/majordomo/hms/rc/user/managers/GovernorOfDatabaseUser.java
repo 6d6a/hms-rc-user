@@ -373,6 +373,14 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
                                         "Значение " + key + " должно быть одиним из " + join(", ", cnf.getQueryCacheTypes())
                                 );
                             }
+                        } else if ("innodbStrictMode".equals(key)) {
+                            if (value instanceof String && cnf.getInnodbStrictMode().contains(value)) {
+                                databaseUser.getSessionVariables().put(key, value);
+                            } else {
+                                throw new ParameterValidationException(
+                                        "Значение " + key + " должно быть одиним из " + join(", ", cnf.getInnodbStrictMode())
+                                );
+                            }
                         }
                     }
                 });
