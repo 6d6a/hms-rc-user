@@ -112,4 +112,16 @@ public class DatabaseUserRestController {
     ) {
         return mysqlSessionVariablesConfig.getCharsets();
     }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping(
+            {
+                    "{accountId}/database-user/session-variables/innodb-strict-mode",
+                    "/database-user/session-variables/innodb-strict-mode"
+            })
+    public List<String> innodbStrictMode(
+            @PathVariable(value = "accountId", required = false) String accountId
+    ) {
+        return mysqlSessionVariablesConfig.getInnodbStrictMode();
+    }
 }

@@ -13,4 +13,5 @@ public class MysqlSessionVariablesConfig {
     private List<String> charsets;
     private List<String> queryCacheTypes;
     private List<String> collations;
+    private List<String> innodbStrictMode;
 }
