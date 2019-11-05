@@ -486,6 +486,7 @@ public class ResourceGenerator {
             webSite.setAccessByOldHttpVersion(false);
             webSite.setStaticFileExtensions(Arrays.asList("css", "htm", "png"));
             webSite.setCustomUserConf("php_flag error_repoting on");
+            webSite.setExpires("1h");
             webSite.setIndexFileList(Arrays.asList("index.php", "index.html"));
             webSite.setAccessLogEnabled(true);
             webSite.setErrorLogEnabled(false);
@@ -524,6 +525,7 @@ public class ResourceGenerator {
             webSite.setAccessByOldHttpVersion(false);
             webSite.setStaticFileExtensions(Arrays.asList("css", "htm", "png"));
             webSite.setCustomUserConf("php_flag error_repoting on");
+            webSite.setExpires("1h");
             webSite.setIndexFileList(Arrays.asList("index.php", "index.html"));
             webSite.setAccessLogEnabled(true);
             webSite.setErrorLogEnabled(false);

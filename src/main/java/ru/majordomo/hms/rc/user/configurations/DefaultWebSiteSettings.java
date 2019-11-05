@@ -65,6 +65,8 @@ public class DefaultWebSiteSettings {
     @NotNull
     private FileExtensionsSettings Static = new FileExtensionsSettings();
 
+    private String expires;
+
     @Data
     public class FileExtensionsSettings {
         private Boolean enabled = true;

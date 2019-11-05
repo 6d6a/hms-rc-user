@@ -162,6 +162,7 @@ public class WebsiteRestControllerTest {
                                 fieldWithPath("requestOrder").description("Опция request_order для PHP"),
                                 fieldWithPath("allowUrlInclude").description("Опция allow_url_include для PHP"),
                                 fieldWithPath("opcacheRevalidateFreq").description("Опция opcache.revalidate_freq для PHP"),
+                                fieldWithPath("expires").description("Значение параметра expires для Nginx"),
                                 fieldWithPath("memoryLimit").description("Опция memory_limit для PHP"),
                                 fieldWithPath("mbstringInternalEncoding").description("Опция mbstring.internal_encoding для PHP"),
                                 fieldWithPath("serviceId").description("serviceId для данного вебсайта"),
@@ -206,6 +207,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("$[0].staticFileExtensions").isArray())
                 .andExpect(jsonPath("$[0].autoSubDomain").value(batchOfWebsites.get(0).getAutoSubDomain()))
                 .andExpect(jsonPath("$[0].customUserConf").value(batchOfWebsites.get(0).getCustomUserConf()))
+                .andExpect(jsonPath("$[0].expires").value(batchOfWebsites.get(0).getExpires()))
                 .andExpect(jsonPath("$[0].indexFileList").isArray())
                 .andExpect(jsonPath("$[0].accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
                 .andExpect(jsonPath("$[0].errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
@@ -241,6 +243,7 @@ public class WebsiteRestControllerTest {
                 .andExpect(jsonPath("staticFileExtensions").isArray())
                 .andExpect(jsonPath("autoSubDomain").value(batchOfWebsites.get(0).getAutoSubDomain()))
                 .andExpect(jsonPath("customUserConf").value(batchOfWebsites.get(0).getCustomUserConf()))
+                .andExpect(jsonPath("expires").value(batchOfWebsites.get(0).getExpires()))
                 .andExpect(jsonPath("indexFileList").isArray())
                 .andExpect(jsonPath("accessLogEnabled").value(batchOfWebsites.get(0).getAccessLogEnabled()))
                 .andExpect(jsonPath("errorLogEnabled").value(batchOfWebsites.get(0).getErrorLogEnabled()))
