@@ -261,6 +261,14 @@ public class GovernorOfWebsiteTest {
     }
 
     @Test(expected = ConstraintViolationException.class)
+    public void validateExpires() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("expires", "lol");
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
     public void validateDocumentRoot() throws Exception {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("documentRoot", "/home/u100800");

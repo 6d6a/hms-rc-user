@@ -205,6 +205,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "ddosProtection":
                         website.setDdosProtection(cleaner.cleanBoolean(entry.getValue()));
                         break;
+                    case "expires":
+                        String expires = cleaner.cleanString((String) entry.getValue());
+                        website.setExpires(expires);
+                        break;
                     case "switchedOn":
                         website.setSwitchedOn(cleaner.cleanBoolean(entry.getValue()));
                     default:
@@ -303,6 +307,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Integer opcacheRevalidateFreq = cleaner.cleanInteger(serviceMessage.getParam("opcacheRevalidateFreq"));
             Integer memoryLimit = cleaner.cleanInteger(serviceMessage.getParam("memoryLimit"));
             String mbstringInternalEncoding = (String) serviceMessage.getParam("mbstringInternalEncoding");
+            String expires = cleaner.cleanString((String) serviceMessage.getParam("expires"));
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -331,6 +336,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setOpcacheRevalidateFreq(opcacheRevalidateFreq);
             webSite.setMemoryLimit(memoryLimit);
             webSite.setMbstringInternalEncoding(mbstringInternalEncoding);
+            webSite.setExpires(expires);
         } catch (ClassCastException e) {
             log.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
@@ -449,6 +455,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
         if (webSite.getMultiViews() == null) {
             webSite.setMultiViews(defaultWebSiteSettings.getMultiViews());
+        }
+        if (webSite.getExpires() == null) {
+            webSite.setExpires(defaultWebSiteSettings.getExpires());
         }
     }
 

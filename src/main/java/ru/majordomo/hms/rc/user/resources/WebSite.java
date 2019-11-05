@@ -85,6 +85,9 @@ public class WebSite extends Resource implements Serviceable {
 
     private Boolean allowUrlFopen;
 
+    @ValidExpires
+    private String expires;
+
     @Range(min = 0, max = 7, message = "mbstringFuncOverload должно быть между {min} и {max}")
     private Integer mbstringFuncOverload;
 
@@ -230,6 +233,14 @@ public class WebSite extends Resource implements Serviceable {
 
     public List<String> getIndexFileList() {
         return indexFileList;
+    }
+
+    public String getExpires() {
+        return expires;
+    }
+
+    public void setExpires(String expires) {
+        this.expires = expires;
     }
 
     public void setIndexFileList(List<String> indexFileList) {
@@ -444,6 +455,7 @@ public class WebSite extends Resource implements Serviceable {
                 ", opcacheRevalidateFreq=" + opcacheRevalidateFreq +
                 ", memoryLimit=" + memoryLimit +
                 ", mbstringInternalEncoding=" + mbstringInternalEncoding +
+                ", expires=" + expires +
                 "} " + super.toString();
     }
 }
