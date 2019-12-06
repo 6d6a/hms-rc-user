@@ -1,9 +1,11 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -150,6 +152,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         break;
                     case "staticFileExtensions":
                         website.setStaticFileExtensions(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
+
                         break;
                     case "indexFileList":
                         website.setIndexFileList(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
@@ -205,15 +208,23 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "ddosProtection":
                         website.setDdosProtection(cleaner.cleanBoolean(entry.getValue()));
                         break;
-                    case "expires":
-                        String expires = cleaner.cleanString((String) entry.getValue());
-                        website.setExpires(expires);
-                        break;
                     case "switchedOn":
                         website.setSwitchedOn(cleaner.cleanBoolean(entry.getValue()));
+                        break;
                     default:
                         break;
+                } // switch
+            } // for
+            if (serviceMessage.getParam("expiresForTypes") != null) {
+                Map<String, String> expiresRaw = (Map<String, String>) serviceMessage.getParam("expiresForTypes");
+                website.setExpiresForTypes(cleaner.cleanMapWithStrings(expiresRaw));
+                List<String> staticFileExtensions = website.getStaticFileExtensions();
+                for (String ex : website.getExpiresForTypes().keySet()) {
+                    if (!staticFileExtensions.contains(ex)) {
+                        staticFileExtensions.add(ex);
+                    }
                 }
+                website.setStaticFileExtensions(staticFileExtensions);
             }
         } catch (ClassCastException e) {
             log.error("WebSite update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
@@ -307,7 +318,16 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Integer opcacheRevalidateFreq = cleaner.cleanInteger(serviceMessage.getParam("opcacheRevalidateFreq"));
             Integer memoryLimit = cleaner.cleanInteger(serviceMessage.getParam("memoryLimit"));
             String mbstringInternalEncoding = (String) serviceMessage.getParam("mbstringInternalEncoding");
-            String expires = cleaner.cleanString((String) serviceMessage.getParam("expires"));
+            Map<String, String> expiresForTypes = cleaner.cleanMapWithStrings((Map<String, String>) serviceMessage.getParam("expiresForType"));
+            if (!expiresForTypes.isEmpty()) {
+                List<String> newStaticFileExtensions = new ArrayList<>(staticFileExtensions);
+                for (String ex : expiresForTypes.keySet()) {
+                    if (!newStaticFileExtensions.contains(ex)) {
+                        newStaticFileExtensions.add(ex);
+                    }
+                }
+                staticFileExtensions = newStaticFileExtensions;
+            }
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -336,7 +356,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setOpcacheRevalidateFreq(opcacheRevalidateFreq);
             webSite.setMemoryLimit(memoryLimit);
             webSite.setMbstringInternalEncoding(mbstringInternalEncoding);
-            webSite.setExpires(expires);
+            webSite.setExpiresForTypes(expiresForTypes);
         } catch (ClassCastException e) {
             log.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
@@ -456,9 +476,15 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         if (webSite.getMultiViews() == null) {
             webSite.setMultiViews(defaultWebSiteSettings.getMultiViews());
         }
-        if (webSite.getExpires() == null) {
-            webSite.setExpires(defaultWebSiteSettings.getExpires());
+        if (webSite.getExpiresForTypes() == null) {
+            webSite.setExpiresForTypes(new HashMap<>());
         }
+
+
+        Map<String, String> expiresForTypes = webSite.getExpiresForTypes().entrySet().stream()
+                .filter(extExpires -> !"off".equals(extExpires.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        webSite.setExpiresForTypes(expiresForTypes);
     }
 
     @Override
