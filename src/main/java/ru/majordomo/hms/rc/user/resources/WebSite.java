@@ -10,7 +10,9 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -32,7 +34,7 @@ public class WebSite extends Resource implements Serviceable {
     @ServiceId(groups = WebSiteChecks.class)
     @NotNull(message = "serviceId не может быть null")
     @Indexed
-    private String serviceId;
+    private String serviceId;   // ru.majordomo.hms.rc.staff.resources.Service
 
     @NotBlank(message = "documentRoot не может быть пустым")
     @ValidRelativeFilePath
@@ -67,6 +69,9 @@ public class WebSite extends Resource implements Serviceable {
 
     private Boolean accessByOldHttpVersion;
 
+    /**
+     * Список файлов которые будут обрабатываться nginx. Запросы к этим файлам не будут передаваться на бэкэнд web-сервер
+     */
     @Valid
     private List<@ValidFileExtension String> staticFileExtensions = new ArrayList<>();
 
@@ -85,8 +90,15 @@ public class WebSite extends Resource implements Serviceable {
 
     private Boolean allowUrlFopen;
 
-    @ValidExpires
-    private String expires;
+    /**
+     * Содержит список расширений для которых нужно добавить опцию nginx expires и значение.
+     * значение - понимаемое nginx значение параметра expires
+     * Все эти типы так же должны быть перечислены в staticFileExtensions
+     *
+     * желательно удалять значения off для упрощения конфига nginx
+     */
+    @Valid
+    private Map<@ValidFileExtension String, @ValidExpires String> expiresForTypes = new HashMap<>();    // значение опции nginx expires для отдельных расширений
 
     @Range(min = 0, max = 7, message = "mbstringFuncOverload должно быть между {min} и {max}")
     private Integer mbstringFuncOverload;
@@ -235,14 +247,6 @@ public class WebSite extends Resource implements Serviceable {
         return indexFileList;
     }
 
-    public String getExpires() {
-        return expires;
-    }
-
-    public void setExpires(String expires) {
-        this.expires = expires;
-    }
-
     public void setIndexFileList(List<String> indexFileList) {
         this.indexFileList = indexFileList;
     }
@@ -266,6 +270,14 @@ public class WebSite extends Resource implements Serviceable {
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
+    }
+
+    public Map<String, String> getExpiresForTypes() {
+        return expiresForTypes;
+    }
+
+    public void setExpiresForTypes(Map<String, String> expiresForTypes) {
+        this.expiresForTypes = expiresForTypes;
     }
 
     public UnixAccount getUnixAccount() {
@@ -455,7 +467,7 @@ public class WebSite extends Resource implements Serviceable {
                 ", opcacheRevalidateFreq=" + opcacheRevalidateFreq +
                 ", memoryLimit=" + memoryLimit +
                 ", mbstringInternalEncoding=" + mbstringInternalEncoding +
-                ", expires=" + expires +
+                ", expiresForTypes=" + expiresForTypes +
                 "} " + super.toString();
     }
 }

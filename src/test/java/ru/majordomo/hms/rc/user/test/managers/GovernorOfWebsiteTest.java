@@ -261,9 +261,9 @@ public class GovernorOfWebsiteTest {
     }
 
     @Test(expected = ConstraintViolationException.class)
-    public void validateExpires() throws Exception {
+    public void validateExpiresForTypes() throws Exception {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
-        serviceMessage.addParam("expires", "lol");
+        serviceMessage.addParam("expiresForTypes", Collections.singletonMap("html", "hh"));
 
         governor.update(serviceMessage);
     }

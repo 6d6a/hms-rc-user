@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = {})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-@Pattern(regexp = "^(max|-?\\d?\\d[mhd]?)?$", message = "{ru.majordomo.hms.rc.user.resources.validation.ValidExpires.message}")
+@Pattern(regexp = "^(max|off|-?\\d{1,8}[mhdMyws]?)$", message = "{ru.majordomo.hms.rc.user.resources.validation.ValidExpires.message}")
 public @interface ValidExpires {
     String message() default "{ru.majordomo.hms.rc.user.resources.validation.ValidExpires.message}";
 

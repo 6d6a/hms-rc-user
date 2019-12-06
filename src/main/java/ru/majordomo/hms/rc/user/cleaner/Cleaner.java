@@ -3,7 +3,9 @@ package ru.majordomo.hms.rc.user.cleaner;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
@@ -14,6 +16,16 @@ public class Cleaner {
             return "";
         }
         return input.trim();
+    }
+
+    public Map<String, String> cleanMapWithStrings(Map<String, String> stringMap) {
+        Map<String, String> clearedMap = new HashMap<>();
+        if (stringMap != null) {
+            stringMap.forEach((key, value) -> {
+                clearedMap.put(cleanString(key), cleanString(value));
+            });
+        }
+        return clearedMap;
     }
 
     public List<String> cleanListWithStrings(List<String> stringList) {
