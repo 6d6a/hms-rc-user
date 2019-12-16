@@ -3,6 +3,8 @@ package ru.majordomo.hms.rc.user.managers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
@@ -196,6 +198,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         try {
             if (domain.getParentDomainId() == null)
                 governorOfDnsRecord.initDomain(domain);
+        } catch (DuplicateKeyException ex) {
+            throw new ParameterValidationException(String.format("Ошибка инициализации домена. Для домена '%s' обнаружены дублирующие записи", domain.getName()));
+        } catch (DataAccessException ex) {
+            throw new ParameterValidationException("Не удалось инициализировать домен: " + domain.getName());
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
