@@ -143,16 +143,16 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Override
     public Domain create(ServiceMessage serviceMessage) throws ParameterValidationException {
         Domain domain;
+        boolean needRegister = false;
         try {
-            Boolean needRegister = null;
-            if (serviceMessage.getParam("register") != null) {
+            if (serviceMessage.getParam("register") instanceof Boolean) {
                 needRegister = (Boolean) serviceMessage.getParam("register");
             }
 
             domain = buildResourceFromServiceMessage(serviceMessage);
             validate(domain);
 
-            if (needRegister != null && needRegister) {
+            if (needRegister) {
                 Person person = governorOfPerson.build(domain.getPersonId());
                 if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
                     person = governorOfPerson.createPersonRegistrant(person);
@@ -196,13 +196,13 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         }
 
         try {
-            if (domain.getParentDomainId() == null)
+            if (domain.getParentDomainId() == null) {
                 governorOfDnsRecord.initDomain(domain);
-        } catch (DuplicateKeyException ex) {
-            throw new ParameterValidationException(String.format("Ошибка инициализации домена. Для домена '%s' обнаружены дублирующие записи", domain.getName()));
-        } catch (DataAccessException ex) {
-            throw new ParameterValidationException("Не удалось инициализировать домен: " + domain.getName());
+            }
         } catch (Exception e) {
+            if (!needRegister && e instanceof DataAccessException) {
+                throw new ParameterValidationException("Не удалось инициализировать домен: " + domain.getName());
+            }
             log.error(e.getMessage());
             e.printStackTrace();
         }
