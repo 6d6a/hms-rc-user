@@ -199,10 +199,15 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             if (domain.getParentDomainId() == null) {
                 governorOfDnsRecord.initDomain(domain);
             }
-        } catch (Exception e) {
-            if (!needRegister && e instanceof DataAccessException) {
-                throw new ParameterValidationException("Не удалось инициализировать домен: " + domain.getName());
+        } catch (DataAccessException ex) {
+            if (needRegister) {
+                // игнорировать исключения во время регистрации чтобы произошли списания
+                log.error(ex.getMessage());
+                ex.printStackTrace();
+            } else {
+                throw new ParameterValidationException(String.format("Не удалось инициализировать домен '%s' из-за ошибок при работе с базой данных", domain.getName()));
             }
+        } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
         }

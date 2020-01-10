@@ -145,6 +145,7 @@ dependencies {
     compile("net.javacrumbs.shedlock:shedlock-provider-mongo:0.8.0")
     compile("org.jongo:jongo:1.4.0")
     compile("org.projectlombok:lombok:1.18.2")
+    compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
     compileOnly("org.springframework.boot:spring-boot-configuration-processor")
 }
 
