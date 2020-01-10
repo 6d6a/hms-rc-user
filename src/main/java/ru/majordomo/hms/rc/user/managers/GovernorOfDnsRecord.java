@@ -100,8 +100,12 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
     }
 
-    public void dropDomain(String domainName) {
-        dnsResourceRecordDAO.dropDomain(domainName);
+    /**
+     * удаляет домен и dns записи из базы данных dns-сервера
+     * @param internationalizedDomainName - имя домена, допускаются кириллические символы
+     */
+    public void dropDomain(String internationalizedDomainName) {
+        dnsResourceRecordDAO.dropDomain(IDN.toASCII(internationalizedDomainName));
     }
 
     @Override

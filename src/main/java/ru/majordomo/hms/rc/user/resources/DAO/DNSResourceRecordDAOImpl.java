@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.resources.DAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -13,6 +14,7 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -61,7 +63,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
     }
 
     public void save(DNSResourceRecord record) {
-        record.setDomainId(getDomainIDByDomainName(record.getName()));
+        record.setDomainId(getDomainIDByDomainNameOrCreate(record.getName()));
         if (record.getRecordId() == null) {
             record.setRecordId(insert(record));
         } else {
@@ -188,7 +190,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         return records;
     }
 
-//    @Override
+    @Nullable
     private Long getDomainIDByDomainName(String domainName) {
         String query = "SELECT d.id FROM domains d WHERE d.name = :domainName";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
@@ -196,13 +198,25 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         parameters.addValue("domainName", domainName);
         try {
             return jdbcTemplate.queryForObject(query, parameters, Long.class);
-        } catch (Exception e) {
-            return initDomain(domainName);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
         }
     }
 
+    @Nullable
+    private Long getDomainIDByDomainNameOrCreate(String domainName) {
+        Long result = getDomainIDByDomainName(domainName);
+        return result != null ? result : initDomain(domainName);
+    }
+
+    /**
+     * Создает основную DNS-запись домена. Если домен уже создан, вернет его ид и удалит старые записи
+     * @param domainName - имя домена в формате punycode
+     * @return - вернет Id домена или null
+     */
     @Override
-    public Long initDomain(String domainName) {
+    @Nullable
+    public Long initDomain(String domainName) throws DataAccessException {
         String query = "INSERT INTO domains (name, uid) VALUES (:domainName, '0')";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
@@ -210,27 +224,44 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
         KeyHolder holder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(query, parameters, holder, new String[]{"id"});
-
-        return holder.getKey().longValue();
+        try {
+            jdbcTemplate.update(query, parameters, holder, new String[]{"id"});
+        } catch (DuplicateKeyException ex) {
+            Long oldDomainId = getDomainIDByDomainName(domainName);
+            if (oldDomainId != null) {
+                dropRecords(oldDomainId);
+            }
+            return oldDomainId;
+        }
+        return holder.getKey() != null ? holder.getKey().longValue() : null;
     }
 
-    public void dropDomain(String domainName) {
-        Long domainId = getDomainIDByDomainName(domainName);
+    private void dropRecords(long domainId) {
         String recordsQuery = "DELETE FROM records WHERE domain_id = :domainId";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("domainId", domainId);
 
         jdbcTemplate.update(recordsQuery, parameters);
+    }
 
+    public void dropDomain(String domainName) {
+        Long domainId = getDomainIDByDomainName(domainName);
+        if (domainId == null) {
+            return;
+        }
+        dropRecords(domainId);
+
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.registerSqlType("types", Types.VARCHAR);
+        parameters.addValue("domainId", domainId);
         String domainsQuery = "DELETE FROM domains WHERE id = :domainId";
         jdbcTemplate.update(domainsQuery, parameters);
     }
 
     public void switchByDomainName(String domainName, Boolean switchedOn) {
         String active = switchedOn ? "1" : "0";
-        Long domainId = getDomainIDByDomainName(domainName);
+        Long domainId = getDomainIDByDomainNameOrCreate(domainName);
         String query = "UPDATE records SET active = :active WHERE domain_id = :domainId";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("active", active);
