@@ -107,9 +107,7 @@ public abstract class Resource {
     }
 
     public Boolean isLocked() {
-        return (this.lockedDateTime != null
-                && this.lockedDateTime.plusMinutes(20).isAfter(LocalDateTime.now())
-        );
+        return this.lockedDateTime != null;
     }
 
     public abstract void switchResource();
