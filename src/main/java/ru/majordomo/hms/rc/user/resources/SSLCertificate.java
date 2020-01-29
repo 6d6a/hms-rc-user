@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.rc.user.common.CertificateHelper;
 import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
 
 import java.time.LocalDateTime;
@@ -18,7 +20,7 @@ import java.util.Map;
 @UniqueNameResource(SSLCertificate.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SSLCertificate extends Resource {
+public class SSLCertificate extends Resource implements Comparable<SSLCertificate>{
     private String key;
 
     private String csr;
@@ -38,5 +40,14 @@ public class SSLCertificate extends Resource {
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;
+    }
+
+    @Override
+    public int compareTo(SSLCertificate cert) {
+        try {
+            return CertificateHelper.getNotAfter(this).compareTo(CertificateHelper.getNotAfter(cert));
+        } catch (ParameterValidationException e) {
+            return 0;
+        }
     }
 }

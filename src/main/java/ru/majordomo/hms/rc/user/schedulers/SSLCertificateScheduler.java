@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,8 @@ public class SSLCertificateScheduler {
 
         try (Stream<SSLCertificate> sslCerts = governorOfSSLCertificate.findAllStream()) {
             List<SSLCertificate> listSSLCerts = sslCerts.collect(Collectors.toList());
+
+            Collections.sort(listSSLCerts);
 
             for(SSLCertificate sslCert : listSSLCerts){
                 if (this.SSLCertificateProcess(sslCert)) {
