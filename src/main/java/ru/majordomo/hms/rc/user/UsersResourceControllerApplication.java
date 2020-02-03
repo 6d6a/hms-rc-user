@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user;
 
+import org.apache.commons.validator.routines.DomainValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 //import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 
+import java.util.Arrays;
+
 //import ru.majordomo.hms.rc.user.importing.DBImportService;
 
 @SpringBootApplication
@@ -23,6 +26,11 @@ import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 public class UsersResourceControllerApplication implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(UsersResourceControllerApplication.class);
+    private static final String[] tldList = {"llc"};
+    static {
+        Arrays.sort(tldList);
+        DomainValidator.updateTLDOverride(DomainValidator.ArrayType.GENERIC_PLUS, tldList);
+    }
 
 //    @Autowired
 //    private DBImportService dbImportService;
