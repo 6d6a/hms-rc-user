@@ -15,12 +15,15 @@ public class DomainNameValidator implements ConstraintValidator<DomainName, Stri
 
     @Override
     public void initialize(DomainName domainName) {
+
     }
 
     @Override
     public boolean isValid(String domainName, ConstraintValidatorContext constraintValidatorContext) {
         try {
-            if (!DomainValidator.getInstance().isValid(domainName)) return false;
+            if (!DomainValidator.getInstance().isValid(domainName)) {
+                return false;
+            }
 
             InternetDomainName domain = InternetDomainName.from(domainName);
             domain.publicSuffix();
