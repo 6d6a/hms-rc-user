@@ -123,7 +123,7 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.7'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.7'
     compile('ru.majordomo.hms.personmgr:exceptions:1.0.17')
-    compile("ru.majordomo.hms.rc.staff:resources:1.1.+")
+    compile("ru.majordomo.hms.rc.staff:resources:2.0.4")
     compile("dnsjava:dnsjava:2.1.7")
     compile("com.cronutils:cron-utils:5.0.5")
     compile("commons-validator:commons-validator:1.6")

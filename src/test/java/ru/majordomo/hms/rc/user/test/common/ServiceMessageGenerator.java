@@ -99,10 +99,11 @@ public class ServiceMessageGenerator {
         return serviceMessage;
     }
 
-    public static ServiceMessage generateWebsiteCreateServiceMessage(List<String> domainIds, String accountId) {
+    public static ServiceMessage generateWebsiteCreateServiceMessage(List<String> domainIds, String accountId, String serviceId) {
         ServiceMessage serviceMessage = new ServiceMessage();
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(accountId);
+        serviceMessage.addParam("applicationServiceId", serviceId);
         serviceMessage.addParam("domainIds", domainIds);
 
         return serviceMessage;

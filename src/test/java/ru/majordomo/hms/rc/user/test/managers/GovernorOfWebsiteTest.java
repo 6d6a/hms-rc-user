@@ -112,7 +112,7 @@ public class GovernorOfWebsiteTest {
             localDomainIds.add(domain.getId());
         }
 
-        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(localDomainIds, accountId);
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(localDomainIds, accountId, serviceId);
         WebSite webSite = governor.create(serviceMessage);
         assertThat(webSite.getStaticFileExtensions().size(), is(18));
     }
@@ -120,7 +120,7 @@ public class GovernorOfWebsiteTest {
     @Test(expected = ConstraintViolationException.class)
     public void createWithoutDomains() {
         List<String> emptydomainIds = new ArrayList<>();
-        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(emptydomainIds, accountId);
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(emptydomainIds, accountId, serviceId);
 
         governor.create(serviceMessage);
     }
@@ -128,7 +128,7 @@ public class GovernorOfWebsiteTest {
     @Test(expected = ParameterValidationException.class)
     public void createWithoutAccountId() {
         String emptyString = "";
-        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, emptyString);
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, emptyString, serviceId);
 
         governor.create(serviceMessage);
     }
