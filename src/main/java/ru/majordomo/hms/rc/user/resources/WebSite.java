@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.validation.constraints.NotBlank;
@@ -9,10 +10,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -22,6 +20,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 
 @Document(collection = "webSites")
 @ValidWebSite
+@JsonFilter("websiteFilter")
 public class WebSite extends Resource implements Serviceable {
 
     @Transient
@@ -122,6 +121,37 @@ public class WebSite extends Resource implements Serviceable {
     private Integer memoryLimit;
 
     private String mbstringInternalEncoding;
+
+    private List<String> resourceFilter = new ArrayList<>();
+
+    public List<String> getResourceFilter() {
+        return resourceFilter;
+    }
+
+    public List<String> getFilteredFieldsAsSequence() {
+        List<String> filtered = new ArrayList<>();
+        filtered.add("id");
+        filtered.add("name");
+        filtered.add("accountId");
+        filtered.add("switchedOn");
+        filtered.add("lockedDateTime");
+        filtered.add("willBeDeletedAfter");
+        filtered.add("unixAccount");
+        filtered.add("unixAccountId");
+        filtered.add("serviceId");
+        filtered.add("documentRoot");
+        filtered.add("domains");
+        filtered.add("domainIds");
+        filtered.add("charSet");
+        if (resourceFilter != null) {
+            filtered.addAll(resourceFilter);
+        }
+        return filtered;
+    }
+
+    public void setResourceFilter(List<String> resourceFilter) {
+        this.resourceFilter = resourceFilter;
+    }
 
     public Boolean getFollowSymLinks() {
         return followSymLinks;

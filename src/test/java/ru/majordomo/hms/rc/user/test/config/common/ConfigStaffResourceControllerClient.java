@@ -137,6 +137,11 @@ public class ConfigStaffResourceControllerClient {
             }
 
             @Override
+            public Service getService(String serviceId) {
+                return null;
+            }
+
+            @Override
             public List<Service> getDatabaseServicesByServerId(@PathVariable("serverId") String serverId) {
                 List<Service> services = new ArrayList<>();
 

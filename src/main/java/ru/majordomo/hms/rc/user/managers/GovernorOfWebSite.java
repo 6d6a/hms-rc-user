@@ -392,17 +392,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         }
 
         if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
-            List<Service> websiteServices = staffRcClient.getWebsiteServicesByServerId(webSite.getUnixAccount().getServerId());
-            for (Service service : websiteServices) {
-                if (service.getServiceTemplate().getServiceType().getName().equals(defaultWebSiteSettings.getServiceName())) {
-                    webSite.setServiceId(service.getId());
-                    break;
-                }
-            }
-            if (webSite.getServiceId() == null || (webSite.getServiceId().equals(""))) {
-                log.error("Не найдено serviceType: " + defaultWebSiteSettings.getServiceName()
-                        + " для сервера: " + webSite.getUnixAccount().getServerId());
-            }
+            throw new ParameterValidationException("Для создания WebSite необходим ServiceId");
         }
 
         if (webSite.getCharSet() == null) {

@@ -44,6 +44,9 @@ public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type=WEBSITE")
     List<Service> getWebsiteServicesByServerId(@PathVariable("serverId") String serverId);
 
+    @RequestMapping(method = RequestMethod.GET, value = "/service/{serviceId}")
+    Service getService(@PathVariable("serviceId") String serviceId);
+
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}/services?service-type=DATABASE")
     List<Service> getDatabaseServicesByServerId(@PathVariable("serverId") String serverId);
 
