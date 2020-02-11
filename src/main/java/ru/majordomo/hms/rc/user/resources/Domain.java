@@ -1,7 +1,12 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +19,7 @@ import javax.validation.Valid;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
@@ -44,6 +50,10 @@ public class Domain extends Resource {
     @Indexed
     private String parentDomainId;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime synced;
 
     @JsonIgnore
