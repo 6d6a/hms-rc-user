@@ -1,3 +1,3 @@
-@Library('mj-shared-library@fix-redis-test') _
+@Library('mj-shared-library') _
 buildSpingHMSProject()
 
