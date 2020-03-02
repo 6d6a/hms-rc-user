@@ -4,8 +4,15 @@ package ru.majordomo.hms.rc.user.event;
 import org.springframework.context.ApplicationEvent;
 
 public abstract class ResourceImportEvent extends ApplicationEvent {
-    public ResourceImportEvent(String source) {
+    private String serverId;
+
+    public ResourceImportEvent(String source, String serverId) {
         super(source);
+        this.serverId = serverId;
+    }
+
+    public String getServerId() {
+        return serverId;
     }
 
     @Override

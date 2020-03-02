@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
+import com.github.fppt.jedismock.RedisServer;
 import org.bson.types.ObjectId;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -10,7 +11,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
-import redis.embedded.RedisServer;
 
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;

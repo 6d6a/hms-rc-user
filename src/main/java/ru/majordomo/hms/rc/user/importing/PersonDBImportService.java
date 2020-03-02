@@ -31,8 +31,10 @@ import ru.majordomo.hms.rc.user.resources.LegalEntity;
 import ru.majordomo.hms.rc.user.resources.Passport;
 import ru.majordomo.hms.rc.user.resources.Person;
 
+/**
+ * Импорт персон из billingdb.
+ */
 @Service
-@Profile("import")
 public class PersonDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(PersonDBImportService.class);
 
@@ -55,19 +57,7 @@ public class PersonDBImportService implements ResourceDBImportService {
         this.publisher = publisher;
     }
 
-    public void pull() {
-        String query = "SELECT a.id " +
-                "FROM client c " +
-                "JOIN account a USING(client_id) " +
-                "GROUP BY a.id " +
-                "ORDER BY a.id ASC";
-
-        namedParameterJdbcTemplate.query(query, resultSet -> {
-            publisher.publishEvent(new PersonImportEvent(resultSet.getString("id")));
-        });
-    }
-
-    public void pull(String accountId) {
+    public void pull(String accountId, String serverId) {
         String query = "SELECT a.id, " +
                 "c.Client_ID, c.name as client_name, c.phone, c.phone2, c.email, c.email2, c.email3, " +
                 "c.passport, '' as passport_number, '' as passport_org, '' as passport_date, " +
@@ -140,9 +130,7 @@ public class PersonDBImportService implements ResourceDBImportService {
             person.setLegalEntity(getLegalEntityFromString(rs));
         }
 
-        publisher.publishEvent(new PersonCreateEvent(person));
-
-        return null;
+        return personRepository.insert(person);
     }
 
     private void pullRegistrantPersons(String accountId) {
@@ -161,12 +149,18 @@ public class PersonDBImportService implements ResourceDBImportService {
 
     private Person rowMapRegistrantPerson(ResultSet rs, int rowNum) throws SQLException {
         String nicHandle = rs.getString("nic_in_registrant");
+        String id = rs.getString("id");
+        String mongoId = "person_" + id + "_" + nicHandle;
+
+        if (personRepository.findById(mongoId).isPresent()) {
+            return null;
+        }
 
         logger.debug("Found Registrant Person for id: " + rs.getString("id") +
                 " nic_in_registrant: " + nicHandle);
 
         Person person = new Person();
-        person.setId("person_" + rs.getString("id") + "_" + nicHandle);
+        person.setId(mongoId);
         person.setAccountId(rs.getString("id"));
         person.setSwitchedOn(true);
         person.setNicHandle(rs.getString("nic_in_registrant"));
@@ -312,29 +306,21 @@ public class PersonDBImportService implements ResourceDBImportService {
                             })
                     );
 
-                    publisher.publishEvent(new PersonCreateEvent(person));
-
-                    return null;
+                    return personRepository.insert(person);
                 })
         );
 
         return null;
     }
 
-    public boolean importToMongo() {
-        personRepository.deleteAll();
-        pull();
-        return true;
-    }
-
-    public boolean importToMongo(String accountId) {
+    public boolean importToMongo(String accountId, String serverId) {
         List<Person> persons = personRepository.findByAccountId(accountId);
 
         if (persons != null && !persons.isEmpty()) {
             personRepository.deleteAll(persons);
         }
 
-        pull(accountId);
+        pull(accountId, serverId);
         return true;
     }
 

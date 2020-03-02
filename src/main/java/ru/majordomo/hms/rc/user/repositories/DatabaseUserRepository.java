@@ -12,4 +12,5 @@ public interface DatabaseUserRepository extends MongoRepository<DatabaseUser, St
     DatabaseUser findByName(String name);
     List<DatabaseUser> findByServiceId(String serviceId);
     List<DatabaseUser> findByServiceIdAndAccountId(String serviceId, String accountId);
+    void deleteByAccountIdAndName(String accountId, String name);
 }

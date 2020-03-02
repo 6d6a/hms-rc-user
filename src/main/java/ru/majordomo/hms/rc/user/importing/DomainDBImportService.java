@@ -26,15 +26,15 @@ import ru.majordomo.hms.rc.user.resources.DomainRegistrar;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
+/**
+ * Импорт доменов из billingdb. Данный сервис используется
+ */
 @Service
-@Profile("import")
 public class DomainDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DomainDBImportService.class);
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final DomainRepository domainRepository;
-    private final SSLCertificateRepository sslCertificateRepository;
-    private final ApplicationEventPublisher publisher;
 
     public static final Map<String, DomainRegistrar> DOMAIN_REGISTRAR_STRING_MAP = new HashMap<String, DomainRegistrar>();
 
@@ -52,30 +52,13 @@ public class DomainDBImportService implements ResourceDBImportService {
     @Autowired
     public DomainDBImportService(
             @Qualifier("billingNamedParameterJdbcTemplate") NamedParameterJdbcTemplate namedParameterJdbcTemplate,
-            DomainRepository domainRepository,
-            SSLCertificateRepository sslCertificateRepository,
-            ApplicationEventPublisher publisher
+            DomainRepository domainRepository
     ) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.domainRepository = domainRepository;
-        this.sslCertificateRepository = sslCertificateRepository;
-        this.publisher = publisher;
     }
 
-    public void pull() {
-        String query = "SELECT a.id " +
-                "FROM account a " +
-                "JOIN domain d ON a.id = d.acc_id " +
-                "WHERE 1 " +
-                "GROUP BY a.id " +
-                "ORDER BY d.acc_id ASC";
-
-        namedParameterJdbcTemplate.query(query, resultSet -> {
-            publisher.publishEvent(new DomainImportEvent(resultSet.getString("id")));
-        });
-    }
-
-    public void pull(String accountId) {
+    public void pull(String accountId, String serverId) {
         //Основные домены
         String query = "SELECT d.Domain_name as name, d.acc_id as id, dar.status, dr.source, dr.date_exp " +
                 "FROM domain d " +
@@ -123,34 +106,19 @@ public class DomainDBImportService implements ResourceDBImportService {
             domain.setRegSpec(regSpec);
         }
 
-        SSLCertificate sslCertificate = sslCertificateRepository.findByNameAndAccountId(
-                name,
-                rs.getString("id")
-        );
-
-        if (sslCertificate != null) {
-            domain.setSslCertificateId(sslCertificate.getId());
-        }
-
-        publisher.publishEvent(new DomainCreateEvent(domain));
+        domainRepository.insert(domain);
 
         return null;
     }
 
-    public boolean importToMongo() {
-        domainRepository.deleteAll();
-        pull();
-        return true;
-    }
-
-    public boolean importToMongo(String accountId) {
+    public boolean importToMongo(String accountId, String serverId) {
         List<Domain> domains = domainRepository.findByAccountId(accountId);
 
         if (domains != null && !domains.isEmpty()) {
             domainRepository.deleteAll(domains);
         }
 
-        pull(accountId);
+        pull(accountId, serverId);
         return true;
     }
 }

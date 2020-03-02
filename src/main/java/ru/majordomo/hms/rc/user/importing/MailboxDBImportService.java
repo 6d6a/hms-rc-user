@@ -1,50 +1,52 @@
 package ru.majordomo.hms.rc.user.importing;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.util.EncodingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import ru.majordomo.hms.rc.user.event.mailbox.MailboxCreateEvent;
-import ru.majordomo.hms.rc.user.event.mailbox.MailboxImportEvent;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
-import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
-import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
 import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
+import ru.majordomo.hms.rc.user.resources.validation.validator.EmailOrDomainValidator;
+import ru.majordomo.hms.rc.user.resources.validation.validator.EmailValidator;
 
+import javax.annotation.Nullable;
+
+/**
+ * Импорт почтовых ящиков из billingdb.
+ * Только записывает в базу данных, сами ящики на почтовом сервере не создаются.
+ * Перед его запуском должны быть импортированы домены.
+ */
 @Service
-@Profile("import")
-public class MailboxDBImportService implements ResourceDBImportService {
+public class MailboxDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(MailboxDBImportService.class);
 
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final MailboxRepository mailboxRepository;
     private final GovernorOfMailbox governorOfMailbox;
     private final ApplicationEventPublisher publisher;
-    private final MailboxRedisRepository redisRepository;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final DomainRepository domainRepository;
 
     public static final Map<String, SpamFilterAction> SPAM_FILTER_ACTION_HASH_MAP = new HashMap<>();
     public static final Map<Integer, SpamFilterMood> SPAM_FILTER_MOOD_HASH_MAP = new HashMap<>();
@@ -57,234 +59,171 @@ public class MailboxDBImportService implements ResourceDBImportService {
         SPAM_FILTER_MOOD_HASH_MAP.put(69, SpamFilterMood.NEUTRAL);
         SPAM_FILTER_MOOD_HASH_MAP.put(40, SpamFilterMood.GREAT);
     }
+
     @Autowired
     public MailboxDBImportService(
-            @Qualifier("billingNamedParameterJdbcTemplate") NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+            @Qualifier("billingNamedParameterJdbcTemplate") NamedParameterJdbcTemplate jdbcTemplate,
             MailboxRepository mailboxRepository,
             GovernorOfMailbox governorOfMailbox,
             ApplicationEventPublisher publisher,
-            MailboxRedisRepository redisRepository,
-            RedisTemplate<String, String> redisTemplate
+            DomainRepository domainRepository
     ) {
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.jdbcTemplate = jdbcTemplate;
         this.mailboxRepository = mailboxRepository;
         this.governorOfMailbox = governorOfMailbox;
         this.publisher = publisher;
-        this.redisRepository = redisRepository;
-        this.redisTemplate = redisTemplate;
+        this.domainRepository = domainRepository;
     }
 
-    public void pull() {
-        String query = "SELECT a.id " +
-                "FROM POP3 p " +
-                "JOIN domain d ON d.Domain_ID = p.Domain_ID " +
-                "JOIN account a ON d.acc_id = a.id " +
-                "GROUP BY a.id " +
-                "ORDER BY a.id ASC";
-
-        namedParameterJdbcTemplate.query(query, resultSet -> {
-            publisher.publishEvent(new MailboxImportEvent(resultSet.getString("id")));
-        });
-    }
-
-    public void pull(String accountId) {
+    public void pull(String accountId, boolean switchedOn, boolean allowAntispam) {
         String query = "SELECT a.id, a.uid, a.popper, " +
                 "p.username, p.password, p.filename, p.Domain_ID, p.trash, p.warned, p.blocked, p.quota, " +
                 "d.Domain_name, d.smtp, d.avp, d.mailspool, " +
                 "ps.score, ps.action, " +
-                "pss.name as popper_name " +
+                "pss.name as popper_name, c.comment " +
                 "FROM POP3 p " +
                 "JOIN domain d ON d.Domain_ID = p.Domain_ID " +
                 "JOIN account a ON d.acc_id = a.id " +
                 "JOIN poppers pss ON a.popper=pss.id " +
                 "LEFT JOIN pop3_spamprefs ps ON d.Domain_ID =ps.domain_id " +
+                "LEFT JOIN POP3_comments c ON c.pop3_id=p.id " +
                 "WHERE d.acc_id = :accountId";
         SqlParameterSource namedParameters1 = new MapSqlParameterSource("accountId", accountId);
 
-        namedParameterJdbcTemplate.query(query,
+        jdbcTemplate.query(query,
                 namedParameters1,
-                this::rowMap
+                (rs, rowNum) -> rowMap(rs, rowNum, switchedOn, allowAntispam)
         );
     }
 
-    private Mailbox rowMap(ResultSet rs, int rowNum) throws SQLException {
-        String name = rs.getString("username");
+    private boolean isValidEmail(String email) {
+        return (new EmailValidator()).isValid(email, null);
+    }
 
+    private boolean isValidEmailOrDomain(String emailOrDomain) {
+        return (new EmailOrDomainValidator()).isValid(emailOrDomain, null);
+    }
+
+    private Mailbox rowMap(ResultSet rs, int rowNum, boolean switchedOn, boolean allowAntispam) throws SQLException {
+        String name = rs.getString("username");
+        String accountId = rs.getString("id");
+        long quotaKb = rs.getLong("quota");
+        int uid = rs.getInt("uid");
+        String popper = rs.getString("popper");
+        String mailspool =  rs.getString("mailspool");
+        boolean smtpAllowed = "1".equals(rs.getString("smtp"));
+        boolean avpAntispam = "1".equals(rs.getString("avp"));
+        boolean trash = "1".equals(rs.getString("trash"));
+        @Nullable String commentRaw = rs.getString("comment");
+        @Nullable String action = rs.getString("action");
+        int score = rs.getInt("score");
         String originalDomainName = rs.getString("Domain_name");
+        String domainId = rs.getString("Domain_ID");
+        String passwordHash = rs.getString("password");
+
+
+        String mailServerId = "mail_server_" + popper;
         String domainName = java.net.IDN.toUnicode(originalDomainName);
 
-//        logger.debug("Found Mailbox for id: " + rs.getString("id") + " name: " + name + "@" + domainName + " originalDomainName: " + originalDomainName);
+        logger.debug("Found Mailbox for id: " + rs.getString("id") + " name: " + name + "@" + domainName + " originalDomainName: " + originalDomainName);
 
         Mailbox mailbox = new Mailbox();
-        mailbox.setAccountId(rs.getString("id"));
-        mailbox.setSwitchedOn(true);
-        mailbox.setWritable(true);
+        mailbox.setAccountId(accountId);
+        mailbox.setSwitchedOn(switchedOn);
+        mailbox.setWritable(switchedOn);
+        mailbox.setMailFromAllowed(switchedOn && smtpAllowed);
         mailbox.setName(name);
-        mailbox.setUid(rs.getInt("uid"));
-        mailbox.setPasswordHash(rs.getString("password"));
-        mailbox.setQuota(rs.getLong("quota") * 1024);
-        mailbox.setQuotaUsed(0L);
-        mailbox.setMailSpool(rs.getString("mailspool"));
-        mailbox.setServerId("mail_server_" + rs.getString("popper"));
-        mailbox.setIsAggregator(name.equals("postmaster") && rs.getString("trash").equals("1"));
-        mailbox.setMailFromAllowed(rs.getString("smtp").equals("1"));
-        mailbox.setAntiSpamEnabled(rs.getString("avp").equals("1"));
 
-        if (rs.getString("action") != null) {
-            mailbox.setSpamFilterAction(SPAM_FILTER_ACTION_HASH_MAP.get(rs.getString("action")));
-            mailbox.setSpamFilterMood(SPAM_FILTER_MOOD_HASH_MAP.get(rs.getInt("score")));
+        // uid у юникс аккаунта и ящика может отличаться. Это корректно.
+        mailbox.setUid(uid);
+
+        mailbox.setPasswordHash(passwordHash);
+        mailbox.setQuota(quotaKb * 1024);
+        mailbox.setQuotaUsed(0L);
+        mailbox.setMailSpool(mailspool);
+        mailbox.setServerId(mailServerId);
+        mailbox.setIsAggregator(name.equals("postmaster") && trash);
+
+        try {
+            if (StringUtils.isNotEmpty(commentRaw)) {
+                String comment = EncodingUtils.getString(commentRaw.getBytes("windows-1251"), "koi8-r");
+                mailbox.setComment(comment.length() > 128 ? comment.substring(0, 127) : comment);
+            }
+        } catch (UnsupportedEncodingException ignore) {}
+
+        if (allowAntispam) {
+            mailbox.setAntiSpamEnabled(avpAntispam);
+            if (action != null) {
+                mailbox.setSpamFilterAction(SPAM_FILTER_ACTION_HASH_MAP.get(action));
+                mailbox.setSpamFilterMood(SPAM_FILTER_MOOD_HASH_MAP.get(score));
+            }
         }
 
+        Domain domain = domainRepository.findByNameAndAccountId(domainName, accountId);
 
-//        Domain domain = domainRepository.findByNameAndAccountId(
-//                domainName,
-//                rs.getString("id")
-//        );
-//
-//        if (domain != null) {
-//            mailbox.setDomainId(domain.getId());
-//            mailbox.setDomain(domain);
-//        } else {
-//            logger.error("not found domain for mailbox: " + name + "@" + domainName);
-//        }
+        if (domain != null) {
+            mailbox.setDomainId(domain.getId());
+            mailbox.setDomain(domain);
+        } else {
+            throw new ResourceNotFoundException("Не удалось найти домен для почтового ящика: " + name + "@" + domainName);
+        }
 
-        String query = "SELECT pa.from, pa.to, pa.Domain_name " +
-                "FROM POP3_aliases pa " +
-                "WHERE pa.Domain_name = :domain_name AND pa.from = :from_name";
-        SqlParameterSource namedParameters1 = new MapSqlParameterSource("domain_name", domainName)
+        String query = "SELECT pa.from, pa.to, pa.Domain_name FROM POP3_aliases pa WHERE pa.Domain_name = :domain_name AND pa.from = :from_name";
+        SqlParameterSource sqlParam = new MapSqlParameterSource("domain_name", domainName)
                 .addValue("from_name", name);
 
-        namedParameterJdbcTemplate.query(query,
-                namedParameters1,
-                (rs1 -> {
-                    List<String> currentRedirectAddresses = mailbox.getRedirectAddresses();
-
-                    String toAdresses = rs1.getString("to");
-                    toAdresses = toAdresses.replaceAll(" ", "");
-                    String[] adresses = toAdresses.split(",");
-
-                    currentRedirectAddresses.addAll(Arrays.stream(adresses).collect(Collectors.toList()));
-
-                    mailbox.setRedirectAddresses(currentRedirectAddresses);
-                })
-        );
-
-        query = "SELECT pwbl.wblist_id, pwbl.domain_id, pwbl.email, pwbl.action " +
-                "FROM pop3_wblist pwbl " +
-                "WHERE pwbl.domain_id = :domain_id";
-        namedParameters1 = new MapSqlParameterSource("domain_id", rs.getString("Domain_ID"));
-
-        namedParameterJdbcTemplate.query(query,
-                namedParameters1,
-                (rs1 -> {
-                    if (rs1.getString("action").equals("WHITE")) {
-                        List<String> currentWhiteList = mailbox.getWhiteList();
-
-                        currentWhiteList.add(rs1.getString("email"));
-
-                        mailbox.setWhiteList(currentWhiteList);
-                    } else if (rs1.getString("action").equals("BLACK")) {
-                        List<String> currentBlackList = mailbox.getBlackList();
-
-                        currentBlackList.add(rs1.getString("email"));
-
-                        mailbox.setBlackList(currentBlackList);
-                    }
-                })
-        );
-
-        governorOfMailbox.preValidate(mailbox);
-
-        String[] popperName = rs.getString("popper_name").split("\\.");
-
-        //TODO сохранения выключены
-//        redisRepository.save(convertMailboxToMailboxForRedis(mailbox, originalDomainName, popperName[0]));
-//        saveUserData(mailbox, originalDomainName, popperName[0]);
-
-        if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator() && !originalDomainName.equals(domainName)) {
-//            setAggregatorInRedis(mailbox, originalDomainName, popperName[0]);
-            logger.error("is Aggregator: " + mailbox.getName() + "@" + domainName + (!originalDomainName.equals(domainName) ? " punycode: " + originalDomainName : ""));
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(query, sqlParam);
+        if (rowSet.next()) {
+            String toAdressesStr = rowSet.getString("to");
+            if (StringUtils.isNotEmpty(toAdressesStr)) {
+                String[] toAddreses = toAdressesStr.trim().split("\\s*,\\s*");
+                List<String> redirects = Arrays.stream(toAddreses).filter(this::isValidEmail).collect(Collectors.toList());
+                mailbox.setRedirectAddresses(redirects);
+            }
         }
-//        publisher.publishEvent(new MailboxCreateEvent(mailbox));
+
+        query = "SELECT pwbl.wblist_id, pwbl.domain_id, pwbl.email, pwbl.action FROM pop3_wblist pwbl WHERE pwbl.domain_id = :domain_id";
+        sqlParam = new MapSqlParameterSource("domain_id", domainId);
+
+        List<String> writeList = new ArrayList<>();
+        List<String> blackList = new ArrayList<>();
+
+        rowSet = jdbcTemplate.queryForRowSet(query, sqlParam);
+        while (rowSet.next()) {
+            String actionStr = rowSet.getString("action");
+            String email = rowSet.getString("email");
+
+            if (!isValidEmailOrDomain(email)) {
+                continue;
+            }
+            switch (actionStr) {
+                case "WHITE":
+                    writeList.add(email);
+                    break;
+                case "BLACK":
+                    blackList.add(email);
+                    break;
+            }
+        }
+
+        mailbox.setWhiteList(writeList);
+        mailbox.setBlackList(blackList);
+
+        governorOfMailbox.validateAndStore(mailbox);
 
         return null;
     }
 
-    public boolean importToMongo() {
-        mailboxRepository.deleteAll();
-        pull();
-        return true;
-    }
-
-    public boolean importToMongo(String accountId) {
+    public boolean importToMongo(String accountId, boolean switchedOn, boolean allowAntispam) {
         List<Mailbox> mailboxes = mailboxRepository.findByAccountId(accountId);
 
         if (mailboxes != null && !mailboxes.isEmpty()) {
             mailboxRepository.deleteAll(mailboxes);
         }
 
-        pull(accountId);
+        pull(accountId, switchedOn, allowAntispam);
         return true;
     }
 
-    private MailboxForRedis convertMailboxToMailboxForRedis(Mailbox mailbox, String domainName, String serverName) {
-        MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        String uidAsString = mailbox.getUid().toString();
-        mailboxForRedis.setId(mailbox.getName() + '@' + domainName);
-        mailboxForRedis.setName(mailbox.getName() + '@' + domainName);
-        mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
-        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
-        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
-        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
-        mailboxForRedis.setWritable(mailbox.getWritable());
-        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
-        mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
-        mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
-        mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
-        mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
 
-        return mailboxForRedis;
-    }
-
-    private void saveUserData(Mailbox mailbox, String domainName, String serverName) {
-        String uidAsString = mailbox.getUid().toString();
-        Map<String, String> userData = new HashMap<>();
-        userData.put("uid", uidAsString);
-        userData.put("gid", uidAsString);
-        userData.put("mail", "maildir:" + mailbox.getMailSpool() + "/" + mailbox.getName());
-        userData.put("home", mailbox.getMailSpool() + "/" + mailbox.getName());
-        userData.put("host", serverName);
-        userData.put("proxy_maybe", "y");
-        userData.put("password", mailbox.getPasswordHash());
-        ObjectMapper mapper = new ObjectMapper();
-        String data = "";
-        try {
-            data = mapper.writeValueAsString(userData);
-        } catch (JsonProcessingException e) {
-            logger.error("Mailbox userData не записана в Redis!");
-        }
-        String key = "mailboxUserData:" + mailbox.getName() + '@' + domainName;
-        redisTemplate.boundValueOps(key).set(data);
-    }
-
-    private void setAggregatorInRedis(Mailbox mailbox, String domainName, String serverName) {
-        MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        String uidAsString = mailbox.getUid().toString();
-        mailboxForRedis.setId("*@" + domainName);
-        mailboxForRedis.setName(mailbox.getName() + '@' + domainName);
-        mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
-        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackList()));
-        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteList()));
-        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddresses()));
-        mailboxForRedis.setWritable(mailbox.getWritable());
-        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
-        mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
-        mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
-        mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
-        mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpool());
-
-        redisRepository.save(mailboxForRedis);
-    }
 }

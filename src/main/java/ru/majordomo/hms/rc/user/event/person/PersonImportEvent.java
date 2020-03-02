@@ -4,6 +4,6 @@ import ru.majordomo.hms.rc.user.event.ResourceImportEvent;
 
 public class PersonImportEvent extends ResourceImportEvent {
     public PersonImportEvent(String source) {
-        super(source);
+        super(source, "");
     }
 }

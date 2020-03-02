@@ -8,6 +8,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -19,12 +20,14 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -42,6 +45,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.MalwareReport;
+import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
 import ru.majordomo.hms.rc.user.service.CounterService;
@@ -244,6 +248,32 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         repository.deleteById(resourceId);
     }
 
+    /**
+     * Создает уникальное в рамках хостинга имя и домашнюю директорию
+     * @param personalAccountId - id аккаунта в PM
+     * @param name - желаемое имя пользователя. При совпадении добавит префикс _1 и т.д
+     * @param homeDir - желаемая домашняя директория
+     * @param excludeUnixAccountId - id - UnixAccount. Для этого id не будет проверяться совпадение homeDir и name
+     * @return name и homeDir
+     */
+    private Pair<String, String> generateNameAndHomeDir(@Nullable String personalAccountId, @Nullable String name, @Nullable String homeDir, @Nullable String excludeUnixAccountId) {
+        if (StringUtils.isEmpty(name)) {
+            name = StringUtils.isNotEmpty(personalAccountId) && personalAccountId.matches("\\d+") ? "u" + personalAccountId : "u" + counterService.getNextUid();
+        }
+        if (StringUtils.isEmpty(homeDir)) {
+            homeDir = "/home/" + name;
+        }
+        if (!exists("name", name, excludeUnixAccountId) && !exists("homeDir", homeDir, excludeUnixAccountId)) {
+            return Pair.of(name, homeDir);
+        }
+        int prefix = 1;
+        String newName = name;
+        while (exists("name", newName, excludeUnixAccountId) || exists("homeDir", "/home/" + newName, excludeUnixAccountId)) {
+            newName = name + "_" + prefix++;
+        }
+        return Pair.of(newName, "/home/" + newName);
+    }
+
     @Override
     public UnixAccount buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         UnixAccount unixAccount = new UnixAccount();
@@ -253,32 +283,48 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             unixAccount.setSwitchedOn(true);
         }
 
+        boolean replaceUidAndHome = Boolean.TRUE.equals(serviceMessage.getParam("replaceUidAndHome"));
+
         Integer uid = (Integer) serviceMessage.getParam("uid");
         if (uid == null || uid == 0) {
             uid = getFreeUid();
-        } else {
-            throwIfExists("uid", uid);
+        } else if (exists("uid", uid, unixAccount.getId())) {
+            if (replaceUidAndHome) {
+                uid = getFreeUid();
+            } else {
+                throw new ParameterValidationException("uid: " + uid + " уже существует");
+            }
         }
 
-        unixAccount.setName(
-                getFreeUnixAccountName(unixAccount.getAccountId())
-        );
-
         String homeDir;
+        String name;
         String serverId;
         Long quota;
         Long quotaUsed;
         String passwordHash;
         String password;
         List<CronTask> cronTasks = new ArrayList<>();
+        String publicKey = null;
+        String privateKey = null;
+        Boolean sendmailAllowed = null;
+        Boolean switchedOn = null;
+        Boolean writable = null;
 
         try {
             homeDir = cleaner.cleanString((String) serviceMessage.getParam("homeDir"));
-            if (homeDir == null || homeDir.equals("")) {
-                homeDir = "/home/" + unixAccount.getName();
-            } else {
-                throwIfExists("homeDir", homeDir);
+            name = cleaner.cleanString((String) serviceMessage.getParam("name"));
+            if (!replaceUidAndHome && StringUtils.isNotEmpty(homeDir)) {
+                throwIfExists("homeDir", homeDir, unixAccount.getAccountId());
             }
+            if (!replaceUidAndHome && StringUtils.isNotEmpty(name)) {
+                throwIfExists("name", name, unixAccount.getAccountId());
+            }
+            Pair<String, String> nameAndHome = generateNameAndHomeDir(unixAccount.getAccountId(),
+                    name,
+                    homeDir, unixAccount.getId()
+            );
+            name = nameAndHome.getFirst();
+            homeDir = nameAndHome.getSecond();
 
             serverId = cleaner.cleanString((String) serviceMessage.getParam("serverId"));
             if (serverId == null || serverId.equals("")) {
@@ -309,25 +355,45 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             if (serviceMessage.getParam("crontab") != null) {
                 cronTasks = (List<CronTask>) serviceMessage.getParam("crontab");
             }
+            if (serviceMessage.getParam("keyPair") instanceof Map) {
+                Map<String, String> keyPair = (Map<String, String>) serviceMessage.getParam("keyPair");
+                publicKey = cleaner.cleanString(keyPair.get("publicKey"));
+                privateKey = StringUtils.trimToNull(cleaner.cleanString(keyPair.get("privateKey")));
+            }
+            if (serviceMessage.getParam("sendmailAllowed") != null) {
+                sendmailAllowed = (Boolean) serviceMessage.getParam("sendmailAllowed");
+            }
+            if (serviceMessage.getParam("writable") != null) {
+                writable = (Boolean) serviceMessage.getParam("writable");
+            } else {
+                writable = true;
+            }
+            if (serviceMessage.getParam("switchedOn") != null) {
+                switchedOn = (Boolean) serviceMessage.getParam("switchedOn");
+            }
+
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
-        Boolean writable = (Boolean) serviceMessage.getParam("writable");
-        if (writable == null) {
-            writable = true;
-        }
+
 
         unixAccount.setUid(uid);
+        unixAccount.setName(name);
         unixAccount.setHomeDir(homeDir);
         unixAccount.setServerId(serverId);
         unixAccount.setCrontab(cronTasks);
         unixAccount.setQuota(quota);
         unixAccount.setQuotaUsed(quotaUsed);
         unixAccount.setPasswordHash(passwordHash);
-        unixAccount.setWritable(true);
-        unixAccount.setSendmailAllowed(true);
+        unixAccount.setWritable(writable);
+        unixAccount.setSendmailAllowed(sendmailAllowed);
+        unixAccount.setSwitchedOn(switchedOn);
         try {
-            unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
+            if (StringUtils.isNotEmpty(publicKey)) {
+                unixAccount.setKeyPair(new SSHKeyPair(privateKey, publicKey));
+            } else {
+                unixAccount.setKeyPair(SSHKeyManager.generateKeyPair());
+            }
         } catch (JSchException e) {
             throw new ParameterValidationException("Невозможно сгенерировать пару ключей:" + e.getMessage());
         }
@@ -580,8 +646,21 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         }
     }
 
+    private void throwIfExists(String property, Object value, @Nullable String excludeUnixAccountId) {
+        if (exists(property, value, excludeUnixAccountId)) {
+            throw new ParameterValidationException(property + " " + value + " уже существует");
+        }
+    }
+
     private boolean exists(String property, Object value) {
         return mongoOperations.exists(new Query(new Criteria(property).is(value)), UnixAccount.class);
+    }
+
+    private boolean exists(String property, Object value, @Nullable String excludeUnixAccountId) {
+        if (StringUtils.isEmpty(excludeUnixAccountId)) {
+            return exists(property, value);
+        }
+        return mongoOperations.exists(new Query(new Criteria(property).is(value).and("_id").ne(excludeUnixAccountId)), UnixAccount.class);
     }
 
     public void processQuotaReport(ServiceMessage serviceMessage) {

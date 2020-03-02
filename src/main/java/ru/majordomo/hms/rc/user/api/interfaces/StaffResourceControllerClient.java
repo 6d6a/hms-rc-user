@@ -15,6 +15,8 @@ import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.configurations.FeignConfig;
 
+import javax.annotation.Nullable;
+
 @FeignClient(name = "RC-STAFF", configuration = FeignConfig.class)
 public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=shared-hosting&state=active", consumes = "application/json;utf8")
@@ -36,6 +38,7 @@ public interface StaffResourceControllerClient {
     Storage getActiveMailboxStorageByServerId(@PathVariable("serverId") String serverId);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/{serverId}", consumes = "application/json;utf8")
+    @Nullable
     Server getServerById(@PathVariable("serverId") String serverId);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?service-id={serviceId}")

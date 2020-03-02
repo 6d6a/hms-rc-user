@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.test.api.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fppt.jedismock.RedisServer;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import redis.embedded.RedisServer;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;

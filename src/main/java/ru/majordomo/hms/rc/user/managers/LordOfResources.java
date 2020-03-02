@@ -26,6 +26,9 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
         try {
             resource = buildResourceFromServiceMessage(serviceMessage);
             preValidate(resource);
+            if (Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"))) {
+                removeOldResource(resource);
+            }
             validate(resource);
             postValidate(resource);
             store(resource);
@@ -49,6 +52,8 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
     public void validateImported(T resource) {}
 
     public void preValidate(T resource) {}
+
+    protected void removeOldResource(T resource) { }
 
     public void postValidate(T resource) {}
 

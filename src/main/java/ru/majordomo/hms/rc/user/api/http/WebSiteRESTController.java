@@ -93,9 +93,12 @@ public class WebSiteRESTController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping(value = "/{accountId}/website", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity readAllByAccountId(@PathVariable String accountId) {
+    public ResponseEntity readAllByAccountId(@PathVariable String accountId, @RequestParam(required = false) boolean withoutBuiltIn) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("accountId", accountId);
+        if (withoutBuiltIn) {
+            keyValue.put("withoutBuiltIn", Boolean.toString(true));
+        }
         return getResponseFromBunchOfWebsites(governor.buildAll(keyValue));
     }
 
