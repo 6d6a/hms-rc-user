@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -36,40 +37,34 @@ public class DatabaseConfig {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
-    @Profile("import")
     @Bean(name = "billingDataSourceProperties")
     @ConfigurationProperties("datasource.billing")
     public DataSourceProperties billingDataSourceProperties() {
         return new DataSourceProperties();
     }
 
-    @Profile("import")
     @Bean(name = "billingDataSource")
     public HikariDataSource billingDataSource(@Qualifier("billingDataSourceProperties") DataSourceProperties properties) {
         return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
-    @Profile("import")
     @Bean(name = "billingNamedParameterJdbcTemplate")
     @Autowired
     public NamedParameterJdbcTemplate billingNamedParameterJdbcTemplate(@Qualifier("billingDataSource") DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
-    @Profile("import")
     @Bean(name = "registrantDataSourceProperties")
     @ConfigurationProperties("datasource.registrant")
     public DataSourceProperties registrantDataSourceProperties() {
         return new DataSourceProperties();
     }
 
-    @Profile("import")
     @Bean(name = "registrantDataSource")
     public HikariDataSource registrantDataSource(@Qualifier("registrantDataSourceProperties") DataSourceProperties properties) {
         return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
-    @Profile("import")
     @Bean(name = "registrantNamedParameterJdbcTemplate")
     @Autowired
     public NamedParameterJdbcTemplate registrantNamedParameterJdbcTemplate(@Qualifier("registrantDataSource") DataSource dataSource) {

@@ -17,4 +17,9 @@ public interface UnixAccountRepository extends MongoRepository<UnixAccount,Strin
     UnixAccount findFirstByAccountId(String accountId);
     List<UnixAccount> findByServerId(String serverId);
     UnixAccount findByIdAndAccountId(String unixAccountId, String accountId);
+    UnixAccount findByHomeDir(String homeDir);
+    UnixAccount findByName(String name);
+    boolean existsByUid(int uid);
+    boolean existsByHomeDir(String homeDir);
+    boolean existsByName(String name);
 }

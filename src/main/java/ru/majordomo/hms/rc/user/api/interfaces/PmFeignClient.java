@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.configurations.FeignConfig;
 
+
 @FeignClient(name = "pm", configuration = FeignConfig.class)
 public interface PmFeignClient {
     @PostMapping(value = "/notifications/send-to-client", consumes = "application/json;utf8")

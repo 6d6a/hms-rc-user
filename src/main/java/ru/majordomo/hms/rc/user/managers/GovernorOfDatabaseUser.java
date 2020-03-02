@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -81,6 +82,9 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         try {
             databaseUser = buildResourceFromServiceMessage(serviceMessage);
             preValidate(databaseUser);
+            if (Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"))) {
+                removeOldResource(databaseUser);
+            }
             validate(databaseUser);
             store(databaseUser);
 
@@ -192,6 +196,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         DatabaseUser databaseUser = new DatabaseUser();
         setResourceParams(databaseUser, serviceMessage, cleaner);
         String password = null;
+        String passwordHash = "";
         DBType userType = null;
         String serviceId = null;
         String userTypeAsString;
@@ -202,11 +207,14 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             if (serviceMessage.getParam("password") != null) {
                 password = cleaner.cleanString((String) serviceMessage.getParam("password"));
             }
-
+            if (serviceMessage.getParam("passwordHash") != null) {
+                passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));
+            }
             if (serviceMessage.getParam("type") != null) {
                 userTypeAsString = cleaner.cleanString((String) serviceMessage.getParam("type"));
                 try {
                     userType = Enum.valueOf(DBType.class, userTypeAsString);
+                    databaseUser.setType(userType);
                 } catch (IllegalArgumentException e) {
                     throw new ParameterValidationException("Недопустимый тип баз данных");
                 }
@@ -246,9 +254,13 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
         databaseUser.setDatabaseIds(databaseIds);
         databaseUser.setServiceId(serviceId);
-        databaseUser.setType(userType);
+
         try {
-            databaseUser.setPasswordHashByPlainPassword(password);
+            if (StringUtils.isNotEmpty(passwordHash)) {
+                databaseUser.setPasswordHash(passwordHash);
+            } else {
+                databaseUser.setPasswordHashByPlainPassword(password);
+            }
         } catch (IllegalArgumentException e) {
             throw new ParameterValidationException(e.getMessage());
         }
@@ -257,8 +269,6 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         } catch (NumberFormatException e) {
             throw new ParameterValidationException("Неверный формат IP-адреса");
         }
-
-
         return databaseUser;
     }
 
@@ -318,6 +328,14 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
+    protected void removeOldResource(DatabaseUser resource) {
+        if (resource == null || StringUtils.isEmpty(resource.getAccountId()) || StringUtils.isEmpty(resource.getName())) {
+            return;
+        }
+        repository.deleteByAccountIdAndName(resource.getAccountId(), resource.getName());
+    }
+
+    @Override
     public Collection<DatabaseUser> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
         List<DatabaseUser> buildedDatabasesUsers = new ArrayList<>();
 
@@ -343,6 +361,9 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     private void setSessionVariables(Map<String, Object> sessionVariables, DatabaseUser databaseUser, MysqlSessionVariablesConfig cnf) {
+        if (databaseUser == null || databaseUser.getType() == null) {
+            return;
+        }
         switch (databaseUser.getType()) {
             case MYSQL:
                 (sessionVariables).forEach((key, value) -> {

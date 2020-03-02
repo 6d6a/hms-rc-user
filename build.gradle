@@ -104,7 +104,7 @@ configurations {
 }
 
 dependencies {
-    compile('ru.majordomo.hms.rc.user:resources:1+')
+    compile('ru.majordomo.hms.rc.staff:resources:2.0.+')
     compile('org.springframework.cloud:spring-cloud-starter-config')
     compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
     compile('org.springframework.cloud:spring-cloud-starter-openfeign')
@@ -130,7 +130,7 @@ dependencies {
     compile("com.googlecode.libphonenumber:libphonenumber:7.7.3")
     compile("com.jcraft:jsch:0.1.54")
     testCompile('com.github.fakemongo:fongo:2.2.0-RC2')
-    testCompile('com.github.kstyrc:embedded-redis:0.6')
+    testCompile group: 'com.github.fppt', name: 'jedis-mock', version: '0.1.16'
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile("org.springframework.restdocs:spring-restdocs-mockmvc:${springRestDocsVersion}")
     testCompile('org.apache.qpid:qpid-broker:6.0.4')

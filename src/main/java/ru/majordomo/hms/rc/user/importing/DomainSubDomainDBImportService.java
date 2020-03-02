@@ -24,8 +24,10 @@ import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
+/**
+ * Импорт поддоменов из billingdb. Данный сервис используется
+ */
 @Service
-@Profile("import")
 public class DomainSubDomainDBImportService implements ResourceDBImportService {
     private final static Logger logger = LoggerFactory.getLogger(DomainSubDomainDBImportService.class);
 
@@ -47,20 +49,7 @@ public class DomainSubDomainDBImportService implements ResourceDBImportService {
         this.publisher = publisher;
     }
 
-    public void pull() {
-        String query = "SELECT a.id " +
-                "FROM account a " +
-                "JOIN domain d ON a.id = d.acc_id " +
-                "WHERE 1 " +
-                "GROUP BY a.id " +
-                "ORDER BY d.acc_id ASC";
-
-        namedParameterJdbcTemplate.query(query, resultSet -> {
-            publisher.publishEvent(new DomainSubDomainImportEvent(resultSet.getString("id")));
-        });
-    }
-
-    public void pull(String accountId) {
+    public void pull(String accountId, String serverId) {
         //Поддомены
         String query = "SELECT v.ServerName as name, d.Domain_name, a.id " +
                 "FROM vhosts v " +
@@ -101,33 +90,10 @@ public class DomainSubDomainDBImportService implements ResourceDBImportService {
             logger.error("Not Found parentDomain of SubDomain for acc with id: " + rs.getString("id") + " name: " + name);
         }
 
-        SSLCertificate sslCertificate = sslCertificateRepository.findByNameAndAccountId(
-                name,
-                rs.getString("id")
-        );
-
-        if (sslCertificate != null) {
-            domain.setSslCertificateId(sslCertificate.getId());
-        }
-
-        publisher.publishEvent(new DomainSubDomainCreateEvent(domain));
-
-        return null;
+        return domainRepository.insert(domain);
     }
 
-    public boolean importToMongo() {
-        List<Domain> domains = domainRepository.findByParentDomainIdNotNull();
-
-        if (domains != null && !domains.isEmpty()) {
-            logger.error("found " + domains.size() + " domains using findByParentDomainIdNotNull()");
-            domainRepository.deleteAll(domains);
-        }
-
-        pull();
-        return true;
-    }
-
-    public boolean importToMongo(String accountId) {
+    public boolean importToMongo(String accountId, String serverId) {
         List<Domain> domains = domainRepository.findByAccountIdAndParentDomainIdNotNull(accountId);
 
         if (domains != null && !domains.isEmpty()) {
@@ -135,7 +101,7 @@ public class DomainSubDomainDBImportService implements ResourceDBImportService {
             domainRepository.deleteAll(domains);
         }
 
-        pull(accountId);
+        pull(accountId, serverId);
         return true;
     }
 }

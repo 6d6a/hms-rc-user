@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -108,6 +109,14 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     }
 
     @Override
+    protected void removeOldResource(FTPUser resource) {
+        if (resource == null || StringUtils.isEmpty(resource.getAccountId()) || StringUtils.isEmpty(resource.getName())) {
+            return;
+        }
+        repository.deleteByNameAndAccountId(resource.getName(), resource.getAccountId());
+    }
+
+    @Override
     public void preDelete(String resourceId) {
 
     }
@@ -129,10 +138,16 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         setResourceParams(ftpUser, serviceMessage, cleaner);
 
         String plainPassword = "";
+        String passwordHash = "";
         String homeDir = null;
         String unixAccountId = null;
+        boolean switchedOn = true;
+        boolean allowWebFtp = true;
 
         try {
+            if (serviceMessage.getParam("passwordHash") != null) {
+                passwordHash = cleaner.cleanString((String) serviceMessage.getParam("passwordHash"));
+            }
             if (serviceMessage.getParam("password") != null) {
                 plainPassword = cleaner.cleanString((String) serviceMessage.getParam("password"));
             }
@@ -141,6 +156,12 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
                 if (homeDir != null && homeDir.startsWith("/")) {
                     homeDir = homeDir.substring(1);
                 }
+            }
+            if (Boolean.FALSE.equals(serviceMessage.getParam("switchedOn"))) {
+                switchedOn = false;
+            }
+            if (Boolean.FALSE.equals(serviceMessage.getParam("allowWebFtp"))) {
+                allowWebFtp = false;
             }
             if (serviceMessage.getParam("unixAccountId") != null) {
                 unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
@@ -156,9 +177,15 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
-        ftpUser.setPasswordHashByPlainPassword(plainPassword);
+        if (StringUtils.isNotEmpty(passwordHash)) {
+            ftpUser.setPasswordHash(passwordHash);
+        } else {
+            ftpUser.setPasswordHashByPlainPassword(plainPassword);
+        }
         ftpUser.setHomeDir(homeDir);
         ftpUser.setUnixAccountId(unixAccountId);
+        ftpUser.setAllowWebFtp(allowWebFtp);
+        ftpUser.setSwitchedOn(switchedOn);
 
         return ftpUser;
     }

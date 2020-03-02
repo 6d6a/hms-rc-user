@@ -5,8 +5,10 @@ import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Utils {
+
     public static Long getLongFromUnexpectedInput(Object input){
         Long longValue;
         if (input instanceof Integer) {
@@ -62,4 +64,16 @@ public class Utils {
 
         return bigDecimal;
     }
+
+    private final static Pattern CIDR_OR_IP_PATTERN = Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([1-9]|[1-2]\\d|3[0-2]))?$");
+    private final static Pattern CIDR_PATTERN = Pattern.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])/([1-9]|[1-2]\\d|3[0-2])$");
+
+    public static boolean cidrOrIpValid(String cidrOrIp) {
+        return CIDR_OR_IP_PATTERN.matcher(cidrOrIp).matches();
+    }
+
+    public static boolean cidrValid(String cidr) {
+        return CIDR_PATTERN.matcher(cidr).matches();
+    }
+
 }

@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,12 +19,9 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
-import ru.majordomo.hms.rc.user.resources.CharSet;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.UnixAccount;
-import ru.majordomo.hms.rc.user.resources.WebSite;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
@@ -542,27 +540,21 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
     @Override
     public Collection<WebSite> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException {
-        List<WebSite> buildedWebSites = new ArrayList<>();
-
+        List<WebSite> webSites;
         if (keyValue.get("unixAccountId") != null) {
-            for (WebSite webSite : repository.findByUnixAccountId(keyValue.get("unixAccountId"))) {
-                buildedWebSites.add(construct(webSite));
-            }
+            webSites = repository.findByUnixAccountId(keyValue.get("unixAccountId"));
         } else if (keyValue.get("accountId") != null && keyValue.get("serviceId") != null) {
-            for (WebSite webSite : repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"))) {
-                buildedWebSites.add(construct(webSite));
-            }
+            webSites = repository.findByServiceIdAndAccountId(keyValue.get("serviceId"), keyValue.get("accountId"));
         } else if (keyValue.get("accountId") != null) {
-            for (WebSite webSite : repository.findByAccountId(keyValue.get("accountId"))) {
-                buildedWebSites.add(construct(webSite));
-            }
+            webSites = repository.findByAccountId(keyValue.get("accountId"));
         } else if (keyValue.get("serviceId") != null) {
-            for (WebSite webSite : repository.findByServiceId(keyValue.get("serviceId"))) {
-                buildedWebSites.add(construct(webSite));
-            }
+            webSites = repository.findByServiceId(keyValue.get("serviceId"));
+        } else {
+             return Collections.emptyList();
         }
 
-        return buildedWebSites;
+        return MapUtils.getBooleanValue(keyValue, "withoutBuiltIn") ?
+                webSites : webSites.stream().map(this::construct).collect(Collectors.toList());
     }
 
     @Override

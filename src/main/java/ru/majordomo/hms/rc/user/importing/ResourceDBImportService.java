@@ -1,8 +1,6 @@
 package ru.majordomo.hms.rc.user.importing;
 
 public interface ResourceDBImportService {
-    void pull();
-    void pull(String accountId);
-    boolean importToMongo();
-    boolean importToMongo(String accountId);
+    void pull(String accountId, String serverId);
+    boolean importToMongo(String accountId, String serverId);
 }

@@ -4,6 +4,7 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 
+import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -92,6 +93,14 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     @Autowired
     public void setMongoClient(@Qualifier("jongoMongoClient") MongoClient mongoClient) {
         this.mongoClient = mongoClient;
+    }
+
+    @Override
+    protected void removeOldResource(Database resource) {
+        if (resource == null || StringUtils.isEmpty(resource.getAccountId()) || StringUtils.isEmpty(resource.getName())) {
+            return;
+        }
+        repository.deleteByAccountIdAndName(resource.getAccountId(), resource.getName());
     }
 
     @Value("${spring.data.mongodb.database}")

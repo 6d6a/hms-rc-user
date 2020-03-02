@@ -29,7 +29,7 @@ public abstract class ResourceEventListener<T extends Resource> {
         logger.debug("We got ImportEvent");
 
         try {
-            dbImportService.importToMongo(accountId);
+            dbImportService.importToMongo(accountId, event.getServerId());
         } catch (Exception e) {
             e.printStackTrace();
         }

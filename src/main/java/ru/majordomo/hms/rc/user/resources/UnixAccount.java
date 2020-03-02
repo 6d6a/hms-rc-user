@@ -42,10 +42,16 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     @Indexed
     private String serverId;
 
+    /**
+     * Дисковая квота в байтах
+     */
     @Min(value = 0L, message = "Квота не может иметь отрицательное значение")
     @NotNull(message = "Квота не может быть равной null")
     private Long quota;
 
+    /**
+     * Дисковая квота в байтах
+     */
     @Min(value = 0L, message = "Использованная квота не может иметь отрицательное значение")
     @NotNull(message = "Использованная квота не может быть равной null")
     private Long quotaUsed;

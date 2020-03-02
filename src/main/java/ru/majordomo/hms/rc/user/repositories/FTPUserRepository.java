@@ -13,4 +13,5 @@ public interface FTPUserRepository extends MongoRepository<FTPUser, String> {
     FTPUser findByIdAndAccountId(String ftpUserId, String accountId);
     Long countByAccountId(String accountId);
     FTPUser findByNameAndAccountId(String name, String accountId);
+    void deleteByNameAndAccountId(String name, String accountId);
 }
