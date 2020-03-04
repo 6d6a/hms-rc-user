@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Range;
@@ -75,6 +76,50 @@ public class WebSite extends Resource implements Serviceable {
     private List<@ValidFileExtension String> staticFileExtensions = new ArrayList<>();
 
     private String customUserConf;
+
+    /**
+     * Команды выполняемые во время установки пользовательского приложения
+     */
+    @Nullable
+    private String appInstallCommands;
+
+    @Nullable
+    public String getAppInstallCommands() {
+        return appInstallCommands;
+    }
+
+    public void setAppInstallCommands(@Nullable String appInstallCommands) {
+        this.appInstallCommands = appInstallCommands;
+    }
+
+    @Nullable
+    public String getAppLoadUrl() {
+        return appLoadUrl;
+    }
+
+    public void setAppLoadUrl(@Nullable String appLoadUrl) {
+        this.appLoadUrl = appLoadUrl;
+    }
+
+    public Map<String, String> getAppLoadParams() {
+        return appLoadParams;
+    }
+
+    public void setAppLoadParams(Map<String, String> appLoadParams) {
+        this.appLoadParams = appLoadParams;
+    }
+
+    /**
+     * Адрес по которому нужно загрузить приложение
+     */
+    @Nullable
+    private String appLoadUrl;
+
+    /**
+     * Дополнительные параметры необходимые для загрузки приложения из репозитория клиента.
+     * Например: имя пользователя, пароль, ветка git
+     */
+    private Map<String, String> appLoadParams = new HashMap<>();
 
     @Valid
     private List<@ValidFileName String> indexFileList = new ArrayList<>();

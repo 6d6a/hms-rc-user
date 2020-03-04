@@ -209,11 +209,20 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "switchedOn":
                         website.setSwitchedOn(cleaner.cleanBoolean(entry.getValue()));
                         break;
+                    case "appInstallCommands":
+                        website.setAppInstallCommands(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "appLoadUrl":
+                        website.setAppLoadUrl(cleaner.cleanString((String) entry.getValue()));
+                        break;
+                    case "appLoadParams":
+                        website.setAppLoadParams(cleaner.cleanMapWithStrings((Map<String, String>) entry.getValue()));
                     default:
                         break;
                 } // switch
             } // for
             if (serviceMessage.getParam("expiresForTypes") != null) {
+                //все расширения из expiresForTypes должны быть в staticFileExtensions
                 Map<String, String> expiresRaw = (Map<String, String>) serviceMessage.getParam("expiresForTypes");
                 website.setExpiresForTypes(cleaner.cleanMapWithStrings(expiresRaw));
                 List<String> staticFileExtensions = website.getStaticFileExtensions();
@@ -316,7 +325,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             Integer opcacheRevalidateFreq = cleaner.cleanInteger(serviceMessage.getParam("opcacheRevalidateFreq"));
             Integer memoryLimit = cleaner.cleanInteger(serviceMessage.getParam("memoryLimit"));
             String mbstringInternalEncoding = (String) serviceMessage.getParam("mbstringInternalEncoding");
-            Map<String, String> expiresForTypes = cleaner.cleanMapWithStrings((Map<String, String>) serviceMessage.getParam("expiresForType"));
+            Map<String, String> expiresForTypes = cleaner.cleanMapWithStrings(serviceMessage.getParam("expiresForType"));
             if (!expiresForTypes.isEmpty()) {
                 List<String> newStaticFileExtensions = new ArrayList<>(staticFileExtensions);
                 for (String ex : expiresForTypes.keySet()) {
@@ -326,6 +335,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                 }
                 staticFileExtensions = newStaticFileExtensions;
             }
+            String appInstallCommands = cleaner.cleanString(serviceMessage.getParam("appInstallCommands"));
+            String appLoadUrl = cleaner.cleanString(serviceMessage.getParam("appLoadUrl"));
+            Map<String, String> appLoadParams = cleaner.cleanMapWithStrings(serviceMessage.getParam("appLoadUrl"));
+
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -355,6 +368,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setMemoryLimit(memoryLimit);
             webSite.setMbstringInternalEncoding(mbstringInternalEncoding);
             webSite.setExpiresForTypes(expiresForTypes);
+            webSite.setAppLoadParams(appLoadParams);
+            webSite.setAppLoadUrl(appLoadUrl);
+            webSite.setAppInstallCommands(appInstallCommands);
         } catch (ClassCastException e) {
             log.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
