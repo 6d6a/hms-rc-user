@@ -6,6 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -19,6 +23,9 @@ import javax.validation.constraints.NotNull;
 import ru.majordomo.hms.rc.user.resources.validation.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 
+@Getter
+@Setter
+@ToString
 @Document(collection = "webSites")
 @ValidWebSite
 @JsonFilter("websiteFilter")
@@ -82,32 +89,6 @@ public class WebSite extends Resource implements Serviceable {
      */
     @Nullable
     private String appInstallCommands;
-
-    @Nullable
-    public String getAppInstallCommands() {
-        return appInstallCommands;
-    }
-
-    public void setAppInstallCommands(@Nullable String appInstallCommands) {
-        this.appInstallCommands = appInstallCommands;
-    }
-
-    @Nullable
-    public String getAppLoadUrl() {
-        return appLoadUrl;
-    }
-
-    public void setAppLoadUrl(@Nullable String appLoadUrl) {
-        this.appLoadUrl = appLoadUrl;
-    }
-
-    public Map<String, String> getAppLoadParams() {
-        return appLoadParams;
-    }
-
-    public void setAppLoadParams(Map<String, String> appLoadParams) {
-        this.appLoadParams = appLoadParams;
-    }
 
     /**
      * Адрес по которому нужно загрузить приложение

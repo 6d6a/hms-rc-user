@@ -12,7 +12,9 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import ru.majordomo.hms.personmgr.exception.InternalApiException;
 import ru.majordomo.hms.rc.staff.resources.Service;
+import ru.majordomo.hms.rc.staff.resources.template.ApplicationServer;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
@@ -216,15 +218,15 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setAppLoadUrl(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "appLoadParams":
-                        website.setAppLoadParams(cleaner.cleanMapWithStrings((Map<String, String>) entry.getValue()));
+                        website.setAppLoadParams(cleaner.cleanMapWithStrings(entry.getValue()));
                     default:
                         break;
                 } // switch
             } // for
             if (serviceMessage.getParam("expiresForTypes") != null) {
                 //все расширения из expiresForTypes должны быть в staticFileExtensions
-                Map<String, String> expiresRaw = (Map<String, String>) serviceMessage.getParam("expiresForTypes");
-                website.setExpiresForTypes(cleaner.cleanMapWithStrings(expiresRaw));
+                Map<String, String> expiresRaw = cleaner.cleanMapWithStrings(serviceMessage.getParam("expiresForTypes"));
+                website.setExpiresForTypes(expiresRaw);
                 List<String> staticFileExtensions = website.getStaticFileExtensions();
                 for (String ex : website.getExpiresForTypes().keySet()) {
                     if (!staticFileExtensions.contains(ex)) {
@@ -591,5 +593,58 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
     public Count countByAccountId(String accountId) {
         return new Count(repository.countByAccountId(accountId));
+    }
+
+    public Map<String, Object> loadAppParams(WebSite webSite) {
+       Map<String, Object> result = new HashMap<>();
+       if (StringUtils.isBlank(webSite.getAppLoadUrl())) {
+           throw new ParameterValidationException("Для загрузки приложения необходимо задать адрес репозитория");
+       }
+       result.put("datasourceUri", webSite.getAppLoadUrl());
+       result.put("dataSourceParams", webSite.getAppLoadParams());
+       return result;
+    }
+
+    public Map<String, Object> installAppParams(WebSite webSite) {
+        Service staffService = staffRcClient.getService(webSite.getServiceId());
+        if (staffService == null || !(staffService.getTemplate() instanceof ApplicationServer)) {
+            throw new ParameterValidationException("Некорректный тип сервиса");
+        }
+        ApplicationServer template = (ApplicationServer) staffService.getTemplate();
+        String deployImage = ""; // template.getDeployImagePath();
+        if (StringUtils.isEmpty(deployImage)) {
+            throw new ParameterValidationException("Для выбранного сервиса невозможна установка пользовательских приложений");
+        }
+
+        Map<String, Object> result = new HashMap<String, Object>() {{
+            put("dataPostprocessorType", "docker");
+            put("dataPostprocessorArgs", new HashMap<String, Object>() {{
+                put("image", deployImage);
+                put("command", Collections.singletonList("install"));
+            }});
+        }};
+        return result;
+    }
+
+    public Map<String, Object> shellAppParams(WebSite webSite) {
+        Service staffService = staffRcClient.getService(webSite.getServiceId());
+        if (staffService == null || !(staffService.getTemplate() instanceof ApplicationServer)) {
+            throw new ParameterValidationException("Некорректный тип сервиса");
+        }
+        ApplicationServer template = (ApplicationServer) staffService.getTemplate();
+        String deployImage = ""; // template.getDeployImagePath();
+        if (StringUtils.isEmpty(deployImage)) {
+            throw new ParameterValidationException("Для выбранного сервиса невозможна установка пользовательских приложений");
+        }
+        String commands = webSite.getAppInstallCommands();
+
+        Map<String, Object> result = new HashMap<String, Object>() {{
+            put("dataPostprocessorType", "docker");
+            put("dataPostprocessorArgs", new HashMap<String, Object>() {{
+                put("image", deployImage);
+                put("shell", Arrays.asList("shell", commands));
+            }});
+        }};
+        return result;
     }
 }
