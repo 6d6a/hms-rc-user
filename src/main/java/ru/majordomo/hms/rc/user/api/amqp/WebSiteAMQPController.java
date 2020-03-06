@@ -11,16 +11,14 @@ import org.springframework.stereotype.Service;
 
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.staff.resources.template.ApplicationServer;
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.Constants;
 import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
-import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
-import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import ru.majordomo.hms.rc.user.resources.WebSite;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -32,12 +30,6 @@ import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
-
-    @Override
-    protected ResourceProcessor<WebSite> getEventProcessor(ResourceActionContext<WebSite> context) {
-        // вместо этого отдать новые процессоры для сайтов
-        return super.getEventProcessor(context);
-    }
 
     @Autowired
     public void setGovernor(GovernorOfWebSite governor) {
@@ -89,9 +81,18 @@ public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
 
     @Override
     protected ServiceMessage createReportMessage(ResourceActionContext<WebSite> context) {
-        String extendedAction = MapUtils.getString(context.getMessage().getParams(), "extendedAction");
+        ServiceMessage message = context.getMessage();
+        String provider = context.getEventProvider();
+        String extendedAction = MapUtils.getString(message.getParams(), "extendedAction");
+        if (
+                message.getParam("success") != null || "te".equals(provider) ||
+                !MapUtils.getString(message.getParams(), "errorMessage", "").isEmpty()
+        ) {
+            // нужно как-то отделить сообщения корректные сообщения на изменения от собщений от te, ошибок rc-user, чего-нибудь еще
+            return super.createReportMessage(context);
+        }
 
-        if (StringUtils.isEmpty(extendedAction)) {
+        if (StringUtils.isEmpty(extendedAction) || context.getResource() == null) {
             return super.createReportMessage(context);
         } else {
             ServiceMessage report = super.createReportMessage(context);
@@ -100,9 +101,9 @@ public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
         }
     }
 
-    private Map<String, Object> teExtendedAction(WebSite webSite, @Nullable String action, ResourceAction resourceAction) {
+    private Map<String, Object> teExtendedAction(@Nullable WebSite webSite, @Nullable String action, ResourceAction resourceAction) {
         //todo String action to Enum
-        if (StringUtils.isEmpty(action)) {
+        if (StringUtils.isEmpty(action) || webSite == null) {
             return Collections.emptyMap();
         }
         ru.majordomo.hms.rc.staff.resources.Service staffService = staffRcClient.getService(webSite.getServiceId());
