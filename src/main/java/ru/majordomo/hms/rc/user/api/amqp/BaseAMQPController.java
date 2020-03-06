@@ -50,7 +50,7 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
     private String instanceName;
 
     private Sender sender;
-    private StaffResourceControllerClient staffRcClient;
+    protected StaffResourceControllerClient staffRcClient;
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected ResourceProcessor<T> getEventProcessor(ResourceActionContext<T> context) {

@@ -1,5 +1,7 @@
 package ru.majordomo.hms.rc.user.api.amqp;
 
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,11 +9,20 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.rc.staff.resources.template.ApplicationServer;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.Constants;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
+import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
+import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 import ru.majordomo.hms.rc.user.resources.WebSite;
+
+import javax.annotation.Nullable;
+import java.util.*;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.WEBSITE_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.WEBSITE_DELETE;
@@ -21,6 +32,12 @@ import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
+
+    @Override
+    protected ResourceProcessor<WebSite> getEventProcessor(ResourceActionContext<WebSite> context) {
+        // вместо этого отдать новые процессоры для сайтов
+        return super.getEventProcessor(context);
+    }
 
     @Autowired
     public void setGovernor(GovernorOfWebSite governor) {
@@ -68,5 +85,71 @@ public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
         } else {
             return getDefaultRoutingKey();
         }
+    }
+
+    @Override
+    protected ServiceMessage createReportMessage(ResourceActionContext<WebSite> context) {
+        String extendedAction = MapUtils.getString(context.getMessage().getParams(), "extendedAction");
+
+        if (StringUtils.isEmpty(extendedAction)) {
+            return super.createReportMessage(context);
+        } else {
+            ServiceMessage report = super.createReportMessage(context);
+            report.getParams().putAll(teExtendedAction(context.getResource(), extendedAction, context.getAction()));
+            return report;
+        }
+    }
+
+    private Map<String, Object> teExtendedAction(WebSite webSite, @Nullable String action, ResourceAction resourceAction) {
+        //todo String action to Enum
+        if (StringUtils.isEmpty(action)) {
+            return Collections.emptyMap();
+        }
+        ru.majordomo.hms.rc.staff.resources.Service staffService = staffRcClient.getService(webSite.getServiceId());
+        if (staffService == null || !(staffService.getTemplate() instanceof ApplicationServer)) {
+            throw new ParameterValidationException("Некорректный тип сервиса");
+        }
+        if (!staffService.isSwitchedOn()) {
+            throw new ParameterValidationException("Операции с выключенным сервисом");
+        }
+        if (StringUtils.isEmpty(staffService.getAccountId()) && !staffService.getAccountId().equals(webSite.getAccountId())) {
+            throw new ParameterValidationException("Некорректный владелец сервиса");
+        }
+        ApplicationServer template = (ApplicationServer) staffService.getTemplate();
+        String deployImage = template.getDeployImagePath();
+        if (StringUtils.isEmpty(deployImage)) {
+            throw new ParameterValidationException("Для выбранного сервиса невозможна установка пользовательских приложений");
+        }
+
+        Map<String, Object> result;
+        switch (action) {
+            case "load":
+                if (!EnumSet.of(ResourceAction.UPDATE, ResourceAction.CREATE).contains(resourceAction)) {
+                    throw new ParameterValidationException("Действие возможно только для созданного сайта");
+                }
+                result = new HashMap<String, Object>() {{
+                    put("datasourceUri", webSite.getAppLoadUrl());
+                    put("dataSourceParams", webSite.getAppLoadParams());
+                }};
+                break;
+            case "install":
+            case "shell":
+                if (resourceAction != ResourceAction.UPDATE) {
+                    throw new ParameterValidationException("Действие возможно только для созданного сайта");
+                }
+                List<String> command = "install".equals(action) ? Collections.singletonList("install") :
+                        Arrays.asList("shell", StringUtils.trimToEmpty(webSite.getAppInstallCommands()));
+                result = new HashMap<String, Object>() {{
+                    put("dataPostprocessorType", "docker");
+                    put("dataPostprocessorArgs", new HashMap<String, Object>() {{
+                        put("image", deployImage);
+                        put("command", command);
+                    }});
+                }};
+                break;
+            default:
+                throw new ParameterValidationException("Для сайта запрошено неподдерживаемое действие");
+        }
+        return result;
     }
 }

@@ -485,45 +485,4 @@ public class WebSite extends Resource implements Serviceable {
     public void setMbstringInternalEncoding(String mbstringInternalEncoding) {
         this.mbstringInternalEncoding = mbstringInternalEncoding;
     }
-
-    @Override
-    public String toString() {
-        return "WebSite{" +
-                "id=" + this.getId() +
-                ", name=" + this.getName() +
-                ", unixAccount=" + unixAccount +
-                ", serviceId='" + serviceId + '\'' +
-                ", documentRoot='" + documentRoot + '\'' +
-                ", domains=" + domains +
-                ", charSet=" + charSet +
-                ", ssiEnabled=" + ssiEnabled +
-                ", ssiFileExtensions=" + ssiFileExtensions +
-                ", cgiEnabled=" + cgiEnabled +
-                ", cgiFileExtensions=" + cgiFileExtensions +
-                ", scriptAlias='" + scriptAlias + '\'' +
-                ", ddosProtection=" + ddosProtection +
-                ", autoSubDomain=" + autoSubDomain +
-                ", accessByOldHttpVersion=" + accessByOldHttpVersion +
-                ", staticFileExtensions=" + staticFileExtensions +
-                ", customUserConf='" + customUserConf + '\'' +
-                ", indexFileList=" + indexFileList +
-                ", accessLogEnabled=" + accessLogEnabled +
-                ", errorLogEnabled=" + errorLogEnabled +
-                ", followSymLinks=" + followSymLinks +
-                ", multiViews=" + multiViews +
-                ", allowUrlFopen=" + allowUrlFopen +
-                ", mbstringFuncOverload=" + mbstringFuncOverload +
-                ", displayErrors=" + displayErrors +
-                ", sessionUseTransSid=" + sessionUseTransSid +
-                ", maxInputVars=" + maxInputVars +
-                ", opcacheMaxAcceleratedFiles=" + opcacheMaxAcceleratedFiles +
-                ", realpathCacheSize=" + realpathCacheSize +
-                ", requestOrder='" + requestOrder + '\'' +
-                ", allowUrlInclude=" + allowUrlInclude +
-                ", opcacheRevalidateFreq=" + opcacheRevalidateFreq +
-                ", memoryLimit=" + memoryLimit +
-                ", mbstringInternalEncoding=" + mbstringInternalEncoding +
-                ", expiresForTypes=" + expiresForTypes +
-                "} " + super.toString();
-    }
 }
