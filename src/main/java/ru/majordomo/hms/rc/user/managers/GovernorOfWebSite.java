@@ -1,27 +1,21 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
-import ru.majordomo.hms.personmgr.exception.InternalApiException;
-import ru.majordomo.hms.rc.staff.resources.Service;
-import ru.majordomo.hms.rc.staff.resources.template.ApplicationServer;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -596,111 +590,5 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     public Count countByAccountId(String accountId) {
         return new Count(repository.countByAccountId(accountId));
     }
-
-//    public Map<String, Object> loadAppParams(WebSite webSite) {
-//       Map<String, Object> result = new HashMap<>();
-//       if (StringUtils.isBlank(webSite.getAppLoadUrl())) {
-//           throw new ParameterValidationException("Для загрузки приложения необходимо задать адрес репозитория");
-//       }
-//       result.put("datasourceUri", webSite.getAppLoadUrl());
-//       result.put("dataSourceParams", webSite.getAppLoadParams());
-//       return result;
-//    }
-//
-//    public Map<String, Object> installAppParams(WebSite webSite) {
-//        Service staffService = staffRcClient.getService(webSite.getServiceId());
-//        if (staffService == null || !(staffService.getTemplate() instanceof ApplicationServer)) {
-//            throw new ParameterValidationException("Некорректный тип сервиса");
-//        }
-//        ApplicationServer template = (ApplicationServer) staffService.getTemplate();
-//        String deployImage = ""; // template.getDeployImagePath();
-//        if (StringUtils.isEmpty(deployImage)) {
-//            throw new ParameterValidationException("Для выбранного сервиса невозможна установка пользовательских приложений");
-//        }
-//
-//        Map<String, Object> result = new HashMap<String, Object>() {{
-//            put("dataPostprocessorType", "docker");
-//            put("dataPostprocessorArgs", new HashMap<String, Object>() {{
-//                put("image", deployImage);
-//                put("command", Collections.singletonList("install"));
-//            }});
-//        }};
-//        return result;
-//    }
-//
-//    public Map<String, Object> shellAppParams(WebSite webSite) {
-//        Service staffService = staffRcClient.getService(webSite.getServiceId());
-//        if (staffService == null || !(staffService.getTemplate() instanceof ApplicationServer)) {
-//            throw new ParameterValidationException("Некорректный тип сервиса");
-//        }
-//        ApplicationServer template = (ApplicationServer) staffService.getTemplate();
-//        String deployImage = ""; // template.getDeployImagePath();
-//        if (StringUtils.isEmpty(deployImage)) {
-//            throw new ParameterValidationException("Для выбранного сервиса невозможна установка пользовательских приложений");
-//        }
-//        String commands = webSite.getAppInstallCommands();
-//
-//        Map<String, Object> result = new HashMap<String, Object>() {{
-//            put("dataPostprocessorType", "docker");
-//            put("dataPostprocessorArgs", new HashMap<String, Object>() {{
-//                put("image", deployImage);
-//                put("shell", Arrays.asList("shell", commands));
-//            }});
-//        }};
-//        return result;
-//    }
-
-//    public Map<String, Object> teExtendedAction(WebSite webSite, @Nullable String action, ResourceAction resourceAction) {
-//        //todo String action to Enum
-//        if (StringUtils.isEmpty(action)) {
-//            return Collections.emptyMap();
-//        }
-//        Service staffService = staffRcClient.getService(webSite.getServiceId());
-//        if (staffService == null || !(staffService.getTemplate() instanceof ApplicationServer)) {
-//            throw new ParameterValidationException("Некорректный тип сервиса");
-//        }
-//        if (!staffService.isSwitchedOn()) {
-//            throw new ParameterValidationException("Операции с выключенным сервисом");
-//        }
-//        if (StringUtils.isEmpty(staffService.getAccountId()) && !staffService.getAccountId().equals(webSite.getAccountId())) {
-//            throw new ParameterValidationException("Некорректный владелец сервиса");
-//        }
-//        ApplicationServer template = (ApplicationServer) staffService.getTemplate();
-//        String deployImage = template.getDeployImagePath();
-//        if (StringUtils.isEmpty(deployImage)) {
-//            throw new ParameterValidationException("Для выбранного сервиса невозможна установка пользовательских приложений");
-//        }
-//        String commands = webSite.getAppInstallCommands();
-//
-//        Map<String, Object> result;
-//        switch (action) {
-//            case "load":
-//                if (resourceAction == ResourceAction.DELETE) {
-//                    throw new ParameterValidationException("Действие возможно только для созданного сайта");
-//                }
-//                result = new HashMap<String, Object>() {{
-//                    put("datasourceUri", webSite.getAppLoadUrl());
-//                    put("dataSourceParams", webSite.getAppLoadParams());
-//                }};
-//                break;
-//            case "install":
-//            case "shell":
-//                if (resourceAction != ResourceAction.UPDATE) {
-//                    throw new ParameterValidationException("Действие возможно только для созданного сайта");
-//                }
-//                List<String> command = "install".equals(action) ? Collections.singletonList("install") : Arrays.asList("shell", StringUtils.trimToEmpty(webSite.getAppInstallCommands()));
-//                result = new HashMap<String, Object>() {{
-//                    put("dataPostprocessorType", "docker");
-//                    put("dataPostprocessorArgs", new HashMap<String, Object>() {{
-//                        put("image", deployImage);
-//                        put("command", command);
-//                    }});
-//                }};
-//                break;
-//            default:
-//                throw new ParameterValidationException("Для сайта запрошено неподдерживаемое действие");
-//        }
-//        return result;
-//    }
 
 }
