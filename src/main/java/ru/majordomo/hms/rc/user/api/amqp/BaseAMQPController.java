@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import ru.majordomo.hms.personmgr.exception.BaseException;
 import ru.majordomo.hms.personmgr.exception.InternalApiException;
 import ru.majordomo.hms.rc.user.api.DTO.Error;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
@@ -259,7 +260,7 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.joining());
 
-        } else if (e instanceof ParameterValidationException) {
+        } else if (e instanceof BaseException) {
             errorMessage = "Обработка ресурса не удалась: " + e.getMessage();
             errors = Collections.singletonList(new Error(getResourceType(), Collections.singletonList(e.getMessage())));
         } else {
