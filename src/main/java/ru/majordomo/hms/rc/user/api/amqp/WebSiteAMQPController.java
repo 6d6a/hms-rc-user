@@ -95,7 +95,10 @@ public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
     @Override
     protected ServiceMessage createReportMessage(ResourceActionContext<WebSite> context) {
         ServiceMessage result = super.createReportMessage(context);
-        if (StringUtils.startsWith(context.getRoutingKey(), TE + ".") && MapUtils.isNotEmpty(context.getExtendedActionParams())) {
+        if (StringUtils.startsWith(context.getRoutingKey(), TE + ".") &&
+                MapUtils.isNotEmpty(context.getExtendedActionParams()) &&
+                MapUtils.getString(context.getMessage().getParams(), "errorMessage", "").isEmpty()
+        ) {
             result.getParams().putAll(context.getExtendedActionParams());
         }
         return result;
