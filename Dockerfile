@@ -5,6 +5,7 @@ ENV XMX 2048M
 ENV XMN 384M
 ENV DEBUG ""
 #ENV DEBUG "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=6006"
+ENV TZ Europe/Moscow
 
 RUN apt-get update \
  && apt-get install -y curl jq \
