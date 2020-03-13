@@ -94,6 +94,7 @@ public class WebSite extends Resource implements Serviceable {
      * Адрес по которому нужно загрузить приложение
      */
     @Nullable
+    @ValidAppLoadUrl
     private String appLoadUrl;
 
     /**
