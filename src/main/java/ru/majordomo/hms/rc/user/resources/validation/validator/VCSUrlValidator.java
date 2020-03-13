@@ -19,9 +19,6 @@ public class VCSUrlValidator implements ConstraintValidator<ValidAppLoadUrl, Str
 
     @Override
     public boolean isValid(String url, ConstraintValidatorContext constraintValidatorContext) {
-        if (StringUtils.isEmpty(url)) {
-            return true;
-        }
-        return urlValidator.isValid(url);
+        return StringUtils.isEmpty(url) || urlValidator.isValid(url);
     }
 }
