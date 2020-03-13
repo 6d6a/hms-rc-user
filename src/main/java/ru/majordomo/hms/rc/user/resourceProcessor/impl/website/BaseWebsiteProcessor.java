@@ -67,6 +67,7 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
                 }
                 context.getExtendedActionParams().put("datasourceUri", webSite.getAppLoadUrl());
                 context.getExtendedActionParams().put("dataSourceParams", webSite.getAppLoadParams());
+                context.getExtendedActionParams().put("extendedAction", extendedAction);
                 break;
             case INSTALL:
                 if (context.getAction() != ResourceAction.UPDATE) {
@@ -77,19 +78,21 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
                     put("image", deployImage);
                     put("command",  Collections.singletonList("install"));
                 }});
+                context.getExtendedActionParams().put("extendedAction", extendedAction);
                 break;
             case SHELL:
                 if (context.getAction() != ResourceAction.UPDATE) {
                     throw new ParameterValidationException("Действие возможно только для созданного сайта");
                 }
                 if (StringUtils.isBlank(webSite.getAppInstallCommands())) {
-                    throw new ParameterValidationException("Необходимо задать команды");
+                    throw new ParameterValidationException("Необходимо задать shell команды");
                 }
                 context.getExtendedActionParams().put("dataPostprocessorType", "docker");
                 context.getExtendedActionParams().put("dataPostprocessorArgs", new HashMap<String, Object>() {{
                     put("image", deployImage);
                     put("command",  Arrays.asList("shell", webSite.getAppInstallCommands()));
                 }});
+                context.getExtendedActionParams().put("extendedAction", extendedAction);
                 break;
         }
     }
