@@ -19,16 +19,6 @@ public class ResourceActionContext<T extends Resource> {
      */
     private String eventProvider;
     /**
-     * была установлена блокировка.
-     * И её нужно будет снять в случае исключения в некоторых местах
-     */
-    private boolean wasSettingLocked;
-    /**
-     * Дополнительное действие для te
-     */
-    @Nullable
-    private ExtendedAction extendedAction;
-    /**
      * Сообщения которые необходимо добавить к TE
      */
     private Map<String, Object> extendedActionParams = new HashMap<>();
