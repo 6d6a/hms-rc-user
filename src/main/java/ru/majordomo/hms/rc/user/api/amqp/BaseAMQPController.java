@@ -202,7 +202,7 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
             }
         }
 
-        Arrays.asList("errors", "exceptionClass", "errorMessage").forEach(key -> {
+        Arrays.asList("errors", "exceptionClass", "errorMessage", "bigErrorMessage").forEach(key -> {
             if (event.getParam(key) != null) {
                 report.addParam(key, event.getParam(key));
             }
