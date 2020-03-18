@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.resourceProcessor.impl.website;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -15,6 +16,7 @@ import ru.majordomo.hms.rc.user.resources.WebSite;
 
 import java.util.*;
 
+@Slf4j
 public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite> {
     protected final WebSiteAMQPController processorContext;
     protected final StaffResourceControllerClient staffRcClient;
@@ -44,17 +46,20 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
 
         Service staffService = staffRcClient.getService(webSite.getServiceId());
         if (staffService == null || !(staffService.getTemplate() instanceof ApplicationServer)) {
+            log.error("Attempt extended action for website: {} with wrong service: {}", webSite.getId(), staffService);
             throw new ParameterValidationException("Некорректный тип сервиса");
         }
         if (!staffService.isSwitchedOn()) {
             throw new ParameterValidationException("Операции с выключенным сервисом");
         }
         if (StringUtils.isEmpty(staffService.getAccountId()) || !staffService.getAccountId().equals(webSite.getAccountId())) {
+            log.error("Attempt run extended action for website {}, for service {} with wrong owner", webSite.getId(), staffService.getId());
             throw new ParameterValidationException("Некорректный владелец сервиса");
         }
         ApplicationServer template = (ApplicationServer) staffService.getTemplate();
         String deployImage = template.getDeployImagePath();
         if (StringUtils.isEmpty(deployImage)) {
+            log.error("Extended action {} for website {} is prohibited because don't set deployImagePath for templayte {}", extendedAction, webSite.getId(), template.getId());
             throw new ParameterValidationException("Для выбранного сервиса невозможна установка пользовательских приложений");
         }
         switch (extendedAction) {
