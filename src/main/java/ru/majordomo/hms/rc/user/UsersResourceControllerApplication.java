@@ -12,6 +12,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
+import ru.majordomo.hms.rc.user.configurations.HikariSettings;
 
 import java.util.Arrays;
 
@@ -19,7 +20,7 @@ import java.util.Arrays;
 @EnableEurekaClient
 @EnableFeignClients(basePackages = {"ru.majordomo.hms.rc.user.api.interfaces"})
 @EnableMongoAuditing
-@EnableConfigurationProperties(DefaultWebSiteSettings.class)
+@EnableConfigurationProperties({DefaultWebSiteSettings.class, HikariSettings.class})
 public class UsersResourceControllerApplication implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(UsersResourceControllerApplication.class);

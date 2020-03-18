@@ -17,6 +17,14 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DatabaseConfig {
+
+    private HikariSettings hikariSettings;
+
+    @Autowired
+    public void setHikariSettings(HikariSettings hikariSettings) {
+        this.hikariSettings = hikariSettings;
+    }
+
     @Bean(name = "pdnsDataSourceProperties")
     @ConfigurationProperties("spring.datasource")
     @Primary
@@ -27,7 +35,7 @@ public class DatabaseConfig {
     @Bean(name = "pdnsDataSource")
     @Primary
     public HikariDataSource pdnsDataSource(@Qualifier("pdnsDataSourceProperties") DataSourceProperties properties) {
-        return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        return HikariConfigWrapper(properties.initializeDataSourceBuilder().type(HikariDataSource.class).build());
     }
 
     @Bean(name = "pdnsNamedParameterJdbcTemplate")
@@ -45,7 +53,7 @@ public class DatabaseConfig {
 
     @Bean(name = "billingDataSource")
     public HikariDataSource billingDataSource(@Qualifier("billingDataSourceProperties") DataSourceProperties properties) {
-        return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        return HikariConfigWrapper(properties.initializeDataSourceBuilder().type(HikariDataSource.class).build());
     }
 
     @Bean(name = "billingNamedParameterJdbcTemplate")
@@ -62,12 +70,21 @@ public class DatabaseConfig {
 
     @Bean(name = "registrantDataSource")
     public HikariDataSource registrantDataSource(@Qualifier("registrantDataSourceProperties") DataSourceProperties properties) {
-        return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        return HikariConfigWrapper(properties.initializeDataSourceBuilder().type(HikariDataSource.class).build());
     }
 
     @Bean(name = "registrantNamedParameterJdbcTemplate")
     @Autowired
     public NamedParameterJdbcTemplate registrantNamedParameterJdbcTemplate(@Qualifier("registrantDataSource") DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    private HikariDataSource HikariConfigWrapper(HikariDataSource hikari) {
+        hikari.setMaximumPoolSize(hikariSettings.getMaximumPoolSize());
+        hikari.setConnectionTimeout(hikariSettings.getConnectionTimeout());
+        hikari.setIdleTimeout(hikariSettings.getIdleTimeout());
+        hikari.setMaxLifetime(hikariSettings.getMaxLifetime());
+
+        return hikari;
     }
 }
