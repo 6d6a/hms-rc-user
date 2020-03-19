@@ -11,17 +11,22 @@ import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
 @Component
 public class Cleaner {
-    public String cleanString(String input) {
+    public String cleanString(Object input) {
         if (input == null) {
             return "";
+        } else if (input instanceof String) {
+            return ((String) input).trim();
+        } else {
+            return input.toString();
         }
-        return input.trim();
     }
 
-    public Map<String, String> cleanMapWithStrings(Map<String, String> stringMap) {
+    public Map<String, String> cleanMapWithStrings(Object stringMap) {
         Map<String, String> clearedMap = new HashMap<>();
-        if (stringMap != null) {
-            stringMap.forEach((key, value) -> {
+        if (stringMap instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<Object, Object> map = (Map<Object, Object>) stringMap;
+            map.forEach((key, value) -> {
                 clearedMap.put(cleanString(key), cleanString(value));
             });
         }

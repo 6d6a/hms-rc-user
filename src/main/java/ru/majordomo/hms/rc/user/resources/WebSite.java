@@ -3,8 +3,13 @@ package ru.majordomo.hms.rc.user.resources;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -18,6 +23,9 @@ import javax.validation.constraints.NotNull;
 import ru.majordomo.hms.rc.user.resources.validation.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 
+@Getter
+@Setter
+@ToString
 @Document(collection = "webSites")
 @ValidWebSite
 @JsonFilter("websiteFilter")
@@ -75,6 +83,25 @@ public class WebSite extends Resource implements Serviceable {
     private List<@ValidFileExtension String> staticFileExtensions = new ArrayList<>();
 
     private String customUserConf;
+
+    /**
+     * Команды выполняемые во время установки пользовательского приложения
+     */
+    @Nullable
+    private String appInstallCommands;
+
+    /**
+     * Адрес по которому нужно загрузить приложение
+     */
+    @Nullable
+    @ValidAppLoadUrl
+    private String appLoadUrl;
+
+    /**
+     * Дополнительные параметры необходимые для загрузки приложения из репозитория клиента.
+     * Например: имя пользователя, пароль, ветка git
+     */
+    private Map<String, String> appLoadParams = new HashMap<>();
 
     @Valid
     private List<@ValidFileName String> indexFileList = new ArrayList<>();
@@ -458,46 +485,5 @@ public class WebSite extends Resource implements Serviceable {
 
     public void setMbstringInternalEncoding(String mbstringInternalEncoding) {
         this.mbstringInternalEncoding = mbstringInternalEncoding;
-    }
-
-    @Override
-    public String toString() {
-        return "WebSite{" +
-                "id=" + this.getId() +
-                ", name=" + this.getName() +
-                ", unixAccount=" + unixAccount +
-                ", serviceId='" + serviceId + '\'' +
-                ", documentRoot='" + documentRoot + '\'' +
-                ", domains=" + domains +
-                ", charSet=" + charSet +
-                ", ssiEnabled=" + ssiEnabled +
-                ", ssiFileExtensions=" + ssiFileExtensions +
-                ", cgiEnabled=" + cgiEnabled +
-                ", cgiFileExtensions=" + cgiFileExtensions +
-                ", scriptAlias='" + scriptAlias + '\'' +
-                ", ddosProtection=" + ddosProtection +
-                ", autoSubDomain=" + autoSubDomain +
-                ", accessByOldHttpVersion=" + accessByOldHttpVersion +
-                ", staticFileExtensions=" + staticFileExtensions +
-                ", customUserConf='" + customUserConf + '\'' +
-                ", indexFileList=" + indexFileList +
-                ", accessLogEnabled=" + accessLogEnabled +
-                ", errorLogEnabled=" + errorLogEnabled +
-                ", followSymLinks=" + followSymLinks +
-                ", multiViews=" + multiViews +
-                ", allowUrlFopen=" + allowUrlFopen +
-                ", mbstringFuncOverload=" + mbstringFuncOverload +
-                ", displayErrors=" + displayErrors +
-                ", sessionUseTransSid=" + sessionUseTransSid +
-                ", maxInputVars=" + maxInputVars +
-                ", opcacheMaxAcceleratedFiles=" + opcacheMaxAcceleratedFiles +
-                ", realpathCacheSize=" + realpathCacheSize +
-                ", requestOrder='" + requestOrder + '\'' +
-                ", allowUrlInclude=" + allowUrlInclude +
-                ", opcacheRevalidateFreq=" + opcacheRevalidateFreq +
-                ", memoryLimit=" + memoryLimit +
-                ", mbstringInternalEncoding=" + mbstringInternalEncoding +
-                ", expiresForTypes=" + expiresForTypes +
-                "} " + super.toString();
     }
 }
