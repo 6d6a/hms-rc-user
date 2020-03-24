@@ -147,8 +147,13 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             if (serviceMessage.getParam("ttl") != null && !serviceMessage.getParam("ttl").equals("")) {
                 record.setTtl(((Number) serviceMessage.getParam("ttl")).longValue());
             }
-            if (serviceMessage.getParam("prio") != null && !serviceMessage.getParam("prio").equals("")) {
-                record.setPrio(((Number) serviceMessage.getParam("prio")).longValue());
+            if (serviceMessage.getParam("prio") != null) {
+                if (serviceMessage.getParam("prio") instanceof String) {
+                    String prioStr = (String) serviceMessage.getParam("prio");
+                    record.setPrio(prioStr.isEmpty() ? null : Long.parseLong(prioStr));
+                } else {
+                    record.setPrio(((Number) serviceMessage.getParam("prio")).longValue());
+                }
             }
             if (serviceMessage.getParam("type") != null) {
                 for (DNSResourceRecordType type : DNSResourceRecordType.values()) {
@@ -157,7 +162,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
                     }
                 }
             }
-        } catch (ClassCastException e) {
+        } catch (ClassCastException | NumberFormatException e) {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
     }
