@@ -79,13 +79,13 @@ public class UnixAccountRESTController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('MALWARE_REPORT') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/unix-account/{unixAccountId}/malware-report")
     public MalwareReport getMalwareReport(@PathVariable String accountId, @PathVariable String unixAccountId) {
         return governor.getMalwareReport(accountId, unixAccountId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('MALWARE_REPORT')")
     @PostMapping("/unix-account/{unixAccountId}/malware-report")
     public ResponseEntity<Void> reportMalware(@PathVariable String unixAccountId, @RequestBody MalwareReport report) {
         report.setUnixAccountId(unixAccountId);
