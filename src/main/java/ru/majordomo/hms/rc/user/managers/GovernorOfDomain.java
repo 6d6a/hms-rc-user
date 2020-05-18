@@ -144,9 +144,13 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     public Domain create(ServiceMessage serviceMessage) throws ParameterValidationException {
         Domain domain;
         boolean needRegister = false;
+        boolean needTransfer = false;
         try {
             if (serviceMessage.getParam("register") instanceof Boolean) {
                 needRegister = (Boolean) serviceMessage.getParam("register");
+            }
+            if (serviceMessage.getParam("transfer") instanceof Boolean) {
+                needTransfer = (Boolean) serviceMessage.getParam("transfer");
             }
 
             domain = buildResourceFromServiceMessage(serviceMessage);
@@ -189,6 +193,20 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     throw new ParameterValidationException(e.getMessage());
                 }
             }
+
+            if (needTransfer) {
+                try {
+                    domain.setNeedSync(LocalDateTime.now());
+                    domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+                } catch (Exception e) {
+                    //При переносе в любом случае добавить домен, так как к этому моменту в reg-rpc был выполнен трансфер
+                    log.info("accountId {} catch e {} with registrar.getRegSpec(domain: {}); message: {}",
+                            serviceMessage.getAccountId(), e.getClass(), domain.getName(), e.getMessage()
+                    );
+                    e.printStackTrace();
+                }
+            }
+
             store(domain);
 
         } catch (ClassCastException e) {
@@ -200,8 +218,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 governorOfDnsRecord.initDomain(domain);
             }
         } catch (DataAccessException ex) {
-            if (needRegister) {
-                // игнорировать исключения во время регистрации чтобы произошли списания
+            if (needRegister || needTransfer) {
+                // игнорировать исключения во время регистрации и трансфера, чтобы произошли списания
                 log.error(ex.getMessage());
                 ex.printStackTrace();
             } else {
@@ -456,7 +474,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     public Domain buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException {
         Domain domain = new Domain();
         setResourceParams(domain, serviceMessage, cleaner);
-        if (serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register")) {
+        if (
+                serviceMessage.getParam("register") != null && (Boolean) serviceMessage.getParam("register") ||
+                serviceMessage.getParam("transfer") != null && (Boolean) serviceMessage.getParam("transfer")
+        ) {
             if (serviceMessage.getParam("personId") != null) {
                 String domainPersonId = cleaner.cleanString((String) serviceMessage.getParam("personId"));
                 Person domainPerson = governorOfPerson.build(domainPersonId);
