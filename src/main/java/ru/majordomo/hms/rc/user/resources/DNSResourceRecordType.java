@@ -8,5 +8,6 @@ public enum DNSResourceRecordType {
     SRV,
     TXT,
     SOA,
-    NS
+    NS,
+    CAA
 }
