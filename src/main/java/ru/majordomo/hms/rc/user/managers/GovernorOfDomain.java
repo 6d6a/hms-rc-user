@@ -270,6 +270,12 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                             }
 
                             break;
+                        case "transfer":
+                            if ((Boolean) entry.getValue()) {
+                                processExistsDomainTransferToUs(domain, serviceMessage);
+                            }
+
+                            break;
                         case "switchedOn":
                             Boolean switchedOn = (Boolean) entry.getValue();
                             governorOfDnsRecord.setZoneStatus(domain, switchedOn);
@@ -858,6 +864,28 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     serviceMessage.getAccountId(), e.getClass(), person.getNicHandle(), domain.getName(), e.getMessage()
             );
             throw new ParameterValidationException(e.getMessage());
+        }
+    }
+
+    private void processExistsDomainTransferToUs(Domain domain, ServiceMessage serviceMessage) {
+        if (serviceMessage.getParam("personId") != null) {
+            String domainPersonId = cleaner.cleanString(serviceMessage.getParam("personId"));
+            Person person = governorOfPerson.build(domainPersonId);
+            domain.setPerson(person);
+            governorOfPerson.validate(person);
+        } else {
+            throw new ParameterValidationException("Для осуществления трансфера персона должна быть указана");
+        }
+
+        try {
+            domain.setAutoRenew(true);
+            domain.setNeedSync(LocalDateTime.now());
+            domain.setRegSpec(registrar.getRegSpec(domain.getName()));
+        } catch (Exception e) {
+            log.info("accountId {} catch e {} with registrar.getRegSpec(domain: {}); message: {}",
+                    serviceMessage.getAccountId(), e.getClass(), domain.getName(), e.getMessage()
+            );
+            e.printStackTrace();
         }
     }
 }
