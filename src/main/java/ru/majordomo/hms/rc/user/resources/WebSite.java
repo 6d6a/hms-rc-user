@@ -91,6 +91,12 @@ public class WebSite extends Resource implements Serviceable {
     private String appInstallCommands;
 
     /**
+     * Команды выполняемые во время обновления пользовательского приложения
+     */
+    @Nullable
+    private String appUpdateCommands;
+
+    /**
      * Адрес по которому нужно загрузить приложение
      */
     @Nullable
@@ -102,6 +108,12 @@ public class WebSite extends Resource implements Serviceable {
      * Например: имя пользователя, пароль, ветка git
      */
     private Map<String, String> appLoadParams = new HashMap<>();
+
+    @Nullable
+    private String pythonModule;
+
+    @Valid
+    private List<@ValidRelativeFilePath String> staticFileDirs = new ArrayList<>();
 
     @Valid
     private List<@ValidFileName String> indexFileList = new ArrayList<>();

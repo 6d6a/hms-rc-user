@@ -73,11 +73,13 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
                 context.getExtendedActionParams().put("datasourceUri", webSite.getAppLoadUrl());
                 context.getExtendedActionParams().put("dataSourceParams", webSite.getAppLoadParams());
                 context.getExtendedActionParams().put("extendedAction", extendedAction);
+                context.getExtendedActionParams().put("maxRetries", 0);
                 break;
             case INSTALL:
                 if (context.getAction() != ResourceAction.UPDATE) {
                     throw new ParameterValidationException("Действие возможно только для созданного сайта");
                 }
+                context.getExtendedActionParams().put("maxRetries", 0);
                 context.getExtendedActionParams().put("dataPostprocessorType", "docker");
                 context.getExtendedActionParams().put("dataPostprocessorArgs", new HashMap<String, Object>() {{
                     put("image", deployImage);
@@ -92,10 +94,26 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
                 if (StringUtils.isBlank(webSite.getAppInstallCommands())) {
                     throw new ParameterValidationException("Необходимо задать shell команды");
                 }
+                context.getExtendedActionParams().put("maxRetries", 0);
                 context.getExtendedActionParams().put("dataPostprocessorType", "docker");
                 context.getExtendedActionParams().put("dataPostprocessorArgs", new HashMap<String, Object>() {{
                     put("image", deployImage);
                     put("command",  Arrays.asList("shell", webSite.getAppInstallCommands()));
+                }});
+                context.getExtendedActionParams().put("extendedAction", extendedAction);
+                break;
+            case SHELL_UPDATE:
+                if (context.getAction() != ResourceAction.UPDATE) {
+                    throw new ParameterValidationException("Действие возможно только для созданного сайта");
+                }
+                if (StringUtils.isBlank(webSite.getAppUpdateCommands())) {
+                    throw new ParameterValidationException("Необходимо задать shell команды");
+                }
+                context.getExtendedActionParams().put("maxRetries", 0);
+                context.getExtendedActionParams().put("dataPostprocessorType", "docker");
+                context.getExtendedActionParams().put("dataPostprocessorArgs", new HashMap<String, Object>() {{
+                    put("image", deployImage);
+                    put("command",  Arrays.asList("shell", webSite.getAppUpdateCommands()));
                 }});
                 context.getExtendedActionParams().put("extendedAction", extendedAction);
                 break;
