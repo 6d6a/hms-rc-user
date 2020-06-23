@@ -92,7 +92,7 @@ public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
                 MapUtils.getBooleanValue(context.getMessage().getParams(), "success", true) &&
                 MapUtils.getString(context.getMessage().getParams(), "errorMessage", "").isEmpty()
         ) {
-            // нужно как-то отделить сообщения корректные сообщения на изменения от собщений от te, ошибок rc-user, чего-нибудь еще
+            // нужно как-то отделить корректные сообщения на изменения от собщений от te, ошибок rc-user, чего-нибудь еще
             result.getParams().putAll(context.getExtendedActionParams());
         }
         return result;

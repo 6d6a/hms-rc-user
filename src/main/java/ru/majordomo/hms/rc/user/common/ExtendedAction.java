@@ -8,5 +8,5 @@ public enum ExtendedAction {
     /**
      * установить зависимости
      */
-    INSTALL, SHELL
+    INSTALL, SHELL, SHELL_UPDATE;
 }

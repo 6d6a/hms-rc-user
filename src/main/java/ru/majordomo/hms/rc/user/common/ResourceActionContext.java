@@ -4,6 +4,7 @@ import lombok.Data;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class ResourceActionContext<T extends Resource> {
     /**
      * Сообщения которые необходимо добавить к TE
      */
+    @Nonnull
     private Map<String, Object> extendedActionParams = new HashMap<>();
 
     private String routingKey = "";

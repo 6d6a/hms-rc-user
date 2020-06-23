@@ -215,6 +215,16 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         break;
                     case "appLoadParams":
                         website.setAppLoadParams(cleaner.cleanMapWithStrings(entry.getValue()));
+                        break;
+                    case "pythonModule":
+                        website.setPythonModule(cleaner.cleanString(entry.getValue()));
+                        break;
+                    case "staticFileDirs":
+                        website.setStaticFileDirs(cleaner.cleanListWithStrings(entry.getValue()));
+                        break;
+                    case "appUpdateCommands":
+                        website.setAppUpdateCommands(cleaner.cleanString(entry.getValue()));
+                        break;
                     default:
                         break;
                 } // switch
@@ -337,6 +347,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             String appLoadUrl = cleaner.cleanString(serviceMessage.getParam("appLoadUrl"));
             Map<String, String> appLoadParams = cleaner.cleanMapWithStrings(serviceMessage.getParam("appLoadUrl"));
 
+            String pythonModule = cleaner.cleanString(serviceMessage.getParam("pythonModule"));
+            List<String> staticFileDirs = cleaner.cleanListWithStrings(serviceMessage.getParam("staticFileDirs"));
+            String appUpdateCommands = cleaner.cleanString(serviceMessage.getParam("appUpdateCommands"));
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -369,7 +382,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setAppLoadParams(appLoadParams);
             webSite.setAppLoadUrl(appLoadUrl);
             webSite.setAppInstallCommands(appInstallCommands);
-        } catch (ClassCastException e) {
+            webSite.setPythonModule(pythonModule);
+            webSite.setStaticFileDirs(staticFileDirs);
+            webSite.setAppUpdateCommands(appUpdateCommands);
+        } catch (ClassCastException | IllegalArgumentException e) {
             log.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
@@ -481,7 +497,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         if (webSite.getExpiresForTypes() == null) {
             webSite.setExpiresForTypes(new HashMap<>());
         }
-
+        if (webSite.getStaticFileDirs() == null) {
+            webSite.setStaticFileDirs(new ArrayList<>());
+        }
 
         Map<String, String> expiresForTypes = webSite.getExpiresForTypes().entrySet().stream()
                 .filter(extExpires -> !"off".equals(extExpires.getValue()))

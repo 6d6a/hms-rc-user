@@ -9,8 +9,12 @@ import java.util.Map;
 
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 @Component
 public class Cleaner {
+    @Nonnull
     public String cleanString(Object input) {
         if (input == null) {
             return "";
@@ -21,6 +25,7 @@ public class Cleaner {
         }
     }
 
+    @Nonnull
     public Map<String, String> cleanMapWithStrings(Object stringMap) {
         Map<String, String> clearedMap = new HashMap<>();
         if (stringMap instanceof Map) {
@@ -33,20 +38,23 @@ public class Cleaner {
         return clearedMap;
     }
 
-    public List<String> cleanListWithStrings(List<String> stringList) {
+    @Nonnull
+    public List<String> cleanListWithStrings(Object stringList) {
         List<String> cleanedStringList = new ArrayList<>();
-        if (stringList == null) {
-            return cleanedStringList;
-        }
-        for (String aStringList : stringList) {
-            String element = cleanString(aStringList);
-            if (!element.equals("")) {
-                cleanedStringList.add(element);
+        if (stringList instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Object> list = (List<Object>) stringList;
+            for (Object object : list) {
+                String element = cleanString(object);
+                if (!element.equals("")) {
+                    cleanedStringList.add(element);
+                }
             }
         }
         return cleanedStringList;
     }
 
+    @Nullable
     public Boolean cleanBoolean(Object booleanObject) {
         if (booleanObject == null) {
             return null;
@@ -61,6 +69,7 @@ public class Cleaner {
         }
     }
 
+    @Nullable
     public Integer cleanInteger(Object integerObject) {
         if (integerObject == null) {
             return null;
