@@ -75,6 +75,7 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
                 context.getExtendedActionParams().put("extendedAction", extendedAction);
                 context.getExtendedActionParams().put("maxRetries", 0);
                 break;
+
             case INSTALL:
                 if (context.getAction() != ResourceAction.UPDATE) {
                     throw new ParameterValidationException("Действие возможно только для созданного сайта");
@@ -87,6 +88,27 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
                 }});
                 context.getExtendedActionParams().put("extendedAction", extendedAction);
                 break;
+
+            case LOAD_INSTALL:
+                if (!EnumSet.of(ResourceAction.UPDATE, ResourceAction.CREATE).contains(context.getAction())) {
+                    throw new ParameterValidationException("Действие возможно только при создании и изменении сайта");
+                }
+                if (StringUtils.isEmpty(webSite.getAppLoadUrl())) {
+                    throw new ParameterValidationException("Для загрузки приложения необходимо задать адрес");
+                }
+                context.getExtendedActionParams().putAll(new HashMap<String, Object>() {{
+                    put("extendedAction", extendedAction);
+                    put("maxRetries", 0);
+                    put("dataPostprocessorType", "docker");
+                    put("datasourceUri", webSite.getAppLoadUrl());
+                    put("dataSourceParams", webSite.getAppLoadParams());
+                    put("dataPostprocessorArgs", new HashMap<String, Object>() {{
+                        put("image", deployImage);
+                        put("command",  Collections.singletonList("install"));
+                    }});
+                }});
+                break;
+
             case SHELL:
                 if (context.getAction() != ResourceAction.UPDATE) {
                     throw new ParameterValidationException("Действие возможно только для созданного сайта");
@@ -102,20 +124,23 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
                 }});
                 context.getExtendedActionParams().put("extendedAction", extendedAction);
                 break;
-            case SHELL_UPDATE:
+
+            case SHELLUPDATE:
                 if (context.getAction() != ResourceAction.UPDATE) {
                     throw new ParameterValidationException("Действие возможно только для созданного сайта");
                 }
                 if (StringUtils.isBlank(webSite.getAppUpdateCommands())) {
                     throw new ParameterValidationException("Необходимо задать shell команды");
                 }
-                context.getExtendedActionParams().put("maxRetries", 0);
-                context.getExtendedActionParams().put("dataPostprocessorType", "docker");
-                context.getExtendedActionParams().put("dataPostprocessorArgs", new HashMap<String, Object>() {{
-                    put("image", deployImage);
-                    put("command",  Arrays.asList("shell", webSite.getAppUpdateCommands()));
+                context.getExtendedActionParams().putAll(new HashMap<String, Object>() {{
+                    put("maxRetries", 0);
+                    put("dataPostprocessorType", "docker");
+                    put("extendedAction", extendedAction);
+                    put("dataPostprocessorArgs", new HashMap<String, Object>() {{
+                        put("image", deployImage);
+                        put("command",  Arrays.asList("shell", webSite.getAppUpdateCommands()));
+                    }});
                 }});
-                context.getExtendedActionParams().put("extendedAction", extendedAction);
                 break;
         }
     }

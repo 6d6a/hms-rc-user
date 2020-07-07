@@ -8,5 +8,9 @@ public enum ExtendedAction {
     /**
      * установить зависимости
      */
-    INSTALL, SHELL, SHELL_UPDATE;
+    INSTALL, SHELL,
+    /** выполнить команды из Website.appUpdateCommands */
+    SHELLUPDATE,
+    /** загрузка из git и команды установки */
+    LOAD_INSTALL;
 }
