@@ -78,11 +78,16 @@ public class WebSiteRESTController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
     @GetMapping("{accountId}/website/{websiteId}")
-    public ResponseEntity readOneByAccountId(@PathVariable("accountId") String accountId,@PathVariable("websiteId") String websiteId) {
+    public ResponseEntity readOneByAccountId(
+            @PathVariable("accountId") String accountId,
+            @PathVariable("websiteId") String websiteId,
+            @RequestParam(value = "filter", defaultValue = "true") boolean filter
+    ) {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("resourceId", websiteId);
         keyValue.put("accountId", accountId);
-        return ResponseEntity.ok(getWrapperFromWebSite(governor.build(keyValue)));
+        WebSite webSite = governor.build(keyValue);
+        return ResponseEntity.ok(filter ? getWrapperFromWebSite(webSite) : webSite);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
