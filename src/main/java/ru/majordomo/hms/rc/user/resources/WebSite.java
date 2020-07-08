@@ -110,6 +110,7 @@ public class WebSite extends Resource implements Serviceable {
     private Map<String, String> appLoadParams = new HashMap<>();
 
     @Nullable
+    @ValidRelativeFilePath
     private String pythonModule;
 
     @Valid
