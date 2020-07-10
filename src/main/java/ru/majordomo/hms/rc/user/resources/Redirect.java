@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
 import ru.majordomo.hms.rc.user.resources.validation.ServiceId;
 import ru.majordomo.hms.rc.user.resources.validation.ValidRedirect;
@@ -21,8 +22,12 @@ import java.util.Set;
 @ValidRedirect
 public class Redirect extends Resource implements Serviceable {
 
-    @ServiceId(groups = RedirectChecks.class)
+    /**
+     * Идентификатор сервиса nginx на rc-staff и веб-сервере
+     * @see Service#getId()
+     */
     @Indexed
+    @ServiceId(groups = RedirectChecks.class)
     private String serviceId;
 
     @ObjectId(value = Domain.class, message = "Домен с id ${validatedValue} не существует")
