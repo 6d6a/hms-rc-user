@@ -12,6 +12,8 @@ import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
 
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+
 @AllArgsConstructor
 public class DefaultUpdatePmProcessor<T extends Resource> implements ResourceProcessor<T> {
     private final ResourceProcessorContext<T> processorContext;
@@ -29,6 +31,12 @@ public class DefaultUpdatePmProcessor<T extends Resource> implements ResourcePro
             resource = processorContext.getGovernor().build(resourceId);
         } catch (Exception e) {
             throw new ResourceNotFoundException("Не найден ресурс с ID: " + resourceId);
+        }
+        if (serviceMessage.getParam("lock") != null) {
+            resource.setLocked((Boolean) serviceMessage.getParam("lock"));
+            processorContext.getGovernor().store(resource);
+            processorContext.getSender().send(context, PM);
+            return;
         }
         if (resource.isLocked()) {
             throw new ParameterValidationException("Ресурс в процессе обновления");

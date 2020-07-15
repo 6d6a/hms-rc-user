@@ -13,6 +13,8 @@ import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resources.*;
 
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+
 @Slf4j
 public class WebsiteUpdateFromPm extends BaseWebsiteProcessor {
 
@@ -33,6 +35,12 @@ public class WebsiteUpdateFromPm extends BaseWebsiteProcessor {
             resource = processorContext.getGovernor().build(resourceId);
         } catch (Exception e) {
             throw new ResourceNotFoundException("Не найден ресурс с ID: " + resourceId);
+        }
+        if (serviceMessage.getParam("lock") != null) {
+            resource.setLocked((Boolean) serviceMessage.getParam("lock"));
+            processorContext.getGovernor().store(resource);
+            processorContext.getSender().send(context, PM);
+            return;
         }
         if (resource.isLocked()) {
             throw new ParameterValidationException("Ресурс в процессе обновления");

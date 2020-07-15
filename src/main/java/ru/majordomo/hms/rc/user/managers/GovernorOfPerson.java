@@ -538,4 +538,20 @@ public class GovernorOfPerson extends LordOfResources<Person> {
                     "у регистратора, либо не находится на партнерском договоре c Majordomo.");
         }
     }
+
+    public Person setLocked(String accountId, String personId, Boolean lockState) {
+        if (lockState == null) {
+            throw new ParameterValidationException("Не передано состояние Lock'а");
+        }
+
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("accountId", accountId);
+        keyValue.put("resourceId", personId);
+        Person person = build(keyValue);
+
+        person.setLocked(lockState);
+        store(person);
+
+        return person;
+    }
 }
