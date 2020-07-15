@@ -95,4 +95,9 @@ public class PersonRestController {
         return governor.buildAll(keyValue);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
+    @PatchMapping("/{accountId}/person/{personId}/lock")
+    public ResponseEntity<Person> toggleLock(@PathVariable String accountId, @PathVariable String personId, @RequestBody Map<String, Boolean> params) {
+        return ResponseEntity.ok(governor.setLocked(accountId, personId, params.get("lock")));
+    }
 }

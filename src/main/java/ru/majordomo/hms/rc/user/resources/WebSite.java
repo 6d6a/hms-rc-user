@@ -182,6 +182,7 @@ public class WebSite extends Resource implements Serviceable {
         filtered.add("domains");
         filtered.add("domainIds");
         filtered.add("charSet");
+        filtered.add("locked");
         if (resourceFilter != null) {
             filtered.addAll(resourceFilter);
         }
