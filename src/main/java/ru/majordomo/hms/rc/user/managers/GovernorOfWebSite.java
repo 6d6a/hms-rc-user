@@ -225,6 +225,8 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                     case "appUpdateCommands":
                         website.setAppUpdateCommands(cleaner.cleanString(entry.getValue()));
                         break;
+                    case "staticRoot":
+                        website.setStaticRoot(cleaner.cleanString(entry.getValue()));
                     default:
                         break;
                 } // switch
@@ -350,6 +352,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             String pythonModule = cleaner.cleanString(serviceMessage.getParam("pythonModule"));
             List<String> staticFileDirs = cleaner.cleanListWithStrings(serviceMessage.getParam("staticFileDirs"));
             String appUpdateCommands = cleaner.cleanString(serviceMessage.getParam("appUpdateCommands"));
+            String staticRoot = cleaner.cleanString(serviceMessage.getParam("staticRoot"));
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
@@ -385,6 +388,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setPythonModule(pythonModule);
             webSite.setStaticFileDirs(staticFileDirs);
             webSite.setAppUpdateCommands(appUpdateCommands);
+            webSite.setStaticRoot(staticRoot);
         } catch (ClassCastException | IllegalArgumentException e) {
             log.error("WebSite buildResourceFromServiceMessage ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
@@ -499,6 +503,9 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         }
         if (webSite.getStaticFileDirs() == null) {
             webSite.setStaticFileDirs(new ArrayList<>());
+        }
+        if (webSite.getStaticRoot() == null) {
+            webSite.setStaticRoot("");
         }
 
         Map<String, String> expiresForTypes = webSite.getExpiresForTypes().entrySet().stream()

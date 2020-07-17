@@ -111,6 +111,10 @@ public class WebSite extends Resource implements Serviceable {
 
     @Nullable
     private String pythonModule;
+    
+    @Nullable
+    @ValidRelativeFilePath
+    private String staticRoot;
 
     @Valid
     private List<@ValidRelativeFilePath String> staticFileDirs = new ArrayList<>();
