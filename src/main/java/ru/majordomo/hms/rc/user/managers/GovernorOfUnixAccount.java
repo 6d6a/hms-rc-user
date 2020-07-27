@@ -468,6 +468,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             buildedUnixAccounts = repository.findByAccountId(keyValue.get("accountId"));
         } else if (keyValue.get("serverId") != null) {
             buildedUnixAccounts = repository.findByServerId(keyValue.get("serverId"));
+        } else if (keyValue.get("name") != null) {
+            buildedUnixAccounts = repository.findUnixAccountsByName(keyValue.get("name"));
         }
 
         for (UnixAccount unixAccount : buildedUnixAccounts) {
