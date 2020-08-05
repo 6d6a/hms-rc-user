@@ -606,6 +606,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         List<MalwareReport> stored = malwareReportRepository.findByUnixAccountId(report.getUnixAccountId());
 
         if (stored.size() > 0) {
+            stored.get(0).setInfectedFiles(report.getInfectedFiles());
             report = stored.get(0);
         }
 
