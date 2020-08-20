@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
@@ -23,6 +26,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @Document(collection = "domains")
 @UniqueNameResource(Domain.class)
 public class Domain extends Resource {
@@ -58,6 +63,11 @@ public class Domain extends Resource {
 
     @JsonIgnore
     private LocalDateTime needSync;
+
+    /** Параметры DKIM подписи */
+    @Nullable
+    @Transient
+    private DKIM dkim;
 
     @Override
     public void switchResource() {

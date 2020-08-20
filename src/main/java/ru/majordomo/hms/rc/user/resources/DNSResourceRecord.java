@@ -11,8 +11,11 @@ import ru.majordomo.hms.rc.user.resources.validation.ValidDnsRecord;
 public class DNSResourceRecord extends Resource {
     private Long domainId;
     private Long recordId;
+
+    /** полное доменное имя DNS-записи, например: mail._domainkey.example.com */
     private String ownerName;
     private Long ttl = 3600L;
+    /** контент, значение DNS-записи */
     private String data;
     private Long prio;
     private DNSResourceRecordClass rrClass;

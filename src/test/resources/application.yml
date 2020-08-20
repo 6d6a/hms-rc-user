@@ -10,6 +10,10 @@ resources:
   quotable:
     warnPercent:
       mailbox: 90
+  dkim:
+    selector: "mj"
+    contentPattern: "v=DKIM1; h=sha256; k=rsa; p=$PUBLICKEY"
+
 spring:
   datasource:
     driverClassName: com.mysql.jdbc.Driver

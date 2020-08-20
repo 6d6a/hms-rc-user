@@ -1,10 +1,11 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.jcraft.jsch.JSchException;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
@@ -35,7 +36,9 @@ import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.DKIMManager;
 import ru.majordomo.hms.rc.user.event.domain.DomainWasDeleted;
+import ru.majordomo.hms.rc.user.repositories.DKIMRepository;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -64,6 +67,18 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     private StaffResourceControllerClient staffRcClient;
     protected String applicationName;
     private ApplicationEventPublisher publisher;
+
+    @Setter
+    @Autowired
+    private DKIMRepository dkimRepository;
+
+    @Setter
+    @Value("${resources.dkim.selector}")
+    private String dkimSelector;
+
+    @Setter
+    @Value("${resources.dkim.contentPattern}")
+    private String dkimContentPattern;
 
     @Autowired
     public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
@@ -145,6 +160,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         Domain domain;
         boolean needRegister = false;
         boolean needTransfer = false;
+        boolean needGenerateDkim = Boolean.TRUE.equals(serviceMessage.getParam("generateDkim"));
         try {
             if (serviceMessage.getParam("register") instanceof Boolean) {
                 needRegister = (Boolean) serviceMessage.getParam("register");
@@ -154,6 +170,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             }
 
             domain = buildResourceFromServiceMessage(serviceMessage);
+
             validate(domain);
 
             if (needRegister) {
@@ -209,6 +226,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
             store(domain);
 
+            if (needGenerateDkim && domain.getId() != null) {
+                generateAndSaveDkim(domain, true);
+            }
+
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
@@ -231,6 +252,23 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         }
 
         return domain;
+    }
+
+    private boolean generateAndSaveDkim(Domain domain, boolean switchedOn) {
+        try {
+            DKIM dkim = DKIMManager.generateDkim(dkimSelector, dkimContentPattern);
+            dkim.setId(domain.getId());
+            dkim.setSwitchedOn(switchedOn);
+            dkimRepository.save(dkim);
+            governorOfMailbox.saveOnlyDkim(dkim, domain.getName());
+            dkim.setPrivateKey(null);
+
+            domain.setDkim(dkim);
+            return true;
+        } catch (JSchException e) {
+            log.error("Cannot generate dkim for domain: " + domain.getName(), e);
+            return false;
+        }
     }
 
     @Override
@@ -284,6 +322,39 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
                             updateWebSite = true;
 
+                            break;
+                        case "dkim":
+                            if (entry.getValue() instanceof Map) {
+                                Map dkimMap = (Map) entry.getValue();
+                                if (dkimMap.get("switchedOn") instanceof Boolean) {
+                                    boolean dkimSwitchedOn = (Boolean) dkimMap.get("switchedOn");
+                                    DKIM dkim = domain.getDkim();
+                                    if (dkim == null) {
+                                        generateAndSaveDkim(domain, dkimSwitchedOn);
+                                        if (dkimSwitchedOn) {
+                                            try {
+                                                governorOfDnsRecord.setupDkimRecords(domain);
+                                            } catch (DataAccessException e) {
+                                                log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
+                                            }
+                                        }
+                                    } else {
+                                        dkim.setSwitchedOn(dkimSwitchedOn);
+                                        dkimRepository.setSwitchedOn(dkim.getId(), dkimSwitchedOn);
+                                        governorOfMailbox.saveOnlyDkim(dkim, domain.getName());
+                                    }
+                                }
+                            }
+                            break;
+                        case "generateDkim":
+                            if (Boolean.TRUE.equals(entry.getValue())) {
+                                try {
+                                    generateAndSaveDkim(domain, true);
+                                    governorOfDnsRecord.setupDkimRecords(domain);
+                                } catch (DataAccessException e) {
+                                    log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
+                                }
+                            }
                             break;
                         default:
                             break;

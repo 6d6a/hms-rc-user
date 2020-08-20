@@ -291,6 +291,9 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         addNsRecords(domain, domainId);
         addDefaultARecords(domain, domainId);
         addMailRecords(domain, domainId);
+        if (domain.getDkim() != null) {
+            setupDkimRecords(domain);
+        }
     }
 
     public void addNsRecords(Domain domain, Long domainId) {
@@ -306,6 +309,8 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         record.setData("ns2.majordomo.ru");
         dnsResourceRecordDAO.insert(record);
         record.setData("ns3.majordomo.ru");
+        dnsResourceRecordDAO.insert(record);
+        record.setData("ns4.majordomo.ru");
         dnsResourceRecordDAO.insert(record);
     }
 
@@ -419,6 +424,20 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         cnameRecord.setOwnerName("mail." + domainName);
         cnameRecord.setData("mail.majordomo.ru");
         dnsResourceRecordDAO.insert(cnameRecord);
+    }
+    
+    public void setupDkimRecords(Domain domain) {
+        if (domain.getDkim() == null || domain.getDkim().getData() == null) return;
+        String domainName = IDN.toASCII(domain.getName());
+
+        DNSResourceRecord dkimRecord = new DNSResourceRecord();
+        dkimRecord.setRrType(DNSResourceRecordType.TXT);
+        dkimRecord.setRrClass(DNSResourceRecordClass.IN);
+        dkimRecord.setTtl(3600L);
+        dkimRecord.setOwnerName(domain.getDkim().getSelector() + "._domainkey." + domainName);
+        dkimRecord.setData(domain.getDkim().getData());
+
+        dnsResourceRecordDAO.insertOrUpdateByOwnerName(domainName, dkimRecord);
     }
 
     void setZoneStatus(Domain domain, Boolean switchedOn) {

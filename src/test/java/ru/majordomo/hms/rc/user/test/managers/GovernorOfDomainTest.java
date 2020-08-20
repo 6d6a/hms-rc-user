@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
+import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
@@ -33,10 +34,7 @@ import java.util.Map;
 import javax.validation.ConstraintViolationException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
@@ -222,5 +220,20 @@ public class GovernorOfDomainTest {
         keyValue.put("name", domains.get(0).getName());
         Domain domain = governor.build(keyValue);
         System.out.println(domain.getName());
+    }
+
+    @Test
+    public void createAndGenerateDkim() {
+        ServiceMessage serviceMessage = new ServiceMessage();
+        serviceMessage.setAccountId(domains.get(0).getAccountId());
+        serviceMessage.setActionIdentity(ObjectId.get().toString());
+        serviceMessage.addParam("name", "domain.com");
+        serviceMessage.addParam("generateDkim", true);
+        Domain domain = governor.create(serviceMessage);
+        assertNotNull(domain.getDkim());
+        assertFalse(StringUtils.isBlank(domain.getDkim().getPublicKey()));
+        assertFalse(StringUtils.isBlank(domain.getDkim().getSelector()));
+        String expectedData = "v=DKIM1; h=sha256; k=rsa; p=" + domain.getDkim().getPublicKey();
+        assertEquals(expectedData, domain.getDkim().getData());
     }
 }

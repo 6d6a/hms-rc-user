@@ -6,6 +6,7 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 
+import lombok.Setter;
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -25,6 +26,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -39,15 +41,12 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
+import ru.majordomo.hms.rc.user.repositories.DKIMRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
-import ru.majordomo.hms.rc.user.resources.Domain;
-import ru.majordomo.hms.rc.user.resources.Mailbox;
-import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
-import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
-import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 
@@ -74,6 +73,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     private int warnPercent;
 
     private String majordomoMailboxServerId;
+
+    @Setter
+    @Autowired
+    private DKIMRepository dkimRepository;
 
     @Value("${resources.quotable.warnPercent.mailbox}")
     public void setWarnPercent(int warnPercent){
@@ -221,9 +224,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         if (userValue) {
                             assignAsAggregator(mailbox);
                         } else {
-                            if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
-                                dropAggregatorInRedis(mailbox);
-                            }
                             mailbox.setIsAggregator(userValue);
                         }
                         break;
@@ -473,7 +473,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         return mailbox;
     }
 
-    private Boolean hasAggregator(String domainId) {
+    private boolean hasAggregator(String domainId) {
         return repository.findByDomainIdAndIsAggregator(domainId, true) != null;
     }
 
@@ -706,6 +706,19 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
         mailboxForRedis.setAllowedIps(String.join(":", mailbox.getAllowedIps()));
 
+        if ("*".equals(mailbox.getName()) && mailbox.getDomain() != null) {
+            DKIM dkim = mailbox.getDomain().getDkim();
+            if (dkim != null && dkim.isSwitchedOn()) {
+                if (dkim.getPrivateKey() == null) {
+                    dkim = dkimRepository.findById(mailbox.getDomain().getId()).orElse(null);
+                }
+                if (dkim != null) {
+                    mailboxForRedis.setDkimKey(dkim.getPrivateKey());
+                    mailboxForRedis.setDkimSelector(dkim.getSelector());
+                }
+            }
+        }
+
         return mailboxForRedis;
     }
 
@@ -748,9 +761,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private void setAggregatorInRedis(Mailbox mailbox) {
+        Domain domain = (construct(mailbox)).getDomain();
         String uidAsString = mailbox.getUid().toString();
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        mailboxForRedis.setId("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
+        mailboxForRedis.setId(getAsteriskRedisId(domain.getName()));
         mailboxForRedis.setName(mailbox.getFullNameInPunycode());
         mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
         mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackListInPunycode()));
@@ -765,11 +779,22 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setServerName(serverName);
         mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
 
+        DKIM dkim = domain.getDkim();
+        if (dkim != null && dkim.isSwitchedOn()) {
+            if (dkim.getPrivateKey() == null) {
+                dkim = dkimRepository.findById(domain.getId()).orElse(null);
+            }
+            if (dkim != null) {
+                mailboxForRedis.setDkimKey(dkim.getPrivateKey());
+                mailboxForRedis.setDkimSelector(dkim.getSelector());
+            }
+        }
+
         redisRepository.save(mailboxForRedis);
     }
 
     private void dropAggregatorInRedis(Mailbox mailbox) {
-        redisRepository.deleteById("*@" + IDN.toASCII((construct(mailbox)).getDomain().getName()));
+        redisRepository.deleteById(getAsteriskRedisId((construct(mailbox)).getDomain().getName()));
     }
 
     public void updateQuota(String mailboxId, Long quotaSize) {
@@ -905,4 +930,28 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             }
         }
     }
+
+    private String getAsteriskRedisId(String domainName) {
+        return "*@" + IDN.toASCII(domainName);
+    }
+
+    public void saveOnlyDkim(@Nullable DKIM dkim, String domainName) {
+        MailboxForRedis mailboxForRedis = redisRepository.findById(getAsteriskRedisId(domainName)).orElse(null);
+        if (mailboxForRedis == null) {
+            mailboxForRedis = new MailboxForRedis();
+            mailboxForRedis.setId(getAsteriskRedisId(domainName));
+        }
+        if (dkim != null && dkim.getPrivateKey() == null) {
+            dkim = dkimRepository.findById(dkim.getId()).orElse(null);
+        }
+        if (dkim != null && dkim.isSwitchedOn() && dkim.getPrivateKey() != null) {
+            mailboxForRedis.setDkimSelector(dkim.getSelector());
+            mailboxForRedis.setDkimKey(dkim.getPrivateKey());
+        } else {
+            mailboxForRedis.setDkimSelector(null);
+            mailboxForRedis.setDkimKey(null);
+        }
+        redisRepository.save(mailboxForRedis);
+    }
+
 }
