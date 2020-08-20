@@ -14,6 +14,7 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,6 +61,26 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
         jdbcTemplate.update(query, parameters, holder, new String[]{"id"});
         return holder.getKey().longValue();
+    }
+
+    public Long insertOrUpdateByOwnerName(@Nonnull String domainName, @Nonnull DNSResourceRecord record) {
+        Long domainId = record.getDomainId();
+        if (domainId == null) {
+            domainId = getDomainIDByDomainNameOrCreate(domainName);
+            if (domainId == null) return null;
+            record.setDomainId(domainId);
+        }
+
+        String query = "SELECT id FROM records d WHERE name = :name LIMIT 1";
+        MapSqlParameterSource parameters = new MapSqlParameterSource("name", record.getOwnerName());
+        try {
+            Long recordId = jdbcTemplate.queryForObject(query, parameters, Long.class);
+            record.setRecordId(recordId);
+            update(record);
+            return recordId;
+        } catch (EmptyResultDataAccessException ex) {
+            return insert(record);
+        }
     }
 
     public void save(DNSResourceRecord record) {
