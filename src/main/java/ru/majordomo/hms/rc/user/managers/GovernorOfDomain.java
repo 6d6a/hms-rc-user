@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.net.IDN;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -265,7 +266,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
             domain.setDkim(dkim);
             return true;
-        } catch (JSchException e) {
+        } catch (NoSuchAlgorithmException e) {
             log.error("Cannot generate dkim for domain: " + domain.getName(), e);
             return false;
         }
