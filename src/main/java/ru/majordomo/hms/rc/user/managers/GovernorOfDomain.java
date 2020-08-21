@@ -331,17 +331,18 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                     DKIM dkim = domain.getDkim();
                                     if (dkim == null) {
                                         generateAndSaveDkim(domain, dkimSwitchedOn);
-                                        if (dkimSwitchedOn) {
-                                            try {
-                                                governorOfDnsRecord.setupDkimRecords(domain);
-                                            } catch (DataAccessException e) {
-                                                log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
-                                            }
-                                        }
                                     } else {
                                         dkim.setSwitchedOn(dkimSwitchedOn);
                                         dkimRepository.setSwitchedOn(dkim.getId(), dkimSwitchedOn);
                                         governorOfMailbox.saveOnlyDkim(dkim, domain.getName());
+
+                                    }
+                                    if (dkimSwitchedOn) {
+                                        try {
+                                            governorOfDnsRecord.setupDkimRecords(domain);
+                                        } catch (DataAccessException e) {
+                                            log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
+                                        }
                                     }
                                 }
                             }
