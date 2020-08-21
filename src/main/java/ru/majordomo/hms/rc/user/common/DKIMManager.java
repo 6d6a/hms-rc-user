@@ -16,17 +16,10 @@ import java.util.Base64;
 @Slf4j
 @ParametersAreNullableByDefault
 public class DKIMManager {
-    private static KeyPairGenerator keyGenerator;
+    @Nullable
+    private static volatile KeyPairGenerator keyGenerator;
 
-    static {
-        try {
-            initKeyGenerator();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Cannot create key generator for DKIM", e);
-        }
-    }
-
-    private static void initKeyGenerator() throws NoSuchAlgorithmException {
+    private static synchronized void initKeyGenerator() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGeneratorTemp = KeyPairGenerator.getInstance("RSA");
         SecureRandom random;
         try {
