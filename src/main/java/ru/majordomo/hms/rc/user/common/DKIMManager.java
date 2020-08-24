@@ -22,11 +22,16 @@ public class DKIMManager {
         KeyPairGenerator keyGeneratorTemp = KeyPairGenerator.getInstance("RSA");
         SecureRandom random;
         try {
-            random = SecureRandom.getInstance("NativePRNGNonBlocking", new Sun());
-            log.debug("Created NativePRNGNonBlocking random generator");
-        } catch (NoSuchAlgorithmException e) {
-            log.error("DKIMManager cannot get strong secure random generator", e);
-            random = new SecureRandom();
+            random = SecureRandom.getInstance("NativePRNG");
+            log.debug("Created NativePRNG random generator");
+        } catch (NoSuchAlgorithmException noSuchNativePRNGException) {
+            log.error("DKIMManager cannot create NativePRNG secure random generator", noSuchNativePRNGException);
+            try {
+                random = SecureRandom.getInstance("SHA1PRNG");
+            } catch (NoSuchAlgorithmException noSuchSHA1PRNGException) {
+                log.error("DKIMManager cannot create SHA1PRNG secure random generator", noSuchSHA1PRNGException);
+                random = new SecureRandom();
+            }
         }
         keyGeneratorTemp.initialize(2048, random);
         keyGenerator = keyGeneratorTemp;

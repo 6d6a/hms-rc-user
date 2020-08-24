@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -935,18 +935,24 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         return "*@" + IDN.toASCII(domainName);
     }
 
-    public void saveOnlyDkim(@Nullable DKIM dkim, String domainName) {
+    public void saveOnlyDkim(@Nonnull DKIM dkim, @Nonnull String domainName) {
         MailboxForRedis mailboxForRedis = redisRepository.findById(getAsteriskRedisId(domainName)).orElse(null);
         if (mailboxForRedis == null) {
             mailboxForRedis = new MailboxForRedis();
             mailboxForRedis.setId(getAsteriskRedisId(domainName));
         }
-        if (dkim != null && dkim.getPrivateKey() == null) {
-            dkim = dkimRepository.findById(dkim.getId()).orElse(null);
-        }
-        if (dkim != null && dkim.isSwitchedOn() && dkim.getPrivateKey() != null) {
+        if (dkim.isSwitchedOn()) {
+            String privateKey = dkim.getPrivateKey();
+            if (privateKey == null) {
+                DKIM dkimPrivate = dkimRepository.findPrivateKeyOnly(dkim.getId());
+                if (dkimPrivate == null || dkimPrivate.getPrivateKey() == null) {
+                    log.error("cannot find dkim private key when attempt save to radis");
+                    return;
+                }
+                privateKey = dkimPrivate.getPrivateKey();
+            }
             mailboxForRedis.setDkimSelector(dkim.getSelector());
-            mailboxForRedis.setDkimKey(dkim.getPrivateKey());
+            mailboxForRedis.setDkimKey(privateKey);
         } else {
             mailboxForRedis.setDkimSelector(null);
             mailboxForRedis.setDkimKey(null);
