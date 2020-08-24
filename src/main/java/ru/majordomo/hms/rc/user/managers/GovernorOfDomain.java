@@ -263,6 +263,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             dkim.setPrivateKey(null);
 
             domain.setDkim(dkim);
+            log.debug("dkim for domain with id: {} and name: {} success generated. publicKey: {}", domain.getId(), domain.getName(), dkim.getPublicKey());
             return true;
         } catch (NoSuchAlgorithmException e) {
             log.error("Cannot generate dkim for domain: " + domain.getName(), e);
@@ -331,6 +332,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                                     if (dkim == null) {
                                         generateAndSaveDkim(domain, dkimSwitchedOn);
                                     } else {
+                                        log.debug("update dkim with id: {} and domain name: {}", dkim.getId(), domain.getName());
                                         dkim.setSwitchedOn(dkimSwitchedOn);
                                         dkimRepository.setSwitchedOn(dkim.getId(), dkimSwitchedOn);
                                         governorOfMailbox.saveOnlyDkim(dkim, domain.getName());

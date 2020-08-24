@@ -941,8 +941,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             mailboxForRedis = new MailboxForRedis();
             mailboxForRedis.setId(getAsteriskRedisId(domainName));
         }
+        String privateKey = dkim.getPrivateKey();
         if (dkim.isSwitchedOn()) {
-            String privateKey = dkim.getPrivateKey();
             if (privateKey == null) {
                 DKIM dkimPrivate = dkimRepository.findPrivateKeyOnly(dkim.getId());
                 if (dkimPrivate == null || dkimPrivate.getPrivateKey() == null) {
@@ -958,6 +958,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             mailboxForRedis.setDkimKey(null);
         }
         redisRepository.save(mailboxForRedis);
+        
+        log.debug("saveOnlyDkim switchedOn: {} for domain: {} with private key: {}", dkim.isSwitchedOn(), domainName, privateKey);
     }
 
 }
