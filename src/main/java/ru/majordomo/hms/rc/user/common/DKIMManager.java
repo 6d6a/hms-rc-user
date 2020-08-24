@@ -16,7 +16,6 @@ import java.util.Base64;
 @Slf4j
 @ParametersAreNullableByDefault
 public class DKIMManager {
-    @Nullable
     private static volatile KeyPairGenerator keyGenerator;
 
     private static synchronized void initKeyGenerator() throws NoSuchAlgorithmException {
@@ -24,8 +23,9 @@ public class DKIMManager {
         SecureRandom random;
         try {
             random = SecureRandom.getInstance("NativePRNGNonBlocking", new Sun());
+            log.debug("Created NativePRNGNonBlocking random generator");
         } catch (NoSuchAlgorithmException e) {
-            log.error("Cannot get strong secure random generator", e);
+            log.error("DKIMManager cannot get strong secure random generator", e);
             random = new SecureRandom();
         }
         keyGeneratorTemp.initialize(2048, random);
@@ -33,7 +33,7 @@ public class DKIMManager {
 
     }
 
-    public static DKIM generateDkim(@Nonnull String selector, String dkimContentPattern) throws NoSuchAlgorithmException {
+    public static DKIM generateDkim(@Nonnull String selector, String dkimContentPattern, @Nonnull String domainId) throws NoSuchAlgorithmException {
         if (keyGenerator == null) {
             initKeyGenerator();
         }
@@ -53,6 +53,7 @@ public class DKIMManager {
         result.setPublicKey(publicKeyBase64);
         result.setSwitchedOn(true);
         result.setData(makeContent(publicKeyBase64, dkimContentPattern));
+        result.setId(domainId);
         return result;
     }
 

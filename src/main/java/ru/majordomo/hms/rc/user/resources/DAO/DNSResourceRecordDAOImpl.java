@@ -1,6 +1,6 @@
 package ru.majordomo.hms.rc.user.resources.DAO;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
@@ -16,19 +16,18 @@ import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@ParametersAreNonnullByDefault
 public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
-    private NamedParameterJdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public DNSResourceRecordDAOImpl(@Qualifier("pdnsNamedParameterJdbcTemplate") NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    @Qualifier("pdnsNamedParameterJdbcTemplate")
+    final private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public void update(DNSResourceRecord record) {
@@ -46,6 +45,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
     }
 
     @Override
+    @Nullable
     public Long insert(DNSResourceRecord record) {
         String query = "insert into records (domain_id, prio, `type`, ttl, `name`, content) values (:domain_id, :prio, :type, :ttl, :name, :content)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
@@ -60,9 +60,10 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
         KeyHolder holder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(query, parameters, holder, new String[]{"id"});
-        return holder.getKey().longValue();
+        return holder.getKey() != null ? holder.getKey().longValue() : null;
     }
 
+    @Nullable
     public Long insertOrUpdateByOwnerName(@Nonnull String domainName, @Nonnull DNSResourceRecord record) {
         Long domainId = record.getDomainId();
         if (domainId == null) {

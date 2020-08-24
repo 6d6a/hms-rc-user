@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public class DKIM {
     @Id
     @ObjectId(value = Domain.class)
     @NotBlank
+    @JsonIgnore
     private String id;
 
     /**
