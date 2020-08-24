@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user.managers;
 
-import com.jcraft.jsch.JSchException;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -257,8 +256,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
     private boolean generateAndSaveDkim(Domain domain, boolean switchedOn) {
         try {
-            DKIM dkim = DKIMManager.generateDkim(dkimSelector, dkimContentPattern);
-            dkim.setId(domain.getId());
+            DKIM dkim = DKIMManager.generateDkim(dkimSelector, dkimContentPattern, domain.getId());
             dkim.setSwitchedOn(switchedOn);
             dkimRepository.save(dkim);
             governorOfMailbox.saveOnlyDkim(dkim, domain.getName());
