@@ -2,6 +2,8 @@ package ru.majordomo.hms.rc.user.managers;
 
 import com.mysql.management.util.NotImplementedException;
 
+import lombok.Setter;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +13,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
@@ -18,6 +21,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
 import java.net.IDN;
 import java.util.*;
 
+import javax.annotation.Nonnull;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -31,6 +35,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     private Validator validator;
     private DNSResourceRecordDAOImpl dnsResourceRecordDAO;
     private StaffResourceControllerClient rcStaffClient;
+
+    @Setter
+    @Autowired
+    private DomainRepository domainRepository;
 
     @Autowired
     public void setCleaner(Cleaner cleaner) {
@@ -426,18 +434,33 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         dnsResourceRecordDAO.insert(cnameRecord);
     }
     
-    public void setupDkimRecords(Domain domain) {
-        if (domain.getDkim() == null || domain.getDkim().getData() == null) return;
-        String domainName = IDN.toASCII(domain.getName());
+    public void setupDkimRecords(@Nonnull Domain domain) {
+        if (domain.getDkim() == null || domain.getDkim().getData() == null) {
+            log.error("Attempt setup dkim dns record with wrong data. Domain id: {}, name: {}, dkim: {}", domain.getId(), domain.getName(), domain.getDkim());
+            return;
+        }
+        String domainNamePunycode = IDN.toASCII(domain.getName());
+        
+        String mainDomainNamePunycode;
+        if (StringUtils.isNotEmpty(domain.getParentDomainId())) {
+            Domain parentDomain = domainRepository.findByIdAndAccountId(domain.getParentDomainId(), domain.getAccountId());
+            if (parentDomain == null) {
+                log.error("Cannot find parent domain for subdomain when setup dkim. id: {}, name {}", domain.getId(), domain.getName());
+                return;
+            }
+            mainDomainNamePunycode = IDN.toASCII(parentDomain.getName());
+        } else {
+            mainDomainNamePunycode = domainNamePunycode;
+        }
 
         DNSResourceRecord dkimRecord = new DNSResourceRecord();
         dkimRecord.setRrType(DNSResourceRecordType.TXT);
         dkimRecord.setRrClass(DNSResourceRecordClass.IN);
         dkimRecord.setTtl(3600L);
-        dkimRecord.setOwnerName(domain.getDkim().getSelector() + "._domainkey." + domainName);
+        dkimRecord.setOwnerName(domain.getDkim().getSelector() + "._domainkey." + domainNamePunycode);
         dkimRecord.setData(domain.getDkim().getData());
 
-        dnsResourceRecordDAO.insertOrUpdateByOwnerName(domainName, dkimRecord);
+        dnsResourceRecordDAO.insertOrUpdateByOwnerName(mainDomainNamePunycode, dkimRecord);
     }
 
     void setZoneStatus(Domain domain, Boolean switchedOn) {

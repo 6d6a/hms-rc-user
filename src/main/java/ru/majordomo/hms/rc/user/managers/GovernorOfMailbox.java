@@ -7,6 +7,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 
 import lombok.Setter;
+import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -940,7 +941,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         if (mailboxForRedis == null) {
             mailboxForRedis = new MailboxForRedis();
             mailboxForRedis.setId(getAsteriskRedisId(domainName));
+        } else if (StringUtils.isEmpty(mailboxForRedis.getId())) {
+            mailboxForRedis.setId(getAsteriskRedisId(domainName));
         }
+
         String privateKey = dkim.getPrivateKey();
         if (dkim.isSwitchedOn()) {
             if (privateKey == null) {

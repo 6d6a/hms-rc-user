@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 @Data
 public class MailboxForRedis {
     @Id
+    @Nullable
     private String id;
     private String name;
     private String passwordHash;

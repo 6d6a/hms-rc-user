@@ -53,6 +53,7 @@ public class Domain extends Resource {
     private Boolean autoRenew = false;
 
     @Indexed
+    @Nullable
     private String parentDomainId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -144,14 +145,6 @@ public class Domain extends Resource {
 
     public void setAutoRenew(Boolean autoRenew) {
         this.autoRenew = autoRenew;
-    }
-
-    public String getParentDomainId() {
-        return parentDomainId;
-    }
-
-    public void setParentDomainId(String parentDomainId) {
-        this.parentDomainId = parentDomainId;
     }
 
     public LocalDateTime getSynced() {
