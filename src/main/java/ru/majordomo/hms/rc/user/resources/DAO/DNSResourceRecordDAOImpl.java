@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.resources.DAO;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
@@ -22,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @ParametersAreNonnullByDefault
@@ -64,18 +66,20 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
     }
 
     @Nullable
-    public Long insertOrUpdateByOwnerName(@Nonnull String domainName, @Nonnull DNSResourceRecord record) {
+    public Long insertOrUpdateByOwnerName(@Nonnull String domainNamePunycode, @Nonnull DNSResourceRecord record) {
         Long domainId = record.getDomainId();
         if (domainId == null) {
-            domainId = getDomainIDByDomainNameOrCreate(domainName);
-            if (domainId == null) return null;
+            domainId = getDomainIDByDomainName(domainNamePunycode);
+            if (domainId == null) {
+                log.error("Cannot find domain when insertOrUpdateByOwnerName for name: {}", domainNamePunycode);
+                return null;
+            }
             record.setDomainId(domainId);
         }
 
         String query = "SELECT id FROM records d WHERE name = :name LIMIT 1";
-        MapSqlParameterSource parameters = new MapSqlParameterSource("name", record.getOwnerName());
         try {
-            Long recordId = jdbcTemplate.queryForObject(query, parameters, Long.class);
+            Long recordId = jdbcTemplate.queryForObject(query, new MapSqlParameterSource("name", record.getOwnerName()), Long.class);
             record.setRecordId(recordId);
             update(record);
             return recordId;

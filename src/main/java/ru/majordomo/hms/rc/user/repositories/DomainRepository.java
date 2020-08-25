@@ -5,12 +5,14 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import ru.majordomo.hms.rc.user.resources.Domain;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
 public interface DomainRepository extends MongoRepository<Domain,String> {
     List<Domain> findByAccountId(String accountId);
+    @Nullable
     Domain findByIdAndAccountId(String domainId, String accountId);
     Domain findByNameAndAccountId(String name, String accountId);
     Domain findBySslCertificateId(String sslCertificateId);

@@ -289,6 +289,46 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         boolean updateWebSite = false;
 
         Domain domain = build(keyValue);
+
+        try {
+            if (Boolean.TRUE.equals(serviceMessage.getParam("generateDkim"))) {
+                try {
+                    generateAndSaveDkim(domain, true);
+                    governorOfDnsRecord.setupDkimRecords(domain);
+                } catch (DataAccessException e) {
+                    log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
+                }
+            }
+            if (serviceMessage.getParam("dkim") instanceof Map) {
+                Map dkimMap = (Map) serviceMessage.getParam("dkim");
+                if (dkimMap.get("switchedOn") instanceof Boolean) {
+                    boolean dkimSwitchedOn = (Boolean) dkimMap.get("switchedOn");
+                    DKIM dkim = domain.getDkim();
+                    if (dkim == null) {
+                        generateAndSaveDkim(domain, dkimSwitchedOn);
+                    } else {
+                        log.debug("update dkim with id: {} and domain name: {}", dkim.getId(), domain.getName());
+                        dkim.setSwitchedOn(dkimSwitchedOn);
+                        dkimRepository.setSwitchedOn(dkim.getId(), dkimSwitchedOn);
+                        governorOfMailbox.saveOnlyDkim(dkim, domain.getName());
+
+                    }
+                    if (dkimSwitchedOn) {
+                        try {
+                            governorOfDnsRecord.setupDkimRecords(domain);
+                        } catch (DataAccessException e) {
+                            log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
+                        }
+                    }
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new ParameterValidationException("Один из параметров указан неверно");
+        } catch (Exception e) {
+            log.error("We got unknown exception when update dkim for domain id: " + domain.getId(), e);
+            throw new InternalError("Внутренняя ошибка во время обновления dkim");
+        }
+
         if (domain.getParentDomainId() == null) {
             try {
                 for (Map.Entry<Object, Object> entry : serviceMessage.getParams().entrySet()) {
@@ -322,41 +362,6 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
                             updateWebSite = true;
 
-                            break;
-                        case "dkim":
-                            if (entry.getValue() instanceof Map) {
-                                Map dkimMap = (Map) entry.getValue();
-                                if (dkimMap.get("switchedOn") instanceof Boolean) {
-                                    boolean dkimSwitchedOn = (Boolean) dkimMap.get("switchedOn");
-                                    DKIM dkim = domain.getDkim();
-                                    if (dkim == null) {
-                                        generateAndSaveDkim(domain, dkimSwitchedOn);
-                                    } else {
-                                        log.debug("update dkim with id: {} and domain name: {}", dkim.getId(), domain.getName());
-                                        dkim.setSwitchedOn(dkimSwitchedOn);
-                                        dkimRepository.setSwitchedOn(dkim.getId(), dkimSwitchedOn);
-                                        governorOfMailbox.saveOnlyDkim(dkim, domain.getName());
-
-                                    }
-                                    if (dkimSwitchedOn) {
-                                        try {
-                                            governorOfDnsRecord.setupDkimRecords(domain);
-                                        } catch (DataAccessException e) {
-                                            log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                        case "generateDkim":
-                            if (Boolean.TRUE.equals(entry.getValue())) {
-                                try {
-                                    generateAndSaveDkim(domain, true);
-                                    governorOfDnsRecord.setupDkimRecords(domain);
-                                } catch (DataAccessException e) {
-                                    log.error("Cannot write dkim record to DNS database: " + domain.getName(), e);
-                                }
-                            }
                             break;
                         default:
                             break;
