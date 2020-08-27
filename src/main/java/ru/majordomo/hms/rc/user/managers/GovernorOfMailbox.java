@@ -759,6 +759,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         redisRepository.deleteById(mailbox.getFullNameInPunycode());
         String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.delete(key);
+        
+        if ("*".equals(mailbox.getName()) && mailbox.getDomain().getDkim() != null) {
+            saveOnlyDkim(mailbox.getDomain().getDkim(), mailbox.getDomain().getName());
+        }
     }
 
     private void setAggregatorInRedis(Mailbox mailbox) {
