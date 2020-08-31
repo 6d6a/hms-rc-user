@@ -7,6 +7,7 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 
+import lombok.Setter;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
@@ -27,11 +28,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
+import ru.majordomo.hms.personmgr.exception.InternalApiException;
 import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
@@ -67,6 +70,11 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private String springDataMongodbDatabase;
     private MongoClient mongoClient;
     private CounterService counterService;
+
+    @Setter
+    @Nullable
+    @Value("${resources.unixAccount.puttygenPath:puttygen}")
+    private String puttygenPath;
 
     @Autowired
     public void setCounterService(CounterService counterService) {
@@ -726,6 +734,33 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                     WriteResult writeResult = unixAccountsCollection.update("{_id: #}", objectId).with("{$set: {quotaUsed: #}}", quotaUsed);
                 }
             }
+        }
+    }
+
+    @Nonnull
+    public byte[] getPuttyKey(String accountId, int unixAccountIndex) throws ResourceNotFoundException, InternalApiException {
+        if (puttygenPath == null || puttygenPath.isEmpty()) {
+            throw new InternalApiException("Создание ключей в формате PPK невозможно");
+        }
+        List<UnixAccount> unixAccounts = repository.findByAccountId(accountId);
+        if (unixAccounts == null || unixAccounts.size() <= unixAccountIndex || unixAccounts.get(unixAccountIndex) == null) {
+            throw new ResourceNotFoundException("Не найден Unix-аккаунт");
+        }
+        UnixAccount unixAccount = unixAccounts.get(unixAccountIndex);
+        String privateKeyPem = unixAccount.getKeyPair().getPrivateKey();
+        if (privateKeyPem == null  || privateKeyPem.isEmpty()) {
+            throw new ResourceNotFoundException("На unix-аккаунте отсутствует приватный ключ");
+        }
+        try {
+            byte[] pemBytes = SSHKeyManager.convertPemToPpk(privateKeyPem, puttygenPath);
+            if (pemBytes == null || pemBytes.length == 0) {
+                log.error("Got empty putty private key");
+                throw new InternalApiException("Не удалось создать приватный ключ в формате PPK");
+            }
+            return pemBytes;
+        } catch (IOException | InterruptedException e) {
+            log.error("We got exception when generate putty private key", e);
+            throw new InternalApiException("Не удалось создать приватный ключ в формате PPK");
         }
     }
 }
