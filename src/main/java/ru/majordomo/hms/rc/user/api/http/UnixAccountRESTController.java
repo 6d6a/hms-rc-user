@@ -1,7 +1,10 @@
 package ru.majordomo.hms.rc.user.api.http;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.api.DTO.stat.ResourceQuotaCount;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
@@ -17,6 +21,7 @@ import ru.majordomo.hms.rc.user.resources.MalwareReport;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.service.stat.Aggregator;
 
+@Slf4j
 @RestController
 public class UnixAccountRESTController {
 
@@ -110,5 +115,19 @@ public class UnixAccountRESTController {
     @GetMapping("/{accountId}/unix-account/quota-count")
     public ResourceQuotaCount getCountByAccountId(@PathVariable String accountId) {
         return aggregator.getResourceQuotaCountByAccountId(UnixAccount.class, accountId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR') or (hasRole('USER') and #accountId == principal.accountId)")
+    @GetMapping("/{accountId}/unix-account/putty-key")
+    public ResponseEntity<ByteArrayResource> getPuttyKey(
+            @PathVariable String accountId,
+            @RequestParam(required = false, defaultValue = "0") int unixAccountIndex
+    ) {
+        if (unixAccountIndex < 0) {
+            throw new ParameterValidationException();
+        }
+        ByteArrayResource resource = new ByteArrayResource(governor.getPuttyKey(accountId, unixAccountIndex));
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength()).body(resource);
     }
 }

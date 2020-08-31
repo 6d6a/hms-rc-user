@@ -8,7 +8,7 @@ ENV DEBUG ""
 ENV TZ Europe/Moscow
 
 RUN apt-get update \
- && apt-get install -y curl jq \
+ && apt-get install -y curl jq putty-tools \
  && apt-get autoremove -y && apt-get clean && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/* \
  && curl -s -o /tmp/root.crt http://archive.intr/Majordomo_LLC_Root_CA.crt \
  && keytool -trustcacerts -keystore /usr/local/openjdk-8/lib/security/cacerts -storepass changeit -alias Root -import -file /tmp/root.crt -noprompt
