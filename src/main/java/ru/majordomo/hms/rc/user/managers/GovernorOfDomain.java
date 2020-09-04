@@ -237,6 +237,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         try {
             if (domain.getParentDomainId() == null) {
                 governorOfDnsRecord.initDomain(domain);
+            } else if (needGenerateDkim) {
+                governorOfDnsRecord.setupDkimRecords(domain);
             }
         } catch (DataAccessException ex) {
             if (needRegister || needTransfer) {
