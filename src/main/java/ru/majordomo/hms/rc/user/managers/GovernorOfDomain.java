@@ -160,7 +160,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         Domain domain;
         boolean needRegister = false;
         boolean needTransfer = false;
-        boolean needGenerateDkim = Boolean.TRUE.equals(serviceMessage.getParam("generateDkim"));
+        boolean needGenerateDkim = true;
         try {
             if (serviceMessage.getParam("register") instanceof Boolean) {
                 needRegister = (Boolean) serviceMessage.getParam("register");
