@@ -83,7 +83,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
         String accountId = serviceMessage.getAccountId();
         Map<String, String> keyValue = new HashMap<>();
-        keyValue.put("resourceArchiveId", resourceId);
+        keyValue.put("resourceId", resourceId);
         keyValue.put("accountId", accountId);
 
         ResourceArchive resourceArchive = build(keyValue);
