@@ -218,7 +218,7 @@ public class DNSResourceRecordDAOImpl implements DNSResourceRecordDAO {
 
     @Nullable
     private Long getDomainIDByDomainName(String domainName) {
-        String query = "SELECT d.id FROM domains d WHERE d.name = :domainName";
+        String query = "SELECT d.id FROM domains d WHERE d.name = :domainName LIMIT 1";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.registerSqlType("types", Types.VARCHAR);
         parameters.addValue("domainName", domainName);
