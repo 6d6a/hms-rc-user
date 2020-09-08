@@ -163,6 +163,7 @@ public class MailboxRestControllerTest {
                                 fieldWithPath("spamFilterMood").description("Придирчивость SPAM-фильтра"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
                                 fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты"),
                                 fieldWithPath("allowedIps").description("Рарзрешённые IP")
                         )
                 ));

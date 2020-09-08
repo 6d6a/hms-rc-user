@@ -121,7 +121,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ))
                 .andDo(print());
@@ -163,7 +164,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ))
                 .andDo(print());
@@ -208,7 +210,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ));
     }
@@ -252,7 +255,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ));
     }
@@ -303,7 +307,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ));
     }
@@ -354,7 +359,8 @@ public class PersonRestControllerTest {
                                 fieldWithPath("nicHandle").description("nicHandle"),
                                 fieldWithPath("linkedAccountIds").description("Список аккаунтов, на которые добавлена эта персона"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ));
     }

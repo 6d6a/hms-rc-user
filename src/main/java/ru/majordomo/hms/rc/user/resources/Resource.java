@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.NotBlank;
@@ -99,7 +101,9 @@ public abstract class Resource {
     @JsonIgnore
     private LocalDateTime lockedDateTime;
 
-    @JsonIgnore
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Indexed
     private LocalDateTime willBeDeletedAfter;
 
     public Boolean isWillBeDeleted() {

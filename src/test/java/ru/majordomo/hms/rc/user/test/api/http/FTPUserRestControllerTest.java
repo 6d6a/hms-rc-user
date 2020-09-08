@@ -113,7 +113,8 @@ public class FTPUserRestControllerTest {
                                 fieldWithPath("allowedIPAddresses").description("Список адресов, с которых возможен доступ на сервер"),
                                 fieldWithPath("allowWebFtp").description("Доступность FTP-сервера через WebFTP, если указаны разрешенные IP-адреса"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ));
     }
