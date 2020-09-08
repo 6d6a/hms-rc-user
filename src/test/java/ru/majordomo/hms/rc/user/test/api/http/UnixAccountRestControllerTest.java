@@ -135,7 +135,8 @@ public class UnixAccountRestControllerTest {
                                 fieldWithPath("sendmailAllowed").description("Разрешена ли отправка почты из скриптов аккаунта"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
                                 fieldWithPath("infected").description("Наличие незакрытых отчётов о вредоносном коде"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ));
     }

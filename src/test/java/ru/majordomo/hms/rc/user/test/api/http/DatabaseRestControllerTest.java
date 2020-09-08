@@ -122,7 +122,8 @@ public class DatabaseRestControllerTest {
                                 fieldWithPath("writable").description("Флаг доступности записи."),
                                 subsectionWithPath("databaseUsers[]").description("Список пользователей этой базы"),
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
-                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса")
+                                fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
+                                fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты")
                         )
                 ));
     }
