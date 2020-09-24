@@ -41,6 +41,7 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectNotifyEvent;
+import ru.majordomo.hms.rc.user.event.scriptMail.UnixAccountScriptMailNotifyEvent;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MalwareReportRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
@@ -179,6 +180,9 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                         break;
                     case "sendmailAllowed":
                         unixAccount.setSendmailAllowed((Boolean) serviceMessage.getParam("sendmailAllowed"));
+                        if (!(Boolean) serviceMessage.getParam("sendmailAllowed")) {
+                            publisher.publishEvent(new UnixAccountScriptMailNotifyEvent(unixAccount.getAccountId()));
+                        }
                         break;
                     case "switchedOn":
                         unixAccount.setSwitchedOn((Boolean) entry.getValue());
