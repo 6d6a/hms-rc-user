@@ -78,8 +78,11 @@ public class WebSite extends Resource implements Serviceable {
 
     /**
      * Список файлов которые будут обрабатываться nginx. Запросы к этим файлам не будут передаваться на бэкэнд web-сервер
+     * фактически дублируется с expiresForTypes
+     * @deprecated нужно переделать всё на {@link #expiresForTypes}, а это удалить
      */
     @Valid
+    @Deprecated
     private List<@ValidFileExtension String> staticFileExtensions = new ArrayList<>();
 
     private String customUserConf;
@@ -109,7 +112,16 @@ public class WebSite extends Resource implements Serviceable {
      */
     private Map<String, String> appLoadParams = new HashMap<>();
 
+    /** начальная точка входа в веб-приложение используемая в выделеных сервисах */
     @Nullable
+    private String appEntryPoint;
+
+    /**
+     * начальная точка входа в python приложение.
+     * @deprecated нужно передалать всё на {@link #appEntryPoint}, а это удалить
+     */
+    @Nullable
+    @Deprecated
     private String pythonModule;
     
     @Nullable
