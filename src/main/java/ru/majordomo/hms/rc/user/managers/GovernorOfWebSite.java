@@ -227,6 +227,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         break;
                     case "staticRoot":
                         website.setStaticRoot(cleaner.cleanString(entry.getValue()));
+                        break;
+                    case "appEntryPoint":
+                        website.setAppEntryPoint(cleaner.cleanString(entry.getValue()));
+                        break;
                     default:
                         break;
                 } // switch
@@ -246,6 +250,12 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         } catch (ClassCastException e) {
             log.error("WebSite update ClassCastException: " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
             throw new ParameterValidationException("Один из параметров указан неверно");
+        }
+
+        { // todo удалить после удаления WebSite.pythonModule
+            if (website.getAppEntryPoint() == null || website.getAppEntryPoint().isEmpty()) {
+                website.setAppEntryPoint(website.getPythonModule());
+            }
         }
 
         preValidate(website);
@@ -348,8 +358,14 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             String appInstallCommands = cleaner.cleanString(serviceMessage.getParam("appInstallCommands"));
             String appLoadUrl = cleaner.cleanString(serviceMessage.getParam("appLoadUrl"));
             Map<String, String> appLoadParams = cleaner.cleanMapWithStrings(serviceMessage.getParam("appLoadUrl"));
-
+            String appEntryPoint = cleaner.cleanString(serviceMessage.getParam("appEntryPoint"));
             String pythonModule = cleaner.cleanString(serviceMessage.getParam("pythonModule"));
+            { // todo удалить после удаления WebSite.pythonModule
+                if (appEntryPoint.isEmpty()) {
+                    appEntryPoint = pythonModule;
+                }
+            }
+
             List<String> staticFileDirs = cleaner.cleanListWithStrings(serviceMessage.getParam("staticFileDirs"));
             String appUpdateCommands = cleaner.cleanString(serviceMessage.getParam("appUpdateCommands"));
             String staticRoot = cleaner.cleanString(serviceMessage.getParam("staticRoot"));
@@ -386,6 +402,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setAppLoadUrl(appLoadUrl);
             webSite.setAppInstallCommands(appInstallCommands);
             webSite.setPythonModule(pythonModule);
+            webSite.setAppEntryPoint(appEntryPoint);
             webSite.setStaticFileDirs(staticFileDirs);
             webSite.setAppUpdateCommands(appUpdateCommands);
             webSite.setStaticRoot(staticRoot);
