@@ -118,7 +118,7 @@ public class WebSite extends Resource implements Serviceable {
 
     /**
      * начальная точка входа в python приложение.
-     * @deprecated нужно передалать всё на {@link #appEntryPoint}, а это удалить
+     * @deprecated нужно передалать всё на {@link #appEntryPoint}, а это удалить. Желательно делать одно и тоже с appEntryPoint
      */
     @Nullable
     @Deprecated
