@@ -41,7 +41,6 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectNotifyEvent;
-import ru.majordomo.hms.rc.user.event.scriptMail.UnixAccountScriptMailNotifyEvent;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.MalwareReportRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
@@ -53,6 +52,7 @@ import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.UnixAccountChecks;
 import ru.majordomo.hms.rc.user.service.CounterService;
+import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
 
 import static ru.majordomo.hms.rc.user.common.Utils.getLongFromUnexpectedInput;
 
@@ -71,11 +71,17 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private String springDataMongodbDatabase;
     private MongoClient mongoClient;
     private CounterService counterService;
+    private PmFeignClient personmgr;
 
     @Setter
     @Nullable
     @Value("${resources.unixAccount.puttygenPath:puttygen}")
     private String puttygenPath;
+
+    @Autowired
+    public void setPmFeignClient (PmFeignClient personmgr) {
+        this.personmgr = personmgr;
+    }
 
     @Autowired
     public void setCounterService(CounterService counterService) {
@@ -181,7 +187,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
                     case "sendmailAllowed":
                         unixAccount.setSendmailAllowed((Boolean) serviceMessage.getParam("sendmailAllowed"));
                         if (!(Boolean) serviceMessage.getParam("sendmailAllowed")) {
-                            publisher.publishEvent(new UnixAccountScriptMailNotifyEvent(unixAccount.getAccountId()));
+                            personmgr.sendPhpMailNotificationToClient(unixAccount.getAccountId());
                         }
                         break;
                     case "switchedOn":
