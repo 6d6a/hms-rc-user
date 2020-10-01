@@ -5,14 +5,28 @@ import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 import ru.majordomo.hms.rc.user.configurations.MysqlSessionVariablesConfig;
 import ru.majordomo.hms.rc.user.managers.*;
 import ru.majordomo.hms.rc.user.service.CounterService;
+import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
 
 @EnableConfigurationProperties(DefaultWebSiteSettings.class)
 public class ConfigGovernors {
+    @Bean
+    public PmFeignClient personmgr() {return new PmFeignClient() {
+        @Override
+        public ServiceMessage sendNotificationToClient(ServiceMessage message) {
+            return null;
+        }
+
+        @Override
+        public String sendPhpMailNotificationToClient(String accountId) {
+            return null;
+        }
+    }; }
     @Bean
     public GovernorOfWebSite governorOfWebSite() {
         return new GovernorOfWebSite();
