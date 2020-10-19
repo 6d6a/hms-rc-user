@@ -14,10 +14,10 @@ public class FeignSnoopConfig {
     @Value("${snoop.password}")
     private final String password;
 
-    @Value("${snoop.connectTimeout:15000}")
+    @Value("${snoop.connectTimeout:60000}")
     private int connectTimeout;
 
-    @Value("${snoop.readTimeOut:15000}")
+    @Value("${snoop.readTimeOut:120000}")
     private int readTimeout;
 
     @Bean
