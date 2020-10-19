@@ -1,6 +1,5 @@
 package ru.majordomo.hms.rc.user;
 
-import org.apache.commons.validator.routines.DomainValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -14,8 +13,6 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 import ru.majordomo.hms.rc.user.configurations.HikariSettings;
 
-import java.util.Arrays;
-
 @SpringBootApplication
 @EnableEurekaClient
 @EnableFeignClients(basePackages = {"ru.majordomo.hms.rc.user.api.interfaces"})
@@ -24,11 +21,6 @@ import java.util.Arrays;
 public class UsersResourceControllerApplication implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(UsersResourceControllerApplication.class);
-    private static final String[] tldList = {"llc"};
-    static {
-        Arrays.sort(tldList);
-        DomainValidator.updateTLDOverride(DomainValidator.ArrayType.GENERIC_PLUS, tldList);
-    }
 
     public static void main(String[] args) {
         SpringApplication.run(UsersResourceControllerApplication.class, args);
