@@ -125,7 +125,7 @@ dependencies {
     compile('ru.majordomo.hms.personmgr:exceptions:1.0.17')
     compile("dnsjava:dnsjava:2.1.7")
     compile("com.cronutils:cron-utils:5.0.5")
-    compile("commons-validator:commons-validator:1.6")
+    compile("commons-validator:commons-validator:1.7")
     compile("com.googlecode.libphonenumber:libphonenumber:7.7.3")
     compile("com.jcraft:jsch:0.1.54")
     testCompile('com.github.fakemongo:fongo:2.2.0-RC2')
