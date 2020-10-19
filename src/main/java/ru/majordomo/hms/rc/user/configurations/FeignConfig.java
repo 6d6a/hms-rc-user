@@ -3,7 +3,6 @@ package ru.majordomo.hms.rc.user.configurations;
 import feign.codec.ErrorDecoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
@@ -19,7 +18,6 @@ import feign.RequestInterceptor;
 import ru.majordomo.hms.personmgr.exception.handler.MajordomoFeignErrorDecoder;
 import ru.majordomo.hms.rc.user.security.OAuth2FeignRequestInterceptor;
 
-@Configuration
 public class FeignConfig {
     @Value("${security.oauth2.client.accessTokenUri}")
     private String accessTokenUri;
