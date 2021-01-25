@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.google.common.net.InternetDomainName;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -172,6 +173,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             domain = buildResourceFromServiceMessage(serviceMessage);
 
             validate(domain);
+
+            //Remove trailing dot in domainName
+            InternetDomainName domainName = InternetDomainName.from(domain.getName());
+            domain.setName(domainName.toString());
 
             if (needRegister) {
                 Person person = governorOfPerson.build(domain.getPersonId());
