@@ -346,7 +346,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
             serverId = cleaner.cleanString((String) serviceMessage.getParam("serverId"));
             if (serverId == null || serverId.equals("")) {
-                serverId = getActiveHostingServerId();
+                Object businessServices = serviceMessage.getParam("businessServices");
+                serverId = getActiveHostingServerId(businessServices != null && (Boolean) businessServices);
             }
 
             if (serviceMessage.getParam("quota") == null) {
@@ -578,8 +579,8 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         }
     }
 
-    private String getActiveHostingServerId() {
-        return staffRcClient.getActiveHostingServer().getId();
+    private String getActiveHostingServerId(boolean businessServices) {
+        return staffRcClient.getActiveHostingServer(businessServices).getId();
     }
 
     public Integer getFreeUid() {
