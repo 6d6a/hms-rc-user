@@ -98,7 +98,7 @@ public class GovernorOfResourceArchiveTest {
 
         batchOfWebsites = new ArrayList<>();
 
-        serviceId = staffResourceControllerClient.getActiveHostingServer().getServiceIds().get(0);
+        serviceId = staffResourceControllerClient.getActiveHostingServer(false).getServiceIds().get(0);
 
         batchOfWebsites = ResourceGenerator.generateBatchOfCertainWebsites(accountId, serviceId, unixAccounts.get(0).getId(), domainIds);
 

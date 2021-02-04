@@ -48,7 +48,7 @@ public class ConfigStaffResourceControllerClient {
             }
 
             @Override
-            public Server getActiveHostingServer() {
+            public Server getActiveHostingServer(boolean businessServices) {
                 Server server = new Server();
                 server.setId(ObjectId.get().toString());
                 server.setName("web100500");

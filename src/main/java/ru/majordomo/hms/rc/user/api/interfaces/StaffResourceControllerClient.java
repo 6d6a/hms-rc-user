@@ -2,10 +2,7 @@ package ru.majordomo.hms.rc.user.api.interfaces;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +17,7 @@ import javax.annotation.Nullable;
 @FeignClient(name = "RC-STAFF", configuration = FeignConfig.class)
 public interface StaffResourceControllerClient {
     @RequestMapping(method = RequestMethod.GET, value = "/server/filter?server-role=shared-hosting&state=active", consumes = "application/json;utf8")
-    Server getActiveHostingServer();
+    Server getActiveHostingServer(@RequestParam("businessServices") boolean businessServices);
 
     @RequestMapping(method = RequestMethod.GET, value = "/server-ip-info?serverId={serverId}")
     Map<String, String> getServerIpInfoByServerId(@PathVariable("serverId") String serverId);
