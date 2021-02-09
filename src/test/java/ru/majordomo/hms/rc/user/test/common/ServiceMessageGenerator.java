@@ -105,6 +105,7 @@ public class ServiceMessageGenerator {
         serviceMessage.setAccountId(accountId);
         serviceMessage.addParam("applicationServiceId", serviceId);
         serviceMessage.addParam("domainIds", domainIds);
+        serviceMessage.addParam("mailEnvelopeFrom", "noreply@whatever.com");
 
         return serviceMessage;
     }
@@ -114,6 +115,7 @@ public class ServiceMessageGenerator {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.setAccountId(accountId);
         serviceMessage.addParam("domainIds", domainIds);
+        serviceMessage.addParam("mailEnvelopeFrom", "noreply@whatever.com");
         serviceMessage.addParam("cgiEnabled", true);
         List<String> cgiExtensions = new ArrayList<>();
         cgiExtensions.add("py");

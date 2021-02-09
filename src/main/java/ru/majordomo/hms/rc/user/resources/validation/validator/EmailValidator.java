@@ -13,7 +13,7 @@ public class EmailValidator implements ConstraintValidator<ValidEmail, String> {
     @Override
     public boolean isValid(final String email, ConstraintValidatorContext constraintValidatorContext) {
         org.apache.commons.validator.routines.EmailValidator validator =
-                org.apache.commons.validator.routines.EmailValidator.getInstance(true, true); //allowLocal, allowTLD
+                org.apache.commons.validator.routines.EmailValidator.getInstance(false, true); //allowLocal, allowTLD
         return validator.isValid(email);
     }
 }

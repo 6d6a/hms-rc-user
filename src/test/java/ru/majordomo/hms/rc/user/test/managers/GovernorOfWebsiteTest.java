@@ -284,6 +284,38 @@ public class GovernorOfWebsiteTest {
         governor.update(serviceMessage);
     }
 
+    @Test(expected = ConstraintViolationException.class)
+    public void validateMailEnvelopeFromJustDomain() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("mailEnvelopeFrom", "domain.com");
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateMailEnvelopePlain() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("mailEnvelopeFrom", "user@plain");
+
+        governor.update(serviceMessage);
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateMailEnvelopeIllegalChars() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("mailEnvelopeFrom", "name@#@%^%#$@#$@#.com");
+
+        governor.update(serviceMessage);
+    }
+
+    @Test
+    public void validateMailEnvelopeFrom() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("mailEnvelopeFrom", "__username+firstname-last.name@example.com");
+
+        governor.update(serviceMessage);
+    }
+
     @After
     public void deleteAll() {
         domainRepository.deleteAll();

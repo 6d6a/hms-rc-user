@@ -47,6 +47,10 @@ public class WebSite extends Resource implements Serviceable {
     @ValidRelativeFilePath
     private String documentRoot;
 
+    @NotBlank(message = "mailEnvelopeFrom не может быть пустым")
+    @ValidEmail
+    private String mailEnvelopeFrom;
+
     @Transient
     private List<Domain> domains = new ArrayList<>();
 
@@ -195,6 +199,7 @@ public class WebSite extends Resource implements Serviceable {
         filtered.add("unixAccountId");
         filtered.add("serviceId");
         filtered.add("documentRoot");
+        filtered.add("mailEnvelopeFrom");
         filtered.add("domains");
         filtered.add("domainIds");
         filtered.add("charSet");
@@ -395,6 +400,14 @@ public class WebSite extends Resource implements Serviceable {
 
     public void setDocumentRoot(String documentRoot) {
         this.documentRoot = documentRoot;
+    }
+
+    public String getMailEnvelopeFrom() {
+        return mailEnvelopeFrom;
+    }
+
+    public void setMailEnvelopeFrom(String mailEnvelopeFrom) {
+        this.mailEnvelopeFrom = mailEnvelopeFrom;
     }
 
     public List<Domain> getDomains() {

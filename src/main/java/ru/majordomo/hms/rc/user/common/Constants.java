@@ -26,6 +26,7 @@ public class Constants {
     public static final String DOMAINS_KEY = "domains";
     public static final String REGISTRATOR_KEY = "registrator";
     public static final String SEND_ONLY_TO_ACTIVE_KEY = "send_only_to_active";
+    public static final String MAIL_ENVELOPE_FROM = "noreply@";
 
     public static final String MAJORDOMO_SITE_NAME = "majordomo.ru";
 
