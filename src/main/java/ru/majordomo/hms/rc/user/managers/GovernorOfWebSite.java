@@ -23,6 +23,8 @@ import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
+import static ru.majordomo.hms.rc.user.common.Constants.MAIL_ENVELOPE_FROM;
+
 @Component
 public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
@@ -113,6 +115,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         String documentRoot = cleaner.cleanString((String) entry.getValue());
                         website.setDocumentRoot(documentRoot);
                         break;
+                    case "mailEnvelopeFrom":
+                        String mailEnvelopeFrom = cleaner.cleanString((String) entry.getValue());
+                        website.setMailEnvelopeFrom(mailEnvelopeFrom);
+                        break;
                     case "charSet":
                         String charsetAsString = cleaner.cleanString((String) serviceMessage.getParam("charSet"));
                         website.setCharSet(Enum.valueOf(CharSet.class, charsetAsString));
@@ -148,7 +154,6 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         break;
                     case "staticFileExtensions":
                         website.setStaticFileExtensions(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
-
                         break;
                     case "indexFileList":
                         website.setIndexFileList(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
@@ -292,6 +297,17 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             String applicationServiceId = cleaner.cleanString((String) serviceMessage.getParam("applicationServiceId"));
             String documentRoot = cleaner.cleanString((String) serviceMessage.getParam("documentRoot"));
 
+            String mailEnvelopeFrom = null;
+            String sentMailEnvelopeFrom;
+            String mailEnvelopeFromDomain;
+            if (serviceMessage.getParam("mailEnvelopeFrom") != null) {
+                sentMailEnvelopeFrom = cleaner.cleanString(serviceMessage.getParam("mailEnvelopeFrom"));
+                mailEnvelopeFromDomain = sentMailEnvelopeFrom.substring(sentMailEnvelopeFrom.lastIndexOf("@") + 1);
+                if (webSite.getDomains().stream().map(Resource::getName).anyMatch(domain -> domain.equals(mailEnvelopeFromDomain))) {
+                    mailEnvelopeFrom = sentMailEnvelopeFrom;
+                }
+            }
+
             String unixAccountId = cleaner.cleanString((String) serviceMessage.getParam("unixAccountId"));
 
             CharSet charSet = null;
@@ -365,6 +381,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
             webSite.setServiceId(applicationServiceId);
             webSite.setDocumentRoot(documentRoot);
+            webSite.setMailEnvelopeFrom(mailEnvelopeFrom);
             webSite.setUnixAccountId(unixAccountId);
             webSite.setCharSet(charSet);
             webSite.setSsiEnabled(ssiEnabled);
@@ -419,6 +436,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
         if ((webSite.getDocumentRoot() == null || webSite.getDocumentRoot().equals("")) && !webSite.getDomains().isEmpty()) {
             webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + defaultWebSiteSettings.getDocumentRootPattern());
+        }
+
+        if ((webSite.getMailEnvelopeFrom() == null || webSite.getMailEnvelopeFrom().equals("")) && !webSite.getDomains().isEmpty()) {
+            webSite.setMailEnvelopeFrom(MAIL_ENVELOPE_FROM + webSite.getDomains().get(0).getName());
         }
 
         if (webSite.getUnixAccountId() == null || webSite.getUnixAccountId().equals("")) {
