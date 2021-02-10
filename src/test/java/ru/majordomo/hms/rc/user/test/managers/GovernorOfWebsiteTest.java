@@ -6,16 +6,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
-
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
-import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.resources.CharSet;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
@@ -36,13 +33,13 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
+import javax.validation.ConstraintViolationException;
+import java.net.IDN;
 import java.util.*;
 
-import javax.validation.ConstraintViolationException;
-
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
-import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -284,34 +281,68 @@ public class GovernorOfWebsiteTest {
         governor.update(serviceMessage);
     }
 
-    @Test(expected = ConstraintViolationException.class)
+    @Test
+    public void validateMailEnvelopeFromJustPlain() throws Exception {
+        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("mailEnvelopeFrom", "majordomo");
+
+        governor.update(serviceMessage);
+
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+
+        Assert.isTrue(foundWebSite.getMailEnvelopeFrom().equals("noreply@majordomo.ru"), "Must be equal");
+    }
+
+    @Test
     public void validateMailEnvelopeFromJustDomain() throws Exception {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
-        serviceMessage.addParam("mailEnvelopeFrom", "domain.com");
+        serviceMessage.addParam("mailEnvelopeFrom", "majordomo.ru");
 
         governor.update(serviceMessage);
+
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+
+        Assert.isTrue(foundWebSite.getMailEnvelopeFrom().equals("noreply@majordomo.ru"), "Must be equal");
     }
 
-    @Test(expected = ConstraintViolationException.class)
+    @Test
     public void validateMailEnvelopePlain() throws Exception {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
-        serviceMessage.addParam("mailEnvelopeFrom", "user@plain");
+        serviceMessage.addParam("mailEnvelopeFrom", "noreply@majordomo");
 
         governor.update(serviceMessage);
-    }
 
-    @Test(expected = ConstraintViolationException.class)
-    public void validateMailEnvelopeIllegalChars() throws Exception {
-        ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
-        serviceMessage.addParam("mailEnvelopeFrom", "name@#@%^%#$@#$@#.com");
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
 
-        governor.update(serviceMessage);
+        Assert.isTrue(foundWebSite.getMailEnvelopeFrom().equals("noreply@majordomo.ru"), "Must be equal");
     }
 
     @Test
     public void validateMailEnvelopeFrom() throws Exception {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
-        serviceMessage.addParam("mailEnvelopeFrom", "__username+firstname-last.name@example.com");
+        serviceMessage.addParam("mailEnvelopeFrom", "__username+firstname-last.name@majordomo.ru");
+
+        governor.update(serviceMessage);
+
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+        Assert.isTrue(foundWebSite.getMailEnvelopeFrom().equals("__username+firstname-last.name@majordomo.ru"), "Must be equal");
+    }
+
+    @Test
+    public void validateMailEnvelopeFromCyrillicDomain() throws Exception {
+        ServiceMessage serviceMessage = prepareSecondWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("mailEnvelopeFrom", "__username+firstname-last.name@мажордомо.рф");
+
+        governor.update(serviceMessage);
+
+        WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(1).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+        Assert.isTrue(foundWebSite.getMailEnvelopeFrom().equals("__username+firstname-last.name@" + IDN.toASCII("мажордомо.рф")), "Must be equal");
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void validateMailEnvelopeFromCyrillicAll() throws Exception {
+        ServiceMessage serviceMessage = prepareSecondWebsiteUpdateServiceMessage();
+        serviceMessage.addParam("mailEnvelopeFrom", "неотвечать@мажордомо.рф");
 
         governor.update(serviceMessage);
     }
@@ -330,6 +361,17 @@ public class GovernorOfWebsiteTest {
 
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
         serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
+
+        return serviceMessage;
+    }
+
+    // С кириллическим доменом
+    private ServiceMessage prepareSecondWebsiteUpdateServiceMessage() throws Exception {
+        List<String> domainIdsLocal = batchOfWebsites.get(1).getDomainIds();
+        String accountIdLocal = batchOfWebsites.get(1).getAccountId();
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteUpdateServiceMessage(domainIdsLocal, accountIdLocal);
+        serviceMessage.addParam("resourceId", batchOfWebsites.get(1).getId());
 
         return serviceMessage;
     }

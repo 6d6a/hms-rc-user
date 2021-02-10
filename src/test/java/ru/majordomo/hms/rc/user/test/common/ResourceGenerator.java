@@ -513,7 +513,7 @@ public class ResourceGenerator {
                 webSite.setDocumentRoot("majordomo.ru/www");
             } else {
                 webSite.setName("Блог");
-                webSite.setDocumentRoot("yandex.ru/www");
+                webSite.setDocumentRoot("мажордомо.рф/www");
             }
 
             webSite.setAccountId(accountId);
