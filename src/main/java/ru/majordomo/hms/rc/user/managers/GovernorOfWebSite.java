@@ -3,25 +3,24 @@ package ru.majordomo.hms.rc.user.managers;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.api.DTO.Count;
+import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
+import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
+import ru.majordomo.hms.rc.user.resources.*;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
+import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
-
-import ru.majordomo.hms.rc.user.api.DTO.Count;
-import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
-import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
-import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
-import ru.majordomo.hms.rc.user.resources.*;
-import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
-import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
-import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
-import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
+import java.net.IDN;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.majordomo.hms.rc.user.common.Constants.MAIL_ENVELOPE_FROM;
 
@@ -438,8 +437,19 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
             webSite.setDocumentRoot(webSite.getDomains().get(0).getName() + defaultWebSiteSettings.getDocumentRootPattern());
         }
 
-        if ((webSite.getMailEnvelopeFrom() == null || webSite.getMailEnvelopeFrom().equals("")) && !webSite.getDomains().isEmpty()) {
-            webSite.setMailEnvelopeFrom(MAIL_ENVELOPE_FROM + webSite.getDomains().get(0).getName());
+        if ((webSite.getMailEnvelopeFrom() == null || webSite.getMailEnvelopeFrom().equals("") || !webSite.getMailEnvelopeFrom().matches("^.*@.*$")) && !webSite.getDomains().isEmpty()) {
+            webSite.setMailEnvelopeFrom(MAIL_ENVELOPE_FROM + IDN.toASCII(webSite.getDomains().get(0).getName()));
+        }
+
+        if (webSite.getMailEnvelopeFrom() != null && webSite.getMailEnvelopeFrom().matches("^.*@.*$") && !webSite.getDomains().isEmpty()) {
+            String mailEnvelopeFromInitial = webSite.getMailEnvelopeFrom();
+            String mailEnvelopeFromDomain = mailEnvelopeFromInitial.substring(mailEnvelopeFromInitial.lastIndexOf("@") + 1);
+            String mailEnvelopeFromUsername = mailEnvelopeFromInitial.substring(0, mailEnvelopeFromInitial.lastIndexOf("@"));
+            if (webSite.getDomains().stream().map(Resource::getName).anyMatch(domain -> domain.equals(mailEnvelopeFromDomain))) {
+                webSite.setMailEnvelopeFrom(mailEnvelopeFromUsername + "@" + IDN.toASCII(mailEnvelopeFromDomain));
+            } else {
+                webSite.setMailEnvelopeFrom(MAIL_ENVELOPE_FROM + IDN.toASCII(webSite.getDomains().get(0).getName()));
+            }
         }
 
         if (webSite.getUnixAccountId() == null || webSite.getUnixAccountId().equals("")) {

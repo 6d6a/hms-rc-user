@@ -2,11 +2,6 @@ package ru.majordomo.hms.rc.user.resources;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,14 +9,19 @@ import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.*;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import ru.majordomo.hms.rc.user.resources.validation.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
+
+import javax.annotation.Nullable;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -30,6 +30,8 @@ import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
 @ValidWebSite
 @JsonFilter("websiteFilter")
 public class WebSite extends Resource implements Serviceable {
+    @JsonIgnore
+    private final static String EMAIL_PATTERN = "^[a-z0-9.+_-]+@[а-яa-z0-9](?:[а-яa-z0-9-]{0,61}[а-яa-z0-9])?(?:\\.[а-яa-z0-9](?:[а-яa-z0-9-]{0,61}[а-яa-z0-9])?)*$";
 
     @Transient
     private UnixAccount unixAccount;
@@ -49,6 +51,7 @@ public class WebSite extends Resource implements Serviceable {
 
     @NotBlank(message = "mailEnvelopeFrom не может быть пустым")
     @ValidEmail
+    @Pattern(regexp = EMAIL_PATTERN, message = "Некорректное значение mailEnvelopeFrom")
     private String mailEnvelopeFrom;
 
     @Transient
