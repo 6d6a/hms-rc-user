@@ -98,6 +98,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
                         website.setName(cleaner.cleanString((String) entry.getValue()));
                         break;
                     case "domainIds":
+                        website.setDomains(new ArrayList<>());
                         website.setDomainIds(cleaner.cleanListWithStrings((List<String>) entry.getValue()));
                         for (String domainId : website.getDomainIds()) {
                             Domain domain = governorOfDomain.build(domainId);
