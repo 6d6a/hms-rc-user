@@ -451,7 +451,6 @@ public class WebSite extends Resource implements Serviceable {
         }
     }
 
-
     public Boolean getDisplayErrors() {
         return displayErrors;
     }
