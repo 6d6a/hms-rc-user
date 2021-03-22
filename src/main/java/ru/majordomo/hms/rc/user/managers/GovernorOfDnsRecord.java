@@ -1,30 +1,27 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import com.mysql.management.util.NotImplementedException;
-
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
-import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
-import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
-import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
+import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
-
-import java.net.IDN;
-import java.util.*;
 
 import javax.annotation.Nonnull;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import java.net.IDN;
+import java.util.*;
 
 @Service
 public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
@@ -182,12 +179,15 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         if(type != null) {
             switch (type) {
                 case A:
+                case AAAA:
+                case CAA:
+                case CNAME:
+                case TXT:
                     record.setPrio(null);
                     break;
                 case MX:
+                case SRV:
                     if (record.getPrio() == null) record.setPrio(10L);
-                    break;
-                case AAAA:
                     break;
                 default:
                     break;

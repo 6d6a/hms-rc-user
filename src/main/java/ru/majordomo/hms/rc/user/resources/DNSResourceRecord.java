@@ -20,7 +20,7 @@ public class DNSResourceRecord extends Resource {
     private Long prio;
     private DNSResourceRecordClass rrClass;
 
-    @NotNull(message = "Тип записи должен быть указан")
+    @NotNull
     private DNSResourceRecordType rrType;
 
     public Long getDomainId() {
