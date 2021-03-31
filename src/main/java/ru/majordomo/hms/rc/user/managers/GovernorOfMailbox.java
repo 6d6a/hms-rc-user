@@ -248,10 +248,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
                         mailbox.setWritable((Boolean) entry.getValue());
                         break;
                     case "switchedOn":
-                        Boolean switchedOn = (Boolean) entry.getValue();
-                        mailbox.setSwitchedOn(switchedOn);
-                        mailbox.setWritable(switchedOn);
-                        mailbox.setMailFromAllowed(switchedOn);
+                        mailbox.setSwitchedOn((Boolean) entry.getValue());
                         break;
                     case "willBeDeletedAfter":
                         if (entry.getValue() == null) {
@@ -690,6 +687,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     private MailboxForRedis convertMailboxToMailboxForRedis(Mailbox mailbox, String serverName) {
+        Boolean writable = mailbox.getSwitchedOn() ? mailbox.getWritable() : false;
+        Boolean mailFromAllowed = mailbox.getSwitchedOn() ? mailbox.getMailFromAllowed() : false;
+
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
         String uidAsString = mailbox.getUid().toString();
         mailboxForRedis.setId(mailbox.getFullNameInPunycode());
@@ -698,8 +698,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackListInPunycode()));
         mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteListInPunycode()));
         mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddressesInPunycode()));
-        mailboxForRedis.setWritable(mailbox.getWritable());
-        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
+        mailboxForRedis.setWritable(writable);
+        mailboxForRedis.setMailFromAllowed(mailFromAllowed);
         mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
         mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
         mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
