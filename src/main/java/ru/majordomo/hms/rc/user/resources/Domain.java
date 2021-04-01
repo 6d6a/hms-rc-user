@@ -70,6 +70,8 @@ public class Domain extends Resource {
     @Transient
     private DKIM dkim;
 
+    private Boolean infested = false;
+
     @Override
     public void switchResource() {
         switchedOn = !switchedOn;

@@ -370,6 +370,11 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                             updateWebSite = true;
 
                             break;
+                        case "infested":
+                            domain.setInfested((Boolean) entry.getValue());
+
+                            updateWebSite = true;
+                            break;
                         default:
                             break;
                     }

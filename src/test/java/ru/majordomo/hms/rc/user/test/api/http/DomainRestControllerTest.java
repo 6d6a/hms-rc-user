@@ -129,7 +129,8 @@ public class DomainRestControllerTest {
                                 fieldWithPath("locked").description("Доступность ресурса для изменения"),
                                 fieldWithPath("willBeDeleted").description("Запланировано удаление ресурса"),
                                 fieldWithPath("willBeDeletedAfter").description("Будет удалено после указанной даты"),
-                                fieldWithPath("dkim").description("Параметры DKIM подписи")
+                                fieldWithPath("dkim").description("Параметры DKIM подписи"),
+                                fieldWithPath("infested").description("Административная блокировка")
                         )
                 ));
     }
