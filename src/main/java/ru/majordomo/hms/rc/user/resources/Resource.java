@@ -152,6 +152,11 @@ public abstract class Resource {
         }
     }
 
+    @JsonIgnore
+    public void setLockedDateTime(LocalDateTime lockedDateTime) {
+        this.lockedDateTime = lockedDateTime;
+    }
+
     public String getName() {
         return name;
     }
