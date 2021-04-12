@@ -600,10 +600,12 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         unixAccount.setPasswordHash((String) result.get("passwordHash"));
 
         DBObject ob = (LazyDBObject) result.get("keyPair");
-        SSHKeyPair sshKeyPair = new SSHKeyPair();
-        sshKeyPair.setPrivateKey((String) ob.get("privateKey"));
-        sshKeyPair.setPublicKey((String) ob.get("publicKey"));
-        unixAccount.setKeyPair(sshKeyPair);
+        if (ob != null) {
+            SSHKeyPair sshKeyPair = new SSHKeyPair();
+            sshKeyPair.setPrivateKey((String) ob.get("privateKey"));
+            sshKeyPair.setPublicKey((String) ob.get("publicKey"));
+            unixAccount.setKeyPair(sshKeyPair);
+        }
 
         List<DBObject> crontab = (List<DBObject>) result.get("crontab");
         CronTask cronTask = new CronTask();
