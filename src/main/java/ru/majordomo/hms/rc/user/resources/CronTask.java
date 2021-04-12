@@ -5,6 +5,7 @@ import com.cronutils.model.Cron;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Locale;
 
@@ -33,6 +34,11 @@ public class CronTask {
 
         this.execTimeDescription = descriptor.describe(cron);
         this.execTime = cron.asString();
+    }
+
+    @JsonIgnore
+    public void setRawExecTime(String execTime) {
+        this.execTime = execTime;
     }
 
     public String getExecTimeDescription() {

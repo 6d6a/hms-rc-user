@@ -67,6 +67,12 @@ public class UnixAccountRESTController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
+    @GetMapping(value = "/unix-account/filter", headers = {"X-HMS-Projection=te"})
+    public Collection<UnixAccount> filterForTe(@RequestParam Map<String, String> keyValue) {
+        return governor.buildAllTe(keyValue);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
     @GetMapping("/unix-account/filter")
     public Collection<UnixAccount> filter(@RequestParam Map<String, String> keyValue) {
         return governor.buildAll(keyValue);
