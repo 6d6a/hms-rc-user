@@ -65,7 +65,7 @@ public class UnixAccount extends Resource implements ServerStorable, Quotable, S
     private List<CronTask> crontab = new ArrayList<>();
 
     @Transient
-    private Boolean infected;
+    private Boolean infected = false;
 
     @Override
     public void switchResource() {
