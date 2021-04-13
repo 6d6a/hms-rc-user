@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.LookupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -75,7 +78,6 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     private MongoClient mongoClient;
     private CounterService counterService;
     private PmFeignClient personmgr;
-    private MongoTemplate mongoTemplate;
 
     @Setter
     @Nullable
@@ -145,11 +147,6 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     @Autowired
     public void setMongoClient(@Qualifier("jongoMongoClient") MongoClient mongoClient) {
         this.mongoClient = mongoClient;
-    }
-
-    @Autowired
-    public void setMongoTemplate(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -500,9 +497,14 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
             buildedUnixAccounts = repository.findUnixAccountsByName(keyValue.get("name"));
         }
 
-        for (UnixAccount unixAccount : buildedUnixAccounts) {
-            unixAccount.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(unixAccount.getId(), false));
-        }
+        List<MalwareReport> malwared = malwareReportRepository.findBySolved(false);
+
+        buildedUnixAccounts.forEach(item -> malwared
+                .stream()
+                .filter(m -> m.getUnixAccountId().equals(item.getId()))
+                .findFirst()
+                .ifPresent(k -> item.setInfected(true))
+        );
 
         return buildedUnixAccounts;
     }
@@ -537,31 +539,6 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         return unixAccounts;
     }
 
-    public Collection<UnixAccount> buildAllTe(Map<String, String> keyValue) throws ResourceNotFoundException {
-        List<UnixAccount> unixAccounts = new ArrayList<>();
-
-        DB db = mongoClient.getDB(springDataMongodbDatabase);
-
-        Jongo jongo = new Jongo(db);
-
-        if (keyValue.get("serverId") != null) {
-            MongoCollection unixAccountsCollection = jongo.getCollection("unixAccounts");
-
-            try (MongoCursor<UnixAccount> unixAccountCursor = unixAccountsCollection
-                    .find("{serverId:#}", keyValue.get("serverId"))
-                    .map(this::setUnixAcFieldsForTe)
-            ) {
-                while (unixAccountCursor.hasNext()) {
-                    unixAccounts.add(unixAccountCursor.next());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return unixAccounts;
-    }
-
     private UnixAccount setUnixAcFieldsForPm(DBObject result) {
         UnixAccount unixAccount = new UnixAccount();
 
@@ -577,67 +554,18 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         return unixAccount;
     }
 
-    private UnixAccount setUnixAcFieldsForTe(DBObject result) {
-        UnixAccount unixAccount = new UnixAccount();
-
-        if (result.get("_id") instanceof ObjectId) {
-            unixAccount.setId(((ObjectId) result.get("_id")).toString());
-        } else if (result.get("_id") instanceof String) {
-            unixAccount.setId((String) result.get("_id"));
-        }
-
-        unixAccount.setName((String) result.get("name"));
-        unixAccount.setSwitchedOn((Boolean) result.get("switchedOn"));
-        unixAccount.setAccountId((String) result.get("accountId"));
-
-        unixAccount.setUid((Integer) result.get("uid"));
-        unixAccount.setHomeDir((String) result.get("homeDir"));
-        unixAccount.setServerId((String) result.get("serverId"));
-        unixAccount.setQuota((Long) result.get("quota"));
-        unixAccount.setQuotaUsed((Long) result.get("quotaUsed"));
-        unixAccount.setWritable((Boolean) result.get("writable"));
-        unixAccount.setSendmailAllowed((Boolean) result.get("sendmailAllowed"));
-        unixAccount.setPasswordHash((String) result.get("passwordHash"));
-
-        DBObject ob = (LazyDBObject) result.get("keyPair");
-        if (ob != null) {
-            SSHKeyPair sshKeyPair = new SSHKeyPair();
-            sshKeyPair.setPrivateKey((String) ob.get("privateKey"));
-            sshKeyPair.setPublicKey((String) ob.get("publicKey"));
-            unixAccount.setKeyPair(sshKeyPair);
-        }
-
-        List<DBObject> crontab = (List<DBObject>) result.get("crontab");
-        CronTask cronTask = new CronTask();
-        crontab.forEach(item -> {
-            cronTask.setRawExecTime((String) item.get("execTime"));
-            cronTask.setExecTimeDescription((String) item.get("execTimeDescription"));
-            cronTask.setCommand((String) item.get("command"));
-            cronTask.setSwitchedOn((Boolean) item.get("switchedOn"));
-        });
-
-        unixAccount.setInfected((Boolean) result.get("infected"));
-
-        Date date = (Date) result.get("lockedDateTime");
-        if (date != null) {
-            unixAccount.setLockedDateTime(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        }
-
-        date = (Date) result.get("willBeDeletedAfter");
-        if (date != null) {
-            unixAccount.setWillBeDeletedAfter(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        }
-
-        return unixAccount;
-    }
-
     @Override
     public Collection<UnixAccount> buildAll() {
         List<UnixAccount> unixAccounts = repository.findAll();
 
-        for (UnixAccount unixAccount : unixAccounts) {
-            unixAccount.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(unixAccount.getId(), false));
-        }
+        List<MalwareReport> malwared = malwareReportRepository.findBySolved(false);
+
+        unixAccounts.forEach(item -> malwared
+                .stream()
+                .filter(m -> m.getUnixAccountId().equals(item.getId()))
+                .findFirst()
+                .ifPresent(k -> item.setInfected(true))
+        );
 
         return unixAccounts;
     }

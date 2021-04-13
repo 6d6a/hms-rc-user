@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.resources;
 
 import javax.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Range;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.constraints.Min;
