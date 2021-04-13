@@ -491,20 +491,24 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
         if (keyValue.get("accountId") != null) {
             buildedUnixAccounts = repository.findByAccountId(keyValue.get("accountId"));
+
+            buildedUnixAccounts.forEach(item -> item.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(item.getId(), false)));
         } else if (keyValue.get("serverId") != null) {
             buildedUnixAccounts = repository.findByServerId(keyValue.get("serverId"));
+
+            List<MalwareReport> malwared = malwareReportRepository.findBySolved(false);
+
+            buildedUnixAccounts.forEach(item -> malwared
+                    .stream()
+                    .filter(m -> m.getUnixAccountId().equals(item.getId()))
+                    .findFirst()
+                    .ifPresent(k -> item.setInfected(true))
+            );
         } else if (keyValue.get("name") != null) {
             buildedUnixAccounts = repository.findUnixAccountsByName(keyValue.get("name"));
+
+            buildedUnixAccounts.forEach(item -> item.setInfected(malwareReportRepository.existsByUnixAccountIdAndSolved(item.getId(), false)));
         }
-
-        List<MalwareReport> malwared = malwareReportRepository.findBySolved(false);
-
-        buildedUnixAccounts.forEach(item -> malwared
-                .stream()
-                .filter(m -> m.getUnixAccountId().equals(item.getId()))
-                .findFirst()
-                .ifPresent(k -> item.setInfected(true))
-        );
 
         return buildedUnixAccounts;
     }
