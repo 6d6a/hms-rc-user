@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfFTPUser;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
@@ -121,7 +122,8 @@ public class GovernorOfFTPUserTest {
         serviceMessage.addParam("unixAccountId", unixAccounts.get(1).getId());
         serviceMessage.setAccountId(unixAccounts.get(1).getAccountId());
         serviceMessage.addParam("allowedIPAddresses", Arrays.asList("3.3.3.3", "4.4.4.4"));
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
         List<FTPUser> ftpUsers = repository.findByAccountId(unixAccounts.get(1).getAccountId());
         assertThat(ftpUsers.size(), is(1));
         assertThat(ftpUsers.get(0).getName(), is("f_-111111"));
@@ -134,7 +136,8 @@ public class GovernorOfFTPUserTest {
     public void createWithoutUnixAccountId() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -142,7 +145,8 @@ public class GovernorOfFTPUserTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.delParam("homedir");
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -152,7 +156,8 @@ public class GovernorOfFTPUserTest {
         serviceMessage.setAccountId(unixAccounts.get(1).getAccountId());
         serviceMessage.delParam("homedir");
         serviceMessage.addParam("homedir", "../../");
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -162,7 +167,8 @@ public class GovernorOfFTPUserTest {
         serviceMessage.setAccountId(unixAccounts.get(1).getAccountId());
         serviceMessage.delParam("homedir");
         serviceMessage.addParam("homedir", "some_site/www/../../another_site/www");
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -170,7 +176,8 @@ public class GovernorOfFTPUserTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.delParam("password");
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -178,7 +185,8 @@ public class GovernorOfFTPUserTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateFTPUserCreateServiceMessageWithoutUnixAccountId();
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.delParam("name");
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -187,7 +195,8 @@ public class GovernorOfFTPUserTest {
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.delParam("name");
         serviceMessage.addParam("name", ftpUsers.get(0).getName());
-        governor.create(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -199,7 +208,8 @@ public class GovernorOfFTPUserTest {
         serviceMessage.addParam("switchedOn", false);
         serviceMessage.delParam("name");
         serviceMessage.addParam("allowedIPAddresses", Arrays.asList("1.1.1.1", "2.2.2.2"));
-        governor.update(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
         FTPUser ftpUser = repository
                 .findById(ftpUsers.get(0).getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
@@ -215,7 +225,8 @@ public class GovernorOfFTPUserTest {
         serviceMessage.setAccountId(unixAccounts.get(0).getAccountId());
         serviceMessage.addParam("resourceId", ObjectId.get().toString());
         serviceMessage.delParam("name");
-        governor.update(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -224,7 +235,8 @@ public class GovernorOfFTPUserTest {
         serviceMessage.setAccountId(ObjectId.get().toString());
         serviceMessage.addParam("resourceId", ftpUsers.get(0).getId());
         serviceMessage.delParam("name");
-        governor.update(serviceMessage);
+        OperationOversight<FTPUser> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test

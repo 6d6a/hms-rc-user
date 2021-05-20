@@ -21,47 +21,47 @@ public class ConfigGovernorOfResourceArchive extends AbstractMongoConfiguration 
 
     @Bean
     public GovernorOfResourceArchive governorOfResourceArchive() {
-        return new GovernorOfResourceArchive();
+        return new GovernorOfResourceArchive(null);
     }
 
     @Bean
     public GovernorOfWebSite governorOfWebSite() {
-        return new GovernorOfWebSite();
+        return new GovernorOfWebSite(null);
     }
 
     @Bean
     public GovernorOfDnsRecord governorOfDnsRecord() {
-        return new GovernorOfDnsRecord();
+        return new GovernorOfDnsRecord(null);
     }
 
     @Bean
     public GovernorOfDomain governorOfDomain() {
-        return new GovernorOfDomain();
+        return new GovernorOfDomain(null);
     }
 
     @Bean
     public GovernorOfSSLCertificate governorOfSSLCertificate() {
-        return new GovernorOfSSLCertificate();
+        return new GovernorOfSSLCertificate(null);
     }
 
     @Bean
     public GovernorOfUnixAccount governorOfUnixAccount() {
-        return new GovernorOfUnixAccount();
+        return new GovernorOfUnixAccount(null);
     }
 
     @Bean
     public GovernorOfPerson governorOfPerson() {
-        return new GovernorOfPerson();
+        return new GovernorOfPerson(null);
     }
 
     @Bean
     public GovernorOfDatabase governorOfDatabase() {
-        return new GovernorOfDatabase();
+        return new GovernorOfDatabase(null);
     }
 
     @Bean
     public GovernorOfDatabaseUser governorOfDatabaseUser() {
-        return new GovernorOfDatabaseUser();
+        return new GovernorOfDatabaseUser(null);
     }
 
     @Override

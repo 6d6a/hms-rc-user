@@ -22,32 +22,32 @@ public class ConfigGovernorOfMailbox extends AbstractMongoConfiguration {
 
     @Bean
     public GovernorOfMailbox governorOfMailbox() {
-        return new GovernorOfMailbox();
+        return new GovernorOfMailbox(null);
     }
 
     @Bean
     public GovernorOfDomain governorOfDomain() {
-        return new GovernorOfDomain();
+        return new GovernorOfDomain(null);
     }
 
     @Bean
     public GovernorOfSSLCertificate governorOfSSLCertificate() {
-        return new GovernorOfSSLCertificate();
+        return new GovernorOfSSLCertificate(null);
     }
 
     @Bean
     public GovernorOfPerson governorOfPerson() {
-        return new GovernorOfPerson();
+        return new GovernorOfPerson(null);
     }
 
     @Bean
     public GovernorOfUnixAccount governorOfUnixAccount() {
-        return new GovernorOfUnixAccount();
+        return new GovernorOfUnixAccount(null);
     }
 
     @Bean
     public GovernorOfDnsRecord governorOfDnsRecord() {
-        return new GovernorOfDnsRecord();
+        return new GovernorOfDnsRecord(null);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,10 +8,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resourceProcessor.support.ResourceSearcher;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -18,32 +23,42 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
 
+@AllArgsConstructor
 public abstract class LordOfResources<T extends Resource> implements ResourceSearcher<T> {
+    private final OperationOversightRepository<T> operationOversightRepository;
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    public T create(ServiceMessage serviceMessage) throws ParameterValidationException {
-        T resource;
+
+    /**
+     * Создание ресурса используя Oversight
+     */
+    public OperationOversight<T> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<T> ovs;
 
         try {
-            resource = buildResourceFromServiceMessage(serviceMessage);
+            T resource = buildResourceFromServiceMessage(serviceMessage);
             preValidate(resource);
-            if (Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"))) {
-                removeOldResource(resource);
-            }
+            Boolean replace = Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"));
             validate(resource);
             postValidate(resource);
-            store(resource);
+            ovs = sendToOversight(resource, ResourceAction.CREATE, replace);
         } catch (ClassCastException | UnsupportedEncodingException e) {
             throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
 
-        return resource;
+        return ovs;
     }
 
-    public abstract T update(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException;
+    /**
+     * Обновление ресурса используя Oversight
+     */
+    public abstract OperationOversight<T> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException;
 
     public abstract void preDelete(String resourceId);
 
     public abstract void drop(String resourceId) throws ResourceNotFoundException;
+
+    public abstract OperationOversight<T> dropByOversight(String resourceId) throws ResourceNotFoundException;
 
     public abstract T buildResourceFromServiceMessage(ServiceMessage serviceMessage) throws ClassCastException, UnsupportedEncodingException;
 
@@ -57,6 +72,10 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
 
     public void postValidate(T resource) {}
 
+    /**
+     * в обход Oversight
+     * Только для SSLCertificate
+     */
     public void validateAndStore(T resource) {
         preValidate(resource);
         validate(resource);
@@ -64,6 +83,10 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
         store(resource);
     }
 
+    /**
+     * в обход Oversight
+     * Только для Импортов
+     */
     public void validateAndStoreImported(T resource) {
         preValidate(resource);
         validateImported(resource);
@@ -84,6 +107,55 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
     public abstract Collection<T> buildAll();
 
     public abstract void store(T resource);
+
+    /**
+     * Создание объекта Oversight в коллекции.
+     * Пока Oversight существует для ресурса - другие операции невозможны
+     */
+    public OperationOversight<T> sendToOversight(T resource, ResourceAction action) {
+        OperationOversight<T> ovs = new OperationOversight<>(resource, action);
+        return operationOversightRepository.save(ovs);
+    }
+
+    public OperationOversight<T> sendToOversight(T resource, ResourceAction action, Boolean replace) {
+        OperationOversight<T> ovs = new OperationOversight<>(resource, action, replace);
+        return operationOversightRepository.save(ovs);
+    }
+
+    public Optional<OperationOversight<T>> getOperationOversight(String id) {
+        return operationOversightRepository.findByOvsId(id);
+    }
+
+    public Optional<OperationOversight<T>> getOperationOversightByResource(T resource) {
+        return operationOversightRepository.findByResourceId(resource.getId());
+    }
+
+    /**
+     * Создание/Изменение ресурса и последущие удаление Oversight
+     */
+    public T completeOversightAndStore(OperationOversight<T> ovs) {
+        if (ovs.getReplace()) {
+            removeOldResource(ovs.getResource());
+        }
+        T res = ovs.getResource();
+        store(res);
+        removeOversight(ovs);
+
+        return res;
+    }
+
+    /**
+     * Удаление ресурса, а также выполение preDelete внутри реализаций и последущие удаление Oversight
+     */
+    public void completeOversightAndDelete(OperationOversight<T> ovs) {
+        drop(ovs.getResource().getId());
+
+        removeOversight(ovs);
+    }
+
+    public void removeOversight(OperationOversight<T> ovs) {
+        operationOversightRepository.delete(ovs);
+    }
 
     protected Boolean hasResourceIdAndAccountId(Map<String, String> keyValue) {
 

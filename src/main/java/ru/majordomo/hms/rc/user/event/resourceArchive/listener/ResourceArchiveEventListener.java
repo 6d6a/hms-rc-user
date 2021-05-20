@@ -13,11 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchiveCleanEvent;
 import ru.majordomo.hms.rc.user.event.resourceArchive.ResourceArchivesCleanEvent;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
 import ru.majordomo.hms.rc.user.schedulers.ResourceArchiveScheduler;
 
@@ -77,6 +79,10 @@ public class ResourceArchiveEventListener {
             report.addParam("resourceId", archive.getId());
 
             String serverName = staffRcClient.getServerByServiceId(archive.getServiceId()).getName();
+
+            OperationOversight<ResourceArchive> ovs = governorOfResourceArchive.sendToOversight(archive, ResourceAction.DELETE);
+            report.addParam("ovsId", ovs.getId());
+            report.addParam("ovs", ovs);
 
             String teRoutingKey = "te" + "." + serverName.split("\\.")[0];
 

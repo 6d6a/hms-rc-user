@@ -61,7 +61,7 @@ public class MailboxAMQPController extends BaseAMQPController<Mailbox> {
 
     @Override
     protected String getRoutingKey(ResourceActionContext<Mailbox> context) {
-        Mailbox resource = context.getResource();
+        Mailbox resource = getResourceFromOvsContext(context);
 
         String routingKey = getDefaultRoutingKey();
 

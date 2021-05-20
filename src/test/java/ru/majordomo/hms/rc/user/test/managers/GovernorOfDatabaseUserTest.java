@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabaseUser;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.Database;
@@ -73,7 +74,8 @@ public class GovernorOfDatabaseUserTest {
     @Test
     public void create() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
-        governor.create(serviceMessage);
+        OperationOversight<DatabaseUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -88,7 +90,9 @@ public class GovernorOfDatabaseUserTest {
         serviceMessage.addParam("databaseIds", Collections.singletonList(databases.get(0).getId()));
         System.out.println(databases);
         System.out.println(serviceMessage);
-        DatabaseUser databaseUser = governor.create(serviceMessage);
+        OperationOversight<DatabaseUser> ovs = governor.createByOversight(serviceMessage);
+        DatabaseUser databaseUser = governor.completeOversightAndStore(ovs);
+
         assertThat(databaseRepository
                 .findById(databases.get(0).getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден")).getDatabaseUserIds(), hasItem(databaseUser.getId()));
@@ -97,14 +101,16 @@ public class GovernorOfDatabaseUserTest {
     @Test(expected = ConstraintViolationException.class)
     public void createWithoutAccountId() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateWithoutAccountIdServiceMessage();
-        governor.create(serviceMessage);
+        OperationOversight<DatabaseUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void createWithBadServiceId() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         serviceMessage.addParam("serviceId", ObjectId.get().toString());
-        governor.create(serviceMessage);
+        OperationOversight<DatabaseUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -112,14 +118,16 @@ public class GovernorOfDatabaseUserTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         List<String> allowedAddressList = Arrays.asList("8.8.8.8", "9.9.9.9", "Валера");
         serviceMessage.addParam("allowedAddressList", allowedAddressList);
-        governor.create(serviceMessage);
+        OperationOversight<DatabaseUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
     public void createWithBadDBType() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseUserCreateServiceMessage();
         serviceMessage.addParam("type", "BAD_DB_TYPE");
-        governor.create(serviceMessage);
+        OperationOversight<DatabaseUser> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -158,7 +166,8 @@ public class GovernorOfDatabaseUserTest {
         serviceMessage.setAccountId(databaseUsers.get(0).getAccountId());
         String oldPasswordHash = databaseUsers.get(0).getPasswordHash();
         serviceMessage.addParam("password", "87654321");
-        DatabaseUser databaseUser = governor.update(serviceMessage);
+        OperationOversight<DatabaseUser> ovs = governor.updateByOversight(serviceMessage);
+        DatabaseUser databaseUser = governor.completeOversightAndStore(ovs);
         assertThat(repository
                 .findById(databaseUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"))

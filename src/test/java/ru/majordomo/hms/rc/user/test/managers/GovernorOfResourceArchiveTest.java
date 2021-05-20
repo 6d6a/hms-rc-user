@@ -15,6 +15,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
 import ru.majordomo.hms.rc.user.managers.GovernorOfResourceArchive;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.*;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
@@ -119,7 +120,8 @@ public class GovernorOfResourceArchiveTest {
         serviceMessage.setAccountId(batchOfWebsites.get(0).getAccountId());
         serviceMessage.addParam("archivedResourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("resourceType", "WEBSITE");
-        ResourceArchive createdArchive = governor.create(serviceMessage);
+        OperationOversight<ResourceArchive> ovs = governor.createByOversight(serviceMessage);
+        ResourceArchive createdArchive = governor.completeOversightAndStore(ovs);
 
         ResourceArchive archive = governor.build(createdArchive.getId());
         assertNotNull(archive.getFileLink());
@@ -137,7 +139,8 @@ public class GovernorOfResourceArchiveTest {
         serviceMessage.setAccountId(batchOfDatabases.get(0).getAccountId());
         serviceMessage.addParam("archivedResourceId", batchOfDatabases.get(0).getId());
         serviceMessage.addParam("resourceType", "DATABASE");
-        ResourceArchive createdArchive = governor.create(serviceMessage);
+        OperationOversight<ResourceArchive> ovs = governor.createByOversight(serviceMessage);
+        ResourceArchive createdArchive = governor.completeOversightAndStore(ovs);
 
         ResourceArchive archive = governor.build(createdArchive.getId());
         assertNotNull(archive.getFileLink());

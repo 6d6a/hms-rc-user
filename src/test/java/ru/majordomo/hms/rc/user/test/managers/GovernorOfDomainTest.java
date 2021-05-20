@@ -12,8 +12,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
+import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Person;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
@@ -88,7 +90,8 @@ public class GovernorOfDomainTest {
         serviceMessage.addParam("name", "domain.com");
         serviceMessage.addParam("personId", domains.get(0).getPersonId());
         serviceMessage.addParam("register", true);
-        Domain domain = governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        Domain domain = governor.completeOversightAndStore(ovs);
         assertNotNull(domain);
         assertNotNull(domain.getRegSpec());
         assertThat(domain.getPersonId(), is(domains.get(0).getPersonId()));
@@ -101,7 +104,8 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("name", "domain.com");
         serviceMessage.addParam("register", false);
-        Domain domain = governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        Domain domain = governor.completeOversightAndStore(ovs);
         assertNotNull(domain);
         assertNull(domain.getPersonId());
         assertNull(domain.getRegSpec());
@@ -114,7 +118,8 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("name", "online");
         serviceMessage.addParam("register", false);
-        governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -124,7 +129,8 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("name", "domain.com");
         serviceMessage.addParam("register", true);
-        governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -134,7 +140,8 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("personId", domains.get(0).getPersonId());
         serviceMessage.addParam("register", true);
-        governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -145,7 +152,8 @@ public class GovernorOfDomainTest {
         serviceMessage.addParam("name", domains.get(0).getName());
         serviceMessage.addParam("personId", domains.get(0).getPersonId());
         serviceMessage.addParam("register", true);
-        governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -155,7 +163,8 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("resourceId", domains.get(0).getId());
         serviceMessage.addParam("autoRenew", true);
-        Domain domain = governor.update(serviceMessage);
+        OperationOversight<Domain> ovs = governor.updateByOversight(serviceMessage);
+        Domain domain = governor.completeOversightAndStore(ovs);
         assertThat(domain.getAutoRenew(), is(true));
     }
 
@@ -169,7 +178,8 @@ public class GovernorOfDomainTest {
         RegSpec regSpec = domains.get(0).getRegSpec();
         regSpec.setPaidTill(regSpec.getPaidTill().plusYears(1));
         regSpec.setFreeDate(regSpec.getFreeDate().plusYears(1));
-        Domain domain = governor.update(serviceMessage);
+        OperationOversight<Domain> ovs = governor.updateByOversight(serviceMessage);
+        Domain domain = governor.completeOversightAndStore(ovs);
         assertNotEquals(regSpec, domain.getRegSpec());
     }
 
@@ -191,7 +201,8 @@ public class GovernorOfDomainTest {
         serviceMessage.addParam("name", "bad_domain_name");
         serviceMessage.addParam("personId", domains.get(0).getPersonId());
         serviceMessage.addParam("register", true);
-        governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -229,7 +240,8 @@ public class GovernorOfDomainTest {
         serviceMessage.setActionIdentity(ObjectId.get().toString());
         serviceMessage.addParam("name", "domain.com");
         serviceMessage.addParam("generateDkim", true);
-        Domain domain = governor.create(serviceMessage);
+        OperationOversight<Domain> ovs = governor.createByOversight(serviceMessage);
+        Domain domain = governor.completeOversightAndStore(ovs);
         assertNotNull(domain.getDkim());
         assertFalse(StringUtils.isBlank(domain.getDkim().getPublicKey()));
         assertFalse(StringUtils.isBlank(domain.getDkim().getSelector()));

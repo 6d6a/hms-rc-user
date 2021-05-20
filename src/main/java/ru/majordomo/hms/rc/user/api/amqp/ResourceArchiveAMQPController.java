@@ -62,7 +62,7 @@ public class ResourceArchiveAMQPController extends BaseAMQPController<ResourceAr
     @Override
     protected String getRoutingKey(ResourceActionContext<ResourceArchive> context) {
         if (context.getEventProvider().equals(PM)) {
-            return getTaskExecutorRoutingKey(context.getResource());
+            return getTaskExecutorRoutingKey(getResourceFromOvsContext(context));
         } else if (context.getEventProvider().equals(TE)) {
             return getDefaultRoutingKey();
         } else {

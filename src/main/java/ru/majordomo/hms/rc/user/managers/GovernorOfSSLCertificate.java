@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.stream.Stream;
@@ -19,7 +20,10 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.common.CertificateHelper;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.repositories.SSLCertificateRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.*;
@@ -39,6 +43,10 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     private Cleaner cleaner;
     private Validator validator;
     private String applicationName;
+
+    public GovernorOfSSLCertificate(OperationOversightRepository<SSLCertificate> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Value("${spring.application.name}")
     public void setApplicationName(String applicationName) {
@@ -80,8 +88,21 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         this.validator = validator;
     }
 
+    /**
+     * см. коммент к create (Логика Oversight не используется)
+     */
     @Override
-    public SSLCertificate update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<SSLCertificate> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        OperationOversight<SSLCertificate> ovs;
+
+        SSLCertificate sslCertificate = this.updateWrapper(serviceMessage);
+
+        ovs = sendToOversight(sslCertificate, ResourceAction.UPDATE);
+
+        return ovs;
+    }
+
+    private SSLCertificate updateWrapper(ServiceMessage serviceMessage) {
         String resourceId = (String) serviceMessage.getParam("resourceId");
         String accountId = serviceMessage.getAccountId();
 
@@ -110,8 +131,22 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         return certificate;
     }
 
+    /**
+     * При создании SSL сертификата логика Oversight не используется, объект сразу сохраняется в коллекцию и его ID прописывается в домене
+     * Методы completeOversight... переопределены и не сохраняют(удаляют) повторно объект(ы)
+     */
     @Override
-    public SSLCertificate create(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<SSLCertificate> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<SSLCertificate> ovs;
+
+        SSLCertificate cert = this.createWrapper(serviceMessage);
+
+        ovs = sendToOversight(cert, ResourceAction.CREATE);
+
+        return ovs;
+    }
+
+    private SSLCertificate createWrapper(ServiceMessage serviceMessage) {
         SSLCertificate sslCertificate;
         try {
 
@@ -148,6 +183,31 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         governorOfDomain.removeSslCertificateId(resourceId);
 
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<SSLCertificate> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        SSLCertificate cert = build(resourceId);
+        drop(cert.getId());
+        return sendToOversight(cert, ResourceAction.DELETE);
+    }
+
+    /**
+     * Только удаление Oversight, ресурс не трогаем
+     */
+    @Override
+    public SSLCertificate completeOversightAndStore(OperationOversight<SSLCertificate> ovs) {
+        removeOversight(ovs);
+
+        return ovs.getResource();
+    }
+
+    /**
+     * Только удаление Oversight, ресурс не трогаем
+     */
+    @Override
+    public void completeOversightAndDelete(OperationOversight<SSLCertificate> ovs) {
+        removeOversight(ovs);
     }
 
     @Override

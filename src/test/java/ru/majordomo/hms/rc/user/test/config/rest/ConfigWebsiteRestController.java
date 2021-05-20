@@ -42,32 +42,32 @@ public class ConfigWebsiteRestController extends AbstractMongoConfiguration {
 
     @Bean
     public GovernorOfUnixAccount governorOfUnixAccount() {
-        return new GovernorOfUnixAccount();
+        return new GovernorOfUnixAccount(null);
     }
 
     @Bean
     public GovernorOfWebSite governorOfWebSite() {
-        return new GovernorOfWebSite();
+        return new GovernorOfWebSite(null);
     }
 
     @Bean
     public GovernorOfDomain governorOfDomain() {
-        return new GovernorOfDomain();
+        return new GovernorOfDomain(null);
     }
 
     @Bean
     public GovernorOfDnsRecord governorOfDnsRecord() {
-        return new GovernorOfDnsRecord();
+        return new GovernorOfDnsRecord(null);
     }
 
     @Bean
     public GovernorOfSSLCertificate governorOfSSLCertificate() {
-        return new GovernorOfSSLCertificate();
+        return new GovernorOfSSLCertificate(null);
     }
 
     @Bean
     public GovernorOfPerson governorOfPerson() {
-        return new GovernorOfPerson();
+        return new GovernorOfPerson(null);
     }
 
     @Bean

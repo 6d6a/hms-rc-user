@@ -5,14 +5,14 @@ import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
-import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.Resource;
-import ru.majordomo.hms.rc.user.resources.ServerStorable;
-import ru.majordomo.hms.rc.user.resources.Serviceable;
 
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import java.util.Optional;
+
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @AllArgsConstructor
 public class DefaultUpdatePmProcessor<T extends Resource> implements ResourceProcessor<T> {
@@ -32,28 +32,19 @@ public class DefaultUpdatePmProcessor<T extends Resource> implements ResourcePro
         } catch (Exception e) {
             throw new ResourceNotFoundException("Не найден ресурс с ID: " + resourceId);
         }
-        if (serviceMessage.getParam("lock") != null) {
-            resource.setLocked((Boolean) serviceMessage.getParam("lock"));
-            processorContext.getGovernor().store(resource);
-            processorContext.getSender().send(context, PM);
-            return;
-        }
-        if (resource.isLocked()) {
+
+        Optional<OperationOversight<T>> existedOvs = processorContext.getGovernor().getOperationOversightByResource(resource);
+        if (existedOvs.isPresent()) {
             throw new ParameterValidationException("Ресурс в процессе обновления");
         }
 
-        resource = processorContext.getGovernor().update(serviceMessage);
-
-        context.setResource(resource);
+        OperationOversight<T> ovs = processorContext.getGovernor().updateByOversight(context.getMessage());
+        context.setOvs(ovs);
 
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
 
-        if (
-                (resource instanceof ServerStorable || resource instanceof Serviceable)
-                        && !(resource instanceof Mailbox)
-        ) {
-            resource.setLocked(true);
-            processorContext.getGovernor().store(resource);
+        if (!TE.equals(routingKey)) {
+            processorContext.getGovernor().completeOversightAndStore(ovs);
         }
 
         processorContext.getSender().send(context, routingKey);

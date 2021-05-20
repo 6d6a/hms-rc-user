@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +36,10 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
@@ -54,6 +58,10 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     private StaffResourceControllerClient staffRcClient;
     private MongoClient mongoClient;
     private String springDataMongodbDatabase;
+
+    public GovernorOfDatabase(OperationOversightRepository<Database> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Value("${default.database.serviceName}")
     public void setDefaultServiceName(String defaultServiceName) {
@@ -109,7 +117,13 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
-    public Database update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<Database> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        Database database = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(database, ResourceAction.UPDATE);
+    }
+
+    private Database updateWrapper(ServiceMessage serviceMessage) {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -154,7 +168,6 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
         preValidate(database);
         validate(database);
-        store(database);
 
         return database;
     }
@@ -182,6 +195,12 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<Database> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        Database database = build(resourceId);
+        return sendToOversight(database, ResourceAction.DELETE);
     }
 
     @Override

@@ -76,7 +76,7 @@ public class WebSiteAMQPController extends BaseAMQPController<WebSite> {
     @Override
     protected String getRoutingKey(ResourceActionContext<WebSite> context) {
         if (context.getEventProvider().equals(PM)) {
-            return getTaskExecutorRoutingKey(context.getResource());
+            return getTaskExecutorRoutingKey(getResourceFromOvsContext(context));
         } else if (context.getEventProvider().equals(TE)) {
             return getDefaultRoutingKey();
         } else {

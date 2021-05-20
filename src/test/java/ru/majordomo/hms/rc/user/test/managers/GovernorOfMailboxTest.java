@@ -16,6 +16,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.*;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
@@ -134,7 +135,8 @@ public class GovernorOfMailboxTest {
     public void create() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         Mailbox mailbox = repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId());
 
@@ -162,7 +164,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.delParam("name");
         serviceMessage.addParam("name", mailboxes.get(0).getName());
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -170,7 +173,8 @@ public class GovernorOfMailboxTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.delParam("password");
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -178,7 +182,8 @@ public class GovernorOfMailboxTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.addParam("quota", -1L);
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -186,7 +191,8 @@ public class GovernorOfMailboxTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.delParam("domainId");
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -199,7 +205,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("quota", 200L);
         serviceMessage.addParam("spamFilterMood", "NEUTRAL");
         serviceMessage.addParam("spamFilterAction", "MOVE_TO_SPAM_FOLDER");
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         Mailbox mailbox = governor.construct(repository.findByNameAndDomainId((String) serviceMessage.getParam("name"), batchOfDomains.get(0).getId()));
         assertNotNull(mailbox);
@@ -218,7 +225,8 @@ public class GovernorOfMailboxTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.addParam("spamFilterMood", "BAD_FILTER_MOOD");
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -226,7 +234,8 @@ public class GovernorOfMailboxTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.addParam("spamFilterAction", "BAD_FILTER_ACTION");
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -239,7 +248,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.addParam("blackList", Arrays.asList("ololo@bad.ru", "spam.com"));
         serviceMessage.addParam("whiteList", Arrays.asList("good.ru", "ololo@my-friend.com"));
         serviceMessage.addParam("redirectAddresses", Collections.singletonList("ololo@redirect.ru"));
-        governor.update(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         Mailbox mailbox = repository
                 .findById(mailboxes.get(0).getId())
@@ -276,7 +286,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("isAggregator", true);
-        governor.update(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         Mailbox mailbox = repository.findById(mailboxes.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         assertThat(mailbox.getIsAggregator(), is(true));
@@ -295,7 +306,8 @@ public class GovernorOfMailboxTest {
 
         serviceMessage.delParam("isAggregator");
         serviceMessage.addParam("isAggregator", false);
-        governor.update(serviceMessage);
+        ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         assertNull(redisRepository.findById("*@" + governor.construct(mailbox).getDomain().getName()).orElse(null));
     }
@@ -307,7 +319,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("mailFromAllowed", false);
-        governor.update(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
         Mailbox mailbox = repository
                 .findById(mailboxes.get(0).getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
@@ -325,7 +338,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.delParam("name");
         serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
         serviceMessage.addParam("quota", 300000L);
-        governor.update(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -334,7 +348,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.delParam("name");
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("quota", 300000L);
-        governor.update(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -344,7 +359,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("spamFilterMood", "BAD_FILTER_MOOD");
-        governor.update(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -354,7 +370,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
         serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
         serviceMessage.addParam("spamFilterAction", "BAD_FILTER_ACTION");
-        governor.update(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -374,7 +391,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.delParam("name");
         serviceMessage.addParam("name", ".qwer");
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -401,7 +419,8 @@ public class GovernorOfMailboxTest {
             serviceMessage.addParam("allowedIps", Arrays.asList(ip));
 
             try {
-                governor.create(serviceMessage);
+                OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+                governor.completeOversightAndStore(ovs);
                 throw new RuntimeException("ip " + ip + " прошел проверку cidr");
             } catch (ConstraintViolationException e) {} //its ok
         });
@@ -413,7 +432,8 @@ public class GovernorOfMailboxTest {
         serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
         serviceMessage.addParam("allowedIps", Arrays.asList("84.240.40.0/24", "111.1.1.1/32"));
 
-        governor.create(serviceMessage);
+        OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
     }
 
@@ -436,7 +456,8 @@ public class GovernorOfMailboxTest {
             serviceMessage.addParam("name", localName);
 
             try {
-                governor.create(serviceMessage);
+                OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+                governor.completeOversightAndStore(ovs);
                 throw new RuntimeException("localName " + localName + " прошел проверку");
             } catch (ConstraintViolationException e) {} //its ok
         });
@@ -453,7 +474,8 @@ public class GovernorOfMailboxTest {
             ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
             serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
             serviceMessage.addParam("name", localName);
-            governor.create(serviceMessage);
+            OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
+            governor.completeOversightAndStore(ovs);
         });
     }
 }

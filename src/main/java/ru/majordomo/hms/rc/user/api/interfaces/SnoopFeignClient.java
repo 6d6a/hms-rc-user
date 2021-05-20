@@ -12,12 +12,12 @@ import ru.majordomo.hms.rc.user.configurations.FeignSnoopConfig;
 @FeignClient(configuration = FeignSnoopConfig.class, name = "snoop", url = "${snoop.url}", primary = false)
 public interface SnoopFeignClient {
     @GetMapping("/search/ftp-log")
-    String findFtpLog(@RequestParam String user, @RequestParam int page, @RequestParam int size);
+    String findFtpLog(@RequestParam("user") String user, @RequestParam("page") int page, @RequestParam("size") int size);
 
     @PostMapping("/search/ftp-log/start")
     String findFtpLogStartScroll(
             @RequestBody FindFtpLogRequest request,
-            @RequestParam int size
+            @RequestParam("size") int size
     );
 
     @PostMapping(value = "/search/ftp-log/continue", consumes = "application/json")

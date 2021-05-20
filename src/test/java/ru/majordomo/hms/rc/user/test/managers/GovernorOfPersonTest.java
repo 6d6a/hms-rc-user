@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfPerson;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.Address;
 import ru.majordomo.hms.rc.user.resources.Person;
@@ -83,35 +84,40 @@ public class GovernorOfPersonTest {
     public void createIndividual() {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         System.out.println(serviceMessage.toString());
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void createWithoutAccountId() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         serviceMessage.setAccountId(null);
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void createWithoutFirstname() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         serviceMessage.delParam("firstname");
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void createWithoutEmail() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         serviceMessage.delParam("emailAddresses");
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void createWithoutPostalAddress() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         serviceMessage.delParam("postalAddress");
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -119,7 +125,8 @@ public class GovernorOfPersonTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         serviceMessage.delParam("emailAddresses");
         serviceMessage.addParam("emailAddresses", Collections.singletonList("not_email_address"));
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -127,7 +134,8 @@ public class GovernorOfPersonTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateIndividualPersonCreateServiceMessage();
         serviceMessage.delParam("phoneNumbers");
         serviceMessage.addParam("phoneNumbers", Collections.singletonList("not_phone_number"));
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -200,7 +208,8 @@ public class GovernorOfPersonTest {
         serviceMessage.addParam("postalAddress", objectMapper.convertValue(newPostalAddress, LinkedHashMap.class));
         serviceMessage.addParam("passport", newPassport);
 
-        governor.update(serviceMessage);
+        OperationOversight<Person> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         Person gotPerson = repository
                 .findById(persons.get(0).getId())
@@ -248,7 +257,8 @@ public class GovernorOfPersonTest {
         serviceMessage.addParam("postalAddress", objectMapper.convertValue(newPostalAddress, LinkedHashMap.class));
         serviceMessage.addParam("passport", newPassport);
 
-        governor.update(serviceMessage);
+        OperationOversight<Person> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         Person gotPerson = repository
                 .findById(persons.get(0).getId())
@@ -301,7 +311,8 @@ public class GovernorOfPersonTest {
         serviceMessage.addParam("passport", newPassport);
         serviceMessage.addParam("legalEntity", newLegalEntity);
 
-        governor.update(serviceMessage);
+        OperationOversight<Person> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         Person gotPerson = repository
                 .findById(persons.get(0).getId())
@@ -323,7 +334,8 @@ public class GovernorOfPersonTest {
         serviceMessage.delParam("name");
         serviceMessage.addParam("name", "НОШ 'ВФЫВ' № 95, +! шк. «»/\"");
         System.out.println(serviceMessage.toString());
-        governor.create(serviceMessage);
+        OperationOversight<Person> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = DuplicateKeyException.class)

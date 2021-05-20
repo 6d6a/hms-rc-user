@@ -127,7 +127,7 @@ public class SslCertificateAMQPController extends BaseAMQPController<SSLCertific
         switch (context.getEventProvider()) {
             case PM:
             case LETSENCRYPT:
-                teRoutingKey = ((GovernorOfSSLCertificate) governor).getTERoutingKey(context.getResource());
+                teRoutingKey = ((GovernorOfSSLCertificate) governor).getTERoutingKey(getResourceFromOvsContext(context));
                 return teRoutingKey != null ? teRoutingKey : getDefaultRoutingKey();
 
             case TE:

@@ -11,6 +11,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
@@ -175,7 +176,8 @@ public class GovernorOfDnsRecordTest {
         serviceMessage.addParam("type", "A");
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3600L);
-        governorOfDnsRecord.create(serviceMessage);
+        OperationOversight<DNSResourceRecord> ovs = governorOfDnsRecord.createByOversight(serviceMessage);
+        governorOfDnsRecord.completeOversightAndStore(ovs);
 
         List<DNSResourceRecord> recordsAfter = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         assertThat(recordsAfter.size(), is(recordsBefore.size() + 1));
@@ -196,7 +198,8 @@ public class GovernorOfDnsRecordTest {
         serviceMessage.addParam("type", "A");
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3600L);
-        governorOfDnsRecord.create(serviceMessage);
+        OperationOversight<DNSResourceRecord> ovs = governorOfDnsRecord.createByOversight(serviceMessage);
+        governorOfDnsRecord.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -213,7 +216,8 @@ public class GovernorOfDnsRecordTest {
         serviceMessage.addParam("ownerName", "*." + domains.get(0).getName());
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3600L);
-        governorOfDnsRecord.create(serviceMessage);
+        OperationOversight<DNSResourceRecord> ovs = governorOfDnsRecord.createByOversight(serviceMessage);
+        governorOfDnsRecord.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -260,7 +264,8 @@ public class GovernorOfDnsRecordTest {
         serviceMessage.addParam("ownerName", "sub2." + domains.get(0).getName());
         serviceMessage.addParam("data", "78.108.80.36");
         serviceMessage.addParam("ttl", 3700L);
-        governorOfDnsRecord.update(serviceMessage);
+        OperationOversight<DNSResourceRecord> ovs = governorOfDnsRecord.updateByOversight(serviceMessage);
+        governorOfDnsRecord.completeOversightAndStore(ovs);
 
         DNSResourceRecord record = governorOfDnsRecord.build("2");
         assertThat(record.getRecordId(), is(2L));

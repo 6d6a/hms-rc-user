@@ -22,7 +22,7 @@ public class ConfigGovernorOfFTPUser extends AbstractMongoConfiguration {
 
     @Bean
     public GovernorOfFTPUser governorOfFTPUser() {
-        return new GovernorOfFTPUser();
+        return new GovernorOfFTPUser(null);
     }
 
     @Override

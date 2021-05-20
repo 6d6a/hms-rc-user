@@ -2,11 +2,12 @@ package ru.majordomo.hms.rc.user.resourceProcessor.impl;
 
 import lombok.AllArgsConstructor;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resources.Resource;
-import ru.majordomo.hms.rc.user.resources.ServerStorable;
-import ru.majordomo.hms.rc.user.resources.Serviceable;
+
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @AllArgsConstructor
 public class DefaultCreatePmProcessor<T extends Resource> implements ResourceProcessor<T> {
@@ -14,15 +15,14 @@ public class DefaultCreatePmProcessor<T extends Resource> implements ResourcePro
 
     @Override
     public void process(ResourceActionContext<T> context) {
-        T resource = processorContext.getGovernor().create(context.getMessage());
+        OperationOversight<T> ovs = processorContext.getGovernor().createByOversight(context.getMessage());
 
-        context.setResource(resource);
+        context.setOvs(ovs);
 
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
 
-        if (resource instanceof ServerStorable || resource instanceof Serviceable) {
-            resource.setLocked(true);
-            processorContext.getGovernor().store(resource);
+        if (!TE.equals(routingKey)) {
+            processorContext.getGovernor().completeOversightAndStore(ovs);
         }
 
         processorContext.getSender().send(context, routingKey);

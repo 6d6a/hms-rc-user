@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
@@ -21,16 +22,16 @@ public class SSLCertificateUpdateFromPm implements ResourceProcessor<SSLCertific
     public void process(ResourceActionContext<SSLCertificate> context) throws Exception {
         ServiceMessage serviceMessage = context.getMessage();
 
-        SSLCertificate certificate = processorContext.getGovernor().update(serviceMessage);
-
-        context.setResource(certificate);
+        OperationOversight<SSLCertificate> ovs = processorContext.getGovernor().updateByOversight(serviceMessage);
+        context.setOvs(ovs);
+        processorContext.getGovernor().completeOversightAndStore(ovs);
 
         String routingKey;
 
         if ("LETS_ENCRYPT".equals(serviceMessage.getParam("renew"))) {
             routingKey = LETSENCRYPT;
         } else {
-            String teRoutingKey = ((GovernorOfSSLCertificate) processorContext.getGovernor()).getTERoutingKey(certificate);
+            String teRoutingKey = ((GovernorOfSSLCertificate) processorContext.getGovernor()).getTERoutingKey(ovs.getResource());
 
             if (teRoutingKey == null) {
                 routingKey = PM;
@@ -39,7 +40,7 @@ public class SSLCertificateUpdateFromPm implements ResourceProcessor<SSLCertific
             }
         }
 
-        processorContext.getGovernor().validateAndStore(certificate);
+        processorContext.getGovernor().validateAndStore(ovs.getResource());
 
         processorContext.getSender().send(context, routingKey);
     }
