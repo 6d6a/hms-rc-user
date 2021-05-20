@@ -48,6 +48,8 @@ public class OperationOversight<T extends Resource> {
     @JsonIgnore
     private LocalDateTime created = LocalDateTime.now();
 
+    public OperationOversight() {}
+
     public OperationOversight(T resource, ResourceAction action) {
         this.resource = resource;
         this.resourceId = resource.getId();
