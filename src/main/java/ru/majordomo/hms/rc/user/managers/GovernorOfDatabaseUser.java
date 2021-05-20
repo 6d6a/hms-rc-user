@@ -20,9 +20,12 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.common.Utils;
 import ru.majordomo.hms.rc.user.configurations.MysqlSessionVariablesConfig;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resources.DBType;
 import ru.majordomo.hms.rc.user.resources.Database;
 import ru.majordomo.hms.rc.user.resources.DatabaseUser;
@@ -40,6 +43,10 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     private String defaultServiceName;
     private StaffResourceControllerClient staffRcClient;
     private MysqlSessionVariablesConfig mysqlSessionVariablesConfig;
+
+    public GovernorOfDatabaseUser(OperationOversightRepository<DatabaseUser> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Value("${default.database.serviceName}")
     public void setDefaultServiceName(String defaultServiceName) {
@@ -77,36 +84,34 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     }
 
     @Override
-    public DatabaseUser create(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<DatabaseUser> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<DatabaseUser> ovs;
+
         DatabaseUser databaseUser;
         try {
             databaseUser = buildResourceFromServiceMessage(serviceMessage);
-            preValidate(databaseUser);
-            if (Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"))) {
-                removeOldResource(databaseUser);
-            }
-            validate(databaseUser);
-            store(databaseUser);
-
-            if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
-                for (String databaseId : databaseUser.getDatabaseIds()) {
-                    Database database = governorOfDatabase.build(databaseId);
-                    database.addDatabaseUserId(databaseUser.getId());
-                    governorOfDatabase.preValidate(database);
-                    governorOfDatabase.validate(database);
-                    governorOfDatabase.store(database);
-                }
-            }
-
         } catch (UnsupportedEncodingException e) {
             throw new ParameterValidationException("В пароле используются некорретные символы");
         }
-        return databaseUser;
+        preValidate(databaseUser);
+        Boolean replace = Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"));
+        validate(databaseUser);
+
+        preValidate(databaseUser);
+
+        ovs = sendToOversight(databaseUser, ResourceAction.CREATE, replace);
+
+        return ovs;
     }
 
     @Override
-    public DatabaseUser update(ServiceMessage serviceMessage)
-            throws ParameterValidationException, UnsupportedEncodingException {
+    public OperationOversight<DatabaseUser> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        DatabaseUser databaseUser = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(databaseUser, ResourceAction.UPDATE);
+    }
+
+    private DatabaseUser updateWrapper(ServiceMessage serviceMessage) throws UnsupportedEncodingException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -170,8 +175,32 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
         preValidate(databaseUser);
         validate(databaseUser);
+
+        return databaseUser;
+    }
+
+    /**
+     * Создание/Изменение ресурса и последущие удаление Oversight
+     */
+    @Override
+    public DatabaseUser completeOversightAndStore(OperationOversight<DatabaseUser> ovs) {
+        if (ovs.getReplace()) {
+            removeOldResource(ovs.getResource());
+        }
+        DatabaseUser databaseUser = ovs.getResource();
         store(databaseUser);
 
+        if (ovs.getResource().getDatabaseIds() != null && !ovs.getResource().getDatabaseIds().isEmpty()) {
+            for (String databaseId : ovs.getResource().getDatabaseIds()) {
+                Database database = governorOfDatabase.build(databaseId);
+                database.addDatabaseUserId(ovs.getResource().getId());
+                governorOfDatabase.preValidate(database);
+                governorOfDatabase.validate(database);
+                governorOfDatabase.store(database);
+            }
+        }
+
+        removeOversight(ovs);
         return databaseUser;
     }
 
@@ -188,6 +217,12 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<DatabaseUser> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        DatabaseUser databaseUser = build(resourceId);
+        return sendToOversight(databaseUser, ResourceAction.DELETE);
     }
 
     @Override

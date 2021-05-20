@@ -62,7 +62,7 @@ public class RedirectAMQPController extends BaseAMQPController<Redirect> {
     @Override
     protected String getRoutingKey(ResourceActionContext<Redirect> context) {
         if (context.getEventProvider().equals(PM)) {
-            return getTaskExecutorRoutingKey(context.getResource());
+            return getTaskExecutorRoutingKey(getResourceFromOvsContext(context));
         } else if (context.getEventProvider().equals(TE)) {
             return getDefaultRoutingKey();
         } else {

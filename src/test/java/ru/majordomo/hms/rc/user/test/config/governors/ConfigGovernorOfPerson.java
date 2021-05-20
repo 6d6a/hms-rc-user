@@ -22,7 +22,7 @@ public class ConfigGovernorOfPerson extends AbstractMongoConfiguration {
 
     @Bean
     public GovernorOfPerson governorOfPerson() {
-        return new GovernorOfPerson();
+        return new GovernorOfPerson(null);
     }
 
     @Override

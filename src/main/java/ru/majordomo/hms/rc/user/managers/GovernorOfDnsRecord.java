@@ -11,7 +11,10 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resources.DAO.DNSResourceRecordDAOImpl;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.DnsRecordChecks;
@@ -20,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.util.*;
 
@@ -36,6 +40,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Setter
     @Autowired
     private DomainRepository domainRepository;
+
+    public GovernorOfDnsRecord(OperationOversightRepository<DNSResourceRecord> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setCleaner(Cleaner cleaner) {
@@ -68,17 +76,13 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     }
 
     @Override
-    public DNSResourceRecord create(ServiceMessage serviceMessage) throws ParameterValidationException {
-        DNSResourceRecord record = buildResourceFromServiceMessage(serviceMessage);
-        preValidate(record);
-        validate(record);
-        store(record);
+    public OperationOversight<DNSResourceRecord> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        DNSResourceRecord record = this.updateWrapper(serviceMessage);
 
-        return record;
+        return sendToOversight(record, ResourceAction.UPDATE);
     }
 
-    @Override
-    public DNSResourceRecord update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    private DNSResourceRecord updateWrapper(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId = (String) serviceMessage.getParam("resourceId");
         if (resourceId == null) {
             throw new ParameterValidationException("Необходимо указать resourceId");
@@ -95,7 +99,6 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
         preValidate(record);
         validate(record);
-        store(record);
 
         return record;
     }
@@ -127,6 +130,12 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
         preDelete(resourceId);
         dnsResourceRecordDAO.delete(recordId);
+    }
+
+    @Override
+    public OperationOversight<DNSResourceRecord> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        DNSResourceRecord record = build(resourceId);
+        return sendToOversight(record, ResourceAction.DELETE);
     }
 
     @Override

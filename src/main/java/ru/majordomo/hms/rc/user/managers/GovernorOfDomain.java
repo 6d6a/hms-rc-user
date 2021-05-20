@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
@@ -38,9 +39,12 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.common.DKIMManager;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.event.domain.DomainWasDeleted;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DKIMRepository;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -80,6 +84,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Setter
     @Value("${resources.dkim.contentPattern}")
     private String dkimContentPattern;
+
+    public GovernorOfDomain(OperationOversightRepository<Domain> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
@@ -156,8 +164,25 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         this.applicationName = applicationName;
     }
 
+    /**
+     * При создании или регистрации домена логика Oversight не используется, объект сразу сохраняется в основную коллекцию
+     * (А так же сразу создаются персоны, dkim записи и т.д.)
+     * Методы completeOversight... переопределены и не сохраняют(удаляют) повторно объект(ы)
+     *
+     * TE не работает с очередями domain.*
+     */
     @Override
-    public Domain create(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<Domain> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<Domain> ovs;
+
+        Domain domain = this.createWrapper(serviceMessage);
+
+        ovs = sendToOversight(domain, ResourceAction.CREATE);
+
+        return ovs;
+    }
+
+    private Domain createWrapper(ServiceMessage serviceMessage) {
         Domain domain;
         boolean needRegister = false;
         boolean needTransfer = false;
@@ -189,7 +214,7 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 } catch (ConstraintViolationException e) {
                     StringBuilder sb = new StringBuilder();
                     e.getConstraintViolations().forEach(c ->
-                        sb.append("property: ").append(c.getPropertyPath()).append(" message: ").append(c.getMessage())
+                            sb.append("property: ").append(c.getPropertyPath()).append(" message: ").append(c.getMessage())
                     );
 
                     log.error("accountId {} can't register domain {} with person (id: '{}', nic-hanlde: '{}') " +
@@ -278,8 +303,21 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         }
     }
 
+    /**
+     * см. коммент к create (Логика Oversight не используется)
+     */
     @Override
-    public Domain update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<Domain> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        OperationOversight<Domain> ovs;
+
+        Domain domain = this.updateWrapper(serviceMessage);
+
+        ovs = sendToOversight(domain, ResourceAction.UPDATE);
+
+        return ovs;
+    }
+
+    private Domain updateWrapper(ServiceMessage serviceMessage) throws ParameterValidationException {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -413,6 +451,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
                 report.addParam("success", true);
 
+                OperationOversight<WebSite> ovs = governorOfWebSite.sendToOversight(webSite, ResourceAction.UPDATE);
+                report.addParam("ovsId", ovs.getId());
+                report.addParam("ovs", ovs);
+
                 String teRoutingKey = getTaskExecutorRoutingKey(webSite);
                 sender.send(WEBSITE_UPDATE, teRoutingKey, report);
             }
@@ -439,6 +481,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 }
 
                 report.addParam("success", true);
+
+                OperationOversight<Redirect> ovs = governorOfRedirect.sendToOversight(redirect, ResourceAction.UPDATE);
+                report.addParam("ovsId", ovs.getId());
+                report.addParam("ovs", ovs);
 
                 String teRoutingKey = getTaskExecutorRoutingKey(redirect);
                 sender.send(REDIRECT_UPDATE, teRoutingKey, report);
@@ -564,6 +610,31 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         repository.deleteById(domain.getId());
 
         publisher.publishEvent(new DomainWasDeleted(domain));
+    }
+
+    @Override
+    public OperationOversight<Domain> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        Domain domain = build(resourceId);
+        drop(domain.getId());
+        return sendToOversight(domain, ResourceAction.DELETE);
+    }
+
+    /**
+     * Только удаление Oversight, ресурс не трогаем
+     */
+    @Override
+    public Domain completeOversightAndStore(OperationOversight<Domain> ovs) {
+        removeOversight(ovs);
+
+        return ovs.getResource();
+    }
+
+    /**
+     * Только удаление Oversight, ресурс не трогаем
+     */
+    @Override
+    public void completeOversightAndDelete(OperationOversight<Domain> ovs) {
+        removeOversight(ovs);
     }
 
     @Override

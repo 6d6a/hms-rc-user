@@ -3,6 +3,7 @@ package ru.majordomo.hms.rc.user.resourceProcessor.impl.ssl;
 import lombok.AllArgsConstructor;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
@@ -20,9 +21,9 @@ public class SSLCertificateCreateFromLetsEncryptProcessor implements ResourcePro
         Boolean success = (Boolean) serviceMessage.getParam("success");
 
         if (success) {
-            context.setResource(
-                    processorContext.getGovernor().create(serviceMessage)
-            );
+            OperationOversight<SSLCertificate> ovs = processorContext.getGovernor().createByOversight(serviceMessage);
+            context.setOvs(ovs);
+            processorContext.getGovernor().completeOversightAndStore(ovs);
 
             processorContext.getSender().send(context, processorContext.getRoutingKeyResolver().get(context));
         } else {

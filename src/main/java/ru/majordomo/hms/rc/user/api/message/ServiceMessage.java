@@ -2,6 +2,8 @@ package ru.majordomo.hms.rc.user.api.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +76,11 @@ public class ServiceMessage {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonData = "";
         try {
+            SimpleFilterProvider simpleFilterProvider = new SimpleFilterProvider()
+                    .addFilter("websiteFilter", SimpleBeanPropertyFilter.serializeAll());
+
+            objectMapper.setFilterProvider(simpleFilterProvider);
+
             jsonData = objectMapper.writeValueAsString(this);
         } catch (IOException ex) {
             logger.error("Невозможно конвертировать в JSON" + ex.toString());

@@ -40,12 +40,11 @@ import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
-import ru.majordomo.hms.rc.user.repositories.DKIMRepository;
-import ru.majordomo.hms.rc.user.repositories.MailboxRedisRepository;
-import ru.majordomo.hms.rc.user.repositories.MailboxRepository;
-import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
+import ru.majordomo.hms.rc.user.repositories.*;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
@@ -78,6 +77,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     @Setter
     @Autowired
     private DKIMRepository dkimRepository;
+
+    public GovernorOfMailbox(OperationOversightRepository<Mailbox> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Value("${resources.quotable.warnPercent.mailbox}")
     public void setWarnPercent(int warnPercent){
@@ -158,28 +161,13 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
-    public Mailbox create(ServiceMessage serviceMessage) throws ParameterValidationException {
-        Mailbox mailbox;
-        try {
-            mailbox = buildResourceFromServiceMessage(serviceMessage);
-            validateAndStore(mailbox);
-        } catch (ClassCastException e) {
-            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
-        }
-        return mailbox;
+    public OperationOversight<Mailbox> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        Mailbox mailbox = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(mailbox, ResourceAction.UPDATE);
     }
 
-    @Override
-    public void validateAndStore(Mailbox mailbox) {
-        preValidate(mailbox);
-        validate(mailbox);
-        store(mailbox);
-        syncWithRedis(mailbox);
-    }
-
-    @Override
-    public Mailbox update(ServiceMessage serviceMessage)
-            throws ParameterValidationException, UnsupportedEncodingException {
+    private Mailbox updateWrapper(ServiceMessage serviceMessage) throws UnsupportedEncodingException {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -270,7 +258,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             throw new ParameterValidationException("Один из параметров указан неверно");
         }
 
-        validateAndStore(mailbox);
+        preValidate(mailbox);
+        validate(mailbox);
 
         return mailbox;
     }
@@ -299,6 +288,28 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<Mailbox> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        Mailbox mailbox = build(resourceId);
+        return sendToOversight(mailbox, ResourceAction.DELETE);
+    }
+
+    /**
+     * Создание/Изменение ресурса и последущие удаление Oversight
+     */
+    @Override
+    public Mailbox completeOversightAndStore(OperationOversight<Mailbox> ovs) {
+        if (ovs.getReplace()) {
+            removeOldResource(ovs.getResource());
+        }
+        Mailbox mailbox = ovs.getResource();
+        store(mailbox);
+        syncWithRedis(ovs.getResource());
+        removeOversight(ovs);
+
+        return mailbox;
     }
 
     @Override

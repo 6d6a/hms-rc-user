@@ -7,13 +7,13 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.amqp.WebSiteAMQPController;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
-import ru.majordomo.hms.rc.user.common.Constants;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
-import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
-import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resources.*;
 
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import java.util.Optional;
+
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Slf4j
 public class WebsiteUpdateFromPm extends BaseWebsiteProcessor {
@@ -36,28 +36,23 @@ public class WebsiteUpdateFromPm extends BaseWebsiteProcessor {
         } catch (Exception e) {
             throw new ResourceNotFoundException("Не найден ресурс с ID: " + resourceId);
         }
-        if (serviceMessage.getParam("lock") != null) {
-            resource.setLocked((Boolean) serviceMessage.getParam("lock"));
-            processorContext.getGovernor().store(resource);
-            processorContext.getSender().send(context, PM);
-            return;
-        }
-        if (resource.isLocked()) {
+
+        Optional<OperationOversight<WebSite>> existedOvs = processorContext.getGovernor().getOperationOversightByResource(resource);
+        if (existedOvs.isPresent()) {
             throw new ParameterValidationException("Ресурс в процессе обновления");
         }
 
-        resource = processorContext.getGovernor().update(serviceMessage);
-
-        context.setResource(resource);
+        OperationOversight<WebSite> ovs = processorContext.getGovernor().updateByOversight(context.getMessage());
+        context.setOvs(ovs);
 
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
-
         context.setRoutingKey(routingKey);
 
-        validateAndFullExtendedAction(context);
+        if (!TE.equals(routingKey)) {
+            processorContext.getGovernor().completeOversightAndStore(ovs);
+        }
 
-        resource.setLocked(true);
-        processorContext.getGovernor().store(resource);
+        validateAndFullExtendedAction(context);
 
         processorContext.getSender().send(context, routingKey);
     }

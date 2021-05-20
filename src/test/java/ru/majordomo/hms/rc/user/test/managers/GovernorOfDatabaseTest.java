@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDatabase;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DatabaseRepository;
 import ru.majordomo.hms.rc.user.repositories.DatabaseUserRepository;
 import ru.majordomo.hms.rc.user.resources.Database;
@@ -74,14 +75,16 @@ public class GovernorOfDatabaseTest {
     @Test
     public void create() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
-        governor.create(serviceMessage);
+        OperationOversight<Database> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
     public void createWithQuotaNotLong() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.addParam("quota", 5);
-        governor.create(serviceMessage);
+        OperationOversight<Database> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -89,7 +92,8 @@ public class GovernorOfDatabaseTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.addParam("quota", 10);
         serviceMessage.addParam("quotaUsed", 5);
-        governor.create(serviceMessage);
+        OperationOversight<Database> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -106,7 +110,8 @@ public class GovernorOfDatabaseTest {
     public void createWithoutDatabaseUsers() throws Exception {
         List<String> emptyDatabaseUsers = new ArrayList<>();
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(emptyDatabaseUsers);
-        governor.create(serviceMessage);
+        OperationOversight<Database> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -114,7 +119,8 @@ public class GovernorOfDatabaseTest {
         String emptyString = "";
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.setAccountId(emptyString);
-        governor.create(serviceMessage);
+        OperationOversight<Database> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -122,14 +128,17 @@ public class GovernorOfDatabaseTest {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
         serviceMessage.delParam("type");
         serviceMessage.addParam("type", "WRONGDBTYPE");
-        governor.create(serviceMessage);
+        OperationOversight<Database> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void createWithSameName() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateDatabaseCreateServiceMessage(batchOfDatabases.get(0).getDatabaseUserIds());
-        governor.create(serviceMessage);
-        governor.create(serviceMessage);
+        OperationOversight<Database> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
+        ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test

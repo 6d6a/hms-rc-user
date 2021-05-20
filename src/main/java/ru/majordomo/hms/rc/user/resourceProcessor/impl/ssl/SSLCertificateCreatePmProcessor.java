@@ -9,14 +9,14 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resourceProcessor.support.ResourceSearcher;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
-import static ru.majordomo.hms.rc.user.common.Constants.LETSENCRYPT;
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.*;
 
 @AllArgsConstructor
 public class SSLCertificateCreatePmProcessor implements ResourceProcessor<SSLCertificate> {
@@ -45,11 +45,11 @@ public class SSLCertificateCreatePmProcessor implements ResourceProcessor<SSLCer
         }
 
         if (((GovernorOfSSLCertificate) processorContext.getGovernor()).canCreateCustomCertificate(serviceMessage)) {
-            SSLCertificate certificate = processorContext.getGovernor().create(serviceMessage);
+            OperationOversight<SSLCertificate> ovs = processorContext.getGovernor().createByOversight(serviceMessage);
+            context.setOvs(ovs);
+            processorContext.getGovernor().completeOversightAndStore(ovs);
 
-            context.setResource(certificate);
-
-            String teRoutingKey = ((GovernorOfSSLCertificate) processorContext.getGovernor()).getTERoutingKey(certificate);
+            String teRoutingKey = ((GovernorOfSSLCertificate) processorContext.getGovernor()).getTERoutingKey(ovs.getResource());
 
             processorContext.getSender().send(context, teRoutingKey == null ? PM : teRoutingKey);
         } else {

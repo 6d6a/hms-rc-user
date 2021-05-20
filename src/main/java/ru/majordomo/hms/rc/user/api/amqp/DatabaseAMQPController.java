@@ -64,7 +64,7 @@ public class DatabaseAMQPController extends BaseAMQPController<Database> {
         String routingKey = getDefaultRoutingKey();
 
         if (context.getEventProvider().equals(PM)) {
-            routingKey = getTaskExecutorRoutingKey(context.getResource());
+            routingKey = getTaskExecutorRoutingKey(getResourceFromOvsContext(context));
         } else if (context.getEventProvider().equals(TE)) {
             routingKey = getDefaultRoutingKey();
         }

@@ -22,7 +22,7 @@ public class ConfigGovernorOfUnixAccount extends AbstractMongoConfiguration {
 
     @Bean
     public GovernorOfUnixAccount governorOfUnixAccount() {
-        return new GovernorOfUnixAccount();
+        return new GovernorOfUnixAccount(null);
     }
 
     @Override

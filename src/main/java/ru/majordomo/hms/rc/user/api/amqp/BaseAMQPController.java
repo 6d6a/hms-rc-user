@@ -23,16 +23,17 @@ import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.LordOfResources;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resourceProcessor.impl.*;
 import ru.majordomo.hms.rc.user.resourceProcessor.impl.te.TeCreateProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.impl.te.TeDeleteProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.impl.te.TeUpdateProcessor;
-import ru.majordomo.hms.rc.user.resourceProcessor.support.ResourceByUrlBuilder;
+import ru.majordomo.hms.rc.user.resourceProcessor.support.OperationOversightBuilder;
 import ru.majordomo.hms.rc.user.resourceProcessor.support.ResultSender;
 import ru.majordomo.hms.rc.user.resourceProcessor.support.RoutingKeyResolver;
-import ru.majordomo.hms.rc.user.resourceProcessor.support.impl.DefaultResourceByUrlBuilder;
+import ru.majordomo.hms.rc.user.resourceProcessor.support.impl.DefaultOperationOversightBuilder;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ServerStorable;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
@@ -88,8 +89,8 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
 
     protected abstract String getRoutingKey(ResourceActionContext<T> context);
 
-    public final ResourceByUrlBuilder<T> getResourceByUrlBuilder() {
-        return new DefaultResourceByUrlBuilder<>(governor);
+    public final OperationOversightBuilder<T> getOperationOversightBuilder() {
+        return new DefaultOperationOversightBuilder<>(governor);
     }
 
     protected String getDefaultRoutingKey() { return PM; }
@@ -160,13 +161,21 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
     protected ServiceMessage createReportMessage(
             ResourceActionContext<T> context
     ) {
-        T resource = context.getResource();
+        T resource;
+        OperationOversight<T> ovs = context.getOvs();
         ServiceMessage event = context.getMessage();
 
         ServiceMessage report = new ServiceMessage();
         report.setActionIdentity(event.getActionIdentity());
         report.setOperationIdentity(event.getOperationIdentity());
         report.setAccountId(event.getAccountId());
+        if (ovs != null) {
+            resource = ovs.getResource();
+            report.addParam("ovsId", ovs.getId());
+            report.addParam("ovs", ovs);
+        } else {
+            resource = context.getResource();
+        }
         if (resource != null) {
             report.setObjRef(
                     getObjRef(resource)
@@ -200,6 +209,11 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
                     report.addParam(teParam.getKey(), teParam.getValue());
                 }
             }
+        }
+
+        //originalParams нужны только для TE. Добавлено по просьбе инженеров.
+        if (!event.getParams().isEmpty()) {
+            report.addParam("originalParams", event.getParams());
         }
 
         Arrays.asList("errors", "exceptionClass", "errorMessage", "bigErrorMessage").forEach(key -> {
@@ -309,5 +323,9 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
                     errors.put(c.getPropertyPath(), error);
                 });
         return errors.values();
+    }
+
+    T getResourceFromOvsContext(ResourceActionContext<T> context) {
+        return context.getOvs() != null ? context.getOvs().getResource() : context.getResource();
     }
 }

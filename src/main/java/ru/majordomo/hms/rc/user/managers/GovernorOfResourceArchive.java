@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -25,6 +26,9 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.repositories.ResourceArchiveRepository;
 import ru.majordomo.hms.rc.user.resources.Resource;
 import ru.majordomo.hms.rc.user.resources.ResourceArchive;
@@ -42,6 +46,10 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     private String archiveHostname;
     private Validator validator;
     private Cleaner cleaner;
+
+    public GovernorOfResourceArchive(OperationOversightRepository<ResourceArchive> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setRepository(ResourceArchiveRepository repository) {
@@ -74,7 +82,13 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
     }
 
     @Override
-    public ResourceArchive update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<ResourceArchive> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        ResourceArchive resourceArchive = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(resourceArchive, ResourceAction.UPDATE);
+    }
+
+    private ResourceArchive updateWrapper(ServiceMessage serviceMessage) {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -112,7 +126,6 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
         preValidate(resourceArchive);
         validate(resourceArchive);
-        store(resourceArchive);
 
         return resourceArchive;
     }
@@ -134,6 +147,12 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<ResourceArchive> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        ResourceArchive resourceArchive = build(resourceId);
+        return sendToOversight(resourceArchive, ResourceAction.DELETE);
     }
 
     @Override

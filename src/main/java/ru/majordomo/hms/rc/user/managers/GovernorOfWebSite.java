@@ -9,7 +9,10 @@ import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.configurations.DefaultWebSiteSettings;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.repositories.WebSiteRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteChecks;
@@ -18,6 +21,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.WebSiteImportChecks;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +39,10 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     private StaffResourceControllerClient staffRcClient;
     private Validator validator;
     private DefaultWebSiteSettings defaultWebSiteSettings;
+
+    public GovernorOfWebSite(OperationOversightRepository<WebSite> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setStaffRcClient(StaffResourceControllerClient staffRcClient) {
@@ -76,8 +84,7 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
         this.defaultWebSiteSettings = defaultWebSiteSettings;
     }
 
-    @Override
-    public WebSite update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    private WebSite updateWrapper(ServiceMessage serviceMessage) {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -258,9 +265,15 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
         preValidate(website);
         validate(website);
-        store(website);
 
         return website;
+    }
+
+    @Override
+    public OperationOversight<WebSite> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        WebSite website = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(website, ResourceAction.UPDATE);
     }
 
     @Override
@@ -276,6 +289,12 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<WebSite> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        WebSite website = build(resourceId);
+        return sendToOversight(website, ResourceAction.DELETE);
     }
 
     @Override

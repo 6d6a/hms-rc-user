@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -17,6 +18,9 @@ import javax.validation.Validator;
 import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.resources.Address;
 import ru.majordomo.hms.rc.user.resources.LegalEntity;
@@ -38,6 +42,10 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     private GovernorOfDomain governorOfDomain;
     private Validator validator;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    public GovernorOfPerson(OperationOversightRepository<Person> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setDomainRegistrarClient(DomainRegistrarClient domainRegistrarClient) {
@@ -65,25 +73,27 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     @Override
-    public Person create(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<Person> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<Person> ovs;
+
         Person person;
         try {
             person = buildResourceFromServiceMessage(serviceMessage);
-            preValidate(person);
-            validate(person);
-
-            if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
-                createPersonInDomainRegistrar(person);
-            }
-
-            store(person);
         } catch (ClassCastException e) {
-            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
+            throw new ParameterValidationException("Ошибка при создании персоны");
         }
+        preValidate(person);
+        validate(person);
 
-        return person;
+        ovs = sendToOversight(person, ResourceAction.CREATE);
+
+        return ovs;
     }
 
+    /**
+     * Создание персоны в обход логики создания ресурса с использованием Oversight.
+     * Используется при регистрации домена
+     */
     Person createPersonRegistrant(Person person) {
         preValidate(person);
         validate(person);
@@ -123,7 +133,13 @@ public class GovernorOfPerson extends LordOfResources<Person> {
     }
 
     @Override
-    public Person update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<Person> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        Person person = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(person, ResourceAction.UPDATE);
+    }
+
+    private Person updateWrapper(ServiceMessage serviceMessage) {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -212,12 +228,6 @@ public class GovernorOfPerson extends LordOfResources<Person> {
         preValidate(person);
         validate(person);
 
-        if (person.getNicHandle() == null || person.getNicHandle().equals("")) {
-            createPersonInDomainRegistrar(person);
-        }
-
-        store(person);
-
         return person;
     }
 
@@ -259,6 +269,37 @@ public class GovernorOfPerson extends LordOfResources<Person> {
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    /**
+     * Создание/Изменение ресурса и последущие удаление Oversight
+     */
+    @Override
+    public Person completeOversightAndStore(OperationOversight<Person> ovs) {
+        if (ovs.getReplace()) {
+            removeOldResource(ovs.getResource());
+        }
+        if (ovs.getResource().getNicHandle() == null || ovs.getResource().getNicHandle().equals("")) {
+            createPersonInDomainRegistrar(ovs.getResource());
+        }
+        Person person = ovs.getResource();
+        store(person);
+        removeOversight(ovs);
+
+        return person;
+    }
+
+    @Override
+    public OperationOversight<Person> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("personId", resourceId);
+
+        if (governorOfDomain.buildAll(keyValue).size() > 0) {
+            throw new ParameterValidationException("Имеются домены, зарегистрированные на данную персону. Удаление персоны невозможно");
+        }
+
+        Person record = build(resourceId);
+        return sendToOversight(record, ResourceAction.DELETE);
     }
 
     @Override

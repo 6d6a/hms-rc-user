@@ -62,7 +62,7 @@ public class DatabaseUserAMQPController extends BaseAMQPController<DatabaseUser>
     @Override
     protected String getRoutingKey(ResourceActionContext<DatabaseUser> context) {
         if (context.getEventProvider().equals(PM)) {
-            return getTaskExecutorRoutingKey(context.getResource());
+            return getTaskExecutorRoutingKey(getResourceFromOvsContext(context));
         } else if (context.getEventProvider().equals(TE)) {
             return getDefaultRoutingKey();
         } else {

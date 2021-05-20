@@ -10,6 +10,9 @@ import ru.majordomo.hms.rc.user.api.DTO.Count;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.repositories.RedirectRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.validation.group.RedirectChecks;
@@ -17,6 +20,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.RedirectChecks;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static ru.majordomo.hms.rc.user.common.Utils.mapContains;
@@ -31,6 +35,10 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     private Validator validator;
     private GovernorOfUnixAccount governorOfUnixAccount;
     private GovernorOfDnsRecord governorOfDnsRecord;
+
+    public GovernorOfRedirect(OperationOversightRepository<Redirect> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setGovernorOfDnsRecord(GovernorOfDnsRecord governorOfDnsRecord) {
@@ -68,7 +76,30 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     }
 
     @Override
-    public Redirect update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<Redirect> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<Redirect> ovs;
+
+        try {
+            Redirect redirect = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(redirect);
+            Boolean replace = Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"));
+            validate(redirect);
+            ovs = sendToOversight(redirect, ResourceAction.CREATE, replace);
+        } catch (ClassCastException e) {
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
+        }
+
+        return ovs;
+    }
+
+    @Override
+    public OperationOversight<Redirect> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        Redirect redirect = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(redirect, ResourceAction.UPDATE);
+    }
+
+    private Redirect updateWrapper(ServiceMessage serviceMessage) {
         String resourceId = null;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -91,7 +122,6 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
         preValidate(redirect);
         validate(redirect);
-        store(redirect);
 
         return redirect;
     }
@@ -141,6 +171,30 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    /**
+     * Создание/Изменение ресурса и последущие удаление Oversight
+     */
+    @Override
+    public Redirect completeOversightAndStore(OperationOversight<Redirect> ovs) {
+        if (ovs.getReplace()) {
+            removeOldResource(ovs.getResource());
+        }
+        if (ovs.getAction().equals(ResourceAction.CREATE)) {
+            postValidate(ovs.getResource());
+        }
+        Redirect redirect = ovs.getResource();
+        store(redirect);
+        removeOversight(ovs);
+
+        return redirect;
+    }
+
+    @Override
+    public OperationOversight<Redirect> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        Redirect redirect = build(resourceId);
+        return sendToOversight(redirect, ResourceAction.DELETE);
     }
 
     @Override

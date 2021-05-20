@@ -31,17 +31,17 @@ public class ConfigDatabaseUserAMQPControllerTest extends AbstractMongoConfigura
 
     @Bean
     public GovernorOfDatabaseUser governorOfDatabaseUser() {
-        return new GovernorOfDatabaseUser();
+        return new GovernorOfDatabaseUser(null);
     }
 
     @Bean
     public GovernorOfResourceArchive governorOfResourceArchive() {
-        return new GovernorOfResourceArchive();
+        return new GovernorOfResourceArchive(null);
     }
 
     @Bean
     public GovernorOfWebSite governorOfWebSite() {
-        return new GovernorOfWebSite();
+        return new GovernorOfWebSite(null);
     }
     @Bean
     public ServletWebServerFactory embeddedServletContainerFactory() {

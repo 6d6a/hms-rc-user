@@ -18,6 +18,7 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfUnixAccount;
 import ru.majordomo.hms.rc.user.model.Counter;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.resources.SSHKeyPair;
@@ -84,14 +85,16 @@ public class GovernorOfUnixAccountTest {
     @Test
     public void create() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateServiceMessage();
-        UnixAccount unixAccount = governor.create(serviceMessage);
+        OperationOversight<UnixAccount> ovs = governor.createByOversight(serviceMessage);
+        UnixAccount unixAccount = governor.completeOversightAndStore(ovs);
         System.out.println(unixAccount.toString());
     }
 
     @Test
     public void createWithQuotaAsInt() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateQuotaIntServiceMessage();
-        UnixAccount unixAccount = governor.create(serviceMessage);
+        OperationOversight<UnixAccount> ovs = governor.createByOversight(serviceMessage);
+        UnixAccount unixAccount = governor.completeOversightAndStore(ovs);
         assertThat(unixAccount.getQuota(), is(10485760L));
     }
 
@@ -99,13 +102,15 @@ public class GovernorOfUnixAccountTest {
     public void createWithoutQuota() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateServiceMessage();
         serviceMessage.delParam("quota");
-        governor.create(serviceMessage);
+        OperationOversight<UnixAccount> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
     public void createWithQuotaAsString() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateUnixAccountCreateQuotaStringServiceMessage();
-        governor.create(serviceMessage);
+        OperationOversight<UnixAccount> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -251,7 +256,8 @@ public class GovernorOfUnixAccountTest {
         serviceMessage.addParam("crontab", Collections.singletonList(cronTask));
         SSHKeyPair keyPair = unixAccounts.get(0).getKeyPair();
         System.out.println(unixAccounts.get(0).getCrontab());
-        governor.update(serviceMessage);
+        OperationOversight<UnixAccount> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
         UnixAccount unixAccount = repository
                 .findById(unixAccounts.get(0).getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
@@ -266,7 +272,8 @@ public class GovernorOfUnixAccountTest {
         serviceMessage.setAccountId(unixAccounts.get(0).getAccountId());
         serviceMessage.addParam("resourceId", unixAccounts.get(0).getId());
         serviceMessage.addParam("sendmailAllowed", false);
-        governor.update(serviceMessage);
+        OperationOversight<UnixAccount> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
         UnixAccount unixAccount = repository
                 .findById(unixAccounts.get(0).getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));

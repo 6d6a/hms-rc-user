@@ -39,7 +39,7 @@ public abstract class BaseWebsiteProcessor implements ResourceProcessor<WebSite>
             return;
         }
 
-        WebSite webSite = context.getResource();
+        WebSite webSite = context.getOvs() != null ? context.getOvs().getResource() : context.getResource();
         if (webSite == null) {
             return;
         }

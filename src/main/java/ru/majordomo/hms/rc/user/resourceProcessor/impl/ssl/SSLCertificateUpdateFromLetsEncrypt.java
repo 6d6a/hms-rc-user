@@ -10,6 +10,7 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.CertificateHelper;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
@@ -47,7 +48,9 @@ public class SSLCertificateUpdateFromLetsEncrypt implements ResourceProcessor<SS
             try {
                 LocalDateTime notAfter = CertificateHelper.getNotAfter(certificate);
                 if (notAfter.isBefore(LocalDateTime.now())) {
-                    processorContext.getGovernor().drop(certificate.getId());
+                    OperationOversight<SSLCertificate> ovs = processorContext.getGovernor().dropByOversight(certificate.getId());
+                    context.setOvs(ovs);
+                    processorContext.getGovernor().completeOversightAndDelete(ovs);
                 }
             } catch (Exception e) {
                 log.info("catch e {} e.message {} serviceMessage {}", e.getClass(), e.getMessage(), serviceMessage);

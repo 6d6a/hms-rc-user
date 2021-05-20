@@ -14,6 +14,7 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.managers.GovernorOfWebSite;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.DomainRepository;
 import ru.majordomo.hms.rc.user.repositories.PersonRepository;
 import ru.majordomo.hms.rc.user.repositories.UnixAccountRepository;
@@ -110,7 +111,8 @@ public class GovernorOfWebsiteTest {
         }
 
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(localDomainIds, accountId, serviceId);
-        WebSite webSite = governor.create(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.createByOversight(serviceMessage);
+        WebSite webSite = governor.completeOversightAndStore(ovs);
         assertThat(webSite.getStaticFileExtensions().size(), is(18));
     }
 
@@ -119,7 +121,8 @@ public class GovernorOfWebsiteTest {
         List<String> emptydomainIds = new ArrayList<>();
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(emptydomainIds, accountId, serviceId);
 
-        governor.create(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -127,7 +130,8 @@ public class GovernorOfWebsiteTest {
         String emptyString = "";
         ServiceMessage serviceMessage = ServiceMessageGenerator.generateWebsiteCreateServiceMessage(domainIds, emptyString, serviceId);
 
-        governor.create(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.createByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -142,7 +146,8 @@ public class GovernorOfWebsiteTest {
         serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("applicationServiceId", serviceId);
 
-        WebSite webSite = governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        WebSite webSite = governor.completeOversightAndStore(ovs);
         System.out.println(webSite.getCgiFileExtensions());
 
         WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
@@ -165,7 +170,8 @@ public class GovernorOfWebsiteTest {
         serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("applicationServiceId", serviceId);
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -177,7 +183,8 @@ public class GovernorOfWebsiteTest {
         serviceMessage.addParam("resourceId", batchOfWebsites.get(0).getId());
         serviceMessage.addParam("applicationServiceId", ObjectId.get().toString());
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ParameterValidationException.class)
@@ -193,7 +200,8 @@ public class GovernorOfWebsiteTest {
         serviceMessage.addParam("applicationServiceId", serviceId);
         serviceMessage.addParam("mbstringFuncOverload", "Валера");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
 
@@ -230,7 +238,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("scriptAlias", "В%алера");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -238,7 +247,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("indexFileList", Arrays.asList(".index.php", "index2.php"));
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -246,7 +256,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("cgiFileExtensions", Arrays.asList("py", ".log"));
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -254,7 +265,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("ssiFileExtensions", Arrays.asList("htm", "fer4#"));
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -262,7 +274,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("expiresForTypes", Collections.singletonMap("html", "hh"));
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -270,7 +283,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("documentRoot", "/home/u100800");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test(expected = ConstraintViolationException.class)
@@ -278,7 +292,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("documentRoot", "asdasdasdasd.com/www/../../../123");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @Test
@@ -286,7 +301,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("mailEnvelopeFrom", "majordomo");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
 
@@ -298,7 +314,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("mailEnvelopeFrom", "majordomo.ru");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
 
@@ -310,7 +327,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("mailEnvelopeFrom", "noreply@majordomo");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
 
@@ -322,7 +340,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareWebsiteUpdateServiceMessage();
         serviceMessage.addParam("mailEnvelopeFrom", "__username+firstname-last.name@majordomo.ru");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         Assert.isTrue(foundWebSite.getMailEnvelopeFrom().equals("__username+firstname-last.name@majordomo.ru"), "Must be equal");
@@ -333,7 +352,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareSecondWebsiteUpdateServiceMessage();
         serviceMessage.addParam("mailEnvelopeFrom", "__username+firstname-last.name@мажордомо.рф");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
 
         WebSite foundWebSite = webSiteRepository.findById(batchOfWebsites.get(1).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
         Assert.isTrue(foundWebSite.getMailEnvelopeFrom().equals("__username+firstname-last.name@" + IDN.toASCII("мажордомо.рф")), "Must be equal");
@@ -344,7 +364,8 @@ public class GovernorOfWebsiteTest {
         ServiceMessage serviceMessage = prepareSecondWebsiteUpdateServiceMessage();
         serviceMessage.addParam("mailEnvelopeFrom", "неотвечать@мажордомо.рф");
 
-        governor.update(serviceMessage);
+        OperationOversight<WebSite> ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
     }
 
     @After

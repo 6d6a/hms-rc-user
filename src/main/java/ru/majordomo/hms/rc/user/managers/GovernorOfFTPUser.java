@@ -16,7 +16,10 @@ import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.FTPUserRepository;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resources.FTPUser;
 import ru.majordomo.hms.rc.user.resources.UnixAccount;
 import ru.majordomo.hms.rc.user.resources.validation.group.FTPUserChecks;
@@ -30,6 +33,10 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     private FTPUserRepository repository;
     private GovernorOfUnixAccount governorOfUnixAccount;
     private Validator validator;
+
+    public GovernorOfFTPUser(OperationOversightRepository<FTPUser> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setGovernorOfUnixAccount(GovernorOfUnixAccount governorOfUnixAccount) {
@@ -52,8 +59,13 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
     }
 
     @Override
-    public FTPUser update(ServiceMessage serviceMessage)
-            throws ParameterValidationException, UnsupportedEncodingException {
+    public OperationOversight<FTPUser> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        FTPUser ftpUser = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(ftpUser, ResourceAction.UPDATE);
+    }
+
+    private FTPUser updateWrapper(ServiceMessage serviceMessage) throws UnsupportedEncodingException {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -103,7 +115,6 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         }
 
         validate(ftpUser);
-        store(ftpUser);
 
         return ftpUser;
     }
@@ -130,6 +141,12 @@ public class GovernorOfFTPUser extends LordOfResources<FTPUser> {
         preDelete(resourceId);
 
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<FTPUser> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        FTPUser ftpUser = build(resourceId);
+        return sendToOversight(ftpUser, ResourceAction.DELETE);
     }
 
     @Override

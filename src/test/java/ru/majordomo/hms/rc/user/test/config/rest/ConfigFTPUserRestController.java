@@ -43,12 +43,12 @@ public class ConfigFTPUserRestController extends AbstractMongoConfiguration {
 
     @Bean
     public GovernorOfFTPUser governorOfFTPUser() {
-        return new GovernorOfFTPUser();
+        return new GovernorOfFTPUser(null);
     }
 
     @Bean
     public GovernorOfUnixAccount governorOfUnixAccount() {
-        return new GovernorOfUnixAccount();
+        return new GovernorOfUnixAccount(null);
     }
     @Bean
     public Cleaner cleaner() {

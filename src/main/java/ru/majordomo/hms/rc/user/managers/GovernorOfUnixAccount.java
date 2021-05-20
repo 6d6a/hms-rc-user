@@ -45,10 +45,13 @@ import ru.majordomo.hms.rc.staff.resources.Server;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.PasswordManager;
+import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.common.SSHKeyManager;
 import ru.majordomo.hms.rc.user.event.infect.UnixAccountInfectNotifyEvent;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.MalwareReportRepository;
+import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resources.CronTask;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -83,6 +86,10 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     @Nullable
     @Value("${resources.unixAccount.puttygenPath:puttygen}")
     private String puttygenPath;
+
+    public GovernorOfUnixAccount(OperationOversightRepository<UnixAccount> operationOversightRepository) {
+        super(operationOversightRepository);
+    }
 
     @Autowired
     public void setPmFeignClient (PmFeignClient personmgr) {
@@ -150,7 +157,13 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
     }
 
     @Override
-    public UnixAccount update(ServiceMessage serviceMessage) throws ParameterValidationException {
+    public OperationOversight<UnixAccount> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
+        UnixAccount unixAccount = this.updateWrapper(serviceMessage);
+
+        return sendToOversight(unixAccount, ResourceAction.UPDATE);
+    }
+
+    private UnixAccount updateWrapper(ServiceMessage serviceMessage) {
         String resourceId;
 
         if (serviceMessage.getParam("resourceId") != null) {
@@ -233,7 +246,6 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
         preValidate(unixAccount);
         validate(unixAccount);
-        store(unixAccount);
 
         return unixAccount;
     }
@@ -270,6 +282,23 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
 
         preDelete(resourceId);
         repository.deleteById(resourceId);
+    }
+
+    @Override
+    public OperationOversight<UnixAccount> dropByOversight(String resourceId) throws ResourceNotFoundException {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("unixAccountId", resourceId);
+
+        if (governorOfFTPUser.buildAll(keyValue).size() > 0) {
+            throw new ParameterValidationException("У UnixAccount'а есть FTPUser'ы");
+        }
+
+        if (governorOfWebSite.buildAll(keyValue).size() > 0) {
+            throw new ParameterValidationException("У UnixAccount'а есть Website'ы");
+        }
+
+        UnixAccount unixAccount = build(resourceId);
+        return sendToOversight(unixAccount, ResourceAction.DELETE);
     }
 
     /**

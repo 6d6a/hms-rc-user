@@ -21,27 +21,27 @@ public class ConfigGovernorOfRedirect extends AbstractMongoConfiguration {
 
     @Bean
     public GovernorOfDnsRecord governorOfDnsRecord() {
-        return new GovernorOfDnsRecord();
+        return new GovernorOfDnsRecord(null);
     }
 
     @Bean
     public GovernorOfDomain governorOfDomain() {
-        return new GovernorOfDomain();
+        return new GovernorOfDomain(null);
     }
 
     @Bean
     public GovernorOfUnixAccount governorOfUnixAccount() {
-        return new GovernorOfUnixAccount();
+        return new GovernorOfUnixAccount(null);
     }
 
     @Bean
     public GovernorOfPerson governorOfPerson() {
-        return new GovernorOfPerson();
+        return new GovernorOfPerson(null);
     }
 
     @Bean
     public GovernorOfRedirect governorOfRedirect() {
-        return new GovernorOfRedirect();
+        return new GovernorOfRedirect(null);
     }
 
     @Override
