@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.resourceProcessor.impl;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
@@ -21,7 +22,7 @@ public class DefaultCreatePmProcessor<T extends Resource> implements ResourcePro
 
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
 
-        if (!TE.equals(routingKey)) {
+        if (!TE.equals(routingKey) && !StringUtils.startsWith(routingKey, TE + ".")) {
             processorContext.getGovernor().completeOversightAndStore(ovs);
         }
 
