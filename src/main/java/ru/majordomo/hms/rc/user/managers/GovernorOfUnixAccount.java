@@ -360,7 +360,7 @@ public class GovernorOfUnixAccount extends LordOfResources<UnixAccount> {
         String publicKey = null;
         String privateKey = null;
         Boolean sendmailAllowed = null;
-        Boolean switchedOn = null;
+        Boolean switchedOn = true;
         Boolean writable = null;
 
         try {
