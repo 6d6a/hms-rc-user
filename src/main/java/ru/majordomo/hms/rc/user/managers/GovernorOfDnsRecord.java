@@ -101,6 +101,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         validate(record);
 
         if (record.getId() == null) {
+            //ID ресурса не учавствует в логике работы базы данных, нужен для корректной работы ovs
             record.setId(resourceId);
         }
 
@@ -249,6 +250,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         }
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
         if (record.getId() == null) {
+            //ID ресурса не учавствует в логике работы базы данных, нужен для корректной работы ovs
             record.setId(resourceId);
         }
         return construct(record);
@@ -284,6 +286,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         }
 
         if (record.getId() == null) {
+            //ID ресурса не учавствует в логике работы базы данных, нужен для корректной работы ovs
             record.setId(keyValue.get("resourceId"));
         }
 
