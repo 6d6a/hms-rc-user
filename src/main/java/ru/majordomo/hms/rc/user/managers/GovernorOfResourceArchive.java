@@ -193,6 +193,7 @@ public class GovernorOfResourceArchive extends LordOfResources<ResourceArchive> 
         try {
             LordOfResources<? extends Resource> governor = getGovernor(archive);
             resource = governor.build(archivedResourceId);
+            archive.setResource(resource);
         } catch (Exception e) {
             e.getMessage();
             e.printStackTrace();
