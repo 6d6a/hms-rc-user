@@ -100,6 +100,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         preValidate(record);
         validate(record);
 
+        if (record.getId() == null) {
+            record.setId(resourceId);
+        }
+
         return record;
     }
 
@@ -244,6 +248,9 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
             throw new ParameterValidationException("ID DNS-записи должен быть в числовом формате");
         }
         DNSResourceRecord record = dnsResourceRecordDAO.findOne(recordId);
+        if (record.getId() == null) {
+            record.setId(resourceId);
+        }
         return construct(record);
     }
 
@@ -274,6 +281,10 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
 
         if (record == null) {
             throw new ResourceNotFoundException("ДНС-запись с ID:" + keyValue.get("resourceId") + " не найдена");
+        }
+
+        if (record.getId() == null) {
+            record.setId(keyValue.get("resourceId"));
         }
 
         return construct(record);
