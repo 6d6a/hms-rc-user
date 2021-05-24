@@ -1,6 +1,7 @@
 package ru.majordomo.hms.rc.user.resourceProcessor.impl;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
@@ -43,7 +44,7 @@ public class DefaultUpdatePmProcessor<T extends Resource> implements ResourcePro
 
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
 
-        if (!TE.equals(routingKey)) {
+        if (!TE.equals(routingKey) && !StringUtils.startsWith(routingKey, TE + ".")) {
             processorContext.getGovernor().completeOversightAndStore(ovs);
         }
 

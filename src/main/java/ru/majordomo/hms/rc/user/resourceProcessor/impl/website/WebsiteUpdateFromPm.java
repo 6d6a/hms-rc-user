@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.resourceProcessor.impl.website;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.api.amqp.WebSiteAMQPController;
@@ -48,7 +49,7 @@ public class WebsiteUpdateFromPm extends BaseWebsiteProcessor {
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
         context.setRoutingKey(routingKey);
 
-        if (!TE.equals(routingKey)) {
+        if (!TE.equals(routingKey) && !StringUtils.startsWith(routingKey, TE + ".")) {
             processorContext.getGovernor().completeOversightAndStore(ovs);
         }
 
