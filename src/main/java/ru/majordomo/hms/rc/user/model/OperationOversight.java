@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.MongoId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -55,6 +56,7 @@ public class OperationOversight<T extends Resource> {
         this.resourceId = resource.getId();
         this.action = action;
         this.resourceClass = resource.getClass().getName();
+        genResId();
     }
 
     public OperationOversight(T resource, ResourceAction action, Boolean replace) {
@@ -63,5 +65,17 @@ public class OperationOversight<T extends Resource> {
         this.action = action;
         this.resourceClass = resource.getClass().getName();
         this.replace = replace;
+        genResId();
+    }
+
+    /**
+     * Генерация ID для ресурса при операции на создание. Необходимо для TE.
+     */
+    private void genResId() {
+        if (this.resource != null && this.resource.getId() == null) {
+            String genId = new ObjectId().toString();
+            this.resource.setId(genId);
+            this.resourceId = genId;
+        }
     }
 }
