@@ -11,6 +11,8 @@ import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Document
@@ -42,6 +44,16 @@ public class OperationOversight<T extends Resource> {
     private T resource;
 
     /**
+     * Зависимости которые изменяются в ходе изменения ресурса (изменения применяются после получения ответа от TE)
+     */
+    private List<? extends Resource> affectedResources = new ArrayList<>();
+
+    /**
+     * Зависимости от которых завист изменение ресурса
+     */
+    private List<? extends Resource> requiredResources = new ArrayList<>();
+
+    /**
      * Замена ресурса при создании
      */
     private Boolean replace = false;
@@ -52,20 +64,18 @@ public class OperationOversight<T extends Resource> {
     public OperationOversight() {}
 
     public OperationOversight(T resource, ResourceAction action) {
-        this.resource = resource;
-        this.resourceId = resource.getId();
-        this.action = action;
-        this.resourceClass = resource.getClass().getName();
-        genResId();
+        defaultConstruct(resource, action);
     }
 
     public OperationOversight(T resource, ResourceAction action, Boolean replace) {
-        this.resource = resource;
-        this.resourceId = resource.getId();
-        this.action = action;
-        this.resourceClass = resource.getClass().getName();
+        defaultConstruct(resource, action);
         this.replace = replace;
-        genResId();
+    }
+
+    public OperationOversight(T resource, ResourceAction action, Boolean replace, List<? extends Resource> affectedResources) {
+        defaultConstruct(resource, action);
+        this.replace = replace;
+        this.affectedResources = affectedResources != null ? affectedResources : new ArrayList<>();
     }
 
     /**
@@ -77,5 +87,13 @@ public class OperationOversight<T extends Resource> {
             this.resource.setId(genId);
             this.resourceId = genId;
         }
+    }
+
+    private void defaultConstruct(T resource, ResourceAction action) {
+        this.resource = resource;
+        this.resourceId = resource.getId();
+        this.action = action;
+        this.resourceClass = resource.getClass().getName();
+        genResId();
     }
 }
