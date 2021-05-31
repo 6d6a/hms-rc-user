@@ -172,6 +172,22 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
         return database;
     }
 
+    public List<Database> preRemoveDatabaseUserIdFromDatabases(String databaseUserId) {
+        List<Database> databases = repository.findByDatabaseUserIdsContaining(databaseUserId);
+        for (Database database : databases) {
+            List<String> databaseUserIds = database.getDatabaseUserIds();
+            databaseUserIds.remove(databaseUserId);
+            database.setDatabaseUserIds(databaseUserIds);
+
+            List<DatabaseUser> filtered = database.getDatabaseUsers()
+                    .stream()
+                    .filter(item -> !item.getId().equals(databaseUserId))
+                    .collect(Collectors.toList());
+            database.setDatabaseUsers(filtered);
+        }
+        return databases;
+    }
+
     public void removeDatabaseUserIdFromDatabases(String databaseUserId) {
         List<Database> databases = repository.findByDatabaseUserIdsContaining(databaseUserId);
         for (Database database : databases) {
@@ -180,6 +196,10 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
             database.setDatabaseUserIds(databaseUserIds);
         }
         repository.saveAll(databases);
+    }
+
+    public List<Database> getDatabasesByDatabaseUserId(String databaseUserId) {
+        return repository.findByDatabaseUserIdsContaining(databaseUserId);
     }
 
     @Override

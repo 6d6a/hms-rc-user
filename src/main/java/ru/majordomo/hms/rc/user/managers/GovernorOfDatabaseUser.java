@@ -2,6 +2,7 @@ package ru.majordomo.hms.rc.user.managers;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -99,7 +100,23 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
         preValidate(databaseUser);
 
-        ovs = sendToOversight(databaseUser, ResourceAction.CREATE, replace);
+        if (databaseUser.getId() == null) {
+            databaseUser.setId(new ObjectId().toString());
+        }
+
+        //Изменение DatabaseUserIds в базах произойдёт после ответа из TE на основании affectedResources (affectedDatabases) из OVS
+        List<Database> affectedDatabases = new ArrayList<>();
+
+        if (databaseUser.getDatabaseIds() != null && !databaseUser.getDatabaseIds().isEmpty()) {
+            for (String databaseId : databaseUser.getDatabaseIds()) {
+                Database database = governorOfDatabase.build(databaseId);
+                database.addDatabaseUserId(databaseUser.getId());
+                database.addDatabaseUser(databaseUser);
+                affectedDatabases.add(database);
+            }
+        }
+
+        ovs = sendToOversight(databaseUser, ResourceAction.CREATE, replace, affectedDatabases);
 
         return ovs;
     }
@@ -108,7 +125,10 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     public OperationOversight<DatabaseUser> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
         DatabaseUser databaseUser = this.updateWrapper(serviceMessage);
 
-        return sendToOversight(databaseUser, ResourceAction.UPDATE);
+        //При апдейте DatabaseUser изменения DatabaseUserIds не происходит, но сущность affectedResources всегда необходима в TE
+        List<Database> affectedDatabases = governorOfDatabase.getDatabasesByDatabaseUserId(databaseUser.getId());
+
+        return sendToOversight(databaseUser, ResourceAction.UPDATE, false, affectedDatabases);
     }
 
     private DatabaseUser updateWrapper(ServiceMessage serviceMessage) throws UnsupportedEncodingException {
@@ -190,14 +210,8 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         DatabaseUser databaseUser = ovs.getResource();
         store(databaseUser);
 
-        if (ovs.getResource().getDatabaseIds() != null && !ovs.getResource().getDatabaseIds().isEmpty()) {
-            for (String databaseId : ovs.getResource().getDatabaseIds()) {
-                Database database = governorOfDatabase.build(databaseId);
-                database.addDatabaseUserId(ovs.getResource().getId());
-                governorOfDatabase.preValidate(database);
-                governorOfDatabase.validate(database);
-                governorOfDatabase.store(database);
-            }
+        if (ovs.getAffectedResources() != null && !ovs.getAffectedResources().isEmpty()) {
+            ovs.getAffectedResources().forEach(item -> governorOfDatabase.store((Database) item));
         }
 
         removeOversight(ovs);
@@ -222,7 +236,10 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     @Override
     public OperationOversight<DatabaseUser> dropByOversight(String resourceId) throws ResourceNotFoundException {
         DatabaseUser databaseUser = build(resourceId);
-        return sendToOversight(databaseUser, ResourceAction.DELETE);
+
+        List<Database> affectedDatabases = governorOfDatabase.preRemoveDatabaseUserIdFromDatabases(resourceId);
+
+        return sendToOversight(databaseUser, ResourceAction.DELETE, false, affectedDatabases);
     }
 
     @Override

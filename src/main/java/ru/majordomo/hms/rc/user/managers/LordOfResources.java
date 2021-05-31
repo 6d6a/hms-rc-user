@@ -122,6 +122,11 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
         return operationOversightRepository.save(ovs);
     }
 
+    public OperationOversight<T> sendToOversight(T resource, ResourceAction action, Boolean replace, List<? extends Resource> affectedResources) {
+        OperationOversight<T> ovs = new OperationOversight<>(resource, action, replace, affectedResources);
+        return operationOversightRepository.save(ovs);
+    }
+
     public Optional<OperationOversight<T>> getOperationOversight(String id) {
         return operationOversightRepository.findByOvsId(id);
     }
