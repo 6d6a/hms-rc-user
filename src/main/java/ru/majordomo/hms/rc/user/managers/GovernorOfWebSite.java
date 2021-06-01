@@ -270,10 +270,54 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     }
 
     @Override
+    public OperationOversight<WebSite> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<WebSite> ovs;
+
+        try {
+            WebSite resource = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(resource);
+            Boolean replace = Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"));
+            validate(resource);
+            postValidate(resource);
+
+            List<Resource> required = new ArrayList<>();
+
+            String unixAccountId = resource.getUnixAccountId();
+            required.add(governorOfUnixAccount.build(unixAccountId));
+            required.addAll(buildSSlCerts(resource));
+
+            ovs = sendToOversight(resource, ResourceAction.CREATE, replace, null, required);
+        } catch (ClassCastException e) {
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
+        }
+
+        return ovs;
+    }
+
+    @Override
     public OperationOversight<WebSite> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
         WebSite website = this.updateWrapper(serviceMessage);
 
-        return sendToOversight(website, ResourceAction.UPDATE);
+        List<Resource> required = new ArrayList<>();
+
+        String unixAccountId = website.getUnixAccountId();
+        required.add(governorOfUnixAccount.build(unixAccountId));
+        required.addAll(buildSSlCerts(website));
+
+        return sendToOversight(website, ResourceAction.UPDATE, false, null, required);
+    }
+
+    private List<SSLCertificate> buildSSlCerts(WebSite webSite) {
+        List<SSLCertificate> certs = new ArrayList<>();
+
+        webSite.getDomainIds().forEach(item -> {
+            Domain domain = governorOfDomain.build(item);
+            if (domain.getSslCertificate() != null) {
+                certs.add(domain.getSslCertificate());
+            }
+        });
+
+        return certs;
     }
 
     @Override
@@ -294,7 +338,14 @@ public class GovernorOfWebSite extends LordOfResources<WebSite> {
     @Override
     public OperationOversight<WebSite> dropByOversight(String resourceId) throws ResourceNotFoundException {
         WebSite website = build(resourceId);
-        return sendToOversight(website, ResourceAction.DELETE);
+
+        List<Resource> required = new ArrayList<>();
+
+        String unixAccountId = website.getUnixAccountId();
+        required.add(governorOfUnixAccount.build(unixAccountId));
+        required.addAll(buildSSlCerts(website));
+
+        return sendToOversight(website, ResourceAction.DELETE, false, null, required);
     }
 
     @Override
