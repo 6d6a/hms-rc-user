@@ -174,6 +174,11 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
 
     public List<Database> preRemoveDatabaseUserIdFromDatabases(String databaseUserId) {
         List<Database> databases = repository.findByDatabaseUserIdsContaining(databaseUserId);
+
+        for (Database database : databases) {
+            construct(database); //Заполняем транзиентные зависимости
+        }
+
         for (Database database : databases) {
             List<String> databaseUserIds = database.getDatabaseUserIds();
             databaseUserIds.remove(databaseUserId);

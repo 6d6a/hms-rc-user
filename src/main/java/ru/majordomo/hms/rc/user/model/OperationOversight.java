@@ -22,6 +22,11 @@ public class OperationOversight<T extends Resource> {
      * Пока из TE не придёт ответа с успехом или неудачей, изменений в соответствующей коллекции не будет.
      *
      * action и resourceClass используются ТОЛЬКО для определения таймаута после которого придёт сообщение в алерту инженерам
+     *
+     * affectedResources содержат в себе зависимости, которые изменяются после или во время изменения ресурса,
+     * в TE отправляются уже заранее изменённые зависимости. (Изменения применяется на основную коллекцию только после ответа от TE)
+     *
+     * requiredResources содержат в себе зависимости необходимые только для TE (Изменений в них не происходит)
      */
 
     @Id
@@ -72,10 +77,11 @@ public class OperationOversight<T extends Resource> {
         this.replace = replace;
     }
 
-    public OperationOversight(T resource, ResourceAction action, Boolean replace, List<? extends Resource> affectedResources) {
+    public OperationOversight(T resource, ResourceAction action, Boolean replace, List<? extends Resource> affectedResources, List<? extends Resource> requiredResources) {
         defaultConstruct(resource, action);
         this.replace = replace;
         this.affectedResources = affectedResources != null ? affectedResources : new ArrayList<>();
+        this.requiredResources = requiredResources != null ? requiredResources : new ArrayList<>();
     }
 
     /**
