@@ -116,7 +116,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
             }
         }
 
-        ovs = sendToOversight(databaseUser, ResourceAction.CREATE, replace, affectedDatabases);
+        ovs = sendToOversight(databaseUser, ResourceAction.CREATE, replace, affectedDatabases, null);
 
         return ovs;
     }
@@ -128,7 +128,11 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
         //При апдейте DatabaseUser изменения DatabaseUserIds не происходит, но сущность affectedResources всегда необходима в TE
         List<Database> affectedDatabases = governorOfDatabase.getDatabasesByDatabaseUserId(databaseUser.getId());
 
-        return sendToOversight(databaseUser, ResourceAction.UPDATE, false, affectedDatabases);
+        for (Database database : affectedDatabases) {
+            governorOfDatabase.construct(database); //Заполняем транзиентные зависимости
+        }
+
+        return sendToOversight(databaseUser, ResourceAction.UPDATE, false, affectedDatabases, null);
     }
 
     private DatabaseUser updateWrapper(ServiceMessage serviceMessage) throws UnsupportedEncodingException {
@@ -239,7 +243,7 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
 
         List<Database> affectedDatabases = governorOfDatabase.preRemoveDatabaseUserIdFromDatabases(resourceId);
 
-        return sendToOversight(databaseUser, ResourceAction.DELETE, false, affectedDatabases);
+        return sendToOversight(databaseUser, ResourceAction.DELETE, false, affectedDatabases, null);
     }
 
     @Override
