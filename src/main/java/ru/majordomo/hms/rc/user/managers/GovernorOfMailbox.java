@@ -756,6 +756,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     public void syncWithRedis(Mailbox mailbox) {
+
+        //TODO временный лог
+        log.info("SYNC mailbox with redis: " + mailbox);
+
         if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
             dropAggregatorInRedis(mailbox);
             setAggregatorInRedis(mailbox);
