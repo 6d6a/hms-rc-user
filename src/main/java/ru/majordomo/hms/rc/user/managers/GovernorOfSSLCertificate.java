@@ -39,6 +39,8 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     private GovernorOfDomain governorOfDomain;
     private DomainRepository domainRepository;
     private WebSiteRepository webSiteRepository;
+    private GovernorOfRedirect governorOfRedirect;
+    private GovernorOfWebSite governorOfWebSite;
     private StaffResourceControllerClient staffRcClient;
     private Cleaner cleaner;
     private Validator validator;
@@ -61,6 +63,16 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     @Autowired
     public void setWebSiteRepository(WebSiteRepository webSiteRepository) {
         this.webSiteRepository = webSiteRepository;
+    }
+
+    @Autowired
+    public void setGovernorOfRedirect(GovernorOfRedirect governorOfRedirect) {
+        this.governorOfRedirect = governorOfRedirect;
+    }
+
+    @Autowired
+    public void setGovernorOfWebSite(GovernorOfWebSite governorOfWebSite) {
+        this.governorOfWebSite = governorOfWebSite;
     }
 
     @Autowired
@@ -97,7 +109,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
         SSLCertificate sslCertificate = this.updateWrapper(serviceMessage);
 
-        ovs = sendToOversight(sslCertificate, ResourceAction.UPDATE);
+        ovs = sendToOversight(sslCertificate, ResourceAction.UPDATE, false, generateAffected(sslCertificate), null);
 
         return ovs;
     }
@@ -141,7 +153,7 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
         SSLCertificate cert = this.createWrapper(serviceMessage);
 
-        ovs = sendToOversight(cert, ResourceAction.CREATE);
+        ovs = sendToOversight(cert, ResourceAction.CREATE, false, generateAffected(cert), null);
 
         return ovs;
     }
@@ -169,6 +181,27 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
         return sslCertificate;
     }
 
+    private List<Resource> generateAffected(SSLCertificate sslCertificate) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("sslCertificateId", sslCertificate.getId());
+
+        Domain domain = governorOfDomain.build(keyValue);
+
+        keyValue = new HashMap<>();
+        keyValue.put("domainId", domain.getId());
+        WebSite webSite = governorOfWebSite.build(keyValue);
+        Redirect redirect = governorOfRedirect.build(keyValue);
+
+        // В случае c SSL сертификатом affected ресурсы webSite и redirect нужны только для TE,
+        // дополнительной логики измениия после получения результата от TE - не происходит
+        // (они как-бы являются required, но отправляем в affected)
+        List<Resource> affected = new ArrayList<>();
+        affected.add(webSite);
+        affected.add(redirect);
+
+        return affected;
+    }
+
     @Override
     public void preDelete(String resourceId) {
 
@@ -188,8 +221,9 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     @Override
     public OperationOversight<SSLCertificate> dropByOversight(String resourceId) throws ResourceNotFoundException {
         SSLCertificate cert = build(resourceId);
+        List<Resource> affected = generateAffected(cert); //До того как сертификат удалён из базы
         drop(cert.getId());
-        return sendToOversight(cert, ResourceAction.DELETE);
+        return sendToOversight(cert, ResourceAction.DELETE, false, affected, null);
     }
 
     /**
