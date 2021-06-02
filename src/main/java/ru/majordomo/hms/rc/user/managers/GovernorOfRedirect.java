@@ -193,6 +193,8 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
             removeOldResource(ovs.getResource());
         }
         if (ovs.getAction().equals(ResourceAction.CREATE)) {
+            Domain domain = governorOfDomain.build(ovs.getResource().getDomainId()); //для postValidate
+            ovs.getResource().setDomain(domain); 
             postValidate(ovs.getResource());
         }
         Redirect redirect = ovs.getResource();
