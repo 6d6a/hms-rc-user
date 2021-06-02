@@ -306,6 +306,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         }
         Mailbox mailbox = ovs.getResource();
         store(mailbox);
+        construct(mailbox); //Добавляем транзиентный домен в мейлбокс, для синхронизации с редисом
         syncWithRedis(ovs.getResource());
         removeOversight(ovs);
 
@@ -756,10 +757,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     public void syncWithRedis(Mailbox mailbox) {
-
-        //TODO временный лог
-        log.info("SYNC mailbox with redis: " + mailbox);
-
         if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
             dropAggregatorInRedis(mailbox);
             setAggregatorInRedis(mailbox);
