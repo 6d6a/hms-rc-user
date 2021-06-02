@@ -84,7 +84,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
             preValidate(redirect);
             Boolean replace = Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"));
             validate(redirect);
-            ovs = sendToOversight(redirect, ResourceAction.CREATE, replace);
+            ovs = sendToOversight(redirect, ResourceAction.CREATE, replace, null, buildSSlCerts(redirect));
         } catch (ClassCastException e) {
             throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
         }
@@ -96,7 +96,18 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     public OperationOversight<Redirect> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
         Redirect redirect = this.updateWrapper(serviceMessage);
 
-        return sendToOversight(redirect, ResourceAction.UPDATE);
+        return sendToOversight(redirect, ResourceAction.UPDATE, false, null, buildSSlCerts(redirect));
+    }
+
+    private List<SSLCertificate> buildSSlCerts(Redirect redirect) {
+        List<SSLCertificate> certs = new ArrayList<>();
+
+        Domain domain = governorOfDomain.build(redirect.getDomainId());
+        if (domain.getSslCertificate() != null) {
+            certs.add(domain.getSslCertificate());
+        }
+
+        return certs;
     }
 
     private Redirect updateWrapper(ServiceMessage serviceMessage) {
@@ -194,7 +205,7 @@ public class GovernorOfRedirect extends LordOfResources<Redirect> {
     @Override
     public OperationOversight<Redirect> dropByOversight(String resourceId) throws ResourceNotFoundException {
         Redirect redirect = build(resourceId);
-        return sendToOversight(redirect, ResourceAction.DELETE);
+        return sendToOversight(redirect, ResourceAction.DELETE, false, null, buildSSlCerts(redirect));
     }
 
     @Override

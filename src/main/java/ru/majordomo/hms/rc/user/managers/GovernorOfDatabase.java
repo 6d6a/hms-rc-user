@@ -117,10 +117,29 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     }
 
     @Override
+    public OperationOversight<Database> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
+        OperationOversight<Database> ovs;
+
+        try {
+            Database resource = buildResourceFromServiceMessage(serviceMessage);
+            preValidate(resource);
+            Boolean replace = Boolean.TRUE.equals(serviceMessage.getParam("replaceOldResource"));
+            validate(resource);
+            postValidate(resource);
+            construct(resource); //Получаем транзиентные DatabaseUsers для requiredResource
+            ovs = sendToOversight(resource, ResourceAction.CREATE, replace, null, resource.getDatabaseUsers());
+        } catch (ClassCastException e) {
+            throw new ParameterValidationException("Один из параметров указан неверно:" + e.getMessage());
+        }
+
+        return ovs;
+    }
+
+    @Override
     public OperationOversight<Database> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
         Database database = this.updateWrapper(serviceMessage);
-
-        return sendToOversight(database, ResourceAction.UPDATE);
+        construct(database);  //Получаем транзиентные DatabaseUsers для requiredResource
+        return sendToOversight(database, ResourceAction.UPDATE, false, null, database.getDatabaseUsers());
     }
 
     private Database updateWrapper(ServiceMessage serviceMessage) {
@@ -225,7 +244,8 @@ public class GovernorOfDatabase extends LordOfResources<Database> {
     @Override
     public OperationOversight<Database> dropByOversight(String resourceId) throws ResourceNotFoundException {
         Database database = build(resourceId);
-        return sendToOversight(database, ResourceAction.DELETE);
+        construct(database);  //Получаем транзиентные DatabaseUsers для requiredResource
+        return sendToOversight(database, ResourceAction.DELETE, false, null, database.getDatabaseUsers());
     }
 
     @Override
