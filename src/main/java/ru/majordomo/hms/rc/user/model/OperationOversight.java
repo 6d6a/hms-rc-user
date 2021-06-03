@@ -28,6 +28,17 @@ public class OperationOversight<T extends Resource> {
      * (Исключение - логика SSL сертификатов)
      *
      * requiredResources содержат в себе зависимости необходимые только для TE (Изменений в них не происходит)
+     *
+     * required:
+     * UnixAccount ← WebSite
+     * List<SslCertificate> ← WebSite
+     * SslCertificate ← Redirect
+     * List<DatabaseUser> ← Database
+     *
+     * affected:
+     * DatabaseUser → Database
+     * SslCertificate → Website
+     * SslCertificate → Redirect
      */
 
     @Id

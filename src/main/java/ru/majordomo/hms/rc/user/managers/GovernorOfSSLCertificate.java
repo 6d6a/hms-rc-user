@@ -189,15 +189,21 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
 
         keyValue = new HashMap<>();
         keyValue.put("domainId", domain.getId());
-        WebSite webSite = governorOfWebSite.build(keyValue);
-        Redirect redirect = governorOfRedirect.build(keyValue);
+        Optional<WebSite> webSite = Optional.empty();
+        try {
+            webSite = Optional.ofNullable(governorOfWebSite.build(keyValue));
+        } catch (Exception ignored) {}
+        Optional<Redirect> redirect = Optional.empty();
+        try {
+            redirect = Optional.ofNullable(governorOfRedirect.build(keyValue));
+        } catch (Exception ignored) {}
 
         // В случае c SSL сертификатом affected ресурсы webSite и redirect нужны только для TE,
         // дополнительной логики измениия после получения результата от TE - не происходит
         // (они как-бы являются required, но отправляем в affected)
         List<Resource> affected = new ArrayList<>();
-        affected.add(webSite);
-        affected.add(redirect);
+        webSite.ifPresent(affected::add);
+        redirect.ifPresent(affected::add);
 
         return affected;
     }
