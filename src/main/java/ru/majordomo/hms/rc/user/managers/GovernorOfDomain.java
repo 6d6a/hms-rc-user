@@ -169,15 +169,17 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
      * (А так же сразу создаются персоны, dkim записи и т.д.)
      * Методы completeOversight... переопределены и не сохраняют(удаляют) повторно объект(ы)
      *
-     * TE не работает с очередями domain.*
+     * для TE необходимы только affected ресурсы website и redirect в определённых случаях
+     * (Для успешного закрытия операции в пм - необходим ответ от TE, хоть он не на что и не влияет с нашей стороны)
      */
     @Override
     public OperationOversight<Domain> createByOversight(ServiceMessage serviceMessage) throws ParameterValidationException {
         OperationOversight<Domain> ovs;
 
         Domain domain = this.createWrapper(serviceMessage);
+        List<Resource> affected = generateAffected(domain);
 
-        ovs = sendToOversight(domain, ResourceAction.CREATE);
+        ovs = sendToOversight(domain, ResourceAction.CREATE, false, affected, null);
 
         return ovs;
     }
@@ -311,8 +313,9 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         OperationOversight<Domain> ovs;
 
         Domain domain = this.updateWrapper(serviceMessage);
+        List<Resource> affected = generateAffected(domain);
 
-        ovs = sendToOversight(domain, ResourceAction.UPDATE);
+        ovs = sendToOversight(domain, ResourceAction.UPDATE, false, affected, null);
 
         return ovs;
     }
@@ -405,13 +408,9 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
 
                             domain.setSwitchedOn(switchedOn);
 
-                            updateWebSite = true;
-
                             break;
                         case "infested":
                             domain.setInfested((Boolean) entry.getValue());
-
-                            updateWebSite = true;
                             break;
                         default:
                             break;
@@ -425,71 +424,30 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         validate(domain);
         store(domain);
 
-        if (updateWebSite) {
-            updateWebSite(domain, serviceMessage);
-        }
-
         return domain;
     }
 
-    private void updateWebSite(Domain domain, ServiceMessage serviceMessage) {
-        Map<String, String> webSiteSearch = new HashMap<>();
-        webSiteSearch.put("domainId", domain.getId());
+    // В случае c доменом, при изменении switchOn, ресурсы website и редирект (при наличии) нужны для TE
+    // (До рефактора в te посылались пустые апдейты с website и redirect, при этом в них ничего не менялось)
+    // (Cам ресурс домена te не нужен вообще)
+    // (Так же см. getTaskExecutorRoutingKey в DomainAMQPController)
+    private List<Resource> generateAffected(Domain domain) {
+        Map<String, String> keyValue = new HashMap<>();
+        keyValue.put("domainId", domain.getId());
+        Optional<WebSite> webSite = Optional.empty();
         try {
-            WebSite webSite = governorOfWebSite.build(webSiteSearch);
-            if (webSite != null) {
-                ServiceMessage report = new ServiceMessage();
-                report.setActionIdentity(serviceMessage.getActionIdentity());
-                report.setOperationIdentity(serviceMessage.getOperationIdentity());
-                report.setAccountId(serviceMessage.getAccountId());
-                report.setObjRef("http://" + applicationName + "/website/" + webSite.getId());
-                report.addParam("name", webSite.getName());
-
-                if (report.getAccountId() == null || report.getAccountId().equals("")) {
-                    report.setAccountId(webSite.getAccountId());
-                }
-
-                report.addParam("success", true);
-
-                OperationOversight<WebSite> ovs = governorOfWebSite.sendToOversight(webSite, ResourceAction.UPDATE);
-                report.addParam("ovsId", ovs.getId());
-                report.addParam("ovs", ovs);
-
-                String teRoutingKey = getTaskExecutorRoutingKey(webSite);
-                sender.send(WEBSITE_UPDATE, teRoutingKey, report);
-            }
-        } catch (ResourceNotFoundException ignored) {
-            updateRedirect(domain, serviceMessage);
-        }
-    }
-
-    private void updateRedirect(Domain domain, ServiceMessage serviceMessage) {
-        Map<String, String> search = new HashMap<>();
-        search.put("domainId", domain.getId());
+            webSite = Optional.ofNullable(governorOfWebSite.build(keyValue));
+        } catch (ResourceNotFoundException ignored) {}
+        Optional<Redirect> redirect = Optional.empty();
         try {
-            Redirect redirect = governorOfRedirect.build(search);
-            if (redirect != null) {
-                ServiceMessage report = new ServiceMessage();
-                report.setActionIdentity(null);
-                report.setOperationIdentity(null);
-                report.setAccountId(serviceMessage.getAccountId());
-                report.setObjRef("http://" + applicationName + "/redirect/" + redirect.getId());
-                report.addParam("name", redirect.getName());
+            redirect = Optional.ofNullable(governorOfRedirect.build(keyValue));
+        } catch (ResourceNotFoundException ignored) {}
 
-                if (report.getAccountId() == null || report.getAccountId().equals("")) {
-                    report.setAccountId(redirect.getAccountId());
-                }
+        List<Resource> affected = new ArrayList<>();
+        webSite.ifPresent(affected::add);
+        redirect.ifPresent(affected::add);
 
-                report.addParam("success", true);
-
-                OperationOversight<Redirect> ovs = governorOfRedirect.sendToOversight(redirect, ResourceAction.UPDATE);
-                report.addParam("ovsId", ovs.getId());
-                report.addParam("ovs", ovs);
-
-                String teRoutingKey = getTaskExecutorRoutingKey(redirect);
-                sender.send(REDIRECT_UPDATE, teRoutingKey, report);
-            }
-        } catch (ResourceNotFoundException ignored1) {}
+        return affected;
     }
 
     public void setSslCertificateId(Domain domain, String sslCertificateId) {
@@ -511,7 +469,6 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                     new Update().unset("sslCertificateId"),
                     Domain.class
             );
-            domains.forEach(domain -> updateWebSite(domain, new ServiceMessage()));
         }
     }
 
@@ -615,8 +572,9 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     @Override
     public OperationOversight<Domain> dropByOversight(String resourceId) throws ResourceNotFoundException {
         Domain domain = build(resourceId);
+        List<Resource> affected = generateAffected(domain);
         drop(domain.getId());
-        return sendToOversight(domain, ResourceAction.DELETE);
+        return sendToOversight(domain, ResourceAction.DELETE, false, affected, null);
     }
 
     /**

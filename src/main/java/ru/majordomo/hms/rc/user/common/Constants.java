@@ -7,7 +7,8 @@ import java.util.Set;
 public class Constants {
     public static final String PM = "pm";
     public static final String TE = "te";
-    public static final String RC_USER = "rc.user";
+    public static final String RC_USER_ROUT = "rc.user"; //Когда мы отсылаем в rabbit
+    public static final String RC_USER_APP = "rc-user"; //Когда мы получам getEventProvider
     public static final String LETSENCRYPT = "letsencrypt";
     public static final int BYTES_IN_ONE_MEBIBYTE = 1024 * 1024;
     public static final String FREE_QUOTA_KEY = "free_quota";

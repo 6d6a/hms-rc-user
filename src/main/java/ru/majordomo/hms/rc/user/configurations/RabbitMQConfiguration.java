@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.ALL_EXCHANGES;
-import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER_ROUT;
 
 @Configuration
 @Profile({"default","prod","dev"})
@@ -115,7 +115,7 @@ public class RabbitMQConfiguration {
                     exchangeName,
 //                    instanceName + "." + applicationName, В остальных приложениях это так работает,
                     // но в rcUser джигурдец - (appName = rc-user, routKey = rc.user)
-                    instanceName + "." + RC_USER,
+                    instanceName + "." + RC_USER_ROUT,
                     null
             ));
         }

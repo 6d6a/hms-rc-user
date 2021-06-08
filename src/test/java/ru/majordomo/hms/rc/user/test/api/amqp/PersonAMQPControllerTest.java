@@ -29,7 +29,7 @@ import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.PERSON_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER_ROUT;
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Ignore
@@ -93,7 +93,7 @@ public class PersonAMQPControllerTest {
     @Test
     public void sendAndReceive() throws Exception {
         ServiceMessage serviceMessage = ServiceMessageGenerator.generatePersonCreateBadServiceMessage();
-        sender.send(PERSON_CREATE, RC_USER, serviceMessage, PM);
+        sender.send(PERSON_CREATE, RC_USER_ROUT, serviceMessage, PM);
         Message message = rabbitTemplate.receive(PM, 1000);
     }
 }
