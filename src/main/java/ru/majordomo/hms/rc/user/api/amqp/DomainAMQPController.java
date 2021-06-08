@@ -14,6 +14,13 @@ import ru.majordomo.hms.rc.user.common.Constants;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
+import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
+import ru.majordomo.hms.rc.user.resourceProcessor.impl.DefaultCreatePmProcessor;
+import ru.majordomo.hms.rc.user.resourceProcessor.impl.DefaultDeletePmProcessor;
+import ru.majordomo.hms.rc.user.resourceProcessor.impl.DefaultUpdatePmProcessor;
+import ru.majordomo.hms.rc.user.resourceProcessor.impl.domain.DomainTeCreateProcessor;
+import ru.majordomo.hms.rc.user.resourceProcessor.impl.domain.DomainTeDeleteProcessor;
+import ru.majordomo.hms.rc.user.resourceProcessor.impl.domain.DomainTeUpdateProcessor;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Redirect;
 import ru.majordomo.hms.rc.user.resources.Resource;
@@ -29,6 +36,42 @@ import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class DomainAMQPController extends BaseAMQPController<Domain> {
+
+    /**
+     * Отдельная имплементация процессоров
+     * @see DomainTeCreateProcessor
+     * @see DomainTeUpdateProcessor
+     * @see DomainTeDeleteProcessor
+     * для домена.
+     * Т.к. мы произвели необходимые действия с доменом ещё до того как отправили сообщение с affected ресурсами в TE,
+     * то ответ от TE не имеет для нас значения. Поэтому перед отправкой в PM переопределяем параметр success на true,
+     * (Например чтобы деньги за успешно продлённые домены списались, хоть и в TE что-то сфейлилось)
+     */
+    @Override
+    protected ResourceProcessor<Domain> getEventProcessor(ResourceActionContext<Domain> context) {
+        switch (context.getEventProvider()) {
+            case TE:
+
+                switch (context.getAction()) {
+                    case CREATE:
+                        return new DomainTeCreateProcessor(this);
+                    case UPDATE:
+                        return new DomainTeUpdateProcessor(this);
+                    case DELETE:
+                        return new DomainTeDeleteProcessor(this);
+                }
+            case PM:
+                switch (context.getAction()) {
+                    case CREATE:
+                        return new DefaultCreatePmProcessor<>(this);
+                    case UPDATE:
+                        return new DefaultUpdatePmProcessor<>(this);
+                    case DELETE:
+                        return new DefaultDeletePmProcessor<>(this);
+                }
+        }
+        return null;
+    }
 
     @Autowired
     public void setGovernor(GovernorOfDomain governor) {
