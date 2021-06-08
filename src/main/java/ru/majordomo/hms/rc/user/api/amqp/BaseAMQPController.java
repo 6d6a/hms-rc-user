@@ -42,8 +42,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
 
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.TE;
+import static ru.majordomo.hms.rc.user.common.Constants.*;
 
 @Component
 @EnableRabbit
@@ -72,6 +71,15 @@ abstract class BaseAMQPController<T extends Resource> implements ResourceProcess
                         return new DefaultCreatePmProcessor<>(this);
                     case UPDATE:
                         return new DefaultUpdatePmProcessor<>(this);
+                    case DELETE:
+                        return new DefaultDeletePmProcessor<>(this);
+                }
+            case RC_USER_APP:
+                switch (context.getAction()) {
+                    case CREATE:
+                        break;
+                    case UPDATE:
+                        break;
                     case DELETE:
                         return new DefaultDeletePmProcessor<>(this);
                 }

@@ -24,8 +24,9 @@ import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
+import static ru.majordomo.hms.rc.user.common.Constants.*;
+import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_UPDATE;
-import static ru.majordomo.hms.rc.user.common.Constants.LETSENCRYPT;
 
 @Slf4j
 @Component
@@ -90,7 +91,12 @@ public class SSLCertificateScheduler {
                 domain = governorOfDomain.build(keyValue);
             } catch (ResourceNotFoundException e) {
                 log.error("Domain with sslCertificateId {} not found, drop certificate", sslCertificate.getId());
-                governorOfSSLCertificate.drop(sslCertificate.getId());
+
+                ServiceMessage serviceMessage = new ServiceMessage();
+                serviceMessage.setAccountId(sslCertificate.getAccountId());
+                serviceMessage.addParam("resourceId", sslCertificate.getId());
+                sender.send(SSL_CERTIFICATE_DELETE, RC_USER_ROUT, serviceMessage);
+
             } catch (Exception e) {
                 log.error("Catch e {} e.message {} in build domain by {}; certificate {}",
                         e.getClass(), e.getMessage(), keyValue, sslCertificate);
@@ -111,7 +117,10 @@ public class SSLCertificateScheduler {
                             " name: " + sslCertificate.getName() +
                             " AccountId: " + sslCertificate.getAccountId());
 
-                    governorOfSSLCertificate.drop(sslCertificate.getId());
+                    ServiceMessage serviceMessage = new ServiceMessage();
+                    serviceMessage.setAccountId(sslCertificate.getAccountId());
+                    serviceMessage.addParam("resourceId", sslCertificate.getId());
+                    sender.send(SSL_CERTIFICATE_DELETE, RC_USER_ROUT, serviceMessage);
 
                     return false;
                 }

@@ -12,22 +12,16 @@ import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfSSLCertificate;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
-import ru.majordomo.hms.rc.user.resourceProcessor.impl.ssl.SSLCertificateCreateFromLetsEncryptProcessor;
-import ru.majordomo.hms.rc.user.resourceProcessor.impl.ssl.SSLCertificateCreatePmProcessor;
-import ru.majordomo.hms.rc.user.resourceProcessor.impl.ssl.SSLCertificateDeletePmProcessor;
-import ru.majordomo.hms.rc.user.resourceProcessor.impl.ssl.SSLCertificateUpdateFromLetsEncrypt;
-import ru.majordomo.hms.rc.user.resourceProcessor.impl.ssl.SSLCertificateUpdateFromPm;
+import ru.majordomo.hms.rc.user.resourceProcessor.impl.ssl.*;
 import ru.majordomo.hms.rc.user.resourceProcessor.impl.te.TeCreateProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.impl.te.TeDeleteProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.impl.te.TeUpdateProcessor;
 import ru.majordomo.hms.rc.user.resources.SSLCertificate;
 
+import static ru.majordomo.hms.rc.user.common.Constants.*;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.SSL_CERTIFICATE_UPDATE;
-import static ru.majordomo.hms.rc.user.common.Constants.LETSENCRYPT;
-import static ru.majordomo.hms.rc.user.common.Constants.PM;
-import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class SslCertificateAMQPController extends BaseAMQPController<SSLCertificate> {
@@ -73,6 +67,10 @@ public class SslCertificateAMQPController extends BaseAMQPController<SSLCertific
                         return new SSLCertificateDeletePmProcessor(this);
                     case TE:
                         return new TeDeleteProcessor<>(this);
+                    case RC_USER_APP:
+                        //Шедулер внутри RC-user отправляет сам себе сообщение,
+                        // чтобы при удалении SSL-сертификата отправлялось сообщение в TE
+                        return new SSLCertificateDeletePmProcessor(this);
                 }
                 break;
         }
@@ -127,6 +125,7 @@ public class SslCertificateAMQPController extends BaseAMQPController<SSLCertific
         switch (context.getEventProvider()) {
             case PM:
             case LETSENCRYPT:
+            case RC_USER_APP:
                 teRoutingKey = ((GovernorOfSSLCertificate) governor).getTERoutingKey(getResourceFromOvsContext(context));
                 return teRoutingKey != null ? teRoutingKey : getDefaultRoutingKey();
 

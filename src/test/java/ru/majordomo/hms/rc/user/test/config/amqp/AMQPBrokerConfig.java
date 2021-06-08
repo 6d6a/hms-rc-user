@@ -33,7 +33,7 @@ import java.util.List;
 import ru.majordomo.hms.rc.user.api.clients.Sender;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.ALL_EXCHANGES;
-import static ru.majordomo.hms.rc.user.common.Constants.RC_USER;
+import static ru.majordomo.hms.rc.user.common.Constants.RC_USER_ROUT;
 
 @Configuration
 @EnableRabbit
@@ -150,7 +150,7 @@ public class AMQPBrokerConfig implements RabbitListenerConfigurer {
                     exchangeName,
                     //instanceName + "." + applicationName, В остальных приложениях это так работает,
                     // но в rcUser джигурдец - (appName = rc-user, routKey = rc.user)
-                    instanceName + "." + RC_USER,
+                    instanceName + "." + RC_USER_ROUT,
                     null
             ));
         }

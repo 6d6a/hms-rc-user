@@ -7,15 +7,25 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import ru.majordomo.hms.personmgr.exception.InternalApiException;
+import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.common.Constants;
 import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
+import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.Redirect;
+import ru.majordomo.hms.rc.user.resources.Resource;
+import ru.majordomo.hms.rc.user.resources.WebSite;
+
+import java.util.List;
 
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DOMAIN_CREATE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DOMAIN_DELETE;
 import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.DOMAIN_UPDATE;
+import static ru.majordomo.hms.rc.user.common.Constants.PM;
+import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
 public class DomainAMQPController extends BaseAMQPController<Domain> {
@@ -59,6 +69,48 @@ public class DomainAMQPController extends BaseAMQPController<Domain> {
 
     @Override
     protected String getRoutingKey(ResourceActionContext<Domain> context) {
-        return getDefaultRoutingKey();
+        if (context.getEventProvider().equals(PM)) {
+            return getTaskExecutorRoutingKey(context);
+        } else if (context.getEventProvider().equals(TE)) {
+            return getDefaultRoutingKey();
+        } else {
+            return getDefaultRoutingKey();
+        }
+    }
+
+    private String getTaskExecutorRoutingKey(ResourceActionContext<Domain> context) throws ParameterValidationException {
+
+        if (context.getOvs() == null) {
+            return PM;
+        }
+
+        List<? extends Resource> resources = context.getOvs().getAffectedResources();
+
+        if (resources.isEmpty()) {
+            return PM;
+        }
+
+        //Для домена может быть либо редирект, либо вебсайт в аффектед
+        String serverName = null;
+        try {
+            for (Resource item : resources) {
+                if (item instanceof WebSite) {
+                    WebSite webSite = (WebSite) item;
+                    serverName = staffRcClient.getServerByServiceId(webSite.getServiceId()).getName();
+                    break;
+                }
+                if (item instanceof Redirect) {
+                    Redirect redirect = (Redirect) item;
+                    serverName = staffRcClient.getServerByServiceId(redirect.getServiceId()).getName();
+                    break;
+                }
+            }
+            return TE + "." + serverName.split("\\.")[0];
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("[getTaskExecutorRoutingKey for Domain] got exception: {}",
+                    e.getMessage());
+            throw new InternalApiException("Exception: " + e.getMessage());
+        }
     }
 }
