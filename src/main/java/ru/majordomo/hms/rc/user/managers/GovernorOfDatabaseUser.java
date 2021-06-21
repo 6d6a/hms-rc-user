@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -125,11 +126,18 @@ public class GovernorOfDatabaseUser extends LordOfResources<DatabaseUser> {
     public OperationOversight<DatabaseUser> updateByOversight(ServiceMessage serviceMessage) throws ParameterValidationException, UnsupportedEncodingException {
         DatabaseUser databaseUser = this.updateWrapper(serviceMessage);
 
-        //При апдейте DatabaseUser изменения DatabaseUserIds не происходит, но сущность affectedResources всегда необходима в TE
-        List<Database> affectedDatabases = governorOfDatabase.getDatabasesByDatabaseUserId(databaseUser.getId());
+        List<Database> affectedDatabases = new ArrayList<>();
 
-        for (Database database : affectedDatabases) {
+        for (Database database : governorOfDatabase.getDatabasesByDatabaseUserId(databaseUser.getId())) {
             governorOfDatabase.construct(database); //Заполняем транзиентные зависимости
+
+            //При апдейте DatabaseUser нужно обновить его и в affectedDatabases
+            database.setDatabaseUsers(database.getDatabaseUsers()
+                    .stream()
+                    .map(user -> Objects.equals(user.getId(), databaseUser.getId()) ? databaseUser : user)
+                    .collect(Collectors.toList()));
+
+            affectedDatabases.add(database);
         }
 
         return sendToOversight(databaseUser, ResourceAction.UPDATE, false, affectedDatabases, null);
