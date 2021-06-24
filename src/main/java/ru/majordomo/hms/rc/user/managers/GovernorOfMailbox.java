@@ -41,6 +41,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.event.mailbox.MailboxRedisEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
@@ -165,6 +166,21 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         Mailbox mailbox = this.updateWrapper(serviceMessage);
 
         return sendToOversight(mailbox, ResourceAction.UPDATE);
+    }
+
+    public void syncAll() {
+        List<Mailbox> mailboxes = repository.findAll();
+        try {
+            mailboxes.forEach(item -> {
+                try {
+                    publisher.publishEvent(new MailboxRedisEvent(item));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private Mailbox updateWrapper(ServiceMessage serviceMessage) throws UnsupportedEncodingException {

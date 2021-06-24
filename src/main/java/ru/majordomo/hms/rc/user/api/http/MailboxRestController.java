@@ -91,4 +91,11 @@ public class MailboxRestController {
     public ResourceQuotaCount getCountByAccountId(@PathVariable String accountId) {
         return aggregator.getResourceQuotaCountByAccountId(Mailbox.class, accountId);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/mailbox/redis/sync")
+    public ResponseEntity<Void> sync() {
+        governor.syncAll();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
