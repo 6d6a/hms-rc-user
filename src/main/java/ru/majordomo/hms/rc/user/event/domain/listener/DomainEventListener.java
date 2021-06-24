@@ -8,7 +8,10 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.majordomo.hms.rc.user.event.domain.*;
+import ru.majordomo.hms.rc.user.event.mailbox.MailboxRedisEvent;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
+import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
+import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 import ru.majordomo.hms.rc.user.service.AlienDomainsSearcher;
 
@@ -18,15 +21,17 @@ import java.util.List;
 @Slf4j
 public class DomainEventListener {
     private final GovernorOfDomain governorOfDomain;
+    private final GovernorOfMailbox governorOfMailbox;
     private final ApplicationEventPublisher publisher;
     private final AlienDomainsSearcher alienDomainsSearcher;
 
     @Autowired
     public DomainEventListener(
             GovernorOfDomain governorOfDomain,
-            ApplicationEventPublisher publisher,
+            GovernorOfMailbox governorOfMailbox, ApplicationEventPublisher publisher,
             AlienDomainsSearcher alienDomainsSearcher
     ) {
+        this.governorOfMailbox = governorOfMailbox;
         this.publisher = publisher;
         this.governorOfDomain = governorOfDomain;
         this.alienDomainsSearcher = alienDomainsSearcher;
@@ -57,6 +62,20 @@ public class DomainEventListener {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("[DomainClearSyncEventListener] Exception: " + e.getMessage());
+        }
+
+    }
+
+    @EventListener
+    @Async("redisThreadPoolTaskExecutor")
+    public void onMailboxRedisEvent(MailboxRedisEvent event) {
+        try {
+            Mailbox mailbox = event.getSource();
+            mailbox.setDomain(governorOfDomain.build(mailbox.getDomainId()));
+            governorOfMailbox.syncWithRedis(mailbox);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("[DomainMailboxRedisEvent] Exception: " + e.getMessage());
         }
 
     }

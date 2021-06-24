@@ -37,6 +37,16 @@ public class AsyncConfig extends AsyncConfigurerSupport {
         return executor;
     }
 
+    @Bean(name = "redisThreadPoolTaskExecutor")
+    public Executor getRedisAsyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(50);
+        executor.setMaxPoolSize(50);
+        executor.setThreadNamePrefix("RcU-Redis-");
+        executor.initialize();
+        return executor;
+    }
+
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new MyAsyncUncaughtExceptionHandler();
