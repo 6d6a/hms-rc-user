@@ -70,6 +70,7 @@ public class Domain extends Resource {
     @Transient
     private DKIM dkim;
 
+    /** Административная блокировка */
     private Boolean infested = false;
 
     @Override

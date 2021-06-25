@@ -348,7 +348,8 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
                 }
             }
             if (serviceMessage.getParam("dkim") instanceof Map) {
-                Map dkimMap = (Map) serviceMessage.getParam("dkim");
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> dkimMap = (Map<Object, Object>) serviceMessage.getParam("dkim");
                 if (dkimMap.get("switchedOn") instanceof Boolean) {
                     boolean dkimSwitchedOn = (Boolean) dkimMap.get("switchedOn");
                     DKIM dkim = domain.getDkim();
@@ -554,6 +555,9 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
         if (domain.getParentDomainId() == null) {
             governorOfDnsRecord.dropDomain(domain.getName());
         }
+
+        dkimRepository.deleteById(resourceId);
+        governorOfMailbox.saveOnlyDkim(null, domain.getName());
     }
 
     @Override
