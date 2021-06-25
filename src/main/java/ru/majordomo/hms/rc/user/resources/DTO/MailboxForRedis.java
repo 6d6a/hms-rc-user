@@ -29,12 +29,18 @@ public class MailboxForRedis {
     private String storageData;
     private String allowedIps;
 
+    /**
+     * @deprecated use {@link DkimRedis()}
+     */
     @Nullable
+    @Deprecated
     private String dkimSelector;
     /**
      * приватный ключ которым подписываются письма. Одна большая строка в формате:
      * -----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAnVjJ5X1M7WTNaAuLT294NPFu29msuJ3aj1xzsCbYyVfVxwSL\nnP ... lPquQ==\n-----END RSA PRIVATE KEY-----\n
+     * @deprecated use {@link DkimRedis()}
      */
     @Nullable
+    @Deprecated
     private String dkimKey;
 }

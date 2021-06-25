@@ -13,4 +13,6 @@ public interface MailboxRepository extends MongoRepository<Mailbox,String> {
     List<Mailbox> findByServerId(String serverId);
     Mailbox findByDomainIdAndIsAggregator(String domainId, Boolean isAggregator);
     Mailbox findByNameAndDomainId(String name, String domainId);
+    boolean existsByDomainIdAndIsAggregator(String domainId, Boolean isAggregator);
+
 }

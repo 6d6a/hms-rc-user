@@ -27,7 +27,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -48,6 +49,7 @@ import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.*;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
+import ru.majordomo.hms.rc.user.resources.DTO.DkimRedis;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 
@@ -78,6 +80,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     @Setter
     @Autowired
     private DKIMRepository dkimRepository;
+
+    @Setter
+    @Autowired
+    private DkimRedisRepository dkimRedisRepository;
 
     public GovernorOfMailbox(OperationOversightRepository<Mailbox> operationOversightRepository) {
         super(operationOversightRepository);
@@ -964,11 +970,23 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         }
     }
 
+    @ParametersAreNonnullByDefault
     private String getAsteriskRedisId(String domainName) {
         return "*@" + IDN.toASCII(domainName);
     }
 
-    public void saveOnlyDkim(@Nonnull DKIM dkim, @Nonnull String domainName) {
+    @ParametersAreNonnullByDefault
+    private String getDkimRedisId(String domainName) {
+        return IDN.toASCII(domainName);
+    }
+
+    /**
+     * обновление и отключение dkim в redis
+     * @param dkim null или dkim.isSwitchedOn отключить
+     * @param domainName можно в unicode
+     */
+    @ParametersAreNonnullByDefault
+    public void saveOnlyDkim(@Nullable DKIM dkim, String domainName) {
         MailboxForRedis mailboxForRedis = redisRepository.findById(getAsteriskRedisId(domainName)).orElse(null);
         if (mailboxForRedis == null) {
             mailboxForRedis = new MailboxForRedis();
@@ -977,8 +995,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             mailboxForRedis.setId(getAsteriskRedisId(domainName));
         }
 
-        String privateKey = dkim.getPrivateKey();
-        if (dkim.isSwitchedOn()) {
+        String privateKey = dkim == null ? null : dkim.getPrivateKey();
+        if (dkim != null && dkim.isSwitchedOn()) {
             if (privateKey == null) {
                 DKIM dkimPrivate = dkimRepository.findPrivateKeyOnly(dkim.getId());
                 if (dkimPrivate == null || dkimPrivate.getPrivateKey() == null) {
@@ -989,13 +1007,21 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
             }
             mailboxForRedis.setDkimSelector(dkim.getSelector());
             mailboxForRedis.setDkimKey(privateKey);
+
+            DkimRedis dkimRedis = new DkimRedis();
+            dkimRedis.setDkimSelector(dkim.getSelector());
+            dkimRedis.setDkimKey(privateKey);
+            dkimRedis.setId(getDkimRedisId(domainName));
+            dkimRedisRepository.save(dkimRedis);
         } else {
             mailboxForRedis.setDkimSelector(null);
             mailboxForRedis.setDkimKey(null);
+
+            dkimRedisRepository.deleteById(getDkimRedisId(domainName));
         }
         redisRepository.save(mailboxForRedis);
         
-        log.debug("saveOnlyDkim switchedOn: {} for domain: {} with private key: {}", dkim.isSwitchedOn(), domainName, privateKey);
+        log.debug("saveOnlyDkim switchedOn: {} for domain: {} with private key: {}", dkim == null ? null : dkim.isSwitchedOn(), domainName, privateKey);
     }
 
 }
