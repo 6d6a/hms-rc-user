@@ -40,8 +40,8 @@ public class AsyncConfig extends AsyncConfigurerSupport {
     @Bean(name = "redisThreadPoolTaskExecutor")
     public Executor getRedisAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(50);
-        executor.setMaxPoolSize(50);
+        executor.setCorePoolSize(8);
+        executor.setMaxPoolSize(8);
         executor.setThreadNamePrefix("RcU-Redis-");
         executor.initialize();
         return executor;

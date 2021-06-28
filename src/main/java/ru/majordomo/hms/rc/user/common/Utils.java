@@ -1,7 +1,9 @@
 package ru.majordomo.hms.rc.user.common;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -76,4 +78,17 @@ public class Utils {
         return CIDR_PATTERN.matcher(cidr).matches();
     }
 
+    public static ServiceMessage makeSuccessResponse(@Nullable String operationIdentity, @Nullable String actionIdentity, @Nullable String objRef, @Nullable String accountId) {
+        ServiceMessage response = new ServiceMessage();
+        response.setAccountId(accountId);
+        response.setObjRef(objRef);
+        response.setActionIdentity(actionIdentity);
+        response.setOperationIdentity(operationIdentity);
+        response.addParam(Constants.SUCCESS_KEY, true);
+        return response;
+    }
+
+    public static ServiceMessage makeSuccessResponse() {
+        return makeSuccessResponse(null, null, null, null);
+    }
 }

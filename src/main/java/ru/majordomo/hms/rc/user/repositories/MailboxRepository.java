@@ -2,8 +2,10 @@ package ru.majordomo.hms.rc.user.repositories;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import ru.majordomo.hms.rc.user.resources.DTO.EntityIdOnly;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MailboxRepository extends MongoRepository<Mailbox,String> {
@@ -15,4 +17,5 @@ public interface MailboxRepository extends MongoRepository<Mailbox,String> {
     Mailbox findByNameAndDomainId(String name, String domainId);
     boolean existsByDomainIdAndIsAggregator(String domainId, Boolean isAggregator);
 
+    Collection<EntityIdOnly> findAllBy();
 }

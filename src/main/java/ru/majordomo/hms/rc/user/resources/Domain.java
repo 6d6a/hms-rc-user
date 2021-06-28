@@ -23,6 +23,7 @@ import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import ru.majordomo.hms.rc.user.event.domain.listener.DomainMongoEventListener;
 import ru.majordomo.hms.rc.user.resources.validation.UniqueNameResource;
 import ru.majordomo.hms.rc.user.resources.validation.group.DomainChecks;
 
@@ -65,7 +66,7 @@ public class Domain extends Resource {
     @JsonIgnore
     private LocalDateTime needSync;
 
-    /** Параметры DKIM подписи */
+    /** Параметры DKIM подписи, встраивается через {@link DomainMongoEventListener} */
     @Nullable
     @Transient
     private DKIM dkim;

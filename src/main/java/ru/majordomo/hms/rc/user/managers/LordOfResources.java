@@ -14,6 +14,7 @@ import ru.majordomo.hms.rc.staff.resources.Service;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.common.ResourceByIdBuilder;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.OperationOversightRepository;
 import ru.majordomo.hms.rc.user.resourceProcessor.support.ResourceSearcher;
@@ -23,8 +24,10 @@ import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.resources.Serviceable;
 
+import javax.annotation.Nonnull;
+
 @AllArgsConstructor
-public abstract class LordOfResources<T extends Resource> implements ResourceSearcher<T> {
+public abstract class LordOfResources<T extends Resource> implements ResourceSearcher<T>, ResourceByIdBuilder<T> {
     private final OperationOversightRepository<T> operationOversightRepository;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -94,12 +97,11 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
         store(resource);
     }
 
-    public void syncWithRedis(T resource) {}
+    public void syncWithRedis(@Nonnull T resource) {}
 
     protected abstract T construct(T resource) throws ParameterValidationException;
 
-    public abstract T build(String resourceId) throws ResourceNotFoundException;
-
+    @Override
     public abstract T build(Map<String, String> keyValue) throws ResourceNotFoundException;
 
     public abstract Collection<T> buildAll(Map<String, String> keyValue) throws ResourceNotFoundException;

@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -38,6 +39,7 @@ import ru.majordomo.hms.rc.user.api.interfaces.DomainRegistrarClient;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
+import ru.majordomo.hms.rc.user.common.BuildResourceWithoutBuiltIn;
 import ru.majordomo.hms.rc.user.common.DKIMManager;
 import ru.majordomo.hms.rc.user.common.ResourceAction;
 import ru.majordomo.hms.rc.user.event.domain.DomainWasDeleted;
@@ -55,7 +57,7 @@ import static ru.majordomo.hms.rc.user.common.Constants.Exchanges.WEBSITE_UPDATE
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
 
 @Service
-public class GovernorOfDomain extends LordOfResources<Domain> {
+public class GovernorOfDomain extends LordOfResources<Domain> implements BuildResourceWithoutBuiltIn<Domain> {
 
     private Cleaner cleaner;
     private DomainRepository repository;
@@ -686,12 +688,12 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
     }
 
     @Override
-    public Domain build(String resourceId) throws ResourceNotFoundException {
+    public Domain build(@Nonnull String resourceId, boolean withoutBuiltIn) throws ResourceNotFoundException {
         Domain domain = repository
                 .findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Domain с ID:" + resourceId + " не найден"));
 
-        return construct(domain);
+        return withoutBuiltIn ? domain : construct(domain);
     }
 
     @Override
@@ -1010,5 +1012,10 @@ public class GovernorOfDomain extends LordOfResources<Domain> {
             );
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void syncWithRedis(@Nonnull Domain domain) {
+        governorOfMailbox.saveOnlyDkim(domain.getDkim(), domain.getName());
     }
 }

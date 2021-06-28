@@ -27,8 +27,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -41,13 +41,16 @@ import ru.majordomo.hms.rc.staff.resources.Storage;
 import ru.majordomo.hms.rc.user.api.interfaces.StaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.cleaner.Cleaner;
+import ru.majordomo.hms.rc.user.common.BuildResourceWithoutBuiltIn;
 import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.event.domain.DomainRedisSyncEvent;
 import ru.majordomo.hms.rc.user.event.mailbox.MailboxRedisEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.*;
 import ru.majordomo.hms.rc.user.resources.*;
+import ru.majordomo.hms.rc.user.resources.DTO.EntityIdOnly;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.resources.DTO.DkimRedis;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
@@ -56,7 +59,7 @@ import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 import static ru.majordomo.hms.rc.user.common.Constants.MAJORDOMO_SITE_NAME;
 
 @Service
-public class GovernorOfMailbox extends LordOfResources<Mailbox> {
+public class GovernorOfMailbox extends LordOfResources<Mailbox> implements BuildResourceWithoutBuiltIn<Mailbox> {
     private MailboxRepository repository;
     private MailboxRedisRepository redisRepository;
     private UnixAccountRepository unixAccountRepository;
@@ -174,18 +177,21 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         return sendToOversight(mailbox, ResourceAction.UPDATE);
     }
 
+    /**
+     * Синхронизация почтовых ящиков с Redis
+     */
     public void syncAll() {
-        List<Mailbox> mailboxes = repository.findAll();
         try {
-            mailboxes.forEach(item -> {
-                try {
-                    publisher.publishEvent(new MailboxRedisEvent(item));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+            Collection<EntityIdOnly> mailboxesIds = repository.findAllBy();
+            for (EntityIdOnly mailboxIdOnly : mailboxesIds) {
+                publisher.publishEvent(new MailboxRedisEvent(mailboxIdOnly));
+            }
+            Collection<EntityIdOnly> dkimIds = dkimRepository.findAllBy();
+            for (EntityIdOnly dkimIdOnly : dkimIds) {
+                publisher.publishEvent(new DomainRedisSyncEvent(dkimIdOnly));
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("We got an exception during synchronization all mailboxes and dkim with Redis", e);
         }
     }
 
@@ -575,12 +581,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
     }
 
     @Override
-    public Mailbox build(String resourceId) throws ResourceNotFoundException {
+    public Mailbox build(@Nonnull String resourceId, boolean withoutBuiltIn) throws ResourceNotFoundException {
         Mailbox mailbox = repository
                 .findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mailbox с ID:" + resourceId + " не найден"));
 
-        return construct(mailbox);
+        return withoutBuiltIn ? mailbox : construct(mailbox);
     }
 
     @Override
@@ -778,7 +784,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         redisTemplate.boundValueOps(key).set(data);
     }
 
-    public void syncWithRedis(Mailbox mailbox) {
+    public void syncWithRedis(@Nonnull Mailbox mailbox) {
         if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
             dropAggregatorInRedis(mailbox);
             setAggregatorInRedis(mailbox);
@@ -970,13 +976,11 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
         }
     }
 
-    @ParametersAreNonnullByDefault
-    private String getAsteriskRedisId(String domainName) {
+    private String getAsteriskRedisId(@Nonnull String domainName) {
         return "*@" + IDN.toASCII(domainName);
     }
 
-    @ParametersAreNonnullByDefault
-    private String getDkimRedisId(String domainName) {
+    private String getDkimRedisId(@Nonnull String domainName) {
         return IDN.toASCII(domainName);
     }
 
@@ -985,8 +989,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> {
      * @param dkim null или dkim.isSwitchedOn отключить
      * @param domainName можно в unicode
      */
-    @ParametersAreNonnullByDefault
-    public void saveOnlyDkim(@Nullable DKIM dkim, String domainName) {
+    public void saveOnlyDkim(@Nullable DKIM dkim, @Nonnull String domainName) {
         MailboxForRedis mailboxForRedis = redisRepository.findById(getAsteriskRedisId(domainName)).orElse(null);
         if (mailboxForRedis == null) {
             mailboxForRedis = new MailboxForRedis();
