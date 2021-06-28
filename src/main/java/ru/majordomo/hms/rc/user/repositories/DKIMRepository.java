@@ -3,8 +3,10 @@ package ru.majordomo.hms.rc.user.repositories;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import ru.majordomo.hms.rc.user.resources.DKIM;
+import ru.majordomo.hms.rc.user.resources.DTO.EntityIdOnly;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 public interface DKIMRepository extends MongoRepository<DKIM, String> {
     @Nullable
@@ -21,4 +23,6 @@ public interface DKIMRepository extends MongoRepository<DKIM, String> {
             save(dkim);
         });
     }
+
+    Collection<EntityIdOnly> findAllBy();
 }

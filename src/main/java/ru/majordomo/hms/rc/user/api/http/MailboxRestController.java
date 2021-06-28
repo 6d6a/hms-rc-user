@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.majordomo.hms.rc.user.api.DTO.stat.ResourceQuotaCount;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
+import ru.majordomo.hms.rc.user.common.Utils;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.resources.DTO.QuotaReport;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
@@ -94,8 +96,8 @@ public class MailboxRestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/mailbox/redis/sync")
-    public ResponseEntity<Void> sync() {
+    public ResponseEntity<ServiceMessage> sync() {
         governor.syncAll();
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.accepted().body(Utils.makeSuccessResponse());
     }
 }

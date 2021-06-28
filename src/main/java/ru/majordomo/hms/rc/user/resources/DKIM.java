@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+import ru.majordomo.hms.rc.user.event.domain.listener.DKIMMongoEventListener;
 import ru.majordomo.hms.rc.user.resources.validation.ObjectId;
 
 import javax.annotation.Nullable;
@@ -47,6 +48,7 @@ public class DKIM {
      * Поле Data которое нужно установить DNS-записи DKIM и "значение" в GUI.
      * Содержащит приватный ключ и настройки для проверки подписи
      * Вычисляется при чтении из монго, на основе publicKey и шаблона в конфигурации spring
+     * устанавливается через {@link DKIMMongoEventListener}
      */
     @Transient
     private String data;

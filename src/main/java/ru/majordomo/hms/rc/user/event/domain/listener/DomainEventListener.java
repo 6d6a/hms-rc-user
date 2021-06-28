@@ -1,6 +1,6 @@
 package ru.majordomo.hms.rc.user.event.domain.listener;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -11,6 +11,8 @@ import ru.majordomo.hms.rc.user.event.domain.*;
 import ru.majordomo.hms.rc.user.event.mailbox.MailboxRedisEvent;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
+import ru.majordomo.hms.rc.user.repositories.DKIMRepository;
+import ru.majordomo.hms.rc.user.resources.Domain;
 import ru.majordomo.hms.rc.user.resources.Mailbox;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 import ru.majordomo.hms.rc.user.service.AlienDomainsSearcher;
@@ -19,23 +21,12 @@ import java.util.List;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class DomainEventListener {
     private final GovernorOfDomain governorOfDomain;
     private final GovernorOfMailbox governorOfMailbox;
     private final ApplicationEventPublisher publisher;
     private final AlienDomainsSearcher alienDomainsSearcher;
-
-    @Autowired
-    public DomainEventListener(
-            GovernorOfDomain governorOfDomain,
-            GovernorOfMailbox governorOfMailbox, ApplicationEventPublisher publisher,
-            AlienDomainsSearcher alienDomainsSearcher
-    ) {
-        this.governorOfMailbox = governorOfMailbox;
-        this.publisher = publisher;
-        this.governorOfDomain = governorOfDomain;
-        this.alienDomainsSearcher = alienDomainsSearcher;
-    }
 
     @EventListener
     @Async("threadPoolTaskExecutor")
@@ -63,21 +54,29 @@ public class DomainEventListener {
             e.printStackTrace();
             log.error("[DomainClearSyncEventListener] Exception: " + e.getMessage());
         }
-
     }
 
     @EventListener
     @Async("redisThreadPoolTaskExecutor")
     public void onMailboxRedisEvent(MailboxRedisEvent event) {
         try {
-            Mailbox mailbox = event.getSource();
-            mailbox.setDomain(governorOfDomain.build(mailbox.getDomainId()));
+            Mailbox mailbox = governorOfMailbox.build(event.getSource(), true);
+            mailbox.setDomain(governorOfDomain.build(mailbox.getDomainId(), true));
             governorOfMailbox.syncWithRedis(mailbox);
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("[DomainMailboxRedisEvent] Exception: " + e.getMessage());
+            log.error("[DomainMailboxRedisEvent] Mailbox id: " + event.getSource(), e);
         }
+    }
 
+    @EventListener
+    @Async("redisThreadPoolTaskExecutor")
+    public void onDomainRedisEvent(DomainRedisSyncEvent event) {
+        try {
+            Domain domain = governorOfDomain.build(event.getSource(), true);
+            governorOfDomain.syncWithRedis(domain);
+        } catch (Exception e) {
+            log.error("[DomainRedisSyncEvent] Domain id: " + event.getSource(), e);
+        }
     }
 
     @EventListener
