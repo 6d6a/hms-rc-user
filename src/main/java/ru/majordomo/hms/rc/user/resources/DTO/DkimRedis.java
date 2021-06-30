@@ -4,7 +4,9 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.net.IDN;
 
 @Data
 @RedisHash("dkim")
@@ -21,4 +23,8 @@ public class DkimRedis {
      */
     @Nullable
     private String dkimKey;
+
+    public static String getRedisId(@Nonnull String domainNameUnicode) {
+        return IDN.toASCII(domainNameUnicode);
+    }
 }

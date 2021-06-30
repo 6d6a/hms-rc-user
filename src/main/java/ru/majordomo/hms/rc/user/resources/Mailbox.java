@@ -5,9 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
+
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 
-import org.junit.Assert;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -77,7 +78,9 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
 
     private Boolean writable;
 
+    /** null - не менять агрегатор */
     @Indexed
+    @Nullable
     private Boolean isAggregator;
 
     @ValidAbsoluteFilePath
@@ -107,6 +110,7 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         }
     }
 
+    @Nullable
     @JsonIgnore
     public String getFullNameInPunycode() {
         if (domain != null) {
@@ -169,14 +173,6 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     @Override
     public Long getQuotaUsed() {
         return quotaUsed == null ? 0L : quotaUsed;
-    }
-
-    public Boolean getIsAggregator() {
-        return isAggregator;
-    }
-
-    public void setIsAggregator(Boolean isAggregator) {
-        this.isAggregator = isAggregator;
     }
 
     @JsonIgnore

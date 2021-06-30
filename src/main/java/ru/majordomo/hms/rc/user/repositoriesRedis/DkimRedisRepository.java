@@ -1,4 +1,4 @@
-package ru.majordomo.hms.rc.user.repositories;
+package ru.majordomo.hms.rc.user.repositoriesRedis;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

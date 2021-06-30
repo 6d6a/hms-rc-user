@@ -12,7 +12,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.SocketUtils;
 
 @Configuration
-@EnableRedisRepositories(basePackages = {"ru.majordomo.hms.rc.user.repositories"})
+@EnableRedisRepositories(basePackages = {"ru.majordomo.hms.rc.user.repositoriesRedis"})
 @Profile("test")
 public class RedisConfig {
 
