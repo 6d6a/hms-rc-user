@@ -10,12 +10,14 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import ru.majordomo.hms.rc.user.mappers.StringToAddressConverter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
+@EnableMongoRepositories(basePackages = {"ru.majordomo.hms.rc.user.repositories"})
 public class MongoConfig {
     @Value("${spring.data.mongodb.uri}")
     private String mongodbUri;

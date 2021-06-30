@@ -6,8 +6,8 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 
+import com.mongodb.client.result.UpdateResult;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -16,12 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.IDN;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -34,6 +37,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
 import feign.FeignException;
+import org.springframework.util.Assert;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.staff.resources.Server;
@@ -49,6 +53,8 @@ import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaFullEvent;
 import ru.majordomo.hms.rc.user.event.quota.MailboxQuotaWarnEvent;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.*;
+import ru.majordomo.hms.rc.user.repositoriesRedis.DkimRedisRepository;
+import ru.majordomo.hms.rc.user.repositoriesRedis.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.EntityIdOnly;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
@@ -56,7 +62,7 @@ import ru.majordomo.hms.rc.user.resources.DTO.DkimRedis;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxChecks;
 import ru.majordomo.hms.rc.user.resources.validation.group.MailboxImportChecks;
 
-import static ru.majordomo.hms.rc.user.common.Constants.MAJORDOMO_SITE_NAME;
+import static ru.majordomo.hms.rc.user.common.Constants.*;
 
 @Service
 public class GovernorOfMailbox extends LordOfResources<Mailbox> implements BuildResourceWithoutBuiltIn<Mailbox> {
@@ -87,6 +93,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
     @Setter
     @Autowired
     private DkimRedisRepository dkimRedisRepository;
+
+    @Setter
+    @Autowired
+    private MongoOperations mongoOperations;
 
     public GovernorOfMailbox(OperationOversightRepository<Mailbox> operationOversightRepository) {
         super(operationOversightRepository);
@@ -236,11 +246,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
                     case "antiSpamEnabled":
                         mailbox.setAntiSpamEnabled((Boolean) entry.getValue());
                         break;
-                    case "isAggregator":
-                        Boolean userValue = (Boolean) entry.getValue();
-                        if (userValue) {
-                            assignAsAggregator(mailbox);
-                        } else {
+                    case IS_AGGREGATOR_KEY:
+                        if (entry.getValue() != null) {
+                            Boolean userValue = (Boolean) entry.getValue();
                             mailbox.setIsAggregator(userValue);
                         }
                         break;
@@ -292,16 +300,6 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         return mailbox;
     }
 
-    private Mailbox assignAsAggregator(Mailbox mailbox) {
-        Mailbox currentAggregator = repository.findByDomainIdAndIsAggregator(mailbox.getDomainId(), true);
-        if (currentAggregator != null) {
-            currentAggregator.setIsAggregator(false);
-            store(currentAggregator);
-        }
-        mailbox.setIsAggregator(true);
-        return mailbox;
-    }
-
     @Override
     public void preDelete(String resourceId) {
         Mailbox mailbox = build(resourceId);
@@ -334,6 +332,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         }
         Mailbox mailbox = ovs.getResource();
         store(mailbox);
+        if (Boolean.TRUE.equals(mailbox.getIsAggregator())) {
+            unmarkOtherAggregatorInMongo(mailbox);
+        }
         construct(mailbox); //Добавляем транзиентный домен в мейлбокс, для синхронизации с редисом
         syncWithRedis(ovs.getResource());
         removeOversight(ovs);
@@ -359,6 +360,8 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         String domainId;
         String comment = null;
         Set<String> allowedIps = new HashSet<>();
+        @Nullable
+        Boolean isAggregator = null;
 
         try {
             if (serviceMessage.getParam("domainId") == null) {
@@ -427,6 +430,10 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
                                 (List<String>) serviceMessage.getParam("allowedIps")
                         )
                 );
+            }
+
+            if (serviceMessage.getParam(IS_AGGREGATOR_KEY) != null) {
+                isAggregator = (Boolean) serviceMessage.getParam(IS_AGGREGATOR_KEY);
             }
 
         } catch (ClassCastException e) {
@@ -507,12 +514,9 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         mailbox.setSpamFilterMood(spamFilterMood);
         mailbox.setComment(comment);
         mailbox.setAllowedIps(allowedIps);
+        mailbox.setIsAggregator(isAggregator);
 
         return mailbox;
-    }
-
-    private boolean hasAggregator(String domainId) {
-        return repository.findByDomainIdAndIsAggregator(domainId, true) != null;
     }
 
     private String findMailStorageServer() {
@@ -727,7 +731,7 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
     }
 
     private MailboxForRedis convertMailboxToMailboxForRedis(Mailbox mailbox, String serverName) {
-        Boolean writable = mailbox.getSwitchedOn() ? mailbox.getWritable() : false;
+        boolean writable = mailbox.getSwitchedOn() ? mailbox.getWritable() : false;
         Boolean mailFromAllowed = mailbox.getSwitchedOn() ? mailbox.getMailFromAllowed() : false;
 
         MailboxForRedis mailboxForRedis = new MailboxForRedis();
@@ -747,23 +751,14 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
         mailboxForRedis.setAllowedIps(String.join(":", mailbox.getAllowedIps()));
 
-        if ("*".equals(mailbox.getName()) && mailbox.getDomain() != null) {
-            DKIM dkim = mailbox.getDomain().getDkim();
-            if (dkim != null && dkim.isSwitchedOn()) {
-                if (dkim.getPrivateKey() == null) {
-                    dkim = dkimRepository.findById(mailbox.getDomain().getId()).orElse(null);
-                }
-                if (dkim != null) {
-                    mailboxForRedis.setDkimKey(dkim.getPrivateKey());
-                    mailboxForRedis.setDkimSelector(dkim.getSelector());
-                }
-            }
-        }
-
         return mailboxForRedis;
     }
 
-    private void saveUserData(Mailbox mailbox, String serverName) {
+    /**
+     * Поместить в redis запись mailboxUserData:MAILBOX_FULL_NAME необходимую для работы IMAP и POP3-сервера dovecot
+     * @param serverName адрес почтового сервера dovecot, например "pop1"
+     */
+    private void saveUserData(@Nonnull Mailbox mailbox, @Nonnull String serverName) {
         String uidAsString = mailbox.getUid().toString();
         Map<String, String> userData = new HashMap<>();
         userData.put("uid", uidAsString);
@@ -784,13 +779,21 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         redisTemplate.boundValueOps(key).set(data);
     }
 
-    public void syncWithRedis(@Nonnull Mailbox mailbox) {
-        if (mailbox.getIsAggregator() != null && mailbox.getIsAggregator()) {
-            dropAggregatorInRedis(mailbox);
-            setAggregatorInRedis(mailbox);
-        }
+    /**
+     * @param mailbox
+     * @throws IllegalArgumentException
+     * @throws FeignException
+     * @throws ResourceNotFoundException
+     */
+    @Override
+    public void syncWithRedis(@Nonnull Mailbox mailbox) throws IllegalArgumentException, FeignException, ResourceNotFoundException {
+        Server server = staffRcClient.getServerById(mailbox.getServerId());
+        Assert.notNull(server, "Failed to get the mail server during sync mailbox with redis");
+        String serverName = server.getName();
 
-        String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
+        updateAggregatorInRedis(mailbox, serverName);
+        removeOrphanAggregatorInRedis(mailbox.getDomainId(), mailbox.getDomain() == null ? null : mailbox.getDomain().getName());
+
         redisRepository.save(convertMailboxToMailboxForRedis(mailbox, serverName));
         saveUserData(mailbox, serverName);
     }
@@ -799,47 +802,64 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         redisRepository.deleteById(mailbox.getFullNameInPunycode());
         String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.delete(key);
-        
-        if ("*".equals(mailbox.getName()) && mailbox.getDomain().getDkim() != null) {
-            saveOnlyDkim(mailbox.getDomain().getDkim(), mailbox.getDomain().getName());
-        }
     }
 
-    private void setAggregatorInRedis(Mailbox mailbox) {
-        Domain domain = (construct(mailbox)).getDomain();
-        String uidAsString = mailbox.getUid().toString();
-        MailboxForRedis mailboxForRedis = new MailboxForRedis();
-        mailboxForRedis.setId(getAsteriskRedisId(domain.getName()));
-        mailboxForRedis.setName(mailbox.getFullNameInPunycode());
-        mailboxForRedis.setPasswordHash(mailbox.getPasswordHash());
-        mailboxForRedis.setBlackList(String.join(":", mailbox.getBlackListInPunycode()));
-        mailboxForRedis.setWhiteList(String.join(":", mailbox.getWhiteListInPunycode()));
-        mailboxForRedis.setRedirectAddresses(String.join(":", mailbox.getRedirectAddressesInPunycode()));
-        mailboxForRedis.setWritable(mailbox.getWritable());
-        mailboxForRedis.setMailFromAllowed(mailbox.getMailFromAllowed());
-        mailboxForRedis.setAntiSpamEnabled(mailbox.getAntiSpamEnabled());
-        mailboxForRedis.setSpamFilterAction(mailbox.getSpamFilterAction());
-        mailboxForRedis.setSpamFilterMood(mailbox.getSpamFilterMood());
-        String serverName = staffRcClient.getServerById(mailbox.getServerId()).getName();
-        mailboxForRedis.setServerName(serverName);
-        mailboxForRedis.setStorageData(uidAsString + ":" + uidAsString + ":" + mailbox.getMailSpoolInPunycode());
+    /**
+     * Удалить *@domain_name если если в mongo нет агрегатора
+     * @param domainId
+     * @param domainNameUnicode
+     * @throws ResourceNotFoundException
+     */
+    private void removeOrphanAggregatorInRedis(@Nonnull String domainId, @Nullable String domainNameUnicode) throws ResourceNotFoundException {
+        if (repository.existsByDomainIdAndIsAggregator(domainId, true)) {
+            return;
+        }
+        if (domainNameUnicode == null) {
+            domainNameUnicode = governorOfDomain.build(
+                    domainId,
+                    true
+            ).getName();
+        }
+        String redisId = MailboxForRedis.getAggregatorRedisId(domainNameUnicode);
+        redisRepository.deleteById(redisId);
+    }
 
-        DKIM dkim = domain.getDkim();
-        if (dkim != null && dkim.isSwitchedOn()) {
-            if (dkim.getPrivateKey() == null) {
-                dkim = dkimRepository.findById(domain.getId()).orElse(null);
-            }
-            if (dkim != null) {
-                mailboxForRedis.setDkimKey(dkim.getPrivateKey());
-                mailboxForRedis.setDkimSelector(dkim.getSelector());
+    public long unmarkOtherAggregatorInMongo(@Nonnull Mailbox unmarkExceptItMailbox) {
+        ObjectId id = new ObjectId(unmarkExceptItMailbox.getId());
+        Criteria criteria = Criteria.where("_id").ne(id).and(IS_AGGREGATOR_KEY).is(true)
+                .and(DOMAIN_ID_KEY).is(unmarkExceptItMailbox.getDomainId());
+        Query query = Query.query(criteria);
+        Update update = Update.update(IS_AGGREGATOR_KEY, false);
+        UpdateResult updateResult = mongoOperations.updateMulti(query, update, Mailbox.class);
+        return updateResult.getModifiedCount();
+    }
+
+    /**
+     * обновить запись агрегатора *@domain_name или удалить если ящик был агрегатором, но перестал
+     * @param mailbox
+     * @param serverName mailbox.serverId rc-staff.Server.name
+     * @return true если что-то менялось в redis
+     */
+    public boolean updateAggregatorInRedis(@Nonnull Mailbox mailbox, @Nonnull String serverName) throws ResourceNotFoundException {
+        Domain domain = mailbox.getDomain() != null ? mailbox.getDomain() : governorOfDomain.build(
+                mailbox.getDomainId(),
+                true
+        );
+        if (!Boolean.TRUE.equals(mailbox.getIsAggregator())) {
+            if (Boolean.FALSE.equals(mailbox.getIsAggregator()) && redisRepository.isAggregator(mailbox.getName(), domain.getName())) {
+                redisRepository.deleteById(MailboxForRedis.getAggregatorRedisId(domain.getName()));
+                return true;
+            } else {
+                return false;
             }
         }
 
-        redisRepository.save(mailboxForRedis);
-    }
+        Boolean writable = mailbox.getWritable();
+        MailboxForRedis aggregatorRedis = MailboxForRedis.createAggregator(mailbox.getName(), domain.getName(), serverName, writable);
 
-    private void dropAggregatorInRedis(Mailbox mailbox) {
-        redisRepository.deleteById(getAsteriskRedisId((construct(mailbox)).getDomain().getName()));
+        redisRepository.deleteById(MailboxForRedis.getAggregatorRedisId(domain.getName())); // возможно не стоит удалять старую
+        redisRepository.save(aggregatorRedis);
+        return true;
     }
 
     public void updateQuota(String mailboxId, Long quotaSize) {
@@ -976,28 +996,12 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
         }
     }
 
-    private String getAsteriskRedisId(@Nonnull String domainName) {
-        return "*@" + IDN.toASCII(domainName);
-    }
-
-    private String getDkimRedisId(@Nonnull String domainName) {
-        return IDN.toASCII(domainName);
-    }
-
     /**
      * обновление и отключение dkim в redis
      * @param dkim null или dkim.isSwitchedOn отключить
-     * @param domainName можно в unicode
+     * @param domainNameUnicode можно в unicode
      */
-    public void saveOnlyDkim(@Nullable DKIM dkim, @Nonnull String domainName) {
-        MailboxForRedis mailboxForRedis = redisRepository.findById(getAsteriskRedisId(domainName)).orElse(null);
-        if (mailboxForRedis == null) {
-            mailboxForRedis = new MailboxForRedis();
-            mailboxForRedis.setId(getAsteriskRedisId(domainName));
-        } else if (StringUtils.isEmpty(mailboxForRedis.getId())) {
-            mailboxForRedis.setId(getAsteriskRedisId(domainName));
-        }
-
+    public void saveOnlyDkim(@Nullable DKIM dkim, @Nonnull String domainNameUnicode) {
         String privateKey = dkim == null ? null : dkim.getPrivateKey();
         if (dkim != null && dkim.isSwitchedOn()) {
             if (privateKey == null) {
@@ -1008,23 +1012,17 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
                 }
                 privateKey = dkimPrivate.getPrivateKey();
             }
-            mailboxForRedis.setDkimSelector(dkim.getSelector());
-            mailboxForRedis.setDkimKey(privateKey);
 
             DkimRedis dkimRedis = new DkimRedis();
             dkimRedis.setDkimSelector(dkim.getSelector());
             dkimRedis.setDkimKey(privateKey);
-            dkimRedis.setId(getDkimRedisId(domainName));
+            dkimRedis.setId(DkimRedis.getRedisId(domainNameUnicode));
             dkimRedisRepository.save(dkimRedis);
         } else {
-            mailboxForRedis.setDkimSelector(null);
-            mailboxForRedis.setDkimKey(null);
-
-            dkimRedisRepository.deleteById(getDkimRedisId(domainName));
+            dkimRedisRepository.deleteById(DkimRedis.getRedisId(domainNameUnicode));
         }
-        redisRepository.save(mailboxForRedis);
         
-        log.debug("saveOnlyDkim switchedOn: {} for domain: {} with private key: {}", dkim == null ? null : dkim.isSwitchedOn(), domainName, privateKey);
+        log.debug("saveOnlyDkim switchedOn: {} for domain: {} with private key: {}", dkim == null ? null : dkim.isSwitchedOn(), domainNameUnicode, privateKey);
     }
 
 }

@@ -29,6 +29,10 @@ public class Constants {
     public static final String SEND_ONLY_TO_ACTIVE_KEY = "send_only_to_active";
     public static final String MAIL_ENVELOPE_FROM = "noreply@";
     public static final String SUCCESS_KEY = "success";
+    /** {@code @Nullable Boolean}, null - не менять агрегатор */
+    public static final String IS_AGGREGATOR_KEY = "isAggregator";
+    public static final String DOMAIN_ID_KEY = "domainId";
+    public static final String RESOURCE_ID_KEY = "resourceId";
 
     public static final String MAJORDOMO_SITE_NAME = "majordomo.ru";
 

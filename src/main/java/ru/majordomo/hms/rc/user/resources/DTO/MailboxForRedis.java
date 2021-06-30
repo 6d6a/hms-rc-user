@@ -7,13 +7,17 @@ import org.springframework.data.redis.core.RedisHash;
 import ru.majordomo.hms.rc.user.resources.SpamFilterAction;
 import ru.majordomo.hms.rc.user.resources.SpamFilterMood;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import java.net.IDN;
 
+/**
+ * Объект для описания почтового ящика в redis, с которым работает exim. И настройки ящика для сбора почты.
+ * Для хеша *@имя_домена устанавливающего ящик для сбора почты нужны только: redirectAddresses, writable, serverName
+ */
 @RedisHash("mailboxes")
 @Data
 public class MailboxForRedis {
     @Id
-    @Nullable
     private String id;
     private String name;
     private String passwordHash;
@@ -29,18 +33,33 @@ public class MailboxForRedis {
     private String storageData;
     private String allowedIps;
 
+    static public String getRedisId(@Nonnull String mailboxUserName, @Nonnull String domainUnicode) {
+        return mailboxUserName + "@" + IDN.toASCII(domainUnicode);
+    }
+
+    static public String getAggregatorRedisId(@Nonnull String domainUnicode) {
+        return "*@" + IDN.toASCII(domainUnicode);
+    }
+
     /**
-     * @deprecated use {@link DkimRedis()}
+     * Создать запись необходимую для работы ящика для сбора почты. Хэша в redis *@имя_домена.
+     * @param mailboxUserName
+     * @param domainNameUnicode
+     * @param serverName
+     * @param writable должен быть false если превышена квота, в остальных случаях true
+     * @return
      */
-    @Nullable
-    @Deprecated
-    private String dkimSelector;
-    /**
-     * приватный ключ которым подписываются письма. Одна большая строка в формате:
-     * -----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAnVjJ5X1M7WTNaAuLT294NPFu29msuJ3aj1xzsCbYyVfVxwSL\nnP ... lPquQ==\n-----END RSA PRIVATE KEY-----\n
-     * @deprecated use {@link DkimRedis()}
-     */
-    @Nullable
-    @Deprecated
-    private String dkimKey;
+    static public MailboxForRedis createAggregator(
+            @Nonnull String mailboxUserName,
+            @Nonnull String domainNameUnicode,
+            @Nonnull String serverName,
+            boolean writable
+    ) {
+        MailboxForRedis aggregatorRedis = new MailboxForRedis();
+        aggregatorRedis.id = getAggregatorRedisId(domainNameUnicode);
+        aggregatorRedis.redirectAddresses = getRedisId(mailboxUserName, domainNameUnicode);
+        aggregatorRedis.writable = writable;
+        aggregatorRedis.serverName = serverName;
+        return aggregatorRedis;
+    }
 }

@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -18,6 +17,7 @@ import ru.majordomo.hms.personmgr.exception.ResourceNotFoundException;
 import ru.majordomo.hms.rc.user.managers.GovernorOfMailbox;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.repositories.*;
+import ru.majordomo.hms.rc.user.repositoriesRedis.MailboxRedisRepository;
 import ru.majordomo.hms.rc.user.resources.*;
 import ru.majordomo.hms.rc.user.resources.DTO.MailboxForRedis;
 import ru.majordomo.hms.rc.user.test.common.ResourceGenerator;
@@ -31,18 +31,20 @@ import ru.majordomo.hms.rc.user.test.config.common.ConfigDomainRegistrarClient;
 import ru.majordomo.hms.rc.user.test.config.common.ConfigStaffResourceControllerClient;
 import ru.majordomo.hms.rc.user.test.config.governors.ConfigGovernors;
 
+import java.net.IDN;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.validation.ConstraintViolationException;
 
+import static org.junit.Assert.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static ru.majordomo.hms.rc.user.common.Constants.IS_AGGREGATOR_KEY;
+import static ru.majordomo.hms.rc.user.common.Constants.RESOURCE_ID_KEY;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -82,6 +84,8 @@ public class GovernorOfMailboxTest {
     private List<Domain> batchOfDomains;
 
     private static RedisServer redisServer;
+
+    private final static String SERVER_NAME = "pop100500";
 
     @Before
     public void setUp() throws Exception {
@@ -279,37 +283,71 @@ public class GovernorOfMailboxTest {
     }
 
     @Test
-    @Ignore
     public void updateSetAggregatorAndDropAggregator() throws Exception {
-        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(mailboxes.get(0).getDomainId());
+        Mailbox workedMailbox = mailboxes.get(0);
+        governor.construct(workedMailbox);
+        final String workedMailboxId = workedMailbox.getId();
+        final String workedMailboxName = workedMailbox.getName();
+        final String workedMailboxDomainName = workedMailbox.getDomain().getName();
+        final String workedMailboxFullName = workedMailbox.getFullNameInPunycode();
+        final String workedMailboxAggregatorId = MailboxForRedis.getAggregatorRedisId(workedMailboxDomainName);
+
+        Assert.assertNotNull(workedMailboxFullName);
+        Assert.assertFalse(redisRepository.findById(workedMailboxAggregatorId).isPresent());
+        Assert.assertFalse(repository.existsByDomainIdAndIsAggregator(workedMailbox.getDomainId(), true));
+
+        ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(workedMailbox.getDomainId());
         serviceMessage.delParam("name");
-        serviceMessage.setAccountId(mailboxes.get(0).getAccountId());
-        serviceMessage.addParam("resourceId", mailboxes.get(0).getId());
-        serviceMessage.addParam("isAggregator", true);
+        serviceMessage.setAccountId(workedMailbox.getAccountId());
+        serviceMessage.addParam(RESOURCE_ID_KEY, workedMailbox.getId());
+        serviceMessage.addParam(IS_AGGREGATOR_KEY, true);
+        // end prepare
+
         OperationOversight<Mailbox> ovs = governor.updateByOversight(serviceMessage);
         governor.completeOversightAndStore(ovs);
 
-        Mailbox mailbox = repository.findById(mailboxes.get(0).getId()).orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
-        assertThat(mailbox.getIsAggregator(), is(true));
-
-        MailboxForRedis redisMailbox = redisRepository
-                .findById("*@" + governor.construct(mailbox).getDomain().getName())
+        Mailbox mailbox = repository.findById(workedMailboxId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
-        assertNotNull(redisMailbox);
-        assertThat(mailbox.getAntiSpamEnabled(), is(redisMailbox.getAntiSpamEnabled()));
-        assertThat(String.join(":", mailbox.getWhiteList()), is(redisMailbox.getWhiteList()));
-        assertThat(String.join(":", mailbox.getBlackList()), is(redisMailbox.getBlackList()));
-        assertThat(mailbox.getWritable(), is(redisMailbox.getWritable()));
-        assertThat(String.join(":", mailbox.getRedirectAddresses()), is(redisMailbox.getRedirectAddresses()));
-        assertThat(mailbox.getPasswordHash(), is(redisMailbox.getPasswordHash()));
-        assertThat(redisMailbox.getServerName(), is("pop100500"));
+        assertNotNull(mailbox.getIsAggregator());
+        assertTrue(mailbox.getIsAggregator());
+        assertEquals(workedMailboxName, mailbox.getName());
 
-        serviceMessage.delParam("isAggregator");
-        serviceMessage.addParam("isAggregator", false);
+        MailboxForRedis redisMailbox = redisRepository.findById(workedMailboxAggregatorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ресурс не найден"));
+        assertNotNull(redisMailbox.getId());
+        assertEquals(workedMailboxFullName, redisMailbox.getRedirectAddresses());
+        assertEquals(SERVER_NAME, redisMailbox.getServerName());
+        assertTrue(redisMailbox.getWritable());
+        assertTrue(redisRepository.isAggregator(mailbox.getName(), workedMailboxDomainName));
+
+        // second part
+        serviceMessage.delParam(IS_AGGREGATOR_KEY);
+        serviceMessage.addParam(IS_AGGREGATOR_KEY, null);
         ovs = governor.updateByOversight(serviceMessage);
         governor.completeOversightAndStore(ovs);
 
-        assertNull(redisRepository.findById("*@" + governor.construct(mailbox).getDomain().getName()).orElse(null));
+        mailbox = repository.findById(workedMailboxId).get();
+        assertNotNull(mailbox.getIsAggregator());
+        assertTrue(mailbox.getIsAggregator());
+
+        redisMailbox = redisRepository.findById(workedMailboxAggregatorId).get();
+        assertNotNull(redisMailbox.getId());
+        assertEquals(workedMailboxFullName, redisMailbox.getRedirectAddresses());
+        assertEquals(SERVER_NAME, redisMailbox.getServerName());
+        assertTrue(redisMailbox.getWritable());
+        assertTrue(redisRepository.isAggregator(mailbox.getName(), workedMailboxDomainName));
+
+        //  third part
+        serviceMessage.delParam(IS_AGGREGATOR_KEY);
+        serviceMessage.addParam(IS_AGGREGATOR_KEY, false);
+        ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
+
+        mailbox = repository.findById(workedMailboxId).get();
+        assertNotEquals(Boolean.TRUE, mailbox.getIsAggregator());
+
+        assertFalse(repository.existsByDomainIdAndIsAggregator(workedMailbox.getDomainId(), true));
+        assertFalse(redisRepository.findById(workedMailboxAggregatorId).isPresent());
     }
 
     @Test
@@ -477,5 +515,98 @@ public class GovernorOfMailboxTest {
             OperationOversight<Mailbox> ovs = governor.createByOversight(serviceMessage);
             governor.completeOversightAndStore(ovs);
         });
+    }
+
+    @Test
+    public void testUpdateAggregatorInRedis() {
+        Domain ruDomain = batchOfDomains.stream()
+                .filter(d -> Pattern.compile(".*[а-яА-Я].*").matcher(d.getName()).matches())
+                .findFirst().get();
+
+        Mailbox mailbox = mailboxes.stream().filter(m -> m.getDomainId().equals(ruDomain.getId())).findFirst().get();
+        mailbox.setDomain(ruDomain);
+        String mailboxFullName = mailbox.getName() + "@" + IDN.toASCII(ruDomain.getName());
+        String aggregatorRedisId = MailboxForRedis.getAggregatorRedisId(ruDomain.getName());
+        Assert.assertFalse(redisRepository.existsById(aggregatorRedisId));
+        //end prepare
+
+        mailbox.setIsAggregator(true);
+        boolean isChanged = governor.updateAggregatorInRedis(mailbox, SERVER_NAME);
+        Assert.assertTrue(isChanged);
+        MailboxForRedis aggregatorRedis = redisRepository.findById(aggregatorRedisId).get();
+        Assert.assertNotNull(aggregatorRedis.getRedirectAddresses());
+        Assert.assertEquals(mailboxFullName, aggregatorRedis.getRedirectAddresses());
+
+        mailbox.setIsAggregator(null);
+        isChanged = governor.updateAggregatorInRedis(mailbox, SERVER_NAME);
+        Assert.assertFalse(isChanged);
+        Assert.assertTrue(redisRepository.existsById(aggregatorRedisId));
+
+        mailbox.setIsAggregator(false);
+        isChanged = governor.updateAggregatorInRedis(mailbox, SERVER_NAME);
+        Assert.assertTrue(isChanged);
+        Assert.assertFalse(redisRepository.existsById(aggregatorRedisId));
+
+        isChanged = governor.updateAggregatorInRedis(mailbox, SERVER_NAME);
+        Assert.assertFalse(isChanged);
+        Assert.assertFalse(redisRepository.existsById(aggregatorRedisId));
+
+        mailbox.setIsAggregator(null);
+        isChanged = governor.updateAggregatorInRedis(mailbox, SERVER_NAME);
+        Assert.assertFalse(isChanged);
+        Assert.assertFalse(redisRepository.existsById(aggregatorRedisId));
+    }
+
+    @Test
+    public void testUnmarkOtherAggregatorInMongo() {
+        Domain ruDomain = batchOfDomains.stream()
+                .filter(d -> Pattern.compile(".*[а-яА-Я].*").matcher(d.getName()).matches())
+                .findFirst().get();
+        List<Mailbox> testedMailboxes = repository.findByDomainId(ruDomain.getId());
+        Mailbox initialMailbox = testedMailboxes.get(0);
+        String initialMailboxId = initialMailbox.getId();
+        Assert.assertNotNull(initialMailbox);
+        initialMailbox.setDomain(ruDomain);
+        for(int i = 0; i < 2; i++) {
+            initialMailbox.setId(null);
+            initialMailbox.setName("unmarkotheraggregator" + i);
+            repository.insert(initialMailbox);
+        }
+        testedMailboxes = repository.findByDomainId(ruDomain.getId());
+        Assert.assertTrue(testedMailboxes.size() >= 3);
+        Assert.assertFalse(repository.existsByDomainIdAndIsAggregator(ruDomain.getId(), true));
+        int mailboxCount = testedMailboxes.size();
+        //end prepare
+
+
+        for (Mailbox mailbox : testedMailboxes) {
+            mailbox.setIsAggregator(true);
+            repository.save(mailbox);
+        }
+        initialMailbox = repository.findById(initialMailboxId).get();
+        Assert.assertTrue(repository.existsByDomainIdAndIsAggregator(ruDomain.getId(), true));
+
+        long modified = governor.unmarkOtherAggregatorInMongo(initialMailbox);
+        testedMailboxes = repository.findByDomainId(ruDomain.getId());
+        Assert.assertEquals(modified + 1, testedMailboxes.size());
+        Assert.assertTrue(testedMailboxes.stream().allMatch(mailbox -> (initialMailboxId.equals(mailbox.getId()) == Boolean.TRUE.equals(mailbox.getIsAggregator()))));
+
+
+        for (Mailbox mailbox : testedMailboxes) {
+            mailbox.setIsAggregator(true);
+            repository.save(mailbox);
+        }
+        initialMailbox = repository.findById(initialMailboxId).get();
+        Assert.assertTrue(repository.existsByDomainIdAndIsAggregator(ruDomain.getId(), true));
+        Mailbox notExistsMailbox = repository.findById(initialMailboxId).get();
+        notExistsMailbox.setId(new ObjectId().toString());
+        initialMailbox.setName("unmarkotheraggregator-not-exists");
+        initialMailbox.setIsAggregator(true);
+
+        modified = governor.unmarkOtherAggregatorInMongo(notExistsMailbox);
+        testedMailboxes = repository.findByDomainId(ruDomain.getId());
+        Assert.assertEquals(modified, testedMailboxes.size());
+        Assert.assertTrue(testedMailboxes.stream().noneMatch(mailbox -> Boolean.TRUE.equals(mailbox.getIsAggregator())));
+
     }
 }
