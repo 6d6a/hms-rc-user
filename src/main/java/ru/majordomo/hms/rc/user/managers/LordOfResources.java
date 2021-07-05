@@ -160,6 +160,9 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
         removeOversight(ovs);
     }
 
+    /**
+     * Только удаление Oversight без изменения ресурса
+     */
     public void removeOversight(OperationOversight<T> ovs) {
         operationOversightRepository.delete(ovs);
     }

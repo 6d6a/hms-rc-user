@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 @NoArgsConstructor
 public class MailboxNameValidator implements ConstraintValidator<ValidMailboxName, String>  {
 
-    private static final Pattern HELP_PATTERN = Pattern.compile("^[.a-z0-9_-]+$");
+    private static final Pattern ADDITIONAL_FILTER_PATTERN = Pattern.compile("^['.a-z0-9_-]+$");
     private static final Set<String> RESERVED_NAMES = Collections.singleton("*");
 
     private final EmailValidatorWrapper emailValidator = new EmailValidatorWrapper();
@@ -29,7 +29,7 @@ public class MailboxNameValidator implements ConstraintValidator<ValidMailboxNam
         if (mailboxName == null || !emailValidator.isValidUser(mailboxName) || RESERVED_NAMES.contains(mailboxName)) {
             return false;
         }
-        return HELP_PATTERN.matcher(mailboxName).matches();
+        return ADDITIONAL_FILTER_PATTERN.matcher(mailboxName).matches();
     }
 
     public boolean isValid(@Nullable String mailboxName) {

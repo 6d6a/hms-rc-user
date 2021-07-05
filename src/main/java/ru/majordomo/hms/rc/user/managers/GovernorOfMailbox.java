@@ -799,7 +799,13 @@ public class GovernorOfMailbox extends LordOfResources<Mailbox> implements Build
     }
 
     private void dropFromRedis(Mailbox mailbox) {
-        redisRepository.deleteById(mailbox.getFullNameInPunycode());
+        Assert.notNull(mailbox.getDomain(), "Embedded domain object expected");
+        String mailboxRedisId = MailboxForRedis.getRedisId(mailbox.getName(), mailbox.getDomain().getName());
+        redisRepository.deleteById(mailboxRedisId);
+        if (redisRepository.isAggregator(mailbox.getName(), mailbox.getDomain().getName())) {
+            String aggregatorRedisId = MailboxForRedis.getAggregatorRedisId(mailbox.getDomain().getName());
+            redisRepository.deleteById(aggregatorRedisId);
+        }
         String key = "mailboxUserData:" + mailbox.getFullNameInPunycode();
         redisTemplate.delete(key);
     }
