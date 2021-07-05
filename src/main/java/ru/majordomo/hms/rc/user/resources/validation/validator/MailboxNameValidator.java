@@ -13,13 +13,14 @@ import java.util.regex.Pattern;
 
 /**
  * убраны все спецсимволы так как по факту на нашей почте они не работают.
- * Проверялось методом тыка.
  * Старый {@code "^[a-z0-9!#$%&'*+=?^_`{|}~-]+$"}
  */
 @NoArgsConstructor
 public class MailboxNameValidator implements ConstraintValidator<ValidMailboxName, String>  {
-
-    private static final Pattern ADDITIONAL_FILTER_PATTERN = Pattern.compile("^['.a-z0-9_-]+$");
+    /**
+     * dovecot - auth_username_chars: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890.-_@
+     */
+    private static final Pattern ADDITIONAL_FILTER_PATTERN = Pattern.compile("^[.a-z0-9_-]+$");
     private static final Set<String> RESERVED_NAMES = Collections.singleton("*");
 
     private final EmailValidatorWrapper emailValidator = new EmailValidatorWrapper();

@@ -16,7 +16,6 @@ public class MailboxNameValidatorTest {
         Assert.assertTrue(mailboxNameValidator.isValid("p.p.p"));
         Assert.assertTrue(mailboxNameValidator.isValid("p_p"));
         Assert.assertTrue(mailboxNameValidator.isValid("p-p"));
-        Assert.assertTrue(mailboxNameValidator.isValid("egorvasil'ev"));
 
         // from wiki
 //        Assert.assertTrue(mailboxNameValidator.isValid("disposable.style.email.with+symbol"));
@@ -58,6 +57,8 @@ public class MailboxNameValidatorTest {
         Assert.assertFalse(mailboxNameValidator.isValid("p|p"));
         Assert.assertFalse(mailboxNameValidator.isValid("p{p"));
         Assert.assertFalse(mailboxNameValidator.isValid("p*p"));
+
+        Assert.assertFalse(mailboxNameValidator.isValid("egorvasil'ev"));
 
         // from wiki
         Assert.assertFalse(mailboxNameValidator.isValid("a@b@c"));
