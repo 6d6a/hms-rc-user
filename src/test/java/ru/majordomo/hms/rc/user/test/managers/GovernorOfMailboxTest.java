@@ -487,7 +487,10 @@ public class GovernorOfMailboxTest {
                 "asdgjjsd/.gkjasg",
                 "asdgjjsd.",
                 "asdgjjsd/gkjasg",
-                "/"
+                "/",
+                "русский",
+                "uPpEr",
+                "*"
         ).forEach(localName -> {
             ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
             serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
@@ -504,10 +507,12 @@ public class GovernorOfMailboxTest {
     @Test
     public void validLocalNameTest() {
         Arrays.asList(
+//                "asdgasdg?2452.dgj",
+//                "asdgasdg!#$%&'*+=?^_`{|}~-2452.dgj",
+//                "asdgasdg2!452.dgj",
                 "asdgasdg2452.dgj",
-                "asdgasdg?2452.dgj",
-                "asdgasdg!#$%&'*+=?^_`{|}~-2452.dgj",
-                "asdgasdg2!452.dgj"
+                "asdgasdg2452-dgj",
+                "asdgasdg2452_dgj"
         ).forEach(localName -> {
             ServiceMessage serviceMessage = ServiceMessageGenerator.generateMailboxCreateServiceMessage(batchOfDomains.get(0).getId());
             serviceMessage.setAccountId(batchOfDomains.get(0).getAccountId());
