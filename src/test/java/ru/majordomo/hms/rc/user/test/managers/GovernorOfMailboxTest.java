@@ -320,7 +320,7 @@ public class GovernorOfMailboxTest {
         assertTrue(redisMailbox.getWritable());
         assertTrue(redisRepository.isAggregator(mailbox.getName(), workedMailboxDomainName));
 
-        // second part
+        // second part. Not change aggregator
         serviceMessage.delParam(IS_AGGREGATOR_KEY);
         serviceMessage.addParam(IS_AGGREGATOR_KEY, null);
         ovs = governor.updateByOversight(serviceMessage);
@@ -337,7 +337,7 @@ public class GovernorOfMailboxTest {
         assertTrue(redisMailbox.getWritable());
         assertTrue(redisRepository.isAggregator(mailbox.getName(), workedMailboxDomainName));
 
-        //  third part
+        // third part disable aggregator
         serviceMessage.delParam(IS_AGGREGATOR_KEY);
         serviceMessage.addParam(IS_AGGREGATOR_KEY, false);
         ovs = governor.updateByOversight(serviceMessage);
@@ -348,6 +348,30 @@ public class GovernorOfMailboxTest {
 
         assertFalse(repository.existsByDomainIdAndIsAggregator(workedMailbox.getDomainId(), true));
         assertFalse(redisRepository.findById(workedMailboxAggregatorId).isPresent());
+
+        // fourth part. return aggregator
+        serviceMessage.delParam(IS_AGGREGATOR_KEY);
+        serviceMessage.addParam(IS_AGGREGATOR_KEY, true);
+        ovs = governor.updateByOversight(serviceMessage);
+        governor.completeOversightAndStore(ovs);
+
+        mailbox = repository.findById(workedMailboxId).get();
+        assertNotNull(mailbox.getIsAggregator());
+        assertTrue(mailbox.getIsAggregator());
+        assertEquals(workedMailboxName, mailbox.getName());
+
+        redisMailbox = redisRepository.findById(workedMailboxAggregatorId).get();
+        assertNotNull(redisMailbox.getId());
+        assertEquals(workedMailboxFullName, redisMailbox.getRedirectAddresses());
+        assertEquals(SERVER_NAME, redisMailbox.getServerName());
+        assertTrue(redisMailbox.getWritable());
+        assertTrue(redisRepository.isAggregator(mailbox.getName(), workedMailboxDomainName));
+
+        // fifth part delete mailbox with aggregator
+        ovs = governor.dropByOversight(workedMailboxId);
+        governor.completeOversightAndDelete(ovs);
+        Assert.assertFalse(redisRepository.isAggregator(workedMailboxName, workedMailboxDomainName));
+        Assert.assertFalse(redisRepository.existsById(workedMailboxAggregatorId));
     }
 
     @Test

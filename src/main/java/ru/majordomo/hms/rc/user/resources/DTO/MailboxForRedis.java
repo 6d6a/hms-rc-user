@@ -37,6 +37,7 @@ public class MailboxForRedis {
         return mailboxUserName + "@" + IDN.toASCII(domainUnicode);
     }
 
+    /** Возвращает id в redis для записи управляющей перенаправлением доменов с несуществующих ящиков */
     static public String getAggregatorRedisId(@Nonnull String domainUnicode) {
         return "*@" + IDN.toASCII(domainUnicode);
     }

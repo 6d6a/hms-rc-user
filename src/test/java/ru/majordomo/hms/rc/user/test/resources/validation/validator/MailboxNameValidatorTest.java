@@ -11,10 +11,12 @@ public class MailboxNameValidatorTest {
         Assert.assertTrue(mailboxNameValidator.isValid("postmaster"));
         Assert.assertTrue(mailboxNameValidator.isValid("p111"));
         Assert.assertTrue(mailboxNameValidator.isValid("1111"));
+        Assert.assertTrue(mailboxNameValidator.isValid("absdifghijklmnopqastuvwxyz01234567890absdifghijklmnopqastuvwxyz"));
+
         Assert.assertTrue(mailboxNameValidator.isValid("p.p.p"));
         Assert.assertTrue(mailboxNameValidator.isValid("p_p"));
         Assert.assertTrue(mailboxNameValidator.isValid("p-p"));
-        Assert.assertTrue(mailboxNameValidator.isValid("absdifghijklmnopqastuvwxyz01234567890absdifghijklmnopqastuvwxyz"));
+        Assert.assertTrue(mailboxNameValidator.isValid("egorvasil'ev"));
 
         // from wiki
 //        Assert.assertTrue(mailboxNameValidator.isValid("disposable.style.email.with+symbol"));
