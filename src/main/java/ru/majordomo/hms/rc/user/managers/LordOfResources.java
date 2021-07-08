@@ -1,5 +1,6 @@
 package ru.majordomo.hms.rc.user.managers;
 
+import com.mongodb.DuplicateKeyException;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,17 +117,17 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
      */
     public OperationOversight<T> sendToOversight(T resource, ResourceAction action) {
         OperationOversight<T> ovs = new OperationOversight<>(resource, action);
-        return operationOversightRepository.save(ovs);
+        return saveOvs(ovs);
     }
 
     public OperationOversight<T> sendToOversight(T resource, ResourceAction action, Boolean replace) {
         OperationOversight<T> ovs = new OperationOversight<>(resource, action, replace);
-        return operationOversightRepository.save(ovs);
+        return saveOvs(ovs);
     }
 
     public OperationOversight<T> sendToOversight(T resource, ResourceAction action, Boolean replace, List<? extends Resource> affectedResources, List<? extends Resource> requiredResources) {
         OperationOversight<T> ovs = new OperationOversight<>(resource, action, replace, affectedResources, requiredResources);
-        return operationOversightRepository.save(ovs);
+        return saveOvs(ovs);
     }
 
     public Optional<OperationOversight<T>> getOperationOversight(String id) {
@@ -135,6 +136,15 @@ public abstract class LordOfResources<T extends Resource> implements ResourceSea
 
     public Optional<OperationOversight<T>> getOperationOversightByResource(T resource) {
         return operationOversightRepository.findByResourceId(resource.getId());
+    }
+
+    private OperationOversight<T> saveOvs(OperationOversight<T> ovs) throws ParameterValidationException {
+        try {
+            return operationOversightRepository.save(ovs);
+        } catch (DuplicateKeyException e) {
+            log.error(String.format("DuplicateKeyException for OVS. resourceId: %s, Exception: %s", ovs.getResourceId(), e.getMessage()), e);
+            throw new ParameterValidationException("Ошибка при выполнении операции. Ресурс с запрошенными параметрами уже существует");
+        }
     }
 
     /**

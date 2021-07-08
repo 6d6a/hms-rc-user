@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -529,5 +531,16 @@ public class WebSite extends Resource implements Serviceable {
 
     public void setMbstringInternalEncoding(String mbstringInternalEncoding) {
         this.mbstringInternalEncoding = mbstringInternalEncoding;
+    }
+
+    @Override
+    public List<Integer> hashes() {
+        if (this.getDomainIds() == null || this.getDomainIds().isEmpty()) {
+            return null;
+        }
+
+        return this.getDomainIds().stream()
+                .map(item -> Objects.hash(item, this.getClass().getName()))
+                .collect(Collectors.toList());
     }
 }

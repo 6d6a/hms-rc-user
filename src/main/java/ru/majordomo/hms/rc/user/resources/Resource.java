@@ -35,7 +35,7 @@ import java.time.LocalDateTime;
                 @JsonSubTypes.Type(value = UnixAccount.class),
                 @JsonSubTypes.Type(value = WebSite.class)
         })
-public abstract class Resource {
+public abstract class Resource implements Hashable {
     @Id
     @MongoId
     private String id;
