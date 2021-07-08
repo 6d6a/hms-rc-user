@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import ru.majordomo.hms.rc.user.common.ResourceAction;
+import ru.majordomo.hms.rc.user.event.operationOversight.listener.OperationOversightMongoEventListener;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
 import java.time.LocalDateTime;
@@ -51,6 +52,19 @@ public class OperationOversight<T extends Resource> {
      */
     @Indexed(unique = true, sparse = true)
     private String resourceId;
+
+    /**
+     * Уникальные индексы через hash:
+     * domains: {name: 1}
+     * websites: {domainIds: 1} (Каждый из domainId - уникальный на всю коллекцию)
+     * mailboxes: {name: 1, domainId: 1}
+     *
+     * Функция генерации хешей вызывается перед сохранением в базу данных в:
+     * @see OperationOversightMongoEventListener
+     */
+    @Indexed(unique = true, sparse = true)
+    @JsonIgnore
+    private List<Integer> hash = null;
 
     @JsonIgnore
     private ResourceAction action;
@@ -113,5 +127,13 @@ public class OperationOversight<T extends Resource> {
         this.action = action;
         this.resourceClass = resource.getClass().getName();
         genResId();
+    }
+
+    public void generateHashes() {
+        this.hash = getResourceHashes();
+    }
+
+    private List<Integer> getResourceHashes() {
+        return this.resource.hashes();
     }
 }

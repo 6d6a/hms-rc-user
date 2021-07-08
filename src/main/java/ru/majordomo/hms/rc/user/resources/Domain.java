@@ -15,7 +15,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -180,5 +182,13 @@ public class Domain extends Resource {
                 ", parentDomainId='" + parentDomainId + '\'' +
                 ", synced='" + synced + '\'' +
                 "} " + super.toString();
+    }
+
+    @Override
+    public List<Integer> hashes() {
+        return Collections.singletonList(Objects.hash(
+                this.getName(),
+                this.getClass().getName()
+        ));
     }
 }

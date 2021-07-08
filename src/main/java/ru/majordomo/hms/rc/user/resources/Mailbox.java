@@ -185,4 +185,13 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
         String mailSpoolinPunycode = String.join("/", labels);
         return String.join("/", mailSpoolinPunycode);
     }
+
+    @Override
+    public List<Integer> hashes() {
+        return Collections.singletonList(Objects.hash(
+                this.getName(),
+                this.getClass().getName(),
+                this.getDomainId()
+        ));
+    }
 }
