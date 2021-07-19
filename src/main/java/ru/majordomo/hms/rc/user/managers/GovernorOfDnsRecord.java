@@ -1,9 +1,11 @@
 package ru.majordomo.hms.rc.user.managers;
 
 import com.mysql.management.util.NotImplementedException;
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -23,6 +25,7 @@ import javax.annotation.Nonnull;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import javax.validation.constraints.NotEmpty;
 import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.util.*;
@@ -40,6 +43,12 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     @Setter
     @Autowired
     private DomainRepository domainRepository;
+
+    @Setter
+    @Getter
+    @NotEmpty
+    @Value("${resources.dns-record.spf}")
+    private String spfData;
 
     public GovernorOfDnsRecord(OperationOversightRepository<DNSResourceRecord> operationOversightRepository) {
         super(operationOversightRepository);
@@ -322,6 +331,7 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         addNsRecords(domain, domainId);
         addDefaultARecords(domain, domainId);
         addMailRecords(domain, domainId);
+        addSpfRecord(domain, domainId);
         if (domain.getDkim() != null) {
             setupDkimRecords(domain);
         }
@@ -455,6 +465,19 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         cnameRecord.setOwnerName("mail." + domainName);
         cnameRecord.setData("mail.majordomo.ru");
         dnsResourceRecordDAO.insert(cnameRecord);
+    }
+
+    public void addSpfRecord(Domain domain, Long domainId) {
+        String domainNamePunycode = IDN.toASCII(domain.getName());
+
+        DNSResourceRecord txtRecord = new DNSResourceRecord();
+        txtRecord.setDomainId(domainId);
+        txtRecord.setRrType(DNSResourceRecordType.TXT);
+        txtRecord.setRrClass(DNSResourceRecordClass.IN);
+        txtRecord.setTtl(3600L);
+        txtRecord.setOwnerName(domainNamePunycode);
+        txtRecord.setData(spfData);
+        dnsResourceRecordDAO.insert(txtRecord);
     }
     
     public void setupDkimRecords(@Nonnull Domain domain) {

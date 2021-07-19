@@ -112,7 +112,7 @@ public class GovernorOfDnsRecordTest {
         List<DNSResourceRecord> records = (List<DNSResourceRecord>) governorOfDnsRecord.buildAll(keyValue);
         assertThat(
                 records.size(),
-                is(11)
+                is(12)
         );
         assertThat(
                 records.get(0).getRrType(),
@@ -140,7 +140,7 @@ public class GovernorOfDnsRecordTest {
 
         assertThat(
                 records.size(),
-                is(11)
+                is(12)
         );
         assertThat(
                 records.get(0).getRrType(),
