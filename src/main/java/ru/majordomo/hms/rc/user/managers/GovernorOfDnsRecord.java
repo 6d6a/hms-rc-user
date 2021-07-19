@@ -45,7 +45,6 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
     private DomainRepository domainRepository;
 
     @Setter
-    @Getter
     @NotEmpty
     @Value("${resources.dns-record.spf}")
     private String spfData;
@@ -467,17 +466,25 @@ public class GovernorOfDnsRecord extends LordOfResources<DNSResourceRecord> {
         dnsResourceRecordDAO.insert(cnameRecord);
     }
 
-    public void addSpfRecord(Domain domain, Long domainId) {
-        String domainNamePunycode = IDN.toASCII(domain.getName());
+    public void addSpfRecord(@Nonnull Domain domain, Long domainId) {
+        try {
+            if (StringUtils.isBlank(spfData)) {
+                log.error("Cannot create spf dns-record for domain name: {} and id: {} because configuration spfData is empty", domain.getName(), domainId);
+                return;
+            }
+            String domainNamePunycode = IDN.toASCII(domain.getName());
 
-        DNSResourceRecord txtRecord = new DNSResourceRecord();
-        txtRecord.setDomainId(domainId);
-        txtRecord.setRrType(DNSResourceRecordType.TXT);
-        txtRecord.setRrClass(DNSResourceRecordClass.IN);
-        txtRecord.setTtl(3600L);
-        txtRecord.setOwnerName(domainNamePunycode);
-        txtRecord.setData(spfData);
-        dnsResourceRecordDAO.insert(txtRecord);
+            DNSResourceRecord spfTxtRecord = new DNSResourceRecord();
+            spfTxtRecord.setDomainId(domainId);
+            spfTxtRecord.setRrType(DNSResourceRecordType.TXT);
+            spfTxtRecord.setRrClass(DNSResourceRecordClass.IN);
+            spfTxtRecord.setTtl(3600L);
+            spfTxtRecord.setOwnerName(domainNamePunycode);
+            spfTxtRecord.setData(spfData);
+            dnsResourceRecordDAO.insert(spfTxtRecord);
+        } catch (Exception e) {
+            log.error("We got an exception when trying to create spf-record for domain id: " + domainId, e);
+        }
     }
     
     public void setupDkimRecords(@Nonnull Domain domain) {
