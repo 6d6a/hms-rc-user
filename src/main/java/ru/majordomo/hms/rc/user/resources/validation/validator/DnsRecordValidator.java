@@ -3,10 +3,13 @@ package ru.majordomo.hms.rc.user.resources.validation.validator;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.InetAddressValidator;
+import ru.majordomo.hms.rc.user.common.Utils;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecordType;
 import ru.majordomo.hms.rc.user.resources.validation.ValidDnsRecord;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
@@ -16,7 +19,13 @@ public class DnsRecordValidator implements ConstraintValidator<ValidDnsRecord, D
     }
 
     @Override
-    public boolean isValid(final DNSResourceRecord record, ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(
+            @Nullable final DNSResourceRecord record,
+            @Nonnull ConstraintValidatorContext constraintValidatorContext
+    ) {
+        if (record == null) {
+            return false;
+        }
         if (record.getOwnerName() == null || !record.getOwnerName().endsWith(record.getName())) {
             constraintValidatorContext.disableDefaultConstraintViolation();
             constraintValidatorContext.buildConstraintViolationWithTemplate("Запись должна кончаться именем домена").addConstraintViolation();
@@ -59,7 +68,7 @@ public class DnsRecordValidator implements ConstraintValidator<ValidDnsRecord, D
                     break;
                 case CNAME:
                 case MX:
-                    if (!DomainValidator.getInstance().isValid(record.getData())) {
+                    if (!Utils.domainValidWithNonExistentTld(record.getData())) {
                         constraintValidatorContext.disableDefaultConstraintViolation();
                         constraintValidatorContext.buildConstraintViolationWithTemplate("Неверный формат доменного имени").addConstraintViolation();
                         return false;
@@ -73,7 +82,7 @@ public class DnsRecordValidator implements ConstraintValidator<ValidDnsRecord, D
                             || Integer.parseInt(partsRecordSRV[0]) < 0 || Integer.parseInt(partsRecordSRV[0]) > 65535
                             || !NumberUtils.isNumber(partsRecordSRV[1])
                             || Integer.parseInt(partsRecordSRV[1]) < 0 || Integer.parseInt(partsRecordSRV[1]) > 65535
-                            || !DomainValidator.getInstance().isValid(partsRecordSRV[2])) {
+                            || !Utils.domainValidWithNonExistentTld(partsRecordSRV[2])) {
                         constraintValidatorContext.disableDefaultConstraintViolation();
                         constraintValidatorContext.buildConstraintViolationWithTemplate("Неверный формат SRV DNS-записи").addConstraintViolation();
                         return false;

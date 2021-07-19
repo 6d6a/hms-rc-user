@@ -2,10 +2,15 @@ package ru.majordomo.hms.rc.user.common;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.validator.routines.DomainValidator;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 
 import java.math.BigDecimal;
+import java.net.IDN;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -91,4 +96,63 @@ public class Utils {
     public static ServiceMessage makeSuccessResponse() {
         return makeSuccessResponse(null, null, null, null);
     }
+
+    private final static int MAX_DOMAIN_LENGTH = 253;
+    private final static Pattern TLD_PATTERN = Pattern.compile("^[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$", Pattern.CASE_INSENSITIVE);
+    private final static Pattern DOMAIN_PART_PATTERN = Pattern.compile("^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", Pattern.CASE_INSENSITIVE);
+    private final static Pattern SUBDOMAIN_PART_PATTERN = Pattern.compile("^[_a-z0-9-]{0,63}$", Pattern.CASE_INSENSITIVE);
+
+    /** Валидация домена допускающая любой TLD и символ _, по возможности лучше использовать {@link org.apache.commons.validator.routines.DomainValidator} */
+    public static boolean domainValidWithNonExistentTld(@Nullable String domainUnicode) {
+        return domainValidWithNonExistentTld(domainUnicode, false, false);
+    }
+
+    /** Валидация домена допускающая любой TLD и символ _, по возможности лучше использовать {@link org.apache.commons.validator.routines.DomainValidator} */
+    public static boolean domainValidWithNonExistentTld(@Nullable String domainUnicode, boolean denyTldOnly, boolean denyLastDot) {
+        if (StringUtils.isEmpty(domainUnicode)) return false;
+        String domainPunycode;
+        try {
+            domainPunycode = IDN.toASCII(domainUnicode);
+        } catch (IllegalArgumentException ignore) {
+            // IllegalArgumentException("The label in the input is too long") если часть домена больше 63 символов и подобные ошибки
+            return false;
+        }
+        if (domainPunycode.endsWith(".")) {
+            if (denyLastDot) {
+                return false;
+            } else {
+                domainPunycode = domainPunycode.substring(0, domainPunycode.length() - 1);
+            }
+        }
+        if (domainPunycode.length() > MAX_DOMAIN_LENGTH) {
+            return false;
+        }
+        String[] domainParts = domainPunycode.split("\\.");
+        if (domainParts.length == 0 || (domainParts.length == 1 && denyTldOnly)) {
+            return false;
+        }
+        String tld = domainParts[domainParts.length - 1];
+        if (StringUtils.isEmpty(tld) || !TLD_PATTERN.matcher(tld).matches()) {
+            return false;
+        }
+        if (domainParts.length > 1) {
+            String domainPart = domainParts[domainParts.length - 2];
+            if (StringUtils.isEmpty(domainPart) || !DOMAIN_PART_PATTERN.matcher(domainPart).matches()) {
+                return false;
+            }
+        }
+        for (int i = 0; i < domainParts.length - 2; i++) {
+            if (StringUtils.isEmpty(domainParts[i]) || !SUBDOMAIN_PART_PATTERN.matcher(domainParts[i]).matches()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** валидатор умеющий .local, .intr, .bit и некоторые другие зоны */
+    public static final DomainValidator domainValidatorLocalPlus = DomainValidator.getInstance(
+            true,
+            Collections.singletonList(new DomainValidator.Item(DomainValidator.ArrayType.LOCAL_PLUS,
+                    new String[]{"local", "intr", "onion", "i2p", "bit"})));
+
 }
