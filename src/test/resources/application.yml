@@ -13,6 +13,8 @@ resources:
   dkim:
     selector: "mj"
     contentPattern: "v=DKIM1; h=sha256; k=rsa; p=$PUBLICKEY"
+  dns-record:
+    spf: "v=spf1 include:_spf.majordomo.ru ~all"
 
 spring:
   datasource:
