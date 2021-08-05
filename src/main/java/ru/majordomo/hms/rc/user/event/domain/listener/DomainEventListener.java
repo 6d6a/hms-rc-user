@@ -49,7 +49,7 @@ public class DomainEventListener {
     @Async("threadPoolTaskExecutor")
     public void onDomainClearSyncEvent(DomainClearSyncEvent event) {
         try {
-            governorOfDomain.clearNotSyncedDomains();
+            governorOfDomain.clearNotSyncedDomains(event.getProblemRegistrars());
         } catch (Exception e) {
             e.printStackTrace();
             log.error("[DomainClearSyncEventListener] Exception: " + e.getMessage());

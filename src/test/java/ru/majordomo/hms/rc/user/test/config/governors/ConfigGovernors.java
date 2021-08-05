@@ -68,6 +68,11 @@ public class ConfigGovernors {
         }
 
         @Override
+        public ServiceMessage sendNotificationToDevs(ServiceMessage message) {
+            return null;
+        }
+
+        @Override
         public String sendPhpMailNotificationToClient(String accountId) {
             return null;
         }

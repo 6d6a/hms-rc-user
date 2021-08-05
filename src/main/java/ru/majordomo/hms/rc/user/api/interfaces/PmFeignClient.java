@@ -13,6 +13,10 @@ public interface PmFeignClient {
     ServiceMessage sendNotificationToClient(
             @RequestBody ServiceMessage message
     );
+    @PostMapping(value = "/notifications/send-to-dev", consumes = "application/json;utf8")
+    ServiceMessage sendNotificationToDevs(
+            @RequestBody ServiceMessage message
+    );
     @PostMapping(value = "/phpmail-disable-notify")
     String sendPhpMailNotificationToClient(
             @RequestBody String accountId

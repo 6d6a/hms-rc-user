@@ -12,14 +12,19 @@ import org.springframework.web.bind.annotation.*;
 import java.net.IDN;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import ru.majordomo.hms.rc.user.api.DTO.DomainSyncReport;
+import ru.majordomo.hms.rc.user.api.interfaces.PmFeignClient;
+import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.rc.user.event.domain.DomainClearSyncEvent;
 import ru.majordomo.hms.rc.user.event.domain.RegSpecUpdateEvent;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDnsRecord;
 import ru.majordomo.hms.rc.user.managers.GovernorOfDomain;
 import ru.majordomo.hms.rc.user.resources.DNSResourceRecord;
 import ru.majordomo.hms.rc.user.resources.Domain;
+import ru.majordomo.hms.rc.user.resources.DomainRegistrar;
 import ru.majordomo.hms.rc.user.resources.RegSpec;
 
 @RestController
@@ -28,6 +33,7 @@ public class DomainRestController {
     private GovernorOfDomain governor;
     private ApplicationEventPublisher publisher;
     private GovernorOfDnsRecord governorOfDnsRecord;
+    private PmFeignClient pmFeignClient;
     private final static Logger logger = LoggerFactory.getLogger(DomainRestController.class);
 
     @Autowired
@@ -43,6 +49,11 @@ public class DomainRestController {
     @Autowired
     public void setGovernor(GovernorOfDomain governor) {
         this.governor = governor;
+    }
+
+    @Autowired
+    public void setPmFeignClient(PmFeignClient pmFeignClient) {
+        this.pmFeignClient = pmFeignClient;
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('OPERATOR')")
@@ -76,13 +87,31 @@ public class DomainRestController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/domain/process-sync")
-    public ResponseEntity<Void> processDomainsSync(@RequestBody Map<String, RegSpec> domains) {
+    public ResponseEntity<Void> processDomainsSync(@RequestBody DomainSyncReport domainSyncReport) {
         try {
             //Синхронизируем существующие
-            domains.forEach((key, value) -> publisher.publishEvent(new RegSpecUpdateEvent(key, value)));
+            domainSyncReport.getParams().forEach((key, value) -> publisher.publishEvent(new RegSpecUpdateEvent(key, value)));
+
+            try {
+                if (!domainSyncReport.getProblemRegistrars().isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<p>");
+                    domainSyncReport.getProblemRegistrars().forEach(item -> {
+                        sb.append(item);
+                        sb.append("<br>");
+                    });
+                    sb.append("</p>");
+                    ServiceMessage serviceMessage = new ServiceMessage();
+                    serviceMessage.addParam("subject", "[HMS] При синхронизации доменов обнаружены пустые Регистраторы");
+                    serviceMessage.addParam("body", sb.toString());
+                    pmFeignClient.sendNotificationToDevs(serviceMessage);
+                }
+            } catch (Exception e) {
+                logger.error("[processDomainsSync] Ошибка при отправке сообщения в pm: " + e.toString());
+            }
 
             //Удаляем reg-spec у необновляющихся более 4 часов.
-            publisher.publishEvent(new DomainClearSyncEvent("DomainClearSyncEvent"));
+            publisher.publishEvent(new DomainClearSyncEvent("DomainClearSyncEvent", domainSyncReport.getProblemRegistrars()));
 
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
@@ -156,5 +185,4 @@ public class DomainRestController {
     public DNSResourceRecord readOneDnsRecord(@PathVariable String accountId, @PathVariable String recordId) {
         return governorOfDnsRecord.build(recordId);
     }
-
 }

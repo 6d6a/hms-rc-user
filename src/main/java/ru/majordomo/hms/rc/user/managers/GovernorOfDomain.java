@@ -488,10 +488,14 @@ public class GovernorOfDomain extends LordOfResources<Domain> implements BuildRe
         }
     }
 
-    public void clearNotSyncedDomains() {
+    public void clearNotSyncedDomains(List<DomainRegistrar> problemRegistrars) {
         Stream<Domain> domainStream = repository.findAllStream();
         domainStream.forEach(domain -> {
-            if (domain.getSynced() != null && domain.getRegSpec() != null && domain.getSynced().isBefore(LocalDateTime.now().minusHours(4))) {
+            if (domain.getSynced() != null &&
+                    domain.getRegSpec() != null &&
+                    !problemRegistrars.contains(domain.getRegSpec().getRegistrar()) &&
+                    domain.getSynced().isBefore(LocalDateTime.now().minusHours(4))
+            ) {
 
                 Query query = new Query(new Criteria("_id").is(domain.getId()));
                 Update update = new Update().unset("regSpec");
