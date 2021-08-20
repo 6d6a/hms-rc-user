@@ -11,6 +11,7 @@ import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessor;
 import ru.majordomo.hms.rc.user.resourceProcessor.ResourceProcessorContext;
 import ru.majordomo.hms.rc.user.resources.Resource;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Optional;
 
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
@@ -45,7 +46,12 @@ public class DefaultUpdatePmProcessor<T extends Resource> implements ResourcePro
         String routingKey = processorContext.getRoutingKeyResolver().get(context);
 
         if (!TE.equals(routingKey) && !StringUtils.startsWith(routingKey, TE + ".")) {
-            processorContext.getGovernor().completeOversightAndStore(ovs);
+            try {
+                processorContext.getGovernor().completeOversightAndStore(ovs);
+            } catch (ParameterValidationException | ConstraintViolationException e) {
+                processorContext.getGovernor().removeOversight(ovs);
+                throw e;
+            }
         }
 
         processorContext.getSender().send(context, routingKey);
