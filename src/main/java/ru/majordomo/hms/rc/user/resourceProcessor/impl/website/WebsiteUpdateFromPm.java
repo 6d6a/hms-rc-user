@@ -12,6 +12,7 @@ import ru.majordomo.hms.rc.user.common.ResourceActionContext;
 import ru.majordomo.hms.rc.user.model.OperationOversight;
 import ru.majordomo.hms.rc.user.resources.*;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Optional;
 
 import static ru.majordomo.hms.rc.user.common.Constants.TE;
@@ -50,7 +51,12 @@ public class WebsiteUpdateFromPm extends BaseWebsiteProcessor {
         context.setRoutingKey(routingKey);
 
         if (!TE.equals(routingKey) && !StringUtils.startsWith(routingKey, TE + ".")) {
-            processorContext.getGovernor().completeOversightAndStore(ovs);
+            try {
+                processorContext.getGovernor().completeOversightAndStore(ovs);
+            } catch (ParameterValidationException | ConstraintViolationException e) {
+                processorContext.getGovernor().removeOversight(ovs);
+                throw e;
+            }
         }
 
         validateAndFullExtendedAction(context);
