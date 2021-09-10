@@ -12,8 +12,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class DnsRecordValidator implements ConstraintValidator<ValidDnsRecord, DNSResourceRecord> {
+    private final static Pattern ONLY_ENG_DNS = Pattern.compile("^[_a-zA-Z0-9-]+$");
+    private final static List<String> ALLOWED_NAME_SERVERS = Collections.unmodifiableList(Arrays.asList(
+            "ns.majordomo.ru", "ns2.majordomo.ru", "ns3.majordomo.ru", "ns4.majordomo.ru"
+    )); // todo вынести список ns majordomo в config из всех мест в rc-user
+
     @Override
     public void initialize(ValidDnsRecord validDnsRecord) {
     }
@@ -101,6 +108,29 @@ public class DnsRecordValidator implements ConstraintValidator<ValidDnsRecord, D
                         constraintValidatorContext.disableDefaultConstraintViolation();
                         constraintValidatorContext.buildConstraintViolationWithTemplate("Неверный формат CAA DNS-записи").addConstraintViolation();
                         return false;
+                    }
+                    break;
+                case NS:
+                    String subdomainPart = record.getOwnerName().substring(0, Math.max(record.getOwnerName().length() - record.getName().length(), 0));
+                    if (subdomainPart.contains("*")) {
+                        constraintValidatorContext.disableDefaultConstraintViolation();
+                        constraintValidatorContext.buildConstraintViolationWithTemplate("Запрещено создавать NS DNS-записи с '*'")
+                                .addConstraintViolation();
+                        return false;
+                    } else if (subdomainPart.isEmpty()) {
+                        if (!ALLOWED_NAME_SERVERS.contains(record.getData())) {
+                            constraintValidatorContext.disableDefaultConstraintViolation();
+                            constraintValidatorContext.buildConstraintViolationWithTemplate("Запрещено редактировать NS DNS-записи для основного домена")
+                                    .addConstraintViolation();
+                            return false;
+                        }
+                    } else {
+                        if (!DomainValidator.getInstance().isValid(record.getData()) && !ONLY_ENG_DNS.matcher(record.getData()).matches()) {
+                            constraintValidatorContext.disableDefaultConstraintViolation();
+                            constraintValidatorContext.buildConstraintViolationWithTemplate("Значением NS DNS-записи должен быть корректный домен")
+                                    .addConstraintViolation();
+                            return false;
+                        }
                     }
                     break;
                 default:
