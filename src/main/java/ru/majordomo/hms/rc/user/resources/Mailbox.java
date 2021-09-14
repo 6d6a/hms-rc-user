@@ -52,10 +52,10 @@ public class Mailbox extends Resource implements ServerStorable, Quotable, Secur
     private List<@ValidEmail String> redirectAddresses = new ArrayList<>();
 
     @Valid
-    private List<@ValidEmailOrDomainName String> blackList = new ArrayList<>();
+    private List<@ValidEmailOrDomainNameOrWildcardDomain String> blackList = new ArrayList<>();
 
     @Valid
-    private List<@ValidEmailOrDomainName String> whiteList = new ArrayList<>();
+    private List<@ValidEmailOrDomainNameOrWildcardDomain String> whiteList = new ArrayList<>();
 
     private Boolean mailFromAllowed = true;
 
