@@ -1,13 +1,17 @@
 package ru.majordomo.hms.rc.user.test.managers;
 
+import com.github.fppt.jedismock.RedisServer;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.majordomo.hms.rc.user.api.message.ServiceMessage;
 import ru.majordomo.hms.personmgr.exception.ParameterValidationException;
@@ -63,13 +67,23 @@ public class GovernorOfDomainTest {
     private DomainRepository repository;
 
     @Autowired
+    private RedisConnectionFactory redisConnectionFactory;
+
+    @Autowired
     private PersonRepository personRepository;
+
+    private static RedisServer redisServer;
 
     private List<Domain> domains;
     private List<Person> persons;
 
     @Before
     public void setUp() throws Exception {
+        if (redisServer == null) {
+            LettuceConnectionFactory redisConnectionFactory = (LettuceConnectionFactory) this.redisConnectionFactory;
+            redisServer = new RedisServer(redisConnectionFactory.getPort());
+            redisServer.start();
+        }
         persons = ResourceGenerator.generateBatchOfPerson();
         domains = ResourceGenerator.generateBatchOfDomains(persons);
         repository.saveAll(domains);
@@ -77,9 +91,14 @@ public class GovernorOfDomainTest {
     }
 
     @After
-    public void cleanUp() throws Exception {
+    public void deleteAll() throws Exception {
         repository.deleteAll();
         personRepository.deleteAll();
+    }
+
+    @AfterClass
+    public static void cleanUp() throws Exception {
+        redisServer.stop();
     }
 
     @Test
