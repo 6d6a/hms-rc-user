@@ -14,6 +14,12 @@ public class DomainSyncReport {
 
     public DomainSyncReport(){}
 
+    public boolean isOnlyUkrnames() {
+        return problemRegistrars != null &&
+                problemRegistrars.size() == 1 &&
+                problemRegistrars.get(0) == DomainRegistrar.UKRNAMES;
+    }
+
     public DomainSyncReport(Map<String, RegSpec> params, List<DomainRegistrar> problemRegistrars) {
         this.params = params;
         this.problemRegistrars = problemRegistrars;

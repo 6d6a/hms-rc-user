@@ -93,7 +93,7 @@ public class DomainRestController {
             domainSyncReport.getParams().forEach((key, value) -> publisher.publishEvent(new RegSpecUpdateEvent(key, value)));
 
             try {
-                if (!domainSyncReport.getProblemRegistrars().isEmpty()) {
+                if (!domainSyncReport.getProblemRegistrars().isEmpty() && !domainSyncReport.isOnlyUkrnames()) {
                     StringBuilder sb = new StringBuilder();
                     sb.append("<p>");
                     domainSyncReport.getProblemRegistrars().forEach(item -> {
