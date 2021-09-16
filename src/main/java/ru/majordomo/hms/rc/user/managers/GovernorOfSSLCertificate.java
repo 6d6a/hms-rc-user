@@ -361,10 +361,14 @@ public class GovernorOfSSLCertificate extends LordOfResources<SSLCertificate> {
     public String getTERoutingKey(SSLCertificate sslCertificate) throws ParameterValidationException {
         Domain domain = domainRepository.findBySslCertificateIdAndAccountId(sslCertificate.getId(), sslCertificate.getAccountId());
         if (domain == null) {
+            log.error("[SSLRoutingKeyHook] Не найден домен для серта: " + sslCertificate.getId() + " " +
+                    sslCertificate.getName() + " (Аккаунт: " + sslCertificate.getAccountId() + ")");
             return null;
         }
         WebSite webSite = webSiteRepository.findByDomainIdsContainsAndAccountId(domain.getId(), domain.getAccountId());
         if (webSite == null) {
+            log.error("[SSLRoutingKeyHook] Не найден вебсайт для серта: " + sslCertificate.getId() + " " +
+                    sslCertificate.getName() + " (Домен: " + domain.getId() + ")");
             return null;
         }
         try {
