@@ -127,6 +127,8 @@ public class SslCertificateAMQPController extends BaseAMQPController<SSLCertific
             case LETSENCRYPT:
             case RC_USER_APP:
                 teRoutingKey = ((GovernorOfSSLCertificate) governor).getTERoutingKey(getResourceFromOvsContext(context));
+                log.error("[SSLRoutingKeyHook] Не найден нужный TE для серта: " + getResourceFromOvsContext(context).getId() + " " +
+                        getResourceFromOvsContext(context).getName());
                 return teRoutingKey != null ? teRoutingKey : getDefaultRoutingKey();
 
             case TE:
