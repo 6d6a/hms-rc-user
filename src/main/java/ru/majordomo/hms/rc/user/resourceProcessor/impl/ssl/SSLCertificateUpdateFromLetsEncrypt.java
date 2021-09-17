@@ -44,6 +44,8 @@ public class SSLCertificateUpdateFromLetsEncrypt implements ResourceProcessor<SS
             processorContext.getGovernor().validateAndStore(certificate);
 
             processorContext.getSender().send(context, processorContext.getRoutingKeyResolver().get(context));
+
+            log.info("[SSLRoutingKeyUPDATEHook] Сообщение из letsencrypt об успешном апдейте отправлено в: " + processorContext.getRoutingKeyResolver().get(context) + " Контекст: " + context);
         } else {
             try {
                 LocalDateTime notAfter = CertificateHelper.getNotAfter(certificate);
