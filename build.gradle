@@ -49,26 +49,6 @@ ext.autoIncrementBuildNumber = {
     }
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId 'ru.majordomo.hms.rc.user'
-            artifactId 'resources'
-            version '1.5.' + versionBuild
-            artifact resourceJar
-        }
-    }
-    repositories {
-        maven {
-            url uri(mavenUrl)
-            credentials {
-                username = mavenUser
-                password = mavenPass
-            }
-        }
-    }
-}
-
 version = '0.0.1-SNAPSHOT'
 
 archivesBaseName = 'rc-user'
@@ -83,12 +63,6 @@ jar {
 
 springBoot {
     buildInfo()
-}
-
-task resourceJar(type: Jar, dependsOn: compileJava) {
-    baseName = 'resources'
-    from sourceSets.main.output.classesDir
-    include 'ru/majordomo/hms/rc/user/resources/**'
 }
 
 repositories {
@@ -174,5 +148,4 @@ asciidoctor {
     sourceDir snippetsDir
 }
 
-build.dependsOn("resourceJar")
 publish.doFirst autoIncrementBuildNumber
